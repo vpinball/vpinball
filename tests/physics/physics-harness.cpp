@@ -82,6 +82,8 @@ PhysicsTestHarness::PhysicsTestHarness(const float tableWidth, const float table
 {
    m_table->m_right = tableWidth;
    m_table->m_bottom = tableHeight;
+   // Tests were written against the improved physics: run the V10_9 profile (tables default to V10_8)
+   m_table->m_physicProfile = PhysicProfile::V10_9;
    // Same default gravity as the player: the table's slope and gravity strength
    m_gravitySlopeDeg = m_table->GetPlayfieldSlope();
    m_gravityStrength = m_table->m_Gravity;

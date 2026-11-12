@@ -38,6 +38,8 @@ private:
     EditBox m_maxSlopeEdit;
     EditBox m_gameplayDifficultyEdit;
     ComboBox m_overwritePhysicsSetCombo;
+    ComboBox m_physicProfileCombo;
     HWND    m_hOverwriteFlipperCheck;
     vector<string> m_physicSetList;
+    vector<string> m_physicProfileList;
 };

@@ -50,6 +50,9 @@ public:
    virtual void UpdateVelocities() = 0;
 
    PhysicsEngine* m_physics = nullptr;
+
+   // Physics profile of the owning engine. Detached movers (unit tests) exercise the latest behavior.
+   PhysicProfile GetPhysicProfile() const;
 };
 
 // Ported at: VisualPinball.Engine/Math/Functions.cs
@@ -119,6 +122,9 @@ public:
    IEditable* m_editable = nullptr;
 
    PhysicsEngine* m_physics = nullptr;
+
+   // Physics profile of the owning engine. Detached colliders (unit tests, UI pickers) exercise the latest behavior.
+   PhysicProfile GetPhysicProfile() const;
 
    // Collision events
    bool  m_fe = false;  // FireEvents for m_obj?

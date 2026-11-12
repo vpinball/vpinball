@@ -5,12 +5,10 @@
 #include "math/vector.h"
 #include "physics/physconst.h"
 
-// For defects FIX_PHYSICS fixes: TEST_CASE("..." * doctest::should_fail(!kFixPhysics))
-#ifdef FIX_PHYSICS
+// For defects the V10_9 physics profile fixes: TEST_CASE("..." * doctest::should_fail(!kFixPhysics)).
+// The harness tables run PhysicProfile::V10_9 (see physics-harness.cpp), so this is always true here;
+// a V10_8 harness run would need it flipped.
 inline constexpr bool kFixPhysics = true;
-#else
-inline constexpr bool kFixPhysics = false;
-#endif
 
 class PinTable;
 class PhysicsEngine;

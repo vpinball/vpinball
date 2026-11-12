@@ -70,6 +70,15 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
 #endif
 }
 
+PhysicProfile PhysicsEngine::GetPhysicProfile() const
+{
+#ifdef NEW_PHYSICS
+   return PhysicProfile::V10_9; // NEW_PHYSICS is experimental, on top of the V10_9 fixes (see physconst.h)
+#else
+   return m_table->m_physicProfile;
+#endif
+}
+
 PhysicsEngine::~PhysicsEngine()
 {
    delete m_UIQuadTtree;
@@ -801,30 +810,34 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
       // Maybe a two-phase setup where we first process only contacts, then only collisions
       // could also work.
-#ifdef FIX_PHYSICS
-      // Ball/ball contacts first: contacts can change a ball's normal velocity on its other supports (the friction stopping the
-      // spin of a ball pressed against another ball or a wall pushes it up), which the static contacts resolved after them
-      // (see HitBall::HandleStaticContact)
-      for (HitBall *const pball : m_vballs)
-         pball->m_contactDeltaV.SetZero();
-      const bool forward = rand_mt_01() < 0.5f; // swap order of contact handling randomly
-      for (int pass = 0; pass < 2; ++pass)
-         for (size_t i = 0; i < m_contacts.size(); ++i)
+         if (GetPhysicProfile() == PhysicProfile::V10_9)
          {
-            CollisionEvent& contact = m_contacts[forward ? i : m_contacts.size() - 1 - i];
-            if ((contact.m_obj->GetType() == eBall) == (pass == 0))
-               contact.m_obj->Contact(contact, hittime);
+            // Ball/ball contacts first: contacts can change a ball's normal velocity on its other supports (the friction stopping the
+            // spin of a ball pressed against another ball or a wall pushes it up), which the static contacts resolved after them
+            // (see HitBall::HandleStaticContact)
+            for (HitBall *const pball : m_vballs)
+               pball->m_contactDeltaV.SetZero();
+            const bool forward = rand_mt_01() < 0.5f; // swap order of contact handling randomly
+            for (int pass = 0; pass < 2; ++pass)
+               for (size_t i = 0; i < m_contacts.size(); ++i)
+               {
+                  CollisionEvent &contact = m_contacts[forward ? i : m_contacts.size() - 1 - i];
+                  if ((contact.m_obj->GetType() == eBall) == (pass == 0))
+                     contact.m_obj->Contact(contact, hittime);
+               }
          }
-#else
-      if (rand_mt_01() < 0.5f) // swap order of contact handling randomly
-         for (size_t i = 0; i < m_contacts.size(); ++i)
-            //if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check //!! why does this break some collisions (MM NZ&TT Reloaded Skitso, also CCC (Saloon))? maybe due to ball colliding with multiple things and then some sideeffect?
-               m_contacts[i].m_obj->Contact(m_contacts[i], hittime);
       else
-         for (int i = (int)m_contacts.size() - 1; i != -1; --i)
-            //if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check //!! why does this break some collisions (MM NZ&TT Reloaded Skitso, also CCC (Saloon))? maybe due to ball colliding with multiple things and then some sideeffect?
+      {
+         // V10_8: single unordered pass over the contacts, like VPX 10.8 (ball/ball contacts still resolve, inline with the others)
+         if (rand_mt_01() < 0.5f) // swap order of contact handling randomly
+            for (size_t i = 0; i < m_contacts.size(); ++i)
+               //if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check //!! why does this break some collisions (MM NZ&TT Reloaded Skitso, also CCC (Saloon))? maybe due to ball colliding with multiple things and then some sideeffect?
                m_contacts[i].m_obj->Contact(m_contacts[i], hittime);
-#endif
+         else
+            for (int i = (int)m_contacts.size() - 1; i != -1; --i)
+               //if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check //!! why does this break some collisions (MM NZ&TT Reloaded Skitso, also CCC (Saloon))? maybe due to ball colliding with multiple things and then some sideeffect?
+               m_contacts[i].m_obj->Contact(m_contacts[i], hittime);
+      }
 
       m_contacts.clear();
 

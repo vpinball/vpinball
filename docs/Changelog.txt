@@ -259,6 +259,23 @@ FIXES:
 
 - improve 'resting' ball detection and better filtering for physics hit events
 
+- add a per-table 'Physics Profile' option (in the table's physics properties, defaults to 10.8): existing tables keep the
+  VPX 10.8 physics they were tuned for, while selecting the 10.9 profile enables the corrected physics engine behavior.
+  The 10.9 profile fixes the following bugs (all also apply to ball vs ball interactions, which did not exist in 10.8 and
+  always use the improved model whatever the selected profile):
+  . slow shallow touches of walls and rigid polygons were dropped entirely (they reported a bogus hit time), so no contact
+    was created until the ball actually penetrated, which could also corrupt the collision ordering
+  . the friction of a contact was bounded by the gravity component alone, so it nearly vanished on walls and was dead on the top glass
+  . sliding contact friction strength depended on the physics step length instead of applying the full slip-removing impulse
+  . the static-friction gate accidentally tested the surface orientation, so sliding balls on walls got static instead of dynamic friction
+  . contacts could push a ball resting against another contact up its support, making it climb a bit every step and jitter
+  . a slow ball embedded deeper than the touch layer in the playfield was ignored and could sink through
+  . a spinning ball could lose its support on a flipper contact, the centripetal acceleration of its material contact point
+    being misread as the ball accelerating away
+  . flipper inertia now uses the real flipper shape instead of the rod approximation (swing speed and kick/bounce response
+    change with it; the 10.8 profile keeps the rod model)
+  . very thin playfield triangles (nearly degenerate normals) could produce wrong collision responses
+
 - physics behavior changes that may make existing tables play slightly differently, but are more physically correct:
   . ball-ball contacts are now handled as resting contacts (like ball vs. playfield/walls), and the ball-ball contact normal is now evaluated at the actual hit time.
     Balls resting against each other (e.g. lined up in a trough or lock, or stacked on a slope) are now stable, instead of jittering/creeping.

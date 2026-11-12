@@ -536,6 +536,9 @@ TEST_CASE("Table file save/load round-trip")
    TestFileFeedback feedback;
    REQUIRE(SUCCEEDED(table->LoadGameFromFilename(GetAssetPath() / "test000-default-table.vpx", feedback)));
 
+   // Non-default physics profile, to check it round-trips through BIFF
+   table->m_physicProfile = PhysicProfile::V10_9;
+
    table->m_filename = out1;
    CHECK(SUCCEEDED(table->Save(feedback)));
    CHECK(feedback.m_isMonotonic);
@@ -568,6 +571,7 @@ TEST_CASE("Table file save/load round-trip")
    for (const IEditable *part : reloaded->GetParts())
       reloadedPartNames.insert(part->GetName());
    CHECK(reloadedPartNames == partNames);
+   CHECK(reloaded->m_physicProfile == table->m_physicProfile);
 
    reloaded->m_filename = out2;
    CHECK(SUCCEEDED(reloaded->Save(feedback2)));
@@ -612,6 +616,7 @@ static void CheckSameTableContent(const PinTable *table, const PinTable *reloade
    CHECK(reloaded->m_tableName == table->m_tableName);
    CHECK(reloaded->m_script_text == table->m_script_text);
    CHECK(reloaded->m_customInfo == table->m_customInfo);
+   CHECK(reloaded->m_physicProfile == table->m_physicProfile);
 }
 
 
@@ -671,6 +676,9 @@ TEST_CASE("VPZ pack save/load round-trip")
    VPX::Sound *const sound = new VPX::Sound("test_sound", "imported.mp3"s, soundData);
    sound->SetFrontRearFade(-75); // -100 is full rear, +100 is full front
    table->m_vsound.push_back(sound);
+
+   // Non-default physics profile, to check it round-trips through the JSON node map
+   table->m_physicProfile = PhysicProfile::V10_9;
 
    SUBCASE("folder pack")
    {

@@ -60,28 +60,30 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser
 
    m_lastHitFace = false; // used to optimize hit face search order
 
-#ifdef FIX_PHYSICS
-   m_backwards_compatibility = true; //!! TODO
+   // V10_9: shape-accurate inertia; V10_8: legacy rod approximation
+   if (GetPhysicProfile() == PhysicProfile::V10_9)
+      UpdateInertia();
+   else
+   {
+      const float ratio = (baser - endr) / flipr;
 
-   UpdateInertia();
-#else
-   const float ratio = (baser - endr) / flipr;
+      //const float fa = asinf(ratio); // face to centerline angle (center to center)
+      //const float faceNormOffset = (float)(M_PI / 2.0) - fa; // angle of normal when flipper center line at angle zero
 
-   //const float fa = asinf(ratio); // face to centerline angle (center to center)
-   //const float faceNormOffset = (float)(M_PI / 2.0) - fa; // angle of normal when flipper center line at angle zero
+      // model inertia of flipper as that of rod of length flipper around its end
+      const float mass = (m_pflipper->m_d.m_OverridePhysics || (m_pflipper->m_ptable->m_overridePhysicsFlipper && m_pflipper->m_ptable->m_overridePhysics)) ? m_pflipper->m_d.m_OverrideMass
+                                                                                                                                                            : m_pflipper->m_d.m_mass;
+      m_inertia = (float)(1.0 / 3.0) * mass * (flipr * flipr);
 
-   // model inertia of flipper as that of rod of length flipper around its end
-   const float mass = (m_pflipper->m_d.m_OverridePhysics || (m_pflipper->m_ptable->m_overridePhysicsFlipper && m_pflipper->m_ptable->m_overridePhysics)) ? m_pflipper->m_d.m_OverrideMass : m_pflipper->m_d.m_mass;
-   m_inertia = (float)(1.0 / 3.0) * mass * (flipr*flipr);
+      //m_faceLength = m_flipperradius * sqrtf(1.0f-ratio*ratio); // Cosine of face angle X hypotenuse // = m_flipperradius * cosf(fa)
 
-   //m_faceLength = m_flipperradius * sqrtf(1.0f-ratio*ratio); // Cosine of face angle X hypotenuse // = m_flipperradius * cosf(fa)
-
-   m_zeroAngNorm.x =  sqrtf(1.0f-ratio*ratio); // F2 Norm, used in Green's transform, in FPM time search  // =  sinf(faceNormOffset)
-   m_zeroAngNorm.y = -ratio;                   // F1 norm, change sign of x component, i.e -zeroAngNorm.x // = -cosf(faceNormOffset)
-#endif
+      m_zeroAngNorm.x = sqrtf(1.0f - ratio * ratio); // F2 Norm, used in Green's transform, in FPM time search  // =  sinf(faceNormOffset)
+      m_zeroAngNorm.y = -ratio; // F1 norm, change sign of x component, i.e -zeroAngNorm.x // = -cosf(faceNormOffset)
+   }
 }
 
-#ifdef FIX_PHYSICS
+PhysicProfile FlipperMoverObject::GetPhysicProfile() const { return m_pflipper->m_ptable ? m_pflipper->m_ptable->m_physicProfile : PhysicProfile::V10_9; }
+
 void FlipperMoverObject::UpdateInertia()
 {
    const float baser = m_hitcircleBase.radius;
@@ -152,29 +154,10 @@ void FlipperMoverObject::UpdateInertia()
    // The shape-accurate inertia differs from the rod approximation
    // (m_inertia_rod = mass * flipr^2 / 3) that pre-existing tables were
    // tuned against -- typically smaller for tapered flippers, larger for
-   // near-uniform-width ones. Scaling coil torque by the same ratio keeps
-   // the per-Strength angular acceleration unchanged, so the flipper
-   // still swings at the speed authors expect; ball-flipper collision
-   // response continues to use the accurate inertia.
-   //
-   // What this heuristic preserves vs. what drifts:
-   //  preserved exactly: empty-swing angular velocity / acceleration,
-   //                     ramp-up time, end-of-stroke recoil torque.
-   //  drifts (small):    ball-kick velocity off an active flip
-   //                     (depends on 1 + m_ball*L^2/I, so the I ratio
-   //                     does not cancel; ~4-10% in either direction
-   //                     depending on geometry).
-   //  drifts more:       bounce off a held flipper, dead-bounce/cradle
-   //                     feel -- these are purely I-driven and shift
-   //                     in proportion to k^2_new / k^2_rod.
-
-   // No single scalar can preserve both swing and ball-kick across
-   // tapered vs. stubby flippers (the two errors flip sign with shape).
-   // If a per-table tuning knob becomes desired, expose it as an extra
-   // multiplier on top of m_torqueScale rather than replacing this
-   m_torqueScale = m_backwards_compatibility ? (3.0f * m_inertiaShape / (flipr*flipr)) : 1.0f;
+   // near-uniform-width ones: both the swing speed and the kick/bounce
+   // response change. Tables needing the legacy response select the
+   // V10_8 physics profile, which keeps the rod model everywhere.
 }
-#endif
 
 HitFlipper::HitFlipper(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, const float angleEnd,
    const float zlow, const float zhigh, Flipper* const pflipper)
@@ -191,9 +174,8 @@ void HitFlipper::UpdatePhysicsFromFlipper()
    m_elasticity = (m_flipperMover.m_pflipper->m_d.m_OverridePhysics || (m_flipperMover.m_pflipper->m_ptable->m_overridePhysicsFlipper && m_flipperMover.m_pflipper->m_ptable->m_overridePhysics)) ? m_flipperMover.m_pflipper->m_d.m_OverrideElasticity : m_flipperMover.m_pflipper->m_d.m_elasticity;
    SetFriction((m_flipperMover.m_pflipper->m_d.m_OverridePhysics || (m_flipperMover.m_pflipper->m_ptable->m_overridePhysicsFlipper && m_flipperMover.m_pflipper->m_ptable->m_overridePhysics)) ? m_flipperMover.m_pflipper->m_d.m_OverrideFriction : m_flipperMover.m_pflipper->m_d.m_friction);
    m_scatter = ANGTORAD((m_flipperMover.m_pflipper->m_d.m_OverridePhysics || (m_flipperMover.m_pflipper->m_ptable->m_overridePhysicsFlipper && m_flipperMover.m_pflipper->m_ptable->m_overridePhysics)) ? m_flipperMover.m_pflipper->m_d.m_OverrideScatterAngle : m_flipperMover.m_pflipper->m_d.m_scatter);
-#ifdef FIX_PHYSICS
-   m_flipperMover.UpdateInertia();
-#endif
+   if (m_flipperMover.GetPhysicProfile() == PhysicProfile::V10_9)
+      m_flipperMover.UpdateInertia(); // V10_8 did not propagate mass/geometry edits to the mover's inertia
 }
 
 // helpers for BBox computation:
@@ -346,20 +328,18 @@ float FlipperMoverObject::GetStrength() const
 
 float FlipperMoverObject::GetMass() const
 {
-#ifdef FIX_PHYSICS
-   return m_inertia / m_inertiaShape;
-#else
-   return 3.0f * m_inertia / (m_flipperradius*m_flipperradius); //!! also change if wiring of moment of inertia happens (see ctor)
-#endif
+   if (GetPhysicProfile() == PhysicProfile::V10_9)
+      return m_inertia / m_inertiaShape;
+   else
+      return 3.0f * m_inertia / (m_flipperradius * m_flipperradius); // V10_8 rod model //!! also change if wiring of moment of inertia happens (see ctor)
 }
 
 void FlipperMoverObject::SetMass(const float m)
 {
-#ifdef FIX_PHYSICS
-   m_inertia = m * m_inertiaShape;
-#else
-   m_inertia = (float)(1.0 / 3.0) * m * (m_flipperradius*m_flipperradius); //!! also change if wiring of moment of inertia happens (see ctor)
-#endif
+   if (GetPhysicProfile() == PhysicProfile::V10_9)
+      m_inertia = m * m_inertiaShape;
+   else
+      m_inertia = (float)(1.0 / 3.0) * m * (m_flipperradius * m_flipperradius); // V10_8 rod model //!! also change if wiring of moment of inertia happens (see ctor)
 }
 
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Flipper/FlipperDisplacementSystem.cs
@@ -429,11 +409,7 @@ void FlipperMoverObject::UpdateVelocities()
    //const float solForce = m_solState ? GetStrength() : 0.0f;
    //float force = m_dir * (solForce + springForce);
 
-#ifdef FIX_PHYSICS
-   float desiredTorque = GetStrength() * m_torqueScale;
-#else
    float desiredTorque = GetStrength();
-#endif
    if (!m_solState) // m_solState: true = button pressed, false = released
       desiredTorque *= -GetReturnRatio();
 
@@ -452,11 +428,7 @@ void FlipperMoverObject::UpdateVelocities()
    if (torqueRampupSpeed <= 0.f)
       torqueRampupSpeed = 1e6f; // set very high for instant coil response
    else
-#ifdef FIX_PHYSICS
-      torqueRampupSpeed = min(GetStrength() * m_torqueScale / torqueRampupSpeed, 1e6f);
-#else
       torqueRampupSpeed = min(GetStrength() / torqueRampupSpeed, 1e6f);
-#endif
 
    // update current torque linearly towards desired torque
    // (simple model for coil hysteresis)
@@ -997,8 +969,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
    const float epsilon = ElasticityWithFalloff(m_elasticity, m_elasticityFalloff, bnv);
 
    const float invMass = 1.0f/pball->m_d.m_mass;
-   float impulse = -(1.0f + epsilon) * bnv
-      / (invMass + normal.Dot(CrossProduct(angResp / m_flipperMover.m_inertia, rF)));
+   float impulse = -(1.0f + epsilon) * bnv / (invMass + normal.Dot(CrossProduct(angResp / m_flipperMover.m_inertia, rF)));
    Vertex3Ds flipperImp = -(impulse * flipperResponseScaling) * normal;
 
 #ifdef DEBUG_FLIPPERS
@@ -1174,14 +1145,10 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
       const Vertex3Ds normalDeriv = CrossZ(m_flipperMover.m_angleSpeed, normal);
 
       // relative acceleration in the normal direction
-#ifdef FIX_PHYSICS
-      // The gap closes with the acceleration of the ball's center, not of its material contact point: the centripetal
+      // V10_9: the gap closes with the acceleration of the ball's center, not of its material contact point: the centripetal
       // term of the latter (w x (w x rB), >= 0 along the normal for any spin) read as accelerating away, and a spinning
       // ball lost its support (early out, or a weaker contact impulse). Friction below keeps the material point (slip)
-      const float normAcc = (pball->m_physics->GetGravity() - aF).Dot(normal) + 2.0f * normalDeriv.Dot(vrel);
-#else
-      const float normAcc = arel.Dot(normal) + 2.0f * normalDeriv.Dot(vrel);
-#endif
+      const float normAcc = (m_flipperMover.GetPhysicProfile() == PhysicProfile::V10_9 ? (pball->m_physics->GetGravity() - aF).Dot(normal) : arel.Dot(normal)) + 2.0f * normalDeriv.Dot(vrel);
 
       if (normAcc >= 0.f) // objects accelerating away from each other, nothing to do
          return;
@@ -1225,7 +1192,8 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
 
          numer = -slipDir.Dot(arel);
          crossF = CrossProduct(rF, slipDir);
-         denomF = slipDir.Dot(CrossProduct(crossF / m_flipperMover.m_inertia, rF));
+         // V10_8 had a sign quirk here (a negative flipper inertia in the static friction response)
+         denomF = slipDir.Dot(CrossProduct(crossF / (m_flipperMover.GetPhysicProfile() == PhysicProfile::V10_9 ? m_flipperMover.m_inertia : -m_flipperMover.m_inertia), rF));
       }
       else // nonzero slip speed - dynamic friction case
       {

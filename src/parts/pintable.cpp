@@ -561,6 +561,7 @@ PinTable* PinTable::CopyForPlay() const
    dst->m_right = src->m_right;
    dst->m_bottom = src->m_bottom;
    dst->m_overridePhysics = src->m_overridePhysics;
+   dst->m_physicProfile = src->m_physicProfile;
    dst->m_overridePhysicsFlipper = src->m_overridePhysicsFlipper;
    dst->m_Gravity = src->m_Gravity;
    dst->m_friction = src->m_friction;
@@ -1288,6 +1289,7 @@ void PinTable::Save(IObjectWriter& writer, const bool saveForUndo)
    }
 
    writer.WriteInt(FID(ORRP), m_overridePhysics);
+   writer.WriteInt(FID(PHPR), (int)m_physicProfile);
    writer.WriteBool(FID(ORPF), m_overridePhysicsFlipper);
    writer.WriteFloat(FID(GAVT), m_Gravity);
    writer.WriteFloat(FID(FRCT), m_friction);
@@ -3776,6 +3778,7 @@ void PinTable::SetLoadDefaults()
 
    m_BallDecalMode = false;
 
+   m_physicProfile = PhysicProfile::V10_8; // pre-10.9 tables run the physics they were tuned for
    m_overridePhysicsFlipper = false;
 }
 
@@ -3848,6 +3851,12 @@ void PinTable::Load(IObjectReader& reader)
          }
          //case FID(VERS): szVersion = reader.AsString(); break;
          case FID(ORRP): m_overridePhysics = reader.AsInt(); break;
+         case FID(PHPR):
+         {
+            const int profile = reader.AsInt();
+            m_physicProfile = (profile >= (int)PhysicProfile::V10_8 && profile <= (int)PhysicProfile::V10_9) ? (PhysicProfile)profile : PhysicProfile::V10_8;
+            break;
+         }
          case FID(ORPF): m_overridePhysicsFlipper = reader.AsBool(); break;
          case FID(GAVT): m_Gravity = reader.AsFloat(); break;
          case FID(FRCT): m_friction = reader.AsFloat(); break;
