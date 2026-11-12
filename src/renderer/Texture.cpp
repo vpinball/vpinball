@@ -4,7 +4,7 @@
 #include "Texture.h"
 
 #define XXH_INLINE_ALL
-#include "xxhash/xxhash.h"
+#include "xxhash.h"
 
 #include "math/math.h"
 #include "renderer/Renderer.h"
