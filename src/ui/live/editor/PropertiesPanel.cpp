@@ -392,7 +392,7 @@ void PropertiesPanel::TableProperties(PropertyPane &props)
          table, "Physics Profile"s, vector<string> { "10.8"s, "10.9"s }, //
          [](const PinTable *table) { return (int)table->m_physicProfile; }, //
          [](PinTable *table, int v) { table->m_physicProfile = (PhysicProfile)v; },
-         "Physics engine behavior: 10.8 reproduces VPX 10.8 physics, 10.9 enables the corrected physics (see physconst.h)");
+         "Physics engine behavior: 10.8 reproduces VPX 10.8 physics, 10.9 enables the corrected physics (see physconst.h). A change applies the next time the table is played");
       props.Separator("Physics Constants"s);
       props.InputFloat<PinTable>(
          table, "Gravity Constant"s, //

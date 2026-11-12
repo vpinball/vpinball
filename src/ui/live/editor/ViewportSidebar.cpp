@@ -65,15 +65,15 @@ void ViewportSidebar::LoadSetup(const nlohmann::json& j)
 {
    if (!j.is_object())
       return;
-   if (const auto& v = j["open"]; v.is_boolean())
-      m_shown = v.get<bool>();
-   if (const auto& v = j["expanded"]; v.is_boolean())
-      m_expanded = v.get<bool>();
-   if (const auto& v = j["tab"]; v.is_number_integer())
-      m_tab = static_cast<Tab>(clamp(v.get<int>(), 0, static_cast<int>(Tab::View)));
-   if (const auto& v = j["w"]; v.is_number())
+   if (const auto it = j.find("open"); it != j.end() && it->is_boolean())
+      m_shown = it->get<bool>();
+   if (const auto it = j.find("expanded"); it != j.end() && it->is_boolean())
+      m_expanded = it->get<bool>();
+   if (const auto it = j.find("tab"); it != j.end() && it->is_number_integer())
+      m_tab = static_cast<Tab>(clamp(it->get<int>(), 0, static_cast<int>(Tab::View)));
+   if (const auto it = j.find("w"); it != j.end() && it->is_number())
    {
-      const float w = v.get<float>();
+      const float w = it->get<float>();
       if (std::isfinite(w) && w > 0.f)
          m_width = w;
    }
@@ -303,7 +303,18 @@ void ViewportSidebar::RenderItemTab()
    const float steps[3] = { imperial ? 0.05f : 1.f, 1.f, 0.01f };
    const float fastSteps[3] = { imperial ? 0.5f : 10.f, 10.f, 0.1f };
 
-   ImGui::BeginDisabled(!hasTransform || editor.m_table->IsLocked() || editor.IsInspectMode());
+   // Like the gizmo, only a pane of the selection's domain (desktop backdrop / 3D scene) transforms it: the fields still show its values, disabled
+   const bool backdropView = m_pane.m_viewType == ViewMode::DesktopBackdrop;
+   const bool inViewDomain = editor.IsSelectionInViewDomain(backdropView);
+   if (!inViewDomain)
+   {
+      ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::V(EditorTheme::TextDim));
+      ImGui::TextWrapped(backdropView ? "3D scene selection: edit it in a 3D view" : "Desktop backdrop selection: edit it in a backdrop view");
+      ImGui::PopStyleColor();
+   }
+   const bool editable = hasTransform && inViewDomain && !editor.m_table->IsLocked() && !editor.IsInspectMode();
+
+   ImGui::BeginDisabled(!editable);
    {
       bool changed = false;
       // One line per transform axis under a component header, the field spanning the row: it is
@@ -321,14 +332,7 @@ void ViewportSidebar::RenderItemTab()
          ImGui::SetNextItemWidth(-FLT_MIN);
          ImGui::PushID(comp * 3 + axis);
          if (ImGui::InputFloat("##f", v, step, stepFast, fmt))
-         {
-            if (!m_undoMarked)
-            {
-               MarkSelectionUndo(); // Parts still hold the pre-edit state: the mark snapshots it
-               m_undoMarked = true;
-            }
             changed = true;
-         }
          if (ImGui::IsItemDeactivated())
             m_undoMarked = false;
          ImGui::PopID();
@@ -347,8 +351,15 @@ void ViewportSidebar::RenderItemTab()
          for (int a = 0; a < 3; ++a)
             trsRow(c, a, fmts[c], steps[c], fastSteps[c], &trs[c][a], supported[c][a]);
       }
-      if (changed)
+      // Each keystroke applies, so a non-positive scale typed on the way to a value ("0." for 0.5, a leading "-") is
+      // skipped: its degenerate or mirrored matrix would read back as a wrong rotation, kept when the typing ends
+      if (changed && trs[2][0] > 0.f && trs[2][1] > 0.f && trs[2][2] > 0.f)
       {
+         if (!m_undoMarked)
+         {
+            MarkSelectionUndo(); // Parts still hold the pre-edit state: the mark snapshots it
+            m_undoMarked = true;
+         }
          pos.Set(ToVpuLen(trs[0][0]), ToVpuLen(trs[0][1]), ToVpuLen(trs[0][2]));
          rot.Set(trs[1][0], trs[1][1], trs[1][2]);
          scale.Set(trs[2][0], trs[2][1], trs[2][2]);
@@ -367,7 +378,7 @@ void ViewportSidebar::RenderItemTab()
    // only where the scale component is supported, disabled with a hint otherwise.
    FRect3D bounds;
    const bool hasBounds = editor.GetSelectionBounds(bounds);
-   ImGui::BeginDisabled(!hasBounds || !hasTransform || editor.m_table->IsLocked() || editor.IsInspectMode());
+   ImGui::BeginDisabled(!hasBounds || !editable);
    {
       ImGui::TextUnformatted("Dimensions:");
       // The transform the scaling delta is composed against: SetSelectionTransform evaluates its
