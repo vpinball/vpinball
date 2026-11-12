@@ -49,7 +49,7 @@ void OverridePlayfieldPhysics(PinTable *table, const float friction, const float
 HitBall MakeBall(PhysicsEngine *physics, const Vertex3Ds &vel, const Vertex3Ds &angularMomentum)
 {
    HitBall ball;
-   ball.m_physics = physics;
+   ball.SetPhysics(physics);
    ball.m_d.m_mass = 1.f;
    ball.m_d.m_vel = vel;
    ball.m_angularmomentum = angularMomentum;

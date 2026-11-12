@@ -206,7 +206,7 @@ TEST_CASE("Benchmark: quadtree HitTestBall" * doctest::skip())
          const float angle = uniform(0.f, (float)(2.0 * M_PI)), length = uniform(20.f, 150.f);
          objects.push_back(std::make_unique<LineSeg>(editable, p, Vertex2D(p.x + length * cosf(angle), p.y + length * sinf(angle)), 0.f, 50.f));
       }
-      objects.back()->m_physics = harness.GetEngine();
+      objects.back()->SetPhysics(harness.GetEngine());
       objects.back()->CalcHitBBox();
    }
 
