@@ -371,7 +371,7 @@ public:
    // alpha test value. When both contents are identical, 'image' is deleted and 'oldImage' is kept and returned
    Texture *ReImportImage(Texture *const oldImage, Texture *const image);
    // The first table image with the same content (file data) as 'image', or nullptr
-   Texture *FindImageByHash(const Texture *image) const;
+   Texture *FindImageByContent(const Texture *image) const;
    void RemoveImage(Texture *const ppi);
 
    Texture *GetImage(const string &szName) const;

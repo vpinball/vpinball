@@ -5051,7 +5051,7 @@ Texture *PinTable::ImportImage(const std::filesystem::path &filename, const stri
 Texture *PinTable::ImportImage(Texture *const image)
 {
    // A file identical to an image the table already holds is not imported again: the existing image is used instead
-   if (Texture *const dup = FindImageByHash(image))
+   if (Texture *const dup = FindImageByContent(image))
    {
       delete image;
       return dup;
@@ -5094,7 +5094,7 @@ Texture *PinTable::ReImportImage(Texture *const oldImage, Texture *const image)
    return image;
 }
 
-Texture *PinTable::FindImageByHash(const Texture *const image) const
+Texture *PinTable::FindImageByContent(const Texture *const image) const
 {
    const auto it = std::ranges::find_if(m_vimage, [image](const Texture *other) { return other != image && other->HasSameContent(*image); });
    return it != m_vimage.end() ? *it : nullptr;

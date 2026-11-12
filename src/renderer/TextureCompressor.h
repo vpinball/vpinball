@@ -21,7 +21,7 @@ struct CompressedTexture final
 };
 
 // Compresses textures to GPU formats, backed by a per table disk cache. Owned by the texture manager for the player's lifetime
-// (see TextureManager::LoadBitmap): images are compressed while loading the table, and later reloaded from the disk cache.
+// (see TextureManager::LoadBitmapCC): images are compressed while loading the table, and later reloaded from the disk cache.
 class TextureCompressor final
 {
 public:

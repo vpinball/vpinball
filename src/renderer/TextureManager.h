@@ -39,7 +39,7 @@ public:
 
    vector<ITexManCacheable*> GetUsedTextures() const; // Textures used since the player started (not only uploaded)
 
-   // Max texture dimension of the loaded images (0 for no limit), applied by all loads (see LoadBitmap)
+   // Max texture dimension of the loaded images (0 for no limit), applied by all loads (see LoadBitmapCC)
    void SetMaxTexDimension(const unsigned int maxTexDimension) { m_maxTexDimension = maxTexDimension; }
 
 #if defined(ENABLE_BGFX)
@@ -50,8 +50,7 @@ public:
    // Bitmap to upload for a texture: the single loader, for the texture manager and the table loading. With compression enabled, a table
    // image comes from the disk cache if cached; otherwise the texture is decoded (within the max dimension), then compressed and cached
    // if allowCompression (slow: for the loading threads, see TextureCompressor::LoadOrCompress). Thread safe (does not use the map)
-   std::shared_ptr<const BaseTexture> LoadBitmap(ITexManCacheable* memtex, bool resizeOnLowMem = false, bool allowCompression = false,
-      const std::function<bool()>& isCompressionDiscarded = nullptr) const;
+   std::shared_ptr<const BaseTexture> LoadBitmapCC(ITexManCacheable* memtex, bool resizeOnLowMem = false, bool allowCompression = false, const std::function<bool()>& isCompressionDiscarded = nullptr) const;
 
    // Ends the table loading: logs the compression statistics, and removes the disk cache files of the images not in tableImages
    void EndLoading(const vector<Texture*>& tableImages) const;

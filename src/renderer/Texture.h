@@ -175,7 +175,9 @@ public:
    bool SaveFile(const std::filesystem::path &filename) const { return m_ppb->WriteToFile(filename); }
 
    uint64_t GetContentHash() const; // Hash (XXH3) of the image file data, computed when first needed
-   bool HasSameContent(const Texture &other) const; // Same image file data (exact: sizes and hashes rule out most byte comparisons)
+   // Same image file data, exactly: file sizes, then hashes (computing them if needed) and, when both match, the whole file data
+   // byte by byte. Matches are rare, so the full comparison mostly runs on actual duplicates
+   bool HasSameContent(const Texture &other) const;
    bool IsOpaque() const override { UpdateOpaque(); return m_isOpaque; }
    bool IsHDR() const;
 

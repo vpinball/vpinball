@@ -10,7 +10,7 @@
 #include "TextureCompressor.h"
 #endif
 
-std::shared_ptr<const BaseTexture> TextureManager::LoadBitmap(ITexManCacheable* memtex, const bool resizeOnLowMem, const bool allowCompression,
+std::shared_ptr<const BaseTexture> TextureManager::LoadBitmapCC(ITexManCacheable* memtex, const bool resizeOnLowMem, const bool allowCompression,
    const std::function<bool()>& isCompressionDiscarded) const
 {
 #if defined(ENABLE_BGFX)
@@ -64,7 +64,7 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
    if (entry.pendingUpload)
    {
       // Consumed by whichever variant asks first, dropping the strong reference that kept the bitmap alive. A second variant
-      // requested later falls in the branch below (LoadBitmap: from the disk cache, or decoded again on the render thread)
+      // requested later falls in the branch below (LoadBitmapCC: from the disk cache, or decoded again on the render thread)
 #if defined(ENABLE_BGFX)
       sampler = CreateSampler(entry, variant, force_linear_rgb, std::move(entry.pendingUpload));
 #else
@@ -74,9 +74,9 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
    else if (sampler == nullptr)
    {
 #if defined(ENABLE_BGFX)
-      sampler = CreateSampler(entry, variant, force_linear_rgb, LoadBitmap(memtex));
+      sampler = CreateSampler(entry, variant, force_linear_rgb, LoadBitmapCC(memtex));
 #else
-      sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), m_rd.OrFallback(LoadBitmap(memtex)), force_linear_rgb);
+      sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), m_rd.OrFallback(LoadBitmapCC(memtex)), force_linear_rgb);
 #endif
    }
    else if (entry.dirty[variant])
@@ -100,7 +100,7 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
          m_managedBytes -= static_cast<int64_t>(entry.gpuBytes[variant]);
          m_pendingFree.emplace_back(m_statsFrame, static_cast<int64_t>(entry.gpuBytes[variant]));
          entry.gpuBytes[variant] = 0;
-         sampler = CreateSampler(entry, variant, force_linear_rgb, LoadBitmap(memtex));
+         sampler = CreateSampler(entry, variant, force_linear_rgb, LoadBitmapCC(memtex));
       }
 #endif
    }

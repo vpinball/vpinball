@@ -809,7 +809,7 @@ void Player::InitTableSession(const bool isInitial)
                   const std::lock_guard<std::mutex> statsLock(m_texLoadStats.inFlightMutex);
                   m_texLoadStats.inFlight.emplace_back(image, false);
                }
-               const std::shared_ptr<const BaseTexture> buffer = m_renderer->m_renderDevice->m_texMan.LoadBitmap(image, resizeOnLowMem, true,
+               const std::shared_ptr<const BaseTexture> buffer = m_renderer->m_renderDevice->m_texMan.LoadBitmapCC(image, resizeOnLowMem, true,
                      [this, image, compressionStarted = false]() mutable
                      {
                         if (m_texLoadStats.skipCompression.load(std::memory_order_relaxed))

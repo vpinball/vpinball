@@ -1252,7 +1252,7 @@ static Texture *ReimportImageFile(PinTable *table, Texture *const old, const std
    if (image == nullptr)
       return nullptr;
    if (dup != nullptr && !image->HasSameContent(*old))
-      *dup = table->FindImageByHash(image);
+      *dup = table->FindImageByContent(image);
    image->m_name = old->m_name;
    return table->ReImportImage(old, image);
 }
