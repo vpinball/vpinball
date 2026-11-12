@@ -2980,8 +2980,6 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
             m_editor.m_partLibrary.CancelPlacement(); // Cancel part library placement mode
          else if (m_editor.m_pointEditPart)
             m_editor.ExitPointEditMode(true); // Exit drag point edit mode
-         else if (m_editor.m_selection.GetType() != Selection::S_NONE)
-            m_editor.ClearSelection(); // Cancel current selection
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Tab, false) && io.KeyShift && !io.KeyCtrl && !io.KeyAlt)
          m_editor.ToggleSnapping(); // Shift+Tab toggles snapping (Blender)

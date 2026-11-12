@@ -1624,7 +1624,7 @@ bool EditorUI::RenderAdjustParameters()
    bool changed = false;
    const float width = 220.f * m_liveUI.GetDPI();
    // Esc while one of the fields is being edited cancels the edit (a typed field clears its own active id on Esc, so it is tested before the widgets),
-   // it must not reach the editor (deselect)
+   // it must not reach the editor (the pane's Esc actions)
    if (ImGui::IsKeyPressed(ImGuiKey_Escape, false) && ImGui::IsAnyItemActive())
       m_suppressNextEscape = true;
    // Same colors as the editor fields
@@ -3746,7 +3746,7 @@ void EditorUI::CancelAreaInteraction(const bool consumeEscape)
    m_edgeMenuNode = -1; // The menu closes itself when its node is gone
    m_edgeMenuRequest = false;
    if (consumeEscape)
-      m_areaEscPending = true; // The Esc that cancelled is not an editor Esc (it would deselect)
+      m_areaEscPending = true; // The Esc that cancelled is not an editor Esc (it would run the pane's Esc actions)
    if (wasActive)
       ImGui::SetWindowFocus(nullptr); // The zone or catcher window must not keep the keyboard focus away from the viewport keys
 }

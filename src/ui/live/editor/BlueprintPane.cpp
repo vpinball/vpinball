@@ -1061,8 +1061,6 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
             editor.m_partLibrary.CancelPlacement();
          else if (editor.m_pointEditPart)
             editor.ExitPointEditMode(true);
-         else if (editor.m_selection.GetType() != Selection::S_NONE)
-            editor.ClearSelection();
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_Tab, false) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
       {
