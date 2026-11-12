@@ -53,6 +53,72 @@ static string GetEntryName(mz_zip_archive& archive, mz_uint index, const mz_zip_
    return ZipEntryNameToUTF8(name.data(), name.size(), (stat.m_bit_flag & (1 << 11)) != 0); // Bit 11: MZ_ZIP_GENERAL_PURPOSE_BIT_FLAG_UTF8, only declared in miniz.c
 }
 
+bool ZipUtils::Zip(const std::filesystem::path& sourcePath, const std::filesystem::path& destPath, ProgressCallback callback)
+{
+   std::error_code ec;
+   if (!std::filesystem::is_directory(sourcePath, ec))
+      return false;
+
+   // Written to a temporary file that replaces destPath on success, so that a failed zip never leaves a partial archive
+   std::filesystem::path tmpPath = destPath;
+   tmpPath += ".tmp";
+   mz_zip_archive archive {};
+   if (!mz_zip_writer_init_file(&archive, PathToUTF8(tmpPath).c_str(), 0))
+   {
+      PLOGE << "Unable to create zip file: " << PathToUTF8(tmpPath) << ", error=" << mz_zip_get_error_string(mz_zip_get_last_error(&archive));
+      return false;
+   }
+
+   const int totalEntries = CountEntriesInDirectory(sourcePath);
+   int currentEntry = 0;
+   bool success = true;
+   std::error_code iterError;
+   for (auto it = std::filesystem::recursive_directory_iterator(sourcePath, iterError); success && !iterError && it != std::filesystem::recursive_directory_iterator();
+      it.increment(iterError))
+   {
+      const auto& entry = *it;
+      const std::filesystem::path relative = std::filesystem::relative(entry.path(), sourcePath, ec);
+
+      if (IsExcludedFromZip(relative) || std::filesystem::equivalent(entry.path(), tmpPath, ec))
+      {
+         if (entry.is_directory(ec))
+            it.disable_recursion_pending();
+         continue;
+      }
+
+      const std::u8string u8Name = relative.generic_u8string(); // '/' separators, as required in archives
+      const string name(u8Name.begin(), u8Name.end());
+
+      if (entry.is_directory(ec))
+         success = mz_zip_writer_add_mem(&archive, (name + '/').c_str(), nullptr, 0, MZ_NO_COMPRESSION);
+      else if (entry.is_regular_file(ec))
+         success = mz_zip_writer_add_file(&archive, name.c_str(), PathToUTF8(entry.path()).c_str(), nullptr, 0, MZ_DEFAULT_LEVEL);
+      if (!success)
+         PLOGE << "Failed to add to zip: " << name << ", error=" << mz_zip_get_error_string(mz_zip_get_last_error(&archive));
+
+      currentEntry++;
+      if (success && callback)
+         callback(currentEntry, totalEntries, name.c_str());
+   }
+   if (iterError)
+   {
+      PLOGE << "Unable to list folder to zip: " << PathToUTF8(sourcePath) << ", error=" << iterError.message();
+      success = false;
+   }
+
+   success = success && mz_zip_writer_finalize_archive(&archive);
+   success = mz_zip_writer_end(&archive) && success;
+   std::error_code renameError; // Not ec, which may hold an error from the per entry checks above
+   if (success)
+      std::filesystem::rename(tmpPath, destPath, renameError);
+   if (!success || renameError)
+   {
+      std::filesystem::remove(tmpPath, ec);
+      return false;
+   }
+   return true;
+}
+
 bool ZipUtils::Unzip(const std::filesystem::path& sourcePath, const std::filesystem::path& destPath, ProgressCallback callback)
 {
    mz_zip_archive archive {};
