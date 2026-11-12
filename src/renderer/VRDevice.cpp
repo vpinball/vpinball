@@ -142,6 +142,7 @@ VRDevice::VRDevice(const Settings& settings)
    m_customLockbarHeight = appSettings.GetPlayer_LockbarHeight();
    m_controllerCabYOffset = appSettings.GetPlayerVR_ControllerCabYOffset();
    m_controllerCabZOffset = appSettings.GetPlayerVR_ControllerCabZOffset();
+   m_controllerCabWidthOffset = appSettings.GetPlayerVR_ControllerCabWidthOffset();
    m_seatedTilt = appSettings.GetPlayerVR_SeatedTilt();
    m_lockFeetToGround = appSettings.GetPlayerVR_LockFeetToGround() && m_seatedTilt == 0.f;
 
@@ -1192,8 +1193,9 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          const float zFar = max(5.f, m_sceneSize * vpuToWorldScale); // This could be fairly optimized for better accuracy (as well as use an optimized depth buffer for rendering)
 
          // Continuous space positioning based on controller pose (for setup where controllers can be placed along a VR cabinet and used for XR play)
-         // The controllers physically define the lockbar position: this only adjusts the room positioning
-         // (offset and yaw), never the lockbar width/height which stay user settings or table authored data.
+         // The controllers physically define the lockbar: they adjust the room positioning (offset and yaw), and when a
+         // custom lockbar width is defined, the distance between them also sets the lockbar width. The lockbar height
+         // stays a user setting or table authored data.
          if (m_controllerRecenterEnabled)
          {
             bool leftControllerActive = false;
@@ -1216,6 +1218,11 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
                const vec3 lockbarAxis = rightPos - leftPos;
                const float lockbarAngle = atan2f(-lockbarAxis.z, lockbarAxis.x);
                m_headsetRecenterPending = false;
+
+               // When scaling to a custom lockbar, the horizontal distance between the controllers measures the physical
+               // lockbar width, plus a user offset to compensate where the controllers rest relative to its ends
+               if (m_overrideLockbarWidth)
+                  m_customLockbarWidth = sqrtf(lockbarAxis.x * lockbarAxis.x + lockbarAxis.z * lockbarAxis.z) * 100.f + m_controllerCabWidthOffset;
 
                // Compute the effective lockbar scale here rather than relying on m_cabinetScale,
                // which is only updated when the space transforms are recomputed later in the frame
@@ -1576,4 +1583,7 @@ void VRDevice::SaveVRSettings(Settings& settings) const
    settings.SetPlayerVR_RoomOffsetX(m_roomOffset.x, false);
    settings.SetPlayerVR_RoomOffsetY(m_roomOffset.y, false);
    settings.SetPlayerVR_RoomOffsetZ(m_roomOffset.z, false);
+
+   // The lockbar width may have been measured from the controllers while centering the view
+   settings.SetPlayer_LockbarWidth(m_customLockbarWidth, false);
 }

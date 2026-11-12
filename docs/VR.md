@@ -133,11 +133,15 @@ These are saved per table, never globally.
   (the desired standing position relative to the lockbar). The room offset Z is left untouched.
 - **Align VR view using controllers**: hold both controllers on your physical lockbar (or where you
   want it) and enable the action. The controllers physically define the lockbar position: the room
-  offset and yaw are adjusted so the virtual lockbar lands on the real one. This only affects the
-  room positioning — it never writes lockbar width/height nor the override toggles. Additional
-  `PlayerVR.ControllerCabYOffset` / `PlayerVR.ControllerCabZOffset` settings let you correct the
-  front/back and up/down placement (e.g. the distance between a controller stand and the lockbar,
-  or the height of the controller tracking origin above the physical lockbar surface).
+  offset and yaw are adjusted so the virtual lockbar lands on the real one. When a custom lockbar
+  width is enabled (`PlayerVR.OverrideLockbarWidth`), the horizontal distance between the two
+  controllers also measures the lockbar width: `Player.LockbarWidth` is set to the measured distance
+  plus `PlayerVR.ControllerCabWidthOffset`, which compensates where the controllers rest relative to
+  the lockbar ends. Additional `PlayerVR.ControllerCabYOffset` / `PlayerVR.ControllerCabZOffset`
+  settings let you correct the front/back and up/down placement (e.g. the distance between a
+  controller stand and the lockbar, or the height of the controller tracking origin above the
+  physical lockbar surface). Controller recentering never writes the lockbar height nor the override
+  toggles.
 
 ### Other setup settings
 
@@ -162,6 +166,7 @@ These are saved per table, never globally.
 | `PlayerVR.LockFeetToGround`    | App     | Stretch cabinet feet to the ground                   |
 | `PlayerVR.ControllerCabYOffset`| App     | Front/back offset for controller recenter (cm)       |
 | `PlayerVR.ControllerCabZOffset`| App     | Up/down offset for controller recenter (cm)          |
+| `PlayerVR.ControllerCabWidthOffset`| App | Offset added to the measured controller distance (cm)|
 | `Player.ScreenPlayerX/Y`       | App     | Standing position used when recentering the view     |
 
 
