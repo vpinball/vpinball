@@ -2730,6 +2730,42 @@ bool EditorUI::GetSelectionBounds(FRect3D &bounds) const
    return bounds.left <= bounds.right;
 }
 
+// Decompose a transform into the position/scale/rotation components used by the parts' SetTransform
+void EditorUI::ExtractTRS(Matrix3D transform, vec3 &pos, vec3 &scale, vec3 &rot)
+{
+   const Vertex3Ds right(transform._11, transform._12, transform._13);
+   const Vertex3Ds up(transform._21, transform._22, transform._23);
+   const Vertex3Ds dir(transform._31, transform._32, transform._33);
+   scale.Set(max(right.Length(), 1e-8f), max(up.Length(), 1e-8f), max(dir.Length(), 1e-8f)); // Clamp to avoid division by zero
+
+   transform._11 /= scale.x; // Normalize transform to evaluate rotation
+   transform._12 /= scale.x;
+   transform._13 /= scale.x;
+   transform._21 /= scale.y;
+   transform._22 /= scale.y;
+   transform._23 /= scale.y;
+   transform._31 /= scale.z;
+   transform._32 /= scale.z;
+   transform._33 /= scale.z;
+
+   pos.Set(transform._41, transform._42, transform._43);
+
+   // Derived from https://learnopencv.com/rotation-matrix-to-euler-angles/
+   const float sy = sqrtf(transform._11 * transform._11 + transform._21 * transform._21);
+   if (sy > 1e-6f)
+   {
+      rot.x = -RADTOANG(atan2f(transform._32, transform._33));
+      rot.y = -RADTOANG(atan2f(-transform._31, sy));
+      rot.z = -RADTOANG(atan2f(transform._21, transform._11));
+   }
+   else
+   {
+      rot.x = -RADTOANG(atan2f(-transform._23, transform._22)); // Gimbal lock (Y at +/-90 degrees): Z is 0, X takes the remaining rotation
+      rot.y = -RADTOANG(atan2f(-transform._31, sy));
+      rot.z = 0.f;
+   }
+}
+
 void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosition, bool clearScale, bool clearRotation) const
 {
    if (m_pointEditPart)
@@ -2793,46 +2829,10 @@ void EditorUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPos
    if (m_selection.GetType() != Selection::S_EDITABLE)
       return;
 
-   // Decompose a transform into the position/scale/rotation components used by the parts' SetTransform
-   const auto extractTRS = [](Matrix3D transform, vec3 &pos, vec3 &scale, vec3 &rot)
-   {
-      const Vertex3Ds right(transform._11, transform._12, transform._13);
-      const Vertex3Ds up(transform._21, transform._22, transform._23);
-      const Vertex3Ds dir(transform._31, transform._32, transform._33);
-      scale.Set(max(right.Length(), 1e-8f), max(up.Length(), 1e-8f), max(dir.Length(), 1e-8f)); // Clamp to avoid division by zero
-
-      transform._11 /= scale.x; // Normalize transform to evaluate rotation
-      transform._12 /= scale.x;
-      transform._13 /= scale.x;
-      transform._21 /= scale.y;
-      transform._22 /= scale.y;
-      transform._23 /= scale.y;
-      transform._31 /= scale.z;
-      transform._32 /= scale.z;
-      transform._33 /= scale.z;
-
-      pos.Set(transform._41, transform._42, transform._43);
-
-      // Derived from https://learnopencv.com/rotation-matrix-to-euler-angles/
-      const float sy = sqrtf(transform._11 * transform._11 + transform._21 * transform._21);
-      if (sy > 1e-6f)
-      {
-         rot.x = -RADTOANG(atan2f(transform._32, transform._33));
-         rot.y = -RADTOANG(atan2f(-transform._31, sy));
-         rot.z = -RADTOANG(atan2f(transform._21, transform._11));
-      }
-      else
-      {
-         rot.x = -RADTOANG(atan2f(-transform._23, transform._22)); // Gimbal lock (Y at +/-90 degrees): Z is 0, X takes the remaining rotation
-         rot.y = -RADTOANG(atan2f(-transform._31, sy));
-         rot.z = 0.f;
-      }
-   };
-
-   const auto applyTransform = [this, &extractTRS](const std::shared_ptr<EditorUIPart> &part, const Matrix3D &partTransform, bool clearPos, bool clearScale, bool clearRot)
+   const auto applyTransform = [this](const std::shared_ptr<EditorUIPart> &part, const Matrix3D &partTransform, bool clearPos, bool clearScale, bool clearRot)
    {
       vec3 pos, scale, rot;
-      extractTRS(partTransform, pos, scale, rot);
+      ExtractTRS(partTransform, pos, scale, rot);
       if (clearPos)
          pos.Set(0.f, 0.f, 0.f);
       if (clearScale)
@@ -3543,8 +3543,8 @@ void EditorUI::RenderAreas()
          vp->SetRendering(shown[id]);
          if (!shown[id])
             vp->m_hovered = vp->m_active = false; // A pane that is not drawn must not keep stale item state
-         else if (vp->m_hovered)
-            m_hoverVp = vp;
+         else if (vp->m_hovered || vp->IsSidebarHovered())
+            m_hoverVp = vp; // The sidebar counts as a pane hover for key routing (N and friends still target it)
       }
       else if (auto *const bp = dynamic_cast<BlueprintPane *>(view.get()))
       {

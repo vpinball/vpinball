@@ -3,6 +3,7 @@
 #pragma once
 
 #include "EditorAreaView.h"
+#include "ViewportSidebar.h"
 #include "parts/EditorUIPart.h" // ViewMode
 #include "imguizmo/ImGuizmo.h"
 #include "math/matrix.h"
@@ -116,6 +117,12 @@ public:
    bool IsToolShelfShown() const { return m_showToolShelf; }
    void ToggleToolShelf() { m_showToolShelf = !m_showToolShelf; }
    float GetToolShelfWidth() const { return m_toolShelfWidth; } // Drawn shelf width last frame (0 when hidden)
+
+   // Sidebar: the N overlay of this pane's image (transform fields, tools, view options). Each
+   // pane owns its own (per-pane state like Blender), drawn from RenderPane while its leaf is shown
+   bool IsSidebarShown() const { return m_sidebar.IsShown(); }
+   void ToggleSidebar() { m_sidebar.Toggle(); }
+   bool IsSidebarHovered() const { return m_sidebar.IsHovered(); } // The panel counts as a pane hover for key routing
 
    int m_leafId = -1; // Leaf hosting this pane, set in RenderPane
 
@@ -257,6 +264,9 @@ private:
    };
    const SpaceAxes* EnsureSpaceAxesMesh(PartGroupData::SpaceReference space); // (Re)build the reference mesh when the space or the table bounds changed
    SpaceAxes m_spaceAxes[2]; // [0] playfield space, [1] room space (also cabinet & cabinet feet)
+
+   // Sidebar (N): per-pane Blender-style N panel, persisted inside the leaf's setup (see SaveSetup)
+   ViewportSidebar m_sidebar;
 
    // Tool shelf (T): the View menu / T toggle, and its drawn size which keeps the status info text next to it
    bool ToolShelfVisible() const; // Shelf enabled and allowed in the current state (it may still not fit, see m_toolShelfDrawn)

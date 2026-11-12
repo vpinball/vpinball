@@ -64,6 +64,7 @@ namespace VPX::EditorUI
 ViewportPane::ViewportPane(EditorUI& editor, const ViewMode viewType)
    : EditorAreaView(editor)
    , m_viewType(viewType)
+   , m_sidebar(editor, *this)
 {
 }
 
@@ -125,6 +126,7 @@ void ViewportPane::AdoptCameraFrom(const ViewportPane* const src)
       m_camView = src->m_camView;
       m_camProj = src->m_camProj;
       m_camDistance = src->m_camDistance;
+      m_sidebar.CopyFrom(src->m_sidebar); // Split panes clone the region UI (Blender)
    }
    else
    {
@@ -906,6 +908,7 @@ nlohmann::json ViewportPane::SaveSetup() const
          j["camView"].push_back(m_camView.m[r][c]);
          j["camProj"].push_back(m_camProj.m[r][c]);
       }
+   j["sidebar"] = m_sidebar.SaveSetup();
    return j;
 }
 
@@ -913,6 +916,10 @@ void ViewportPane::LoadSetup(const nlohmann::json& j)
 {
    if (!j.is_object())
       return;
+   // The sidebar setup applies even when the stored camera does not (a leaf restored for another
+   // pane type still carries its region UI)
+   if (const auto it = j.find("sidebar"); it != j.end())
+      m_sidebar.LoadSetup(*it);
    const auto mat = [&j](const char* const key, Matrix3D& out)
    {
       if (!j.contains(key) || !j[key].is_array() || j[key].size() != 16)
@@ -1243,6 +1250,9 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    ImGui::PopID();
    ImGui::End();
    ImGui::PopStyleVar(3);
+
+   // The pane's sidebar (N) overlays its image, drawn while the pane window is laid out
+   m_sidebar.Render();
 
    // Per frame view setup: editor flags and shading; the camera of the edit viewport is pushed by
    // RenderUI, the other panes restore their stored camera state
@@ -3023,6 +3033,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_T) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
          ToggleToolShelf(); // T toggles the tool shelf (Blender)
+      else if (ImGui::IsKeyPressed(ImGuiKey_N) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+         ToggleSidebar(); // N toggles the sidebar (Blender)
       else if (ImGui::IsKeyPressed(ImGuiKey_D) && io.KeyShift && !io.KeyCtrl && !io.KeyAlt)
          m_editor.DuplicateSelection(); // Duplicate the selected parts in place and grab them (Blender's Shift+D)
       else if (ImGui::IsKeyPressed(ImGuiKey_Home) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
@@ -3144,7 +3156,7 @@ void ViewportPane::RenderViewGizmo(ImDrawList* const drawList)
    const float backR = axisLen + endR + 4.f * dpi;
    if (rect.Width() < 2.f * backR || rect.Height() < 2.f * backR)
       return;
-   const ImVec2 center(rect.x1 - backR - 10.f * dpi, rect.y0 + backR + 10.f * dpi);
+   const ImVec2 center(rect.x1 - backR - 10.f * dpi - m_sidebar.DrawnWidth(), rect.y0 + backR + 10.f * dpi);
 
    // Screen direction of each table axis, rotated by the pane camera only: a table axis a is
    // (x, y, -z) in the camera's right-handed space, its view coordinates are the dot products with
@@ -3294,7 +3306,8 @@ void ViewportPane::AppendStatusHints(vector<StatusHint>& hints) const
    else
    {
       // Navigation hints of the edit viewports (EditorCam, Desktop Backdrop)
-      hints = { { ICON_LC_MOUSE_LEFT, "Select" }, { "Drag", "Box Select" }, { ICON_LC_MOUSE, "Orbit" }, { "Shift+" ICON_LC_MOUSE, "Pan" }, { "Wheel", "Zoom" } };
+      hints = { { ICON_LC_MOUSE_LEFT, "Select" }, { "Drag", "Box Select" }, { ICON_LC_MOUSE, "Orbit" }, { "Shift+" ICON_LC_MOUSE, "Pan" }, { "Wheel", "Zoom" }, { "T", "Tool Shelf" },
+         { "N", "Sidebar" } };
       if (!m_editor.m_table->IsLocked())
       {
          hints.push_back({ "G", "Move" });
