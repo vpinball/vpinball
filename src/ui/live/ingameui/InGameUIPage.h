@@ -111,7 +111,7 @@ private:
    string m_pathSelectGroupId;
    string m_pathSelectPropId;
 
-   static void RenderToggle(const string& label, const ImVec2& size, bool& v);
+   void RenderToggle(const string& label, const ImVec2& size, bool& v);
    static void TextWithEllipsis(const string& text, float maxWidth);
 };
 
