@@ -256,7 +256,7 @@ void ViewportPane::BeginTransformOp(const ImGuizmo::OPERATION operation)
 {
    m_measureMode = false; // Arming a transform op moves away from measure mode
    Matrix3D transform;
-   if (!m_editor.GetSelectionTransform(transform) || m_editor.m_table->IsLocked())
+   if (!m_editor.GetSelectionTransform(transform) || m_editor.m_table->IsLocked() || !m_editor.IsSelectionInViewDomain(m_viewType == ViewMode::DesktopBackdrop))
       return;
    if (m_op.op != ImGuizmo::OPERATION(0))
    {
@@ -352,7 +352,7 @@ void ViewportPane::EndTransformOp(const bool confirm)
       if (oursOnTop && m_op.changed)
       {
          m_editor.RestorePartsVisibility(); // Parts removed/reinserted by the record must carry the authored visibility, not the editor display state
-         m_editor.m_undo.Undo(); // Restore the pre-op part states (the only restore that survives a selection changed mid-op)
+         m_editor.m_undo.Undo(false); // Restore the pre-op part states (the only restore that survives a selection changed mid-op). Not kept for redo: the redo records set aside by the record are back
       }
       else if (oursOnTop)
          m_editor.m_undo.Discard(); // Nothing was applied: drop the no-op record
@@ -2127,10 +2127,15 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          UpdateTransformOp();
       m_editor.CancelGizmoDrags(); // No gizmo drag, in any pane, while the op runs
    }
+   // Only the panes of the selection's domain (desktop backdrop / 3D scene) get its gizmo. A drag whose selection left this domain
+   // is canceled, outside of this pane's gizmo id scope (CancelGizmoDrag pushes it)
+   const bool isSelectionInViewDomain = m_editor.IsSelectionInViewDomain(m_viewType == ViewMode::DesktopBackdrop);
+   if (!isSelectionInViewDomain)
+      CancelGizmoDrag();
    // Each pane uses its own gizmo id: with a shared one, every pane's Manipulate would continue a drag started in
    // another pane, through its own camera. Up to PopID, Enable and IsUsing only apply to this pane's gizmo
    ImGuizmo::PushID(this);
-   if (!isModalOp && isSelectionTransformValid && !m_editor.m_table->IsLocked())
+   if (!isModalOp && isSelectionTransformValid && isSelectionInViewDomain && !m_editor.m_table->IsLocked())
    {
       // The gizmo shares the render view's MVP (the same transform as the scene render), converted
       // back to its right handed convention

@@ -600,13 +600,18 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
    ImGuizmo::SetOrthographic(true);
    ImGuizmo::SetRect(m_imageRect.x0, m_imageRect.y0, m_imageRect.Width(), m_imageRect.Height());
    ImGuizmo::SetAlternativeWindow(m_window);
+   // The blueprint shows the 3D scene parts: no gizmo for a desktop backdrop selection. A drag whose selection left the 3D
+   // scene is canceled, outside of this pane's gizmo id scope (CancelGizmoDrag pushes it)
+   const bool isSelectionInViewDomain = editor.IsSelectionInViewDomain(false);
+   if (!isSelectionInViewDomain)
+      CancelGizmoDrag();
    // Each pane uses its own gizmo id: with a shared one, every pane's Manipulate would continue a drag started in
    // another pane, through its own camera. Up to PopID, Enable and IsUsing only apply to this pane's gizmo
    ImGuizmo::PushID(this);
 
    Matrix3D transform;
    const bool isSelectionTransformValid = editor.GetSelectionTransform(transform);
-   if (isSelectionTransformValid && !editor.m_table->IsLocked())
+   if (isSelectionTransformValid && isSelectionInViewDomain && !editor.m_table->IsLocked())
    {
       const float w2 = m_imageRect.Width() * 0.5f / m_zoom, h2 = m_imageRect.Height() * 0.5f / m_zoom;
       Matrix3D view = Matrix3D::MatrixLookAtRH(vec3(m_offset.x, m_offset.y, -1000.f), vec3(m_offset.x, m_offset.y, 0.f), vec3(0.f, -1.f, 0.f));
@@ -1124,11 +1129,11 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
          FrameSelection(); // Frame the selection (Blender's View Selected)
       else if (ImGui::IsKeyPressed(ImGuiKey_Home) && !io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
          FitTable(); // Fit the whole table (Blender's View All)
-      else if (!io.WantTextInput
+      else if (!io.WantTextInput && editor.IsSelectionInViewDomain(false)
          && (ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, true) || ImGui::IsKeyPressed(ImGuiKey_UpArrow, true)
             || ImGui::IsKeyPressed(ImGuiKey_DownArrow, true)))
       {
-         // Nudge the selection by 1 display px (10 with Shift), like the win32 arrow keys
+         // Nudge a 3D scene selection by 1 display px (10 with Shift), like the win32 arrow keys
          const float distance = (io.KeyShift ? 10.f : 1.f) / m_zoom;
          const Vertex2D delta(ImGui::IsKeyDown(ImGuiKey_RightArrow) ? distance : (ImGui::IsKeyDown(ImGuiKey_LeftArrow) ? -distance : 0.f),
             ImGui::IsKeyDown(ImGuiKey_DownArrow) ? distance : (ImGui::IsKeyDown(ImGuiKey_UpArrow) ? -distance : 0.f));
