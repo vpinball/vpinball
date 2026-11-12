@@ -325,6 +325,7 @@ enum class ShaderUniform : unsigned int
    SHADER_UNIFORM(ShaderUniformType::Float4x3, orientation, 1),
    SHADER_UNIFORM(ShaderUniformType::Float4, invTableRes_reflection, 1),
    SHADER_UNIFORM(ShaderUniformType::Float4, w_h_disableLighting, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4x4, matPrevViewProj, 2), // Previous frame view-projection (to reproject the previous frame render as ball reflection probe), +1 Matrix for stereo
    SHADER_SAMPLER(tex_ball_color, 0, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR), // base texture
    SHADER_SAMPLER(tex_ball_playfield, 4, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_TRILINEAR), // playfield
    SHADER_SAMPLER(tex_ball_decal, 3, SamplerAddressMode::SA_REPEAT, SamplerAddressMode::SA_REPEAT, SamplerFilter::SF_TRILINEAR), // ball decal

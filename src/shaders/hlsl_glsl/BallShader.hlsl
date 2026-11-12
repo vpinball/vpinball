@@ -13,7 +13,7 @@ const float4x4 matWorldView     : WORLDVIEW;
 const float4x3 matWorldViewInverse;
 //const float4x4 matWorldViewInverseTranspose; // matWorldViewInverse used instead and multiplied from other side
 const float4x3 matView;
-const float4x4 matProj;
+const float4x4 matPrevViewProj; // view-projection the previous frame was rendered with (to reproject it as a reflection probe)
 //const float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
 
 texture  Texture0; // base texture
@@ -215,8 +215,9 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     const float3 playfield_hit = IN.worldPos_t0y.xyz - t * R;
 
     // New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
-    // TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
-    const float4 proj = mul(float4(playfield_hit, 1.0), matProj);
+    // Move the hit point back to world space, then reproject it with the view-projection the previous frame was rendered with
+    const float3 playfield_hit_world = mul(float4(playfield_hit, 1.0), matWorldViewInverse);
+    const float4 proj = mul(float4(playfield_hit_world, 1.0), matPrevViewProj);
     const float2 uvp = float2(0.5, 0.5) + float2(proj.x, -proj.y) * (0.5 / proj.w);
     const float3 playfieldColor = 0.25 * (
           tex2D(tex_ball_playfield, uvp + float2(w_h_disableLighting.x, 0.)).rgb

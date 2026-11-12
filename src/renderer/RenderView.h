@@ -139,6 +139,8 @@ public:
    RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture1; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)
    RenderTarget* GetPreviousBackBufferTexture() const { return m_pOffscreenBackBufferTexture2; } // Same as back buffer but for previous frame
    void SwapBackBufferRenderTargets();
+   Matrix3D m_prevFrameViewProj[2]; // View x projection the previous frame's back buffer was rendered with (used to reproject it, e.g. as ball reflection probe)
+   bool m_prevFrameViewProjValid = false;
    void ResizeRenderTargets(); // Follows the output size (resizable window, panel resize)
 
    RenderTarget* m_pAORenderTarget1 = nullptr;
