@@ -896,6 +896,55 @@ string string_from_utf8_or_cp1252(const char* src, size_t srcSize)
    return string(src, srcSize);
 }
 
+string ZipEntryNameToUTF8(const char* name, size_t length, bool utf8Flag)
+{
+   // Names without the UTF-8 flag that are valid UTF-8 anyway are kept too: some archivers write UTF-8 without setting it (f.e. macOS)
+   if (utf8Flag || IsValidUTF8(name, length))
+      return string(name, length);
+   // Otherwise the name is in the DOS (OEM) code page of the system that made the archive, which the archive does not record. Windows
+   // Explorer writes the system OEM code page (437 in the US, 850 in Western Europe, 932 in Japan,...): on Windows, this system's is assumed.
+   // Elsewhere, or if the OEM code page is UTF-8 (Windows 'Beta: use Unicode UTF-8' option), code page 437 as the ZIP specification says
+#ifdef _WIN32
+   if (const UINT oemCodepage = GetOEMCP(); oemCodepage != CP_UTF8)
+      if (const int len = MultiByteToWideChar(oemCodepage, 0, name, static_cast<int>(length), nullptr, 0); len > 0)
+      {
+         std::wstring wide(len, L'\0');
+         MultiByteToWideChar(oemCodepage, 0, name, static_cast<int>(length), wide.data(), len);
+         return MakeString(wide);
+      }
+#endif
+   static constexpr char16_t cp437[128] = {
+      0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x00E0, 0x00E5, 0x00E7, 0x00EA, 0x00EB, 0x00E8, 0x00EF, 0x00EE, 0x00EC, 0x00C4, 0x00C5,
+      0x00C9, 0x00E6, 0x00C6, 0x00F4, 0x00F6, 0x00F2, 0x00FB, 0x00F9, 0x00FF, 0x00D6, 0x00DC, 0x00A2, 0x00A3, 0x00A5, 0x20A7, 0x0192,
+      0x00E1, 0x00ED, 0x00F3, 0x00FA, 0x00F1, 0x00D1, 0x00AA, 0x00BA, 0x00BF, 0x2310, 0x00AC, 0x00BD, 0x00BC, 0x00A1, 0x00AB, 0x00BB,
+      0x2591, 0x2592, 0x2593, 0x2502, 0x2524, 0x2561, 0x2562, 0x2556, 0x2555, 0x2563, 0x2551, 0x2557, 0x255D, 0x255C, 0x255B, 0x2510,
+      0x2514, 0x2534, 0x252C, 0x251C, 0x2500, 0x253C, 0x255E, 0x255F, 0x255A, 0x2554, 0x2569, 0x2566, 0x2560, 0x2550, 0x256C, 0x2567,
+      0x2568, 0x2564, 0x2565, 0x2559, 0x2558, 0x2552, 0x2553, 0x256B, 0x256A, 0x2518, 0x250C, 0x2588, 0x2584, 0x258C, 0x2590, 0x2580,
+      0x03B1, 0x00DF, 0x0393, 0x03C0, 0x03A3, 0x03C3, 0x00B5, 0x03C4, 0x03A6, 0x0398, 0x03A9, 0x03B4, 0x221E, 0x03C6, 0x03B5, 0x2229,
+      0x2261, 0x00B1, 0x2265, 0x2264, 0x2320, 0x2321, 0x00F7, 0x2248, 0x00B0, 0x2219, 0x00B7, 0x221A, 0x207F, 0x00B2, 0x25A0, 0x00A0 };
+   string utf8;
+   utf8.reserve(length * 3);
+   for (size_t i = 0; i < length; ++i)
+   {
+      const uint8_t b = static_cast<uint8_t>(name[i]);
+      const char16_t cp = b < 0x80 ? b : cp437[b - 0x80];
+      if (cp < 0x80)
+         utf8 += static_cast<char>(cp);
+      else if (cp < 0x800)
+      {
+         utf8 += static_cast<char>(0xC0 | (cp >> 6));
+         utf8 += static_cast<char>(0x80 | (cp & 0x3F));
+      }
+      else
+      {
+         utf8 += static_cast<char>(0xE0 | (cp >> 12));
+         utf8 += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+         utf8 += static_cast<char>(0x80 | (cp & 0x3F));
+      }
+   }
+   return utf8;
+}
+
 //
 
 #ifdef ENABLE_OPENGL

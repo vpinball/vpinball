@@ -173,6 +173,23 @@ TEST_CASE("def.h helpers")
       CHECK(string_from_utf8_or_cp1252("Caf\xC3"s) == "Caf\xC3\x83");
    }
 
+   SUBCASE("ZIP entry names")
+   {
+      const auto convert = [](const string& s, bool utf8Flag) { return ZipEntryNameToUTF8(s.data(), s.size(), utf8Flag); };
+      CHECK(convert("dir/plain.txt"s, false) == "dir/plain.txt");
+      CHECK(convert("Gr\xC3\xBC\xC3\x9F" "e.txt"s, true) == "Gr\xC3\xBC\xC3\x9F" "e.txt"); // flagged UTF-8
+      CHECK(convert("Gr\xC3\xBC\xC3\x9F" "e.txt"s, false) == "Gr\xC3\xBC\xC3\x9F" "e.txt"); // UTF-8 without the flag (f.e. macOS)
+      CHECK(convert("Gr\x81\xE1" "e.txt"s, true) == "Gr\x81\xE1" "e.txt"); // the flag is trusted
+      // Name with u-umlaut and sharp s in the DOS code page (Windows Explorer): the same bytes in code pages 437 (US) and 850 (Western Europe)
+      #ifdef _WIN32
+      if (GetOEMCP() == 437 || GetOEMCP() == 850 || GetOEMCP() == CP_UTF8)
+      #endif
+         CHECK(convert("Gr\x81\xE1" "e.txt"s, false) == "Gr\xC3\xBC\xC3\x9F" "e.txt");
+      #ifndef _WIN32
+      CHECK(convert("\xB0\xFE"s, false) == "\xE2\x96\x91\xE2\x96\xA0"); // code page 437 graphics, up to 3 UTF-8 bytes each
+      #endif
+   }
+
    SUBCASE("UTF-8 and wide text conversions")
    {
       CHECK(MakeString(L"Caf\u00E9 \u2605"s) == "Caf\xC3\xA9 \xE2\x98\x85");
