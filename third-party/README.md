@@ -305,3 +305,9 @@ Liberation Sans
 - Upstream: ?
 - Version: ?
 - License: unclear state
+
+### xxHash
+
+- Upstream: https://github.com/Cyan4973/xxHash
+- Version: 0.8.3 (xxhash.h only, inlined with XXH_INLINE_ALL)
+- License: BSD-2-Clause

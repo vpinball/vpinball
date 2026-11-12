@@ -140,6 +140,24 @@ private:
    void ApplyTableTransition(PinTable *newTable, bool stackTable, const StackedTable *restore);
    void InitTableSession(bool isInitial);
    void ShutdownTableSession();
+
+public:
+   // Saves the used textures cache: the textures drawn by the player, uploaded at load by the next plays. Called at the end of the
+   // session, or just before the editor is first opened and never after: the editor views draw what play does not (like reference
+   // images), and the textures are shared by all the sessions of the player
+   void SaveUsedTextures();
+
+private:
+   // Used textures cache (used_textures.xml in the table cache folder): the textures drawn in the previous plays, with their sampler
+   // variant and the number of saves since they were last drawn
+   struct UsedTexture
+   {
+      bool linear = false;
+      int age = 0;
+   };
+   ankerl::unordered_dense::map<string, UsedTexture> m_usedTextures;
+   void LoadUsedTextures();
+
    void LockRenderThread();   // Wait for the render thread to be idle and take ownership of the render frame (BGFX only)
    void UnlockRenderThread(); // Release render frame ownership, letting the game loop resume (BGFX only)
 

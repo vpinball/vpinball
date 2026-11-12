@@ -80,6 +80,7 @@ public:
 
    void Open();
    bool IsOpened() const { return m_isOpened; }
+   bool WasOpened() const { return m_wasOpened; } // Opened at least once during the player's lifetime
    void Render3D();
    void RenderUI();
    void Close();
@@ -448,6 +449,7 @@ private:
 
    // UI state
    bool m_isOpened = false;
+   bool m_wasOpened = false;
    enum class Units
    {
       VPX, Metric, Imperial

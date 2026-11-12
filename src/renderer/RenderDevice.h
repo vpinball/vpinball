@@ -187,6 +187,8 @@ public:
    RenderState& GetActiveRenderState() { return m_current_renderstate; }
 
    void UploadTexture(ITexManCacheable* texture, const bool linearRGB);
+   // Uploads (texture, linearRGB) pairs, without marking them used (see TextureManager::GetUsedTextures)
+   void UploadTextures(const vector<std::pair<ITexManCacheable*, bool>>& textures);
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
 
    // Default texture (1x1 Black)

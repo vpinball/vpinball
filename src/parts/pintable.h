@@ -370,7 +370,7 @@ public:
    // Replaces 'oldImage' (which is deleted) by 'image', keeping 'image's caller-set name and inheriting the
    // alpha test value. When both contents are identical, 'image' is deleted and 'oldImage' is kept and returned
    Texture *ReImportImage(Texture *const oldImage, Texture *const image);
-   // The first table image with the same content hash as 'image', or nullptr
+   // The first table image with the same content (file data) as 'image', or nullptr
    Texture *FindImageByHash(const Texture *image) const;
    void RemoveImage(Texture *const ppi);
 
@@ -382,6 +382,9 @@ public:
 
    void ShowWhereImagesUsed(vector<WhereUsedInfo> &);
    void ShowWhereImageUsed(vector<WhereUsedInfo> &,Texture *const ppi);
+   // Images that play may draw: the table's (except the environment image, decoded by the renderer) and those of the parts shown in play,
+   // that is not in a group hidden in every player mode and not reference images (editor only visuals). Images set by the script are unknown here
+   void CollectPlayImages(ankerl::unordered_dense::set<const Texture *> &shown) const;
    void ShowWhereMaterialsUsed(vector<WhereUsedInfo> &);
    void ShowWhereMaterialUsed(vector<WhereUsedInfo> &, Material *const ppi);
 

@@ -24,7 +24,7 @@
 #include <limits>
 #include <sstream>
 #include <thread>
-#include <type_traits>
+#include <unordered_set>
 
 namespace
 {
@@ -616,7 +616,7 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
    return result;
 }
 
-std::shared_ptr<BaseTexture> TextureCompressor::LoadCached(const std::filesystem::path& cacheFile)
+std::shared_ptr<BaseTexture> TextureCompressor::LoadCacheFile(const std::filesystem::path& cacheFile)
 {
    const auto start = std::chrono::steady_clock::now();
    CacheHeader header;
@@ -630,7 +630,7 @@ std::shared_ptr<BaseTexture> TextureCompressor::LoadCached(const std::filesystem
    return BaseTexture::CreateCompressedOnly(std::move(compressed), static_cast<BaseTexture::Format>(header.srcFormat), header.opaque != 0);
 }
 
-std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const BaseTexture& tex, const std::filesystem::path& cacheFile, const std::function<bool()>& isCompressionDiscarded)
+std::shared_ptr<const CompressedTexture> TextureCompressor::CompressToCache(const BaseTexture& tex, const std::filesystem::path& cacheFile, const std::function<bool()>& isCompressionDiscarded)
 {
    if (!IsSupported(tex))
       return nullptr;
@@ -639,21 +639,6 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
    if (format == bgfx::TextureFormat::Unknown)
       return nullptr;
    const uint64_t rawBytes = (static_cast<uint64_t>(tex.width()) * tex.height() * UncompressedPixelSize(tex.m_format) * 4) / 3;
-
-   if (!cacheFile.empty())
-   {
-      const auto start = std::chrono::steady_clock::now();
-      CacheHeader header;
-      std::shared_ptr<const CompressedTexture> result = ReadCacheFile(cacheFile, header);
-      if (result && result->format == format && result->width == tex.width() && result->height == tex.height())
-      {
-         m_nLoaded++;
-         m_loadMs += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
-         m_rawBytes += rawBytes;
-         m_compressedBytes += result->data.size();
-         return result;
-      }
-   }
 
    const auto start = std::chrono::steady_clock::now();
    auto result = Compress(tex, format, isCompressionDiscarded);
@@ -717,56 +702,50 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::LoadOrCompress(const
    return result;
 }
 
-TextureCompressor::TextureCompressor(std::filesystem::path cacheFolder, unsigned int maxTexDim)
+TextureCompressor::TextureCompressor(std::filesystem::path cacheFolder)
    : m_cacheFolder(std::move(cacheFolder))
-   , m_maxTexDim(maxTexDim)
 {
-   // Statistics are scoped to the compressor lifetime, so a texture loading session starts with clean stats
 }
 
-std::filesystem::path TextureCompressor::GetCacheFile(const Texture* image) const
+std::filesystem::path TextureCompressor::GetCacheFile(const Texture* image, const unsigned int maxTexDim) const
 {
    std::filesystem::path path;
    if (!m_cacheFolder.empty())
    {
       std::stringstream key;
-      key << std::hex << std::setfill('0');
-      for (int i = 0; i < 16; i++)
-         key << std::setw(2) << static_cast<int>(image->GetMD5Hash()[i]);
-      key << std::dec;
+      key << std::hex << std::setfill('0') << std::setw(16) << image->GetContentHash() << std::dec;
       // Only downscaled textures have their compressed content depend on the maxTexDim setting
-      if (m_maxTexDim > 0 && (image->m_width > m_maxTexDim || image->m_height > m_maxTexDim))
-         key << "_MaxTex" << m_maxTexDim;
+      if (maxTexDim > 0 && (image->m_width > maxTexDim || image->m_height > maxTexDim))
+         key << "_MaxTex" << maxTexDim;
       key << ".vpxtex";
       path = m_cacheFolder / key.str();
    }
    return path;
 }
 
-std::shared_ptr<const BaseTexture> TextureCompressor::Load(Texture* image, bool resizeOnLowMem, const std::function<bool()>& isCompressionDiscarded)
+std::shared_ptr<BaseTexture> TextureCompressor::LoadCached(const Texture* image, const unsigned int maxTexDim)
 {
-   std::shared_ptr<const BaseTexture> buffer;
-   const std::filesystem::path cacheFile = GetCacheFile(image);
-   if (!cacheFile.empty())
+   const std::filesystem::path cacheFile = GetCacheFile(image, maxTexDim);
+   if (cacheFile.empty())
+      return nullptr;
+   std::shared_ptr<BaseTexture> cached = LoadCacheFile(cacheFile);
+   if (cached && bgfx::getRendererType() == bgfx::RendererType::WebGPU && ((cached->width() | cached->height()) & 3) != 0) // Cache may come from a platform accepting unaligned block sizes
+      return nullptr;
+   if (cached)
    {
-      {
-         const std::lock_guard lock(m_usedCacheFilesMutex);
-         m_usedCacheFiles.insert(cacheFile.filename());
-      }
-      std::shared_ptr<BaseTexture> cached = LoadCached(cacheFile);
-      if (cached && bgfx::getRendererType() == bgfx::RendererType::WebGPU && ((cached->width() | cached->height()) & 3) != 0) // Cache may come from a platform accepting unaligned block sizes
-         cached = nullptr;
-      if (cached)
-      {
-         cached->SetName(image->m_name);
-         image->SetIsOpaque(cached->IsOpaque());
-         buffer = std::move(cached);
-      }
+      cached->SetName(image->m_name);
+      image->SetIsOpaque(cached->IsOpaque());
    }
+   return cached;
+}
+
+std::shared_ptr<const BaseTexture> TextureCompressor::LoadOrCompress(Texture* image, const unsigned int maxTexDim, bool resizeOnLowMem, const std::function<bool()>& isCompressionDiscarded)
+{
+   std::shared_ptr<const BaseTexture> buffer = LoadCached(image, maxTexDim);
    if (buffer == nullptr)
-      buffer = image->GetRawBitmap(resizeOnLowMem, m_maxTexDim);
+      buffer = image->GetRawBitmap(resizeOnLowMem, maxTexDim);
    if (buffer && buffer->m_compressed == nullptr && IsSupported(*buffer) && (!isCompressionDiscarded || !isCompressionDiscarded()))
-      buffer->m_compressed = LoadOrCompress(*buffer, buffer->m_resizedOnLowMem ? std::filesystem::path() : cacheFile, isCompressionDiscarded);
+      buffer->m_compressed = CompressToCache(*buffer, buffer->m_resizedOnLowMem ? std::filesystem::path() : GetCacheFile(image, maxTexDim), isCompressionDiscarded);
    // The texture manager holds a loaded texture until it is first drawn, which can be much later or never: once
    // compressed, keep the compressed data alone, as for a texture read from the cache, so the decoded pixels are
    // freed now (the image decodes them again if something needs them)
@@ -786,15 +765,13 @@ void TextureCompressor::LogStats() const
          << "ms cumulated), GPU memory " << (m_rawBytes / (1024 * 1024)) << "MB uncompressed -> " << (m_compressedBytes / (1024 * 1024)) << "MB compressed";
 }
 
-void TextureCompressor::CleanCache()
+void TextureCompressor::CleanCache(const vector<Texture*>& images, const unsigned int maxTexDim) const
 {
    if (m_cacheFolder.empty())
       return;
    std::unordered_set<std::filesystem::path> expected;
-   {
-      const std::lock_guard lock(m_usedCacheFilesMutex);
-      expected = m_usedCacheFiles;
-   }
+   for (const Texture* image : images)
+      expected.insert(GetCacheFile(image, maxTexDim).filename());
    uint64_t nRemoved = 0;
    uint64_t freedBytes = 0;
    std::error_code ec;

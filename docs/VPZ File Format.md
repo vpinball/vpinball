@@ -81,7 +81,7 @@ A partial pack (assets and/or scene nodes without a `table.json`) is also a vali
 
 Each binary asset file has a sibling JSON sidecar, named `<name>.json`, holding the properties that were assigned at import time. The data file itself is found by matching the sidecar's file name stem.
 
-- **images**: `$type` `"image"`, `import_path`, `width`, `height`, `alpha_test` (0-255, negative when disabled), `md5` (32 hex digits), `opaque`, optional `link` (legacy binary sharing)
+- **images**: `$type` `"image"`, `import_path`, `width`, `height`, `alpha_test` (0-255, negative when disabled), `opaque`, optional `link` (legacy binary sharing)
 - **sounds**: `$type` `"sound"`, `import_path`, `output_target` (`"playfield"` or `"backglass"`), `volume_offset`, `left_right_offset` (-100 full left, +100 full right), `rear_front_offset` (-100 full rear, +100 full front)
 - **fonts**: `$type` `"font"`, `import_path`
 

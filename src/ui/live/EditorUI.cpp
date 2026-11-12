@@ -152,7 +152,12 @@ void EditorUI::Open()
 {
    if (m_isOpened)
       return;
+   // Save the textures drawn in play before the editor views draw theirs (see Player::SaveUsedTextures). Nothing was played when
+   // the player started in an edit mode
+   if (!m_wasOpened && m_player->m_playMode != Player::PlayMode::LiveEdit && m_player->m_playMode != Player::PlayMode::FullEdit)
+      m_player->SaveUsedTextures();
    m_isOpened = true;
+   m_wasOpened = true;
    m_renderer->DisableStaticPrePass(true);
    m_player->SetPlayState(false); // Suspend play while editing
 

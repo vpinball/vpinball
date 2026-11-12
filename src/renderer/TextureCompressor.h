@@ -6,8 +6,6 @@
 
 #include <atomic>
 #include <functional>
-#include <mutex>
-#include <unordered_set>
 
 #include "Texture.h"
 
@@ -22,23 +20,21 @@ struct CompressedTexture final
    size_t GetMipSize(unsigned int mip) const;
 };
 
-// Compresses textures to GPU formats, eventually backed by a per table disk cache.
-// An instance is scoped to a texture loading session: its statistics start clean on
-// construction and can be reported at the end of the session with LogStats.
+// Compresses textures to GPU formats, backed by a per table disk cache. Owned by the texture manager for the player's lifetime
+// (see TextureManager::LoadBitmap): images are compressed while loading the table, and later reloaded from the disk cache.
 class TextureCompressor final
 {
 public:
    // cacheFolder is the folder holding the disk compressed texture cache (empty to disable caching)
-   // maxTexDim is the maximum texture dimension applied when loading images (0 = no limit)
-   TextureCompressor(std::filesystem::path cacheFolder, unsigned int maxTexDim);
+   explicit TextureCompressor(std::filesystem::path cacheFolder);
 
-   // Path of the disk cache file of an image (empty when disk caching is disabled)
-   std::filesystem::path GetCacheFile(const Texture* image) const;
+   // Compressed image: from the disk cache, otherwise decoded (within maxTexDim, 0 for no limit), compressed, and cached.
+   // isCompressionDiscarded is queried before and during compression: true skips or aborts it. Returns the decoded image if not
+   // compressed (unsupported format, discarded compression), nullptr if it can not be decoded
+   std::shared_ptr<const BaseTexture> LoadOrCompress(Texture* image, unsigned int maxTexDim, bool resizeOnLowMem, const std::function<bool()>& isCompressionDiscarded);
 
-   // Loads an image, eventually resolving it from the compressed disk cache, otherwise decoding
-   // it and compressing the result (saved to the disk cache when enabled). isCompressionDiscarded is
-   // queried before and during compression; returning true skips or aborts the compression.
-   std::shared_ptr<const BaseTexture> Load(Texture* image, bool resizeOnLowMem, const std::function<bool()>& isCompressionDiscarded);
+   // Compressed image from the disk cache only (nullptr if not cached)
+   std::shared_ptr<BaseTexture> LoadCached(const Texture* image, unsigned int maxTexDim);
 
    static bool IsSupported(const BaseTexture& tex);
 
@@ -51,22 +47,20 @@ public:
    // isCompressionDiscarded is queried while compressing; returning true aborts the compression.
    static std::shared_ptr<const CompressedTexture> Compress(const BaseTexture& tex, bgfx::TextureFormat::Enum format, const std::function<bool()>& isCompressionDiscarded = nullptr);
 
-   std::shared_ptr<const CompressedTexture> LoadOrCompress(const BaseTexture& tex, const std::filesystem::path& cacheFile, const std::function<bool()>& isCompressionDiscarded = nullptr);
+   void LogStats() const; // Statistics since the compressor was created
 
-   std::shared_ptr<BaseTexture> LoadCached(const std::filesystem::path& cacheFile);
-
-   void LogStats() const;
-
-   // Removes cache files that are not referenced by the images loaded during this session, as well as leftover temporary files
-   void CleanCache();
+   // Removes the cache files of the images not in 'images' (all the table's ones, not only the loaded ones), and leftover temporary files
+   void CleanCache(const vector<Texture*>& images, unsigned int maxTexDim) const;
 
 private:
-   const std::filesystem::path m_cacheFolder;
-   const unsigned int m_maxTexDim;
+   // Path of the disk cache file of an image (empty when disk caching is disabled)
+   std::filesystem::path GetCacheFile(const Texture* image, unsigned int maxTexDim) const;
+   // Reads a cache file (nullptr if missing, or of a format not selected for this GPU)
+   std::shared_ptr<BaseTexture> LoadCacheFile(const std::filesystem::path& cacheFile);
+   // Compresses a decoded texture, and saves the result to the cache file (if any). The caller already missed the cache (LoadCached)
+   std::shared_ptr<const CompressedTexture> CompressToCache(const BaseTexture& tex, const std::filesystem::path& cacheFile, const std::function<bool()>& isCompressionDiscarded);
 
-   // Cache files referenced while loading this session (written by the loading threads), used by CleanCache to detect stale entries
-   std::mutex m_usedCacheFilesMutex;
-   std::unordered_set<std::filesystem::path> m_usedCacheFiles;
+   const std::filesystem::path m_cacheFolder;
 
    std::atomic<uint64_t> m_nCompressed { 0 };
    std::atomic<uint64_t> m_nLoaded { 0 };

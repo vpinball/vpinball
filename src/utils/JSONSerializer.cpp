@@ -731,7 +731,8 @@ static const ankerl::unordered_dense::map<int, FieldMap>& GetFieldMaps()
       m[JSONSerializer::kTextureNode] = MakeMap({
          { FID(NAME), "name" }, { FID(PATH), "path" }, { FID(WDTH), "width" }, { FID(HGHT), "height" },
          { FID(ALTV), "alpha_test" }, // Alpha test value on a 0..255 scale, negative when disabled
-         { FID(MD5H), "md5" }, { FID(OPAQ), "opaque" }, { FID(JPEG), "image" }, // Sub object holding the binary image data (name is historical)
+         { FID(MD5H), "md5" }, // Legacy image hash, ignored on load
+         { FID(OPAQ), "opaque" }, { FID(JPEG), "image" }, // Sub object holding the binary image data (name is historical)
          { FID(LINK), "link" }, { FID(BITS), "bits" }, // Legacy raw bitmap, pre 10.8.1
          { FID(SIGN), "signed" }, // Legacy, unused
       });

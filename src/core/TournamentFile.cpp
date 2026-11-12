@@ -7,7 +7,8 @@
 #include "core/extern.h"
 #include "core/VPApp.h"
 #include "ui/live/LiveUI.h"
-#include "utils/hash.h"
+#define XXH_INLINE_ALL
+#include "xxhash.h"
 #ifdef __STANDALONE__
 #define _WINDOWS_
 #endif
@@ -20,6 +21,18 @@ static constexpr uint8_t lookupRev[16] = { 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0x
 
 static constexpr inline uint8_t reverse(const uint8_t n) { return (lookupRev[n & 0x0f] << 4) | lookupRev[n >> 4]; }
 
+// 32 bit checksum of a data stream fed in chunks: XXH3 hash, folded
+class Checksum final
+{
+public:
+   Checksum() { XXH3_INITSTATE(&m_state); XXH3_64bits_reset(&m_state); }
+   void Add(const void *const data, const size_t size) { XXH3_64bits_update(&m_state, data, size); }
+   unsigned int Get() const { const XXH64_hash_t hash = XXH3_64bits_digest(&m_state); return static_cast<unsigned int>(hash ^ (hash >> 32)); }
+
+private:
+   XXH3_state_t m_state;
+};
+
 static unsigned int GenerateTournamentFileInternal(PinTable* const table, uint8_t *const dmd_data, const unsigned int dmd_size, const std::filesystem::path &tablefile, unsigned int &tablefileChecksum, unsigned int &vpxChecksum, unsigned int &scriptsChecksum)
 {
    tablefileChecksum = vpxChecksum = scriptsChecksum = 0;
@@ -28,9 +41,10 @@ static unsigned int GenerateTournamentFileInternal(PinTable* const table, uint8_
    FILE *f = open_file(tablefile, "rb");
    if (f)
    {
+      Checksum checksum;
       uint8_t tmp[4096];
       size_t r;
-      while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include MD5 at end?
+      while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include the XXH hash at end?
       {
          for (unsigned int i = 0; i < r; ++i)
          {
@@ -38,13 +52,10 @@ static unsigned int GenerateTournamentFileInternal(PinTable* const table, uint8_
             if (dmd_data_c == dmd_size)
                dmd_data_c = 0;
          }
-
-         uint32_t md5[4];
-         generateMD5(tmp, r, (uint8_t *)md5);
-         for (unsigned int i = 0; i < 4; ++i)
-            tablefileChecksum ^= md5[i];
+         checksum.Add(tmp, r);
       }
       fclose(f);
+      tablefileChecksum = checksum.Get();
    }
    else
    {
@@ -85,12 +96,13 @@ static unsigned int GenerateTournamentFileInternal(PinTable* const table, uint8_
 
    vbsFiles.push_back("core.vbs"s);
 
+   Checksum scriptsHash;
    for (const auto &i3 : vbsFiles)
       if ((f = open_file(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Scripts, i3), "rb")))
       {
          uint8_t tmp[4096];
          size_t r;
-         while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include MD5 at end?
+         while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include the XXH hash at end?
          {
             for (unsigned int i = 0; i < r; ++i)
             {
@@ -98,14 +110,11 @@ static unsigned int GenerateTournamentFileInternal(PinTable* const table, uint8_
                if (dmd_data_c == dmd_size)
                   dmd_data_c = 0;
             }
-
-            uint32_t md5[4];
-            generateMD5(tmp, r, (uint8_t *)md5);
-            for (unsigned int i = 0; i < 4; ++i)
-               scriptsChecksum ^= md5[i];
+            scriptsHash.Add(tmp, r);
          }
          fclose(f);
       }
+   scriptsChecksum = scriptsHash.Get();
 
    //
 
@@ -122,9 +131,10 @@ static unsigned int GenerateTournamentFileInternal(PinTable* const table, uint8_
 #endif
    if ((f = open_file(path, "rb")))
    {
+      Checksum checksum;
       uint8_t tmp[4096];
       size_t r;
-      while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include MD5 at end?
+      while ((r = fread(tmp, 1, sizeof(tmp), f))) //!! also include the XXH hash at end?
       {
          for (unsigned int i = 0; i < r; ++i)
          {
@@ -132,13 +142,10 @@ static unsigned int GenerateTournamentFileInternal(PinTable* const table, uint8_
             if (dmd_data_c == dmd_size)
                dmd_data_c = 0;
          }
-
-         uint32_t md5[4];
-         generateMD5(tmp, r, (uint8_t *)md5);
-         for (unsigned int i = 0; i < 4; ++i)
-            vpxChecksum ^= md5[i];
+         checksum.Add(tmp, r);
       }
       fclose(f);
+      vpxChecksum = checksum.Get();
    }
    else
    {
@@ -173,7 +180,7 @@ static void GenerateTournamentFileInternal2(uint8_t *const dmd_data, const unsig
 #endif
          break;
       fe++;
-   } //!! also include MD5 ?
+   } //!! also include the XXH hash ?
 
    while (fs < fe)
    {
@@ -239,7 +246,8 @@ void GenerateTournamentFile()
       for (unsigned int i = 0; i < dmd_size; ++i)
          dmd_data[i] = ((data[i] & 0xFF) + ((data[i] >> 8) & 0xFF) + ((data[i] >> 16) & 0xFF)) / 3;
    }
-   generateMD5(dmd_data, dmd_size, dmd_data + dmd_size);
+   static_assert(sizeof(XXH128_canonical_t) == 16);
+   XXH128_canonicalFromHash(reinterpret_cast<XXH128_canonical_t *>(dmd_data + dmd_size), XXH3_128bits(dmd_data, dmd_size)); // Integrity check of the frame
    dmd_size += 16;
    unsigned int tablefileChecksum, vpxChecksum, scriptsChecksum;
    const unsigned int res = GenerateTournamentFileInternal(g_pplayer->m_ptable, dmd_data, dmd_size, g_pplayer->m_ptable->m_filename, tablefileChecksum, vpxChecksum, scriptsChecksum);
@@ -357,9 +365,9 @@ void GenerateImageFromTournamentFile(PinTable* table, const std::filesystem::pat
       return;
    }
    GenerateTournamentFileInternal2(dmd_data.data(), dmd_size, res);
-   uint8_t md5[16];
-   generateMD5(dmd_data.data(), dmd_size - 16, md5);
-   if (memcmp(dmd_data.data() + (dmd_size - 16), md5, 16) != 0)
+   XXH128_canonical_t check;
+   XXH128_canonicalFromHash(&check, XXH3_128bits(dmd_data.data(), dmd_size - 16));
+   if (memcmp(dmd_data.data() + (dmd_size - 16), &check, 16) != 0)
    {
       ShowError("Corrupt Tournament file or non-matching table-version or modified VP used to encode");
       return;

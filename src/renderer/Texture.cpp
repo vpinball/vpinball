@@ -3,6 +3,9 @@
 #include "core/stdafx.h"
 #include "Texture.h"
 
+#define XXH_INLINE_ALL
+#include "xxhash/xxhash.h"
+
 #include "math/math.h"
 #include "renderer/Renderer.h"
 #include "renderer/TextureCompressor.h"
@@ -576,8 +579,6 @@ std::shared_ptr<BaseTexture> BaseTexture::GetAlias(Format format) const
       std::shared_ptr<BaseTexture> alias = Convert(format);
       if (!m_isOpaqueDirty)
          alias->SetIsOpaque(IsOpaque());
-      if (!m_isMD5Dirty)
-         alias->SetMD5Hash(GetMD5Hash());
       m_aliases[format] = alias;
       return alias;
    }
@@ -737,8 +738,6 @@ std::shared_ptr<BaseTexture> BaseTexture::Convert(Format format) const
    {
       if (!m_isOpaqueDirty)
          tex->SetIsOpaque(IsOpaque());
-      if (!m_isMD5Dirty)
-         tex->SetMD5Hash(GetMD5Hash());
    }
 
    return tex;
@@ -895,17 +894,6 @@ SDL_Surface* BaseTexture::ToSDLSurface() const
    return format == SDL_PIXELFORMAT_UNKNOWN ? nullptr : SDL_CreateSurfaceFrom(m_width, m_height, format, const_cast<uint8_t*>(static_cast<const uint8_t*>(datac())), pitch());
 }
 
-void BaseTexture::UpdateMD5() const
-{
-   if (!m_isMD5Dirty)
-      return;
-   const std::lock_guard<std::mutex> lock(m_lazyMutex);
-   if (!m_isMD5Dirty) // Computed meanwhile by another thread
-      return;
-   generateMD5((uint8_t*)m_data, pitch() * height(), m_md5Hash);
-   m_isMD5Dirty = false;
-}
-
 void BaseTexture::UpdateOpaque() const
 {
    if (!m_isOpaqueDirty)
@@ -959,8 +947,6 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
    unsigned int height = 0;
    float alphaTestValue = static_cast<float>(-1.0 / 255.0);
    PinBinary* ppb = nullptr;
-   bool isMD5Dirty = true;
-   uint8_t md5Hash[16] = {};
    bool isOpaqueDirty = true;
    bool isOpaque = true;
    reader.AsObject(
@@ -977,10 +963,13 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
          case FID(WDTH): width = reader.AsInt(); break;
          case FID(HGHT): height = reader.AsInt(); break;
          case FID(ALTV): alphaTestValue = reader.AsFloat() * (float)(1.0 / 255.0); break;
+         // Deprecated: MD5 of the image, written by older versions. Read and discarded, as INME above
          case FID(MD5H):
+         {
+            uint8_t md5Hash[16];
             reader.AsRaw(md5Hash, 16);
-            isMD5Dirty = false;
             break;
+         }
          case FID(OPAQ):
             isOpaque = reader.AsBool();
             isOpaqueDirty = false;
@@ -1095,8 +1084,6 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
    tex->m_alphaTestValue = alphaTestValue;
    if (!isOpaqueDirty)
       tex->SetIsOpaque(isOpaque);
-   if (!isMD5Dirty)
-      tex->SetMD5Hash(md5Hash);
    return tex;
 }
 
@@ -1114,8 +1101,7 @@ Texture* Texture::CreateFromFile(const std::filesystem::path& filename, const bo
 
    Texture* tex = new Texture(TitleFromFilename(filename), ppb, imageBuffer->m_realWidth, imageBuffer->m_realHeight);
    tex->m_imageBuffer = imageBuffer;
-   tex->UpdateMD5();
-   tex->UpdateOpaque();
+   tex->UpdateOpaque(); // Cheap while the decoded image is alive
    return tex;
 }
 
@@ -1138,7 +1124,6 @@ void Texture::Save(IObjectWriter& writer, PinTable* pt) const
       m_ppb->Save(writer);
    }
    writer.WriteFloat(FID(ALTV), m_alphaTestValue * 255.0f);
-   writer.WriteRaw(FID(MD5H), GetMD5Hash(), 16);
    writer.WriteBool(FID(OPAQ), IsOpaque());
    writer.EndObject();
 }
@@ -1249,30 +1234,23 @@ std::shared_ptr<const BaseTexture> Texture::GetRawBitmap(bool resizeOnLowMem, un
    return buffer;
 }
 
-void Texture::UpdateMD5() const
+uint64_t Texture::GetContentHash() const
 {
-   if (!m_isMD5Dirty)
-      return;
-   uint8_t md5[16];
-   generateMD5(m_ppb->m_buffer.data(), m_ppb->m_buffer.size(), md5);
+   if (!m_isContentHashDirty)
+      return m_contentHash;
+   const uint64_t hash = XXH3_64bits(m_ppb->m_buffer.data(), m_ppb->m_buffer.size()); // Outside the lock, not to block the other accessors
    const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
-   if (m_isMD5Dirty) // Otherwise computed meanwhile by another thread, and maybe already read without locking
-      SetMD5HashLocked(md5);
+   if (m_isContentHashDirty) // Otherwise computed meanwhile by another thread, and maybe already read without locking
+   {
+      m_contentHash = hash;
+      m_isContentHashDirty = false;
+   }
+   return m_contentHash;
 }
 
-void Texture::SetMD5Hash(uint8_t* md5) const
+bool Texture::HasSameContent(const Texture &other) const
 {
-   const std::lock_guard<std::mutex> lock(m_imageBufferMutex);
-   SetMD5HashLocked(md5);
-}
-
-void Texture::SetMD5HashLocked(uint8_t* md5) const
-{
-   memcpy(m_md5Hash, md5, sizeof(m_md5Hash));
-   m_isMD5Dirty = false;
-   auto buffer = m_imageBuffer.lock();
-   if (buffer)
-      buffer->SetMD5Hash(md5);
+   return GetFileSize() == other.GetFileSize() && GetContentHash() == other.GetContentHash() && memcmp(GetFileRaw(), other.GetFileRaw(), GetFileSize()) == 0;
 }
 
 void Texture::UpdateOpaque() const

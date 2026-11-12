@@ -116,10 +116,6 @@ public:
    mutable std::shared_ptr<const struct CompressedTexture> m_compressed;
 #endif
 
-   bool IsMD5HashComputed() const { return !m_isMD5Dirty; }
-   uint8_t* GetMD5Hash() const { UpdateMD5(); return m_md5Hash; }
-   void SetMD5Hash(uint8_t* md5) const { const std::lock_guard<std::mutex> lock(m_lazyMutex); memcpy(m_md5Hash, md5, sizeof(m_md5Hash)); m_isMD5Dirty = false; }
-
    bool IsOpaqueComputed() const { return !m_isOpaqueDirty; }
    bool IsOpaque() const override { UpdateOpaque(); return m_isOpaque; }
    void SetIsOpaque(const bool v) const { const std::lock_guard<std::mutex> lock(m_lazyMutex); m_isOpaque = v; m_isOpaqueDirty = false; }
@@ -131,7 +127,6 @@ private:
    BaseTexture(const unsigned int w, const unsigned int h, const Format format, const bool allocate = true);
    static std::shared_ptr<BaseTexture> CreateFromFreeImage(struct FIBITMAP *dib, const bool isImageData, unsigned int maxTexDimension, bool resizeOnLowMem) noexcept; // also free's/delete's the dib inside!
 
-   void UpdateMD5() const;
    void UpdateOpaque() const;
 
    const unsigned int m_width, m_height;
@@ -146,8 +141,6 @@ private:
    // These field are (lazily) computed from the data, therefore they do not impact the constness of the object
    // Written under m_lazyMutex (shared between threads). Dirty flags are cleared after the value is set, so a reader seeing a clear flag needs no lock
    mutable std::mutex m_lazyMutex; // Taken after m_aliasMutex
-   mutable std::atomic<bool> m_isMD5Dirty { true };
-   mutable uint8_t m_md5Hash[16] = {};
    mutable std::atomic<bool> m_isOpaqueDirty { true };
    mutable std::atomic<bool> m_isOpaque { true };
    mutable std::mutex m_aliasMutex;
@@ -181,7 +174,8 @@ public:
    const std::filesystem::path& GetFilePath() const { return m_ppb->m_path; }
    bool SaveFile(const std::filesystem::path &filename) const { return m_ppb->WriteToFile(filename); }
 
-   const uint8_t* GetMD5Hash() const { UpdateMD5(); return m_md5Hash; }
+   uint64_t GetContentHash() const; // Hash (XXH3) of the image file data, computed when first needed
+   bool HasSameContent(const Texture &other) const; // Same image file data (exact: sizes and hashes rule out most byte comparisons)
    bool IsOpaque() const override { UpdateOpaque(); return m_isOpaque; }
    bool IsHDR() const;
 
@@ -195,10 +189,6 @@ public:
 private:
    Texture(string name, PinBinary* ppb, unsigned int width, unsigned int height); // Private to forbid uninitialized objects
 
-   void UpdateMD5() const;
-   void SetMD5Hash(uint8_t *md5) const;
-   void SetMD5HashLocked(uint8_t *md5) const; // Caller must hold m_imageBufferMutex
-
    void UpdateOpaque() const;
 
    PinBinary *const m_ppb; // Original data blob of the image, always defined
@@ -207,10 +197,10 @@ private:
    // These fields are (lazily) computed from the data, therefore they do not impact the constness of the object
    mutable std::weak_ptr<BaseTexture> m_imageBuffer; // Decoded version of the texture in a format suitable for GPU sampling. Note that width and height of the decoded block can be different than width and height of the image since the surface can be limited to smaller sizes by the user or memory
    mutable std::mutex m_decodeMutex; // Serializes the lazy decode, so concurrent requests decode once (taken before m_imageBufferMutex)
-   mutable std::mutex m_imageBufferMutex; // Guards m_imageBuffer and the MD5/opacity writes below, held briefly (preload & compression workers race the logic thread)
+   mutable std::mutex m_imageBufferMutex; // Guards m_imageBuffer and the hash/opacity writes below, held briefly (preload & compression workers race the logic thread)
    // Dirty flags are cleared after the value is set, so a reader seeing a clear flag needs no lock
-   mutable std::atomic<bool> m_isMD5Dirty { true };
-   mutable uint8_t m_md5Hash[16] = {};
+   mutable std::atomic<bool> m_isContentHashDirty { true };
+   mutable uint64_t m_contentHash = 0;
    mutable std::atomic<bool> m_isOpaqueDirty { true };
    mutable std::atomic<bool> m_isOpaque { true };
 };

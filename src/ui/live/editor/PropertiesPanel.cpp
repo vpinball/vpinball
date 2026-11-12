@@ -1251,7 +1251,7 @@ static Texture *ReimportImageFile(PinTable *table, Texture *const old, const std
    Texture *const image = Texture::CreateFromFile(path);
    if (image == nullptr)
       return nullptr;
-   if (dup != nullptr && memcmp(image->GetMD5Hash(), old->GetMD5Hash(), 16) != 0)
+   if (dup != nullptr && !image->HasSameContent(*old))
       *dup = table->FindImageByHash(image);
    image->m_name = old->m_name;
    return table->ReImportImage(old, image);

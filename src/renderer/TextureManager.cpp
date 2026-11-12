@@ -7,10 +7,40 @@
 #include "Texture.h"
 
 #if defined(ENABLE_BGFX)
-#include "TextureCompressor.h" // CompressedTexture
+#include "TextureCompressor.h"
 #endif
 
-std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const memtex, const bool force_linear_rgb)
+std::shared_ptr<const BaseTexture> TextureManager::LoadBitmap(ITexManCacheable* memtex, const bool resizeOnLowMem, const bool allowCompression,
+   const std::function<bool()>& isCompressionDiscarded) const
+{
+#if defined(ENABLE_BGFX)
+   // Table images are compressed (and cached) while loading the table. Later loads (after an eviction, for the other sampler variant,
+   // or of an image that was not preloaded) read the disk cache: faster than decoding, and as small on the GPU. They do not compress an
+   // uncached image, as it may take seconds
+   if (m_compressor && m_rd.m_compressTextures)
+      if (Texture* const image = dynamic_cast<Texture*>(memtex); image != nullptr)
+      {
+         if (allowCompression)
+            return m_compressor->LoadOrCompress(image, m_maxTexDimension, resizeOnLowMem, isCompressionDiscarded);
+         if (std::shared_ptr<const BaseTexture> cached = m_compressor->LoadCached(image, m_maxTexDimension); cached != nullptr)
+            return cached;
+      }
+#endif
+   return memtex->GetRawBitmap(resizeOnLowMem, m_maxTexDimension);
+}
+
+void TextureManager::EndLoading(const vector<Texture*>& tableImages) const
+{
+#if defined(ENABLE_BGFX)
+   if (m_compressor)
+   {
+      m_compressor->LogStats();
+      m_compressor->CleanCache(tableImages, m_maxTexDimension);
+   }
+#endif
+}
+
+std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const memtex, const bool force_linear_rgb, const bool markUsed)
 {
    const std::lock_guard lock(m_mapMutex);
    const uint64_t hash = memtex->GetLiveHash();
@@ -24,6 +54,7 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
    }
 
    MapEntry& entry = it->second;
+   entry.used |= markUsed;
    std::shared_ptr<Sampler>& sampler = entry.samplers[variant];
 #if defined(ENABLE_BGFX)
    RefreshBudget();
@@ -32,10 +63,8 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
 
    if (entry.pendingUpload)
    {
-      // Consumed by whichever variant asks first, dropping the strong reference that was keeping the decoded
-      // bitmap alive. A second variant requested later therefore falls in the branch below and calls
-      // GetRawBitmap(), which only holds the bitmap weakly and so re-decodes the image from its compressed
-      // data. Content is still correct, but will be a decode on the render thread then
+      // Consumed by whichever variant asks first, dropping the strong reference that kept the bitmap alive. A second variant
+      // requested later falls in the branch below (LoadBitmap: from the disk cache, or decoded again on the render thread)
 #if defined(ENABLE_BGFX)
       sampler = CreateSampler(entry, variant, force_linear_rgb, std::move(entry.pendingUpload));
 #else
@@ -45,18 +74,18 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
    else if (sampler == nullptr)
    {
 #if defined(ENABLE_BGFX)
-      sampler = CreateSampler(entry, variant, force_linear_rgb, memtex->GetRawBitmap(false, 0));
+      sampler = CreateSampler(entry, variant, force_linear_rgb, LoadBitmap(memtex));
 #else
-      sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), m_rd.OrFallback(memtex->GetRawBitmap(false, 0)), force_linear_rgb);
+      sampler = std::make_shared<Sampler>(&m_rd, memtex->GetName(), m_rd.OrFallback(LoadBitmap(memtex)), force_linear_rgb);
 #endif
    }
    else if (entry.dirty[variant])
    {
       entry.dirty[variant] = false; // Only the variant actually refreshed below, the other keeps waiting its turn
-      std::shared_ptr<const BaseTexture> bitmap = m_rd.OrFallback(memtex->GetRawBitmap(false, 0));
+      std::shared_ptr<const BaseTexture> bitmap = m_rd.OrFallback(memtex->GetRawBitmap(false, m_maxTexDimension));
       sampler->UpdateTexture(bitmap, force_linear_rgb);
 #if defined(ENABLE_BGFX)
-      const size_t est = EstimateGpuBytes(bitmap.get());
+      const size_t est = bitmap->GetEstimatedGPUSize();
       m_managedBytes += static_cast<int64_t>(est) - static_cast<int64_t>(entry.gpuBytes[variant]);
       entry.gpuBytes[variant] = est;
       entry.fullBytes[variant] = 0; // Now holds the full size content
@@ -71,7 +100,7 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
          m_managedBytes -= static_cast<int64_t>(entry.gpuBytes[variant]);
          m_pendingFree.emplace_back(m_statsFrame, static_cast<int64_t>(entry.gpuBytes[variant]));
          entry.gpuBytes[variant] = 0;
-         sampler = CreateSampler(entry, variant, force_linear_rgb, memtex->GetRawBitmap(false, 0));
+         sampler = CreateSampler(entry, variant, force_linear_rgb, LoadBitmap(memtex));
       }
 #endif
    }
@@ -85,7 +114,7 @@ void TextureManager::AddPendingUpload(ITexManCacheable* memtex, std::shared_ptr<
    if (it == m_map.end())
    {
       MapEntry entry;
-      entry.pendingUpload = bitmap ? std::move(bitmap) : memtex->GetRawBitmap(false, 0);
+      entry.pendingUpload = bitmap ? std::move(bitmap) : memtex->GetRawBitmap(false, m_maxTexDimension);
       entry.tex = memtex;
       m_map[memtex->GetLiveHash()] = entry;
    }
@@ -98,8 +127,8 @@ void TextureManager::AddPlaceHolder(ITexManCacheable* memtex)
    if (it == m_map.end())
    {
       MapEntry entry;
-      // Uses the shared fallback tex, so a failed load and an uncreatable texture look alike.
-      // Both variants share the one sampler, and it is replaced as soon as the real texture loads
+      // For an image that failed to load (even downsized on low memory): the shared fallback tex, so a failed load and an uncreatable
+      // texture look alike, with one sampler for both variants. Neither evicted nor reloaded at full size: SetDirty drops it for a regular reload
       entry.samplers[VARIANT_SRGB]   = std::make_shared<Sampler>(&m_rd, memtex->GetName(), m_rd.m_fallbackTexture, false);
       entry.samplers[VARIANT_LINEAR] = entry.samplers[VARIANT_SRGB];
       entry.isPlaceHolder = true;
@@ -108,12 +137,12 @@ void TextureManager::AddPlaceHolder(ITexManCacheable* memtex)
    }
 }
 
-vector<ITexManCacheable*> TextureManager::GetLoadedTextures() const
+vector<ITexManCacheable*> TextureManager::GetUsedTextures() const
 {
    const std::lock_guard lock(m_mapMutex);
    std::vector<ITexManCacheable*> keys;
    for (const auto& it : m_map)
-      if (!it.second.isPlaceHolder && !it.second.pendingUpload)
+      if (it.second.used && !it.second.isPlaceHolder)
          keys.push_back(it.second.tex);
    return keys;
 }
@@ -130,7 +159,11 @@ void TextureManager::SetDirty(ITexManCacheable* memtex)
 {
    const std::lock_guard lock(m_mapMutex);
    const Iter it = m_map.find(memtex->GetLiveHash());
-   if (it != m_map.end())
+   if (it == m_map.end())
+      return;
+   if (it->second.isPlaceHolder)
+      m_map.erase(it); // Reloaded on next use as a regular entry: a refreshed placeholder would never be evicted nor listed as used
+   else
       for (bool& dirty : it->second.dirty) // Every live variant needs refreshing, not just the next one drawn
          dirty = true;
 }
@@ -158,33 +191,13 @@ void TextureManager::UnloadAll()
    const std::lock_guard lock(m_mapMutex);
    m_map.clear();
 #if defined(ENABLE_BGFX)
+   m_compressor = nullptr;
    m_managedBytes = 0; // m_pendingFree is kept as the deferred destroys still reach the driver
 #endif
 }
 
 #if defined(ENABLE_BGFX)
 #pragma region GPU memory budget management (BGFX only)
-
-size_t TextureManager::EstimateGpuBytes(const BaseTexture* tex) const
-{
-   if (tex == nullptr)
-      return 0;
-   if (tex->m_compressed && m_rd.m_compressTextures) // Same condition as Sampler's precompressed upload
-      return tex->m_compressed->data.size() + tex->m_compressed->GetMipSize(0); // Mip chain plus the no-mips alias
-   // Bytes per texel of the GPU format (UncompressedBgfxFormat in Sampler.cpp), not of the bitmap: SRGB and SRGB565
-   // upload as RGBA8, RGB float as RGBA float, and RGB8 is padded to 4 bytes by most drivers
-   size_t texelBytes;
-   switch (tex->m_format)
-   {
-   case BaseTexture::BW: texelBytes = 1; break;
-   case BaseTexture::RGB_FP16:
-   case BaseTexture::RGBA_FP16: texelBytes = 8; break;
-   case BaseTexture::RGB_FP32:
-   case BaseTexture::RGBA_FP32: texelBytes = 16; break;
-   default: texelBytes = 4; break; // BW_FP32, RGB, SRGB, RGBA, SRGBA, SRGB565
-   }
-   return (texelBytes * tex->width() * tex->height() * 4) / 3; // Base level plus ~1/3 for the mip chain
-}
 
 void TextureManager::OnFrameStats(const bgfx::Stats* stats)
 {
@@ -272,7 +285,7 @@ bool TextureManager::MakeRoom(const size_t needed)
 std::shared_ptr<Sampler> TextureManager::CreateSampler(MapEntry& entry, const SamplerVariant variant, const bool force_linear_rgb, std::shared_ptr<const BaseTexture> bitmap)
 {
    bitmap = m_rd.OrFallback(std::move(bitmap));
-   size_t est = EstimateGpuBytes(bitmap.get());
+   size_t est = bitmap->GetEstimatedGPUSize();
    entry.fullBytes[variant] = 0;
 
    if (!MakeRoom(est))
@@ -283,7 +296,7 @@ std::shared_ptr<Sampler> TextureManager::CreateSampler(MapEntry& entry, const Sa
       entry.upgradeRetryFrame = m_statsFrame + kUpgradeRetryFrames;
       const unsigned int halfDim = std::max(std::max(bitmap->width(), bitmap->height()), 2 * MIN_TEXTURE_SIZE) / 2;
       if (std::shared_ptr<const BaseTexture> downsized = entry.tex->GetRawBitmap(true, halfDim);
-         downsized != nullptr && (downsized->width() < bitmap->width() || downsized->height() < bitmap->height()) && MakeRoom(EstimateGpuBytes(downsized.get())))
+         downsized != nullptr && (downsized->width() < bitmap->width() || downsized->height() < bitmap->height()) && MakeRoom(downsized->GetEstimatedGPUSize()))
       {
          PLOGW << "GPU memory limit: image '" << entry.tex->GetName() << "' was downsized to " << downsized->width() << 'x' << downsized->height();
          if (m_notify)
@@ -297,7 +310,7 @@ std::shared_ptr<Sampler> TextureManager::CreateSampler(MapEntry& entry, const Sa
             m_downsizeNotifId = m_notify("Image '" + entry.tex->GetName() + "' could not be uploaded, out of GPU memory"s, 5000, m_downsizeNotifId);
          bitmap = m_rd.m_fallbackTexture;
       }
-      est = EstimateGpuBytes(bitmap.get());
+      est = bitmap->GetEstimatedGPUSize();
    }
 
    m_managedBytes += static_cast<int64_t>(est) - static_cast<int64_t>(entry.gpuBytes[variant]);

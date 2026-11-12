@@ -42,6 +42,7 @@
 #include "tinyxml2/tinyxml2.h"
 #include "ui/VPXFileFeedback.h"
 #include "ui/live/LiveUI.h"
+#include "ui/live/editor/ops/ReferenceImageOp.h"
 #include "utils/BiffReader.h"
 #include "utils/BiffWriter.h"
 #include "utils/hash.h"
@@ -754,6 +755,7 @@ HRESULT PinTable::Save(VPXFileFeedback &feedback)
       m_settings.Save();
       return hr;
    }
+
    // Tables are saved in the VPX format, so a legacy .vpt table is saved to a .vpx file, and any other name gets the .vpx extension appended,
    // keeping a dotted name like 'table 1.5' whole (keeping the case of an existing .vpx extension, as changing it would write another file
    // on case sensitive file systems)
@@ -2375,16 +2377,6 @@ static std::filesystem::path PackSidecarDataFile(const std::filesystem::path &si
    return {};
 }
 
-// Formats a 16 byte MD5 hash as a hex string
-static string HexMD5(const uint8_t *const hash)
-{
-   char hex[33];
-   for (int i = 0; i < 16; ++i)
-      snprintf(hex + 2 * i, 3, "%02x", hash[i]);
-   hex[32] = '\0';
-   return hex;
-}
-
 // Tracks the file names already written to a pack, to resolve collisions including on case insensitive filesystems
 struct PackFilePool
 {
@@ -2483,7 +2475,6 @@ static void WritePackImage(JSONSerializer::Serializer &pack, PackFilePool &pool,
    sidecar["width"] = tex->m_width.load();
    sidecar["height"] = tex->m_height.load();
    sidecar["alpha_test"] = tex->m_alphaTestValue * 255.f; // 0..255 scale, negative when disabled
-   sidecar["md5"] = HexMD5(tex->GetMD5Hash());
    sidecar["opaque"] = tex->IsOpaque();
    pack.AddTextFile(std::filesystem::path("images") / (stem + ".json"s), sidecar.dump(2));
 }
@@ -2876,31 +2867,6 @@ HRESULT PinTable::LoadGameFromJSONPack(JSONSerializer::Deserializer &packRef, VP
          for (const char *key : { "alpha_test", "opaque", "link" })
             if (sidecar.contains(key))
                texDoc[key] = sidecar[key];
-         if (const nlohmann::json md5 = sidecar.value("md5", nlohmann::json()); md5.is_string())
-         {
-            // The md5 hash is stored as a hex string, converted back to its byte array
-            const string hex = md5.get<string>();
-            const auto hexDigit = [](const char c)
-            {
-               if (c >= '0' && c <= '9')
-                  return c - '0';
-               if (c >= 'a' && c <= 'f')
-                  return c - 'a' + 10;
-               if (c >= 'A' && c <= 'F')
-                  return c - 'A' + 10;
-               return -1;
-            };
-            nlohmann::ordered_json bytes = nlohmann::ordered_json::array();
-            for (size_t i = 0; i + 1 < hex.size(); i += 2)
-            {
-               const int hi = hexDigit(hex[i]);
-               const int lo = hexDigit(hex[i + 1]);
-               if (hi < 0 || lo < 0)
-                  break;
-               bytes.push_back((hi << 4) | lo);
-            }
-            texDoc["md5"] = bytes;
-         }
          // Image data block, using the PinBinary serialization field ordering (size before data)
          nlohmann::ordered_json binDoc;
          binDoc["name"] = name;
@@ -3653,14 +3619,8 @@ std::unique_ptr<JSONSerializer::Deserializer> PinTable::CreateImportDeserializer
          if (tex == nullptr)
             continue;
          const nlohmann::json sidecar = readJSON(sidecarFile);
-         bool equal = sidecar.is_object();
-         if (equal)
-         {
-            if (const nlohmann::json md5 = sidecar.value("md5", nlohmann::json()); md5.is_string())
-               equal = StrCompareNoCase(md5.get<string>(), HexMD5(tex->GetMD5Hash()));
-            else
-               equal = sameData(sidecarFile, tex->GetFileRaw(), tex->GetFileSize());
-         }
+         // Compares the data itself (older packs' 'md5' is ignored: it may be stale after an edit of the image file)
+         bool equal = sidecar.is_object() && sameData(sidecarFile, tex->GetFileRaw(), tex->GetFileSize());
          if (equal)
             if (const nlohmann::json v = sidecar.value("alpha_test", nlohmann::json()); !v.is_number() || fabsf(v.get<float>() - tex->m_alphaTestValue * 255.f) > 0.5f)
                equal = false;
@@ -5109,7 +5069,7 @@ Texture *PinTable::ImportImage(Texture *const image)
 
 Texture *PinTable::ReImportImage(Texture *const oldImage, Texture *const image)
 {
-   if (memcmp(image->GetMD5Hash(), oldImage->GetMD5Hash(), 16) == 0)
+   if (image->HasSameContent(*oldImage))
    {
       // The content is unchanged: keep the existing image
       delete image;
@@ -5120,6 +5080,9 @@ Texture *PinTable::ReImportImage(Texture *const oldImage, Texture *const image)
    RemoveFromVectorSingle(m_vimage, oldImage);
    if (m_liveBaseTable)
       RemoveFromVectorSingle(m_vliveimage, oldImage);
+   // As in RemoveImage: a running player would keep the old image's texture data, with a dangling pointer to it
+   if (g_pplayer && g_pplayer->m_renderer)
+      g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(oldImage);
    delete oldImage;
 
    m_vimage.push_back(image);
@@ -5133,7 +5096,7 @@ Texture *PinTable::ReImportImage(Texture *const oldImage, Texture *const image)
 
 Texture *PinTable::FindImageByHash(const Texture *const image) const
 {
-   const auto it = std::ranges::find_if(m_vimage, [image](const Texture *other) { return other != image && memcmp(other->GetMD5Hash(), image->GetMD5Hash(), 16) == 0; });
+   const auto it = std::ranges::find_if(m_vimage, [image](const Texture *other) { return other != image && other->HasSameContent(*image); });
    return it != m_vimage.end() ? *it : nullptr;
 }
 
@@ -5150,6 +5113,10 @@ void PinTable::RemoveImage(Texture * const ppi)
       else
          m_textureMap.erase(it);
    }
+
+   // A running player (live editor) would keep the image's texture data, with a dangling pointer to it
+   if (g_pplayer && g_pplayer->m_renderer)
+      g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(ppi);
 
    delete ppi;
 }
@@ -7454,6 +7421,43 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
          insertUser("Ball Decal"s);
       if (StrCompareNoCase(m_envImage, searchObjectName))
          insertUser("Environment Image"s);
+   }
+}
+
+void PinTable::CollectPlayImages(ankerl::unordered_dense::set<const Texture *> &shown) const
+{
+   const auto add = [this, &shown](const string &name)
+   {
+      if (const Texture *const image = GetImage(name); image != nullptr)
+         shown.insert(image);
+   };
+   // Not the environment image: the renderer decodes it itself (for its sampler and the radiance precomputation)
+   for (const string *name : { &m_image, &m_ballImage, &m_ballImageDecal, &m_imageColorGrade })
+      add(*name);
+   for (const string &name : m_BG_image)
+      add(name);
+   for (const IEditable *const part : m_vedit)
+   {
+      if (part == nullptr || (part->GetPartGroup() != nullptr && part->GetPartGroup()->GetPlayerModeVisibilityMask() == 0)
+         || VPX::EditorUI::ReferenceImageOp::IsReferenceImage(part)) // At table load, m_d holds the authored visibility
+         continue;
+      switch (part->GetItemType())
+      {
+      case eItemBall: add(static_cast<const Ball *>(part)->m_d.m_szImage); add(static_cast<const Ball *>(part)->m_d.m_imageDecal); break;
+      case eItemDecal: add(static_cast<const Decal *>(part)->m_d.m_szImage); break;
+      case eItemDispReel: add(static_cast<const DispReel *>(part)->m_d.m_szImage); break;
+      case eItemFlasher: add(static_cast<const Flasher *>(part)->m_d.m_szImageA); add(static_cast<const Flasher *>(part)->m_d.m_szImageB); break;
+      case eItemFlipper: add(static_cast<const Flipper *>(part)->m_d.m_szImage); break;
+      case eItemHitTarget: add(static_cast<const HitTarget *>(part)->m_d.m_szImage); break;
+      case eItemLight: add(static_cast<const Light *>(part)->m_d.m_szImage); break;
+      case eItemPlunger: add(static_cast<const Plunger *>(part)->m_d.m_szImage); break;
+      case eItemPrimitive: add(static_cast<const Primitive *>(part)->m_d.m_szImage); add(static_cast<const Primitive *>(part)->m_d.m_szNormalMap); break;
+      case eItemRamp: add(static_cast<const Ramp *>(part)->m_d.m_szImage); break;
+      case eItemRubber: add(static_cast<const Rubber *>(part)->m_d.m_szImage); break;
+      case eItemSpinner: add(static_cast<const Spinner *>(part)->m_d.m_szImage); break;
+      case eItemSurface: add(static_cast<const Surface *>(part)->m_d.m_szImage); add(static_cast<const Surface *>(part)->m_d.m_szSideImage); break;
+      default: break;
+      }
    }
 }
 
