@@ -912,7 +912,17 @@ void RenderView::RenderDynamics()
    for (int eye = 0; eye < nEyes; eye++)
       matProj[eye] = GetMVP().GetFlippedProj(eye);
    rd->m_basicShader->SetMatrix(ShaderUniform::matProj, &matProj[0], nEyes);
-   rd->m_ballShader->SetMatrix(ShaderUniform::matProj, &matProj[0], nEyes);
+   // The ball shader probes the previous frame render for its playfield reflection: keep the view-projection this
+   // frame is rendered with, to reproject next frame's reflection hits to this frame's clip space
+   Matrix3D matPrevViewProj[2];
+   for (int eye = 0; eye < nEyes; eye++)
+   {
+      const Matrix3D viewProj = GetMVP().GetView(eye) * matProj[eye];
+      matPrevViewProj[eye] = m_prevFrameViewProjValid ? m_prevFrameViewProj[eye] : viewProj;
+      m_prevFrameViewProj[eye] = viewProj;
+   }
+   m_prevFrameViewProjValid = true;
+   rd->m_ballShader->SetMatrix(ShaderUniform::matPrevViewProj, &matPrevViewProj[0], nEyes);
 
    // Update ball pos uniforms
    vec4 balls[MAX_BALL_SHADOW];

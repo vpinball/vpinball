@@ -17,21 +17,21 @@ $input v_worldPos, v_normal, v_texcoord0
     uniform mat4 matView[2];
     uniform mat4 matWorldView[2];
     uniform mat4 matWorldViewInverse[2];
-    uniform mat4 matProj[2];
+    uniform mat4 matPrevViewProj[2];
     // FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
     #define mView             matView[int(round(v_eye))]
     #define mWorldView        matWorldView[int(round(v_eye))]
     #define mWorldViewInverse matWorldViewInverse[int(round(v_eye))]
-    #define mProj             matProj[int(round(v_eye))]
+    #define mPrevViewProj     matPrevViewProj[int(round(v_eye))]
 #else
     uniform mat4 matView;
     uniform mat4 matWorldView;
     uniform mat4 matWorldViewInverse;
-    uniform mat4 matProj;
+    uniform mat4 matPrevViewProj;
     #define mView             matView
     #define mWorldView        matWorldView
     #define mWorldViewInverse matWorldViewInverse
-    #define mProj             matProj
+    #define mPrevViewProj     matPrevViewProj
 #endif
 
 SAMPLER2D      (tex_ball_color, 0);     // base texture (used as a reflection map)
@@ -164,8 +164,9 @@ void main()
     const vec3 playfield_hit = v_worldPos.xyz - t * R;
 
     // New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
-    // TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
-    const vec4 proj = mul(mProj, vec4(playfield_hit, 1.0));
+    // Move the hit point back to world space, then reproject it with the view-projection the previous frame was rendered with
+    const vec4 playfield_hit_world = mul(mWorldViewInverse, vec4(playfield_hit, 1.0));
+    const vec4 proj = mul(mPrevViewProj, playfield_hit_world);
     #if TEX_V_IS_UP
         // OpenGL and OpenGL ES have reversed render targets
         const vec2 uvp = vec2(0.5, 0.5) + proj.xy               * (0.5 / proj.w);
