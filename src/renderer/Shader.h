@@ -289,7 +289,7 @@ enum class ShaderUniform : unsigned int
    SHADER_UNIFORM(ShaderUniformType::Float4, w_h_height, 1), // Post process & Basic (for screen space reflection/refraction)
 
    // Shared material for Ball, Basic and Classic light shaders
-   SHADER_UNIFORM(ShaderUniformType::Float4, clip_plane, 1), // OpenGL & BGFX only
+   SHADER_UNIFORM(ShaderUniformType::Float4, clip_plane, 1), // Table space clip plane (all renderers, only where supported)
    SHADER_UNIFORM(ShaderUniformType::Float4v, basicLightEmission, 2), // OpenGL & BGFX only
    SHADER_UNIFORM(ShaderUniformType::Float4v, basicLightPos, 2), // OpenGL & BGFX only
    SHADER_UNIFORM(ShaderUniformType::Float4v, ballLightEmission, 10), // OpenGL & BGFX only
@@ -323,6 +323,7 @@ enum class ShaderUniform : unsigned int
 
    // Ball Shader
    SHADER_UNIFORM(ShaderUniformType::Float4x3, orientation, 1),
+   SHADER_UNIFORM(ShaderUniformType::Float4x3, orientationInv, 1), // Inverse of orientation (unit sphere object space to world), for the raytraced impostor
    SHADER_UNIFORM(ShaderUniformType::Float4, invTableRes_reflection, 1),
    SHADER_UNIFORM(ShaderUniformType::Float4, w_h_disableLighting, 1),
    SHADER_UNIFORM(ShaderUniformType::Float4x4, matPrevViewProj, 2), // Previous frame view-projection (to reproject the previous frame render as ball reflection probe), +1 Matrix for stereo

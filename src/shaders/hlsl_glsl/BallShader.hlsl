@@ -56,6 +56,8 @@ sampler2D tex_ball_playfield : TEXUNIT4 = sampler_state // playfield
 #include "Material.fxh"
 
 const float4x3 orientation;
+const float4x3 orientationInv; // inverse of orientation, mapping world space back to unit sphere object space (raytraced impostor)
+const float4   clip_plane;     // clip plane in table coordinate system, tested against the analytic hit point
 const float4   invTableRes_reflection;
 const float4   w_h_disableLighting;
 #define disableLighting (w_h_disableLighting.z != 0.)
@@ -159,8 +161,45 @@ float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 di
 
 float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool decalMode ) : COLOR
 {
-    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
-    const float3 N = normalize(IN.normal_t0x.xyz);
+    // Analytic raycast of the unit sphere: the interpolated view space position of the rasterized
+    // sphere mesh is a point on the camera ray (the camera is at the view space origin). The ray is
+    // moved to unit sphere space by the inverse view and inverse orientation, then intersected to
+    // get the exact surface point and normal. Since the ray is moved by orientationInv, this
+    // supports the anti stretch ellipsoid for free.
+    const float3 d_v = IN.worldPos_t0y.xyz;
+    const float3 o_w = mul_w1(float3(0.,0.,0.), matWorldViewInverse);
+    const float3 d_w = mul_w0(d_v, matWorldViewInverse);
+    const float3 o_o = mul_w1(o_w, orientationInv);
+    const float3 d_o = mul_w0(d_w, orientationInv);
+    const float a = dot(d_o, d_o);
+    const float b = dot(o_o, d_o);
+    const float c = dot(o_o, o_o) - 1.0;
+    const float discr = b * b - a * c;
+    // Analytic silhouette antialiasing: fade out the coverage over ~1 pixel around the outline
+    // (discr/a is 0 at the sphere outline)
+    const float coverage = saturate(discr / (a * max(fwidth(discr / a), 1e-7)) + 0.5);
+    if (coverage <= 0.0)
+        discard;
+    const float t_hit = (-b - sqrt(max(discr, 0.0))) / a;
+    if (t_hit <= 0.0)
+        discard;
+    const float3 n_obj = normalize(o_o + t_hit * d_o); // hit point on the unit sphere = exact normal
+    const float3 hit_world = mul_w1(n_obj, orientation);
+    const float3 hit_view = mul_w1(hit_world, matWorldView);
+
+    // Test the clip plane at the analytic surface point (pixel shaders cannot express the hardware clip plane at the right depth)
+    clip(dot(clip_plane, float4(hit_world, 1.0)));
+
+    // Exact per pixel depth of the analytic hit is not written: ps_3_0 does not support the DEPTH output
+    // semantic, so the rasterized mesh depth is used (nearly exact as the mesh tightly fits the sphere).
+
+    // Decal UV, reproducing the mapping baked in the ball mesh UVs
+    const float2 decalUV = float2(frac(0.5935 + atan2(n_obj.y, n_obj.x) * 0.1339),
+                                  0.5 + asin(clamp(n_obj.z, -1., 1.)) * 0.2678);
+
+    const float3 nspin = mul_w0(n_obj, orientation);
+    const float3 N = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+    const float3 V = normalize(/*camera=0,0,0,1*/-hit_view);
     const float3 R = reflect(V, N);
 
     float3 ballImageColor;
@@ -183,7 +222,7 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
       ballImageColor = tex2Dlod(tex_ball_color, float4(uv, 0., lod)).rgb;
     }
 
-    const float4 decalColorT = tex2D(tex_ball_decal, float2(IN.normal_t0x.w, IN.worldPos_t0y.w));
+    const float4 decalColorT = tex2D(tex_ball_decal, decalUV);
     float3 decalColor = decalColorT.rgb;
 
     if (!decalMode)
@@ -197,7 +236,7 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
        ballImageColor = ScreenHDR(ballImageColor, decalColor);
 
     BRANCH if (disableLighting)
-       return float4(ballImageColor,cBase_Alpha.a);
+       return float4(ballImageColor,cBase_Alpha.a * coverage);
 
     if (!decalMode)
        ballImageColor *= fenvEmissionScale_TexWidth.x;
@@ -211,8 +250,8 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
     const float NdotR = dot(playfield_normal, R);
 
     const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,0.), matWorldView);
-    const float t = dot(playfield_normal, IN.worldPos_t0y.xyz - playfield_p0) / NdotR;
-    const float3 playfield_hit = IN.worldPos_t0y.xyz - t * R;
+    const float t = dot(playfield_normal, hit_view - playfield_p0) / NdotR;
+    const float3 playfield_hit = hit_view - t * R;
 
     // New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
     // Move the hit point back to world space, then reproject it with the view-projection the previous frame was rendered with
@@ -250,8 +289,8 @@ float4 psBall( const in vout IN, uniform bool equirectangularMap, uniform bool d
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
     float4 color;
-    color.rgb = ballLightLoop(IN.worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false);
-    color.a = cBase_Alpha.a;
+    color.rgb = ballLightLoop(hit_view, N, V, diffuse, glossy, specular, 1.0, false);
+    color.a = cBase_Alpha.a * coverage;
     return color;
 }
 

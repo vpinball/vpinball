@@ -81,6 +81,33 @@ public:
       }
       return false;
    }
+
+   // Projects the unit-sphere fit points through the given object-to-clip-space transform and accumulates
+   // their clip space bounds (used to bound the raytraced ball impostor quad, including anti-stretch
+   // ellipsoids since the full object transform is applied to each point). zMin receives the nearest
+   // projected depth. Returns true when a point ends up behind the camera (bounds are then unusable).
+   bool computeProjBounds(const Matrix3D &toClip, float &xMin, float &xMax, float &yMin, float &yMax, float &zMin) const
+   {
+      for (int i = 0; i < AntiStretchHelper::npts * 3; i += 3)
+      {
+         const float px = m_stretchFitPoints[i];
+         const float py = m_stretchFitPoints[i + 1];
+         const float pz = m_stretchFitPoints[i + 2];
+         const float xp = toClip._11 * px + toClip._21 * py + toClip._31 * pz + toClip._41;
+         const float yp = toClip._12 * px + toClip._22 * py + toClip._32 * pz + toClip._42;
+         const float zp = toClip._13 * px + toClip._23 * py + toClip._33 * pz + toClip._43;
+         const float wp = toClip._14 * px + toClip._24 * py + toClip._34 * pz + toClip._44;
+         if (wp <= 1e-3f)
+            return true;
+         const float xn = xp / wp, yn = yp / wp, zn = zp / wp;
+         xMin = min(xMin, xn);
+         xMax = max(xMax, xn);
+         yMin = min(yMin, yn);
+         yMax = max(yMax, yn);
+         zMin = min(zMin, zn);
+      }
+      return false;
+   }
 };
 
 class BallData final : public BaseProperty

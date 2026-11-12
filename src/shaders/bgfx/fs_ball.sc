@@ -1,11 +1,8 @@
 // license:GPLv3+
 
-$input v_worldPos, v_normal, v_texcoord0
+$input v_tablePos // view space point on the camera ray (unnormalized direction)
 #ifdef STEREO
     $input v_eye
-#endif
-#ifdef CLIP
-    $input v_clipDistance
 #endif
 
 
@@ -13,25 +10,38 @@ $input v_worldPos, v_normal, v_texcoord0
 
 #define NUM_BALL_LIGHTS 8
 
+uniform mat4 orientation;    // unit sphere object space to world space (rot * scale * translate)
+uniform mat4 orientationInv; // world space to unit sphere object space
 #ifdef STEREO
     uniform mat4 matView[2];
     uniform mat4 matWorldView[2];
     uniform mat4 matWorldViewInverse[2];
+    uniform mat4 matRotViewProj[2];
+    uniform vec4 cameraPosWorld[2];
     uniform mat4 matPrevViewProj[2];
     // FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
     #define mView             matView[int(round(v_eye))]
     #define mWorldView        matWorldView[int(round(v_eye))]
     #define mWorldViewInverse matWorldViewInverse[int(round(v_eye))]
+    #define mRotViewProj      matRotViewProj[int(round(v_eye))]
+    #define cCameraPosWorld   cameraPosWorld[int(round(v_eye))].xyz
     #define mPrevViewProj     matPrevViewProj[int(round(v_eye))]
 #else
     uniform mat4 matView;
     uniform mat4 matWorldView;
     uniform mat4 matWorldViewInverse;
+    uniform mat4 matRotViewProj;
+    uniform vec4 cameraPosWorld;
     uniform mat4 matPrevViewProj;
     #define mView             matView
     #define mWorldView        matWorldView
     #define mWorldViewInverse matWorldViewInverse
+    #define mRotViewProj      matRotViewProj
+    #define cCameraPosWorld   cameraPosWorld.xyz
     #define mPrevViewProj     matPrevViewProj
+#endif
+#ifdef CLIP
+    uniform vec4 clip_plane;
 #endif
 
 SAMPLER2D      (tex_ball_color, 0);     // base texture (used as a reflection map)
@@ -94,18 +104,55 @@ vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, co
    return color;
 }
 
-#ifndef CLIP
-EARLY_DEPTH_STENCIL
-#endif
 void main()
 {
+    // Analytic raycast of the unit sphere: v_tablePos carries a view space point on the camera ray
+    // (the impostor vertex shader unprojects the quad corner through the inverse projection). The
+    // ray is transformed to unit sphere space by the inverse view and inverse orientation, then
+    // intersected to get the exact silhouette, surface point and normal. Since the ray is moved
+    // by orientationInv, this supports the anti stretch ellipsoid for free.
+    const vec3 o_w = mul(mWorldViewInverse, vec4(0., 0., 0., 1.)).xyz;
+    const vec3 d_w = mul(mWorldViewInverse, vec4(v_tablePos, 0.)).xyz;
+    const vec3 o_o = mul(orientationInv, vec4(o_w, 1.)).xyz;
+    const vec3 d_o = mul(orientationInv, vec4(d_w, 0.)).xyz;
+    const float a = dot(d_o, d_o);
+    const float b = dot(o_o, d_o);
+    const float c = dot(o_o, o_o) - 1.0;
+    const float discr = b * b - a * c;
+    // Analytic silhouette antialiasing: fade out the coverage over ~1 pixel around the outline
+    // (discr/a is the squared projection of the hit on the ray, = 0 at the sphere outline)
+    const float coverage = saturate(discr / (a * max(fwidth(discr / a), 1e-7)) + 0.5);
+    if (coverage <= 0.0)
+        discard;
+    const float t_hit = (-b - sqrt(max(discr, 0.0))) / a;
+    if (t_hit <= 0.0)
+        discard;
+    const vec3 n_obj = normalize(o_o + t_hit * d_o); // hit point on the unit sphere = exact normal
+    const vec3 hit_world = mul(orientation, vec4(n_obj, 1.0)).xyz;
+    const vec3 hit_view = mul(mWorldView, vec4(hit_world, 1.0)).xyz;
+
     #ifdef CLIP
-    if (v_clipDistance < 0.0)
+    // Test the clip plane at the analytic surface point (not at the impostor quad depth)
+    if (dot(clip_plane, vec4(hit_world, 1.0)) < 0.0)
        discard;
     #endif
 
-    const vec3 V = normalize(/*camera=0,0,0,1*/-v_worldPos.xyz);
-    const vec3 N = normalize(v_normal.xyz);
+    // Exact per pixel depth of the analytic hit (uses the same camera relative transform as the rest of the frame)
+    const vec4 hit_clip = mul(mRotViewProj, vec4(hit_world - cCameraPosWorld, 1.0));
+    #if BGFX_SHADER_LANGUAGE_GLSL || BGFX_SHADER_LANGUAGE_ESSL
+        gl_FragDepth = 0.5 + 0.5 * (hit_clip.z / hit_clip.w);
+    #else
+        gl_FragDepth = hit_clip.z / hit_clip.w;
+    #endif
+
+    // Decal UV, reproducing the mapping baked in the ball mesh UVs
+    const vec2 decalUV = vec2(fract(0.5935 + atan2(n_obj.y, n_obj.x) * 0.1339),
+                              0.5 + asin(clamp(n_obj.z, -1., 1.)) * 0.2678);
+
+    const vec3 nspin = mul(orientation, vec4(n_obj, 0.0)).xyz;
+    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore mWorldView is not orthonormal
+    const vec3 N = normalize(mul(vec4(nspin, 0.0), mWorldViewInverse).xyz); // actually: mul(vec4(nspin,0.), mWorldViewInverseTranspose), but optimized to save one matrix
+    const vec3 V = normalize(/*camera=0,0,0,1*/-hit_view);
     const vec3 R = reflect(V, N);
 
     vec3 ballImageColor;
@@ -127,7 +174,7 @@ void main()
         ballImageColor = texture2DLod(tex_ball_color, uv, lod).rgb;
     #endif
 
-    const vec4 decalColorT = texture2D(tex_ball_decal, v_texcoord0);
+    const vec4 decalColorT = texture2D(tex_ball_decal, decalUV);
     vec3 decalColor = decalColorT.rgb;
     #ifndef DECAL
         // decal texture is an alpha scratch texture and must be added to the ball texture
@@ -141,7 +188,7 @@ void main()
 
     BRANCH if (disableLighting)
     {
-       gl_FragColor = vec4(ballImageColor,cBase_Alpha.a);
+       gl_FragColor = vec4(ballImageColor,cBase_Alpha.a * coverage);
        return;
     }
 
@@ -160,8 +207,8 @@ void main()
 
     const vec3 playfield_p0 = mul(mWorldView, vec4(/*playfield_pos=*/0.,0.,0.,1.0)).xyz;
     //const vec3 playfield_p0 = mWorldView[3].xyz;
-    const float t = dot(playfield_normal, v_worldPos.xyz - playfield_p0) / NdotR;
-    const vec3 playfield_hit = v_worldPos.xyz - t * R;
+    const float t = dot(playfield_normal, hit_view - playfield_p0) / NdotR;
+    const vec3 playfield_hit = hit_view - t * R;
 
     // New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
     // Move the hit point back to world space, then reproject it with the view-projection the previous frame was rendered with
@@ -206,9 +253,9 @@ void main()
     #endif
 
     #ifdef STEREO
-       gl_FragColor.rgb = ballLightLoop(v_worldPos.xyz, N, V, diffuse, glossy, specular, 1.0, false, v_eye);
+       gl_FragColor.rgb = ballLightLoop(hit_view, N, V, diffuse, glossy, specular, 1.0, false, v_eye);
     #else
-       gl_FragColor.rgb = ballLightLoop(v_worldPos.xyz, N, V, diffuse, glossy, specular, 1.0, false);
+       gl_FragColor.rgb = ballLightLoop(hit_view, N, V, diffuse, glossy, specular, 1.0, false);
     #endif
-    gl_FragColor.a = cBase_Alpha.a;
+    gl_FragColor.a = cBase_Alpha.a * coverage;
 }

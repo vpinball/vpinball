@@ -408,17 +408,23 @@ void Ball::Render(const unsigned int renderMask)
 
    const vec4 diffuse = convertColor(m_d.m_color, 1.0f);
    m_renderer->m_renderDevice->m_ballShader->SetVector(ShaderUniform::cBase_Alpha, &diffuse);
-   if (diffuse.w < 1.0f)
+   // Alpha blending is always enabled as the analytic raycast relies on it for its silhouette antialiasing
+   m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+   m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+   m_renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+   m_renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+
+#if defined(ENABLE_OPENGL) || defined(ENABLE_DX9)
+   // The ball performs the clip plane test in its fragment shader, evaluated at the analytic surface point. Feed a
+   // null plane when clipping is disabled (the clip_plane uniform would otherwise hold a stale plane). On DX9, the
+   // hardware clip plane cannot account for the per pixel depth, so it is disabled and replaced by the shader test.
+   const bool clipPlaneEnabled = m_renderer->m_renderDevice->GetRenderState().GetRenderState(RenderState::CLIPPLANEENABLE) == RenderState::RS_TRUE;
+   if (!clipPlaneEnabled)
    {
-      m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-      m_renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-      m_renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
-      m_renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+      const vec4 nullClipPlane(0.f, 0.f, 0.f, 0.f);
+      m_renderer->m_renderDevice->m_ballShader->SetVector(ShaderUniform::clip_plane, &nullClipPlane);
    }
-   else
-   {
-      m_renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-   }
+#endif
 
    Matrix3D rot(m_hitBall.m_orientation.m_d[0][0], m_hitBall.m_orientation.m_d[1][0], m_hitBall.m_orientation.m_d[2][0], 0.0f,
                 m_hitBall.m_orientation.m_d[0][1], m_hitBall.m_orientation.m_d[1][1], m_hitBall.m_orientation.m_d[2][1], 0.0f,
@@ -447,7 +453,35 @@ void Ball::Render(const unsigned int renderMask)
       m_renderer->m_renderDevice->m_ballShader->SetTextureNull(ShaderUniform::tex_ball_decal);
    m_renderer->m_renderDevice->m_ballShader->SetTechnique(sphericalMapping ? m_d.m_decalMode ? ShaderTechnique::RenderBall_SphericalMap_DecalMode : ShaderTechnique::RenderBall_SphericalMap
                                                      : m_d.m_decalMode ? ShaderTechnique::RenderBall_DecalMode : ShaderTechnique::RenderBall);
-   m_renderer->m_renderDevice->DrawMesh(m_renderer->m_renderDevice->m_ballShader, false, pos, 0.f, m_renderer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_renderer->m_ballMeshBuffer->m_ib->m_count);
+
+   // The ball fragment shader raytraces a unit sphere (an ellipsoid once anti stretch is applied) to get the exact
+   // surface point, normal and, where supported, per pixel depth.
+#if defined(ENABLE_DX9)
+   // On DX9 the sphere mesh is rasterized and the interpolated view space position is used as the camera ray: ps_3_0
+   // cannot write the per pixel depth of the analytic hit, so the clip space impostor quad used on the other backends
+   // (see below) would break depth ordering by lying at the nearest projected ball depth.
+   m_renderer->m_renderDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_FALSE); // Clip test is performed in the fragment shader
+   m_renderer->m_renderDevice->DrawMesh(
+      m_renderer->m_renderDevice->m_ballShader, false, pos, 0.f, m_renderer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_renderer->m_ballMeshBuffer->m_ib->m_count);
+   if (clipPlaneEnabled)
+      m_renderer->m_renderDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
+#else
+   // On BGFX and OpenGL the ball is rendered as an analytic raytraced impostor: a quad covering the projected bounds
+   // of the ball in clip space (using the same bounds evaluation as the anti stretch feature above), giving the exact
+   // silhouette in addition to the exact surface point and normal. The vertex shader only passes the clip space
+   // corners on and derives the per corner camera ray from the inverse projection.
+   const unsigned int nEyes = m_renderer->GetMVP().m_nEyes;
+   Matrix3D invFlippedProj[2];
+   for (unsigned int eye = 0; eye < nEyes; eye++)
+   {
+      invFlippedProj[eye] = m_renderer->GetMVP().GetFlippedProj(eye);
+      invFlippedProj[eye].Invert();
+   }
+   m_renderer->m_renderDevice->m_ballShader->SetMatrix(ShaderUniform::matProjInv, invFlippedProj, nEyes);
+   m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   Vertex3D_NoTex2 quadVertices[4] = {}; // Filled at render frame submission time below
+   m_renderer->m_renderDevice->DrawTexturedQuad(m_renderer->m_renderDevice->m_ballShader, quadVertices, false, 0.f);
+#endif
 
    // Update render command with the ball position at the render frame submission time
    // This creates a little asynchronism between ball position and the rest of the frame, but slightly reduce latency and increase 
@@ -456,9 +490,17 @@ void Ball::Render(const unsigned int renderMask)
    // may be modified while the update command is executed.
    // Note that this code must be kept in sync with the ball motion blur code
    ShaderState *ss = m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->GetShaderState();
+#if !defined(ENABLE_DX9)
+   Vertex3D_NoTex2 *const quadVerts = static_cast<Vertex3D_NoTex2 *>(m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->GetQuadVertices());
+   const Matrix3D mvps[2] = { m_renderer->GetMVP().GetModelViewProj(0), m_renderer->GetMVP().GetModelViewProj(nEyes - 1) };
+#endif
    AddRef(); // The ball may be destroyed by the script, so we need to hold a ref on it until the end of frame command below releases it
    m_renderer->m_renderDevice->AddBeginOfFrameCmd(
-      [this, rotScale = rot * scale, ss, rd = m_renderer->m_renderDevice, scheduleTimestamp = usec()]()
+      [this, rotScale = rot * scale, ss,
+#if !defined(ENABLE_DX9)
+         quadVerts, mvp0 = mvps[0], mvp1 = mvps[1], nEyes,
+#endif
+         rd = m_renderer->m_renderDevice, scheduleTimestamp = usec()]()
       {
          // Adjust ball position to latest physics position
          vec3 posl = m_hitBall.m_d.m_pos;
@@ -475,6 +517,40 @@ void Ball::Render(const unsigned int renderMask)
             posl.z -= m_hitBall.m_d.m_radius;
          const Matrix3D m3D_fulll = rotScale * Matrix3D::MatrixTranslate(posl);
          ss->SetMatrix(ShaderUniform::orientation, &m3D_fulll.m[0][0]);
+         const Matrix3D m3D_fullInv = Matrix3D::MatrixInverse(m3D_fulll);
+         ss->SetMatrix(ShaderUniform::orientationInv, &m3D_fullInv.m[0][0]);
+
+#if !defined(ENABLE_DX9)
+         // Update the impostor quad to cover the projected bounds of the ball at its latest position (union of both eyes)
+         float xMin = FLT_MAX, xMax = -FLT_MAX, yMin = FLT_MAX, yMax = -FLT_MAX, zMin = FLT_MAX;
+         bool behindCamera = m_ash.computeProjBounds(m3D_fulll * mvp0, xMin, xMax, yMin, yMax, zMin);
+         if (nEyes > 1)
+            behindCamera |= m_ash.computeProjBounds(m3D_fulll * mvp1, xMin, xMax, yMin, yMax, zMin);
+         float xL = xMin, xR = xMax, yB = yMin, yT = yMax, z = zMin;
+         if (behindCamera)
+         {
+            // Ball is behind/partially behind the camera: fall back to a fullscreen quad at near depth, and let the
+            // fragment shader raycast sort out the visible part (the sphere is still tested analytically)
+            xL = yB = -1.f;
+            xR = yT = 1.f;
+            z = 0.f;
+         }
+         else
+         {
+            // Enlarge the quad to cover the approximation of the sampled bounds and the antialiased rim, and move it
+            // slightly in front of the nearest projected surface depth
+            const float padXY = 0.02f * max(xR - xL, yT - yB) + 0.002f;
+            xL -= padXY;
+            xR += padXY;
+            yB -= padXY;
+            yT += padXY;
+            z = max(0.f, z - 0.001f);
+         }
+         quadVerts[0] = { xL, yB, z, 0.f, 0.f, 0.f, 0.f, 0.f };
+         quadVerts[1] = { xR, yB, z, 0.f, 0.f, 0.f, 0.f, 0.f };
+         quadVerts[2] = { xL, yT, z, 0.f, 0.f, 0.f, 0.f, 0.f };
+         quadVerts[3] = { xR, yT, z, 0.f, 0.f, 0.f, 0.f, 0.f };
+#endif
       });
    // Release from an end of frame command, as these also run when the frame is discarded (begin of frame commands are then dropped)
    m_renderer->m_renderDevice->AddEndOfFrameCmd(

@@ -9,6 +9,8 @@
 #include "Helpers.fxh"
 
 uniform mat4 orientation;
+uniform mat4 orientationInv; // inverse of orientation, mapping world space back to unit sphere object space (raytraced impostor)
+uniform mat4 matProjInv[N_EYES]; // inverse (flipped) projection, mapping rendered clip space back to view space (raytraced impostor)
 
 layout(std140) uniform ballMatrixBlock {
 	mat4 matView[N_EYES];
@@ -40,13 +42,9 @@ flat out int glLayer_gs;
 
 ////FRAGMENT
 
-// Early-Z-test implementation:
 #extension GL_ARB_shader_image_load_store : enable
-#extension GL_ARB_conservative_depth : enable
-#if !defined(SHADER_GL410) && !defined(SHADER_GLES30)
-layout(early_fragment_tests) in;
-layout(depth_unchanged) out float gl_FragDepth;
-#endif
+
+uniform vec4 clip_plane; // Clip plane defined in table coordinate system, tested against the analytic hit point
 
 uniform sampler2D tex_ball_color; // base texture
 uniform samplerStereo tex_ball_playfield; // playfield
@@ -91,6 +89,25 @@ void main()
     VS_CLIP_DISTANCE(pos);
 }
 
+////vsBallQuad
+VS_OUT(vec3, ray);
+
+void main()
+{
+    VS_EYE;
+
+    // vPosition carries the clip space corner of the impostor quad (see Ball::Render), with z set
+    // to the nearest projected ball depth. The camera ray for the analytic raycast is derived in
+    // the fragment shader by unprojecting the interpolated clip position through the inverse
+    // projection of the eye being rendered.
+    const float4 clipPos = float4(vPosition, 1.0);
+    VS_VARYING(ray, clipPos.xyz);
+    gl_Position = clipPos;
+#if !defined(SHADER_GLES30)
+    gl_ClipDistance[0] = 1.0; // Disable hardware clipping: the fragment shader clips at the analytic surface point
+#endif
+}
+
 ////vsBallTrail
 VS_OUT(vec3, tex0_alpha);
 
@@ -121,6 +138,26 @@ void main()
         gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
         normal_t0x = normal_t0x_gs[i];
         worldPos_t0y = worldPos_t0y_gs[i];
+        eye = eye_gs[i];
+        EmitVertex();
+    }
+    EndPrimitive();
+}
+
+////gsBallQuad
+
+in vec3 ray_gs[];
+out vec3 ray;
+
+flat out float eye;
+
+void main()
+{
+    GS_LAYER_COPY;
+    for (int i=0;i<gl_in.length();i++) {
+        gl_Position = gl_in[i].gl_Position; // The impostor quad is already in clip space: pass it through without eye dependent projection
+        gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
+        ray = ray_gs[i];
         eye = eye_gs[i];
         EmitVertex();
     }
@@ -182,15 +219,53 @@ float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 di
 
 ////psBall
 
-in vec4 normal_t0x;
-in vec4 worldPos_t0y;
+in vec3 ray; // clip space position on the impostor quad
 flat in float eye;
 
 void main()
 {
     FS_LAYER_TO_GLOBAL;
-    const float3 V = normalize(/*camera=0,0,0,1*/-worldPos_t0y.xyz);
-    const float3 N = normalize(normal_t0x.xyz);
+
+    // Analytic raycast of the unit sphere: unproject the interpolated clip position to get the
+    // camera ray, move it to unit sphere space by the inverse view and inverse orientation, then
+    // intersect to get the exact silhouette, surface point and normal. Since the ray is moved by
+    // orientationInv, this supports the anti stretch ellipsoid for free.
+    const float3 d_v = (matProjInv[int(eye)] * float4(ray, 1.0)).xyz;
+    const float3 o_w = (matWorldViewInverse[int(eye)] * float4(0.,0.,0.,1.)).xyz;
+    const float3 d_w = (matWorldViewInverse[int(eye)] * float4(d_v, 0.)).xyz;
+    const float3 o_o = (orientationInv * float4(o_w, 1.)).xyz;
+    const float3 d_o = (orientationInv * float4(d_w, 0.)).xyz;
+    const float a = dot(d_o, d_o);
+    const float b = dot(o_o, d_o);
+    const float c = dot(o_o, o_o) - 1.0;
+    const float discr = b * b - a * c;
+    // Analytic silhouette antialiasing: fade out the coverage over ~1 pixel around the outline
+    // (discr/a is 0 at the sphere outline)
+    const float coverage = saturate(discr / (a * max(fwidth(discr / a), 1e-7)) + 0.5);
+    if (coverage <= 0.0)
+        discard;
+    const float t_hit = (-b - sqrt(max(discr, 0.0))) / a;
+    if (t_hit <= 0.0)
+        discard;
+    const float3 n_obj = normalize(o_o + t_hit * d_o); // hit point on the unit sphere = exact normal
+    const float3 hit_world = (orientation * float4(n_obj, 1.)).xyz;
+    const float3 hit_view = (matWorldView[int(eye)] * float4(hit_world, 1.)).xyz;
+
+    // Test the clip plane at the analytic surface point (not at the impostor quad depth)
+    if (dot(clip_plane, float4(hit_world, 1.0)) < 0.0)
+       discard;
+
+    // Exact per pixel depth of the analytic hit
+    const float4 hit_clip = matWorldViewProj[int(eye)] * float4(hit_world, 1.);
+    gl_FragDepth = 0.5 + 0.5 * (hit_clip.z / hit_clip.w);
+
+    // Decal UV, reproducing the mapping baked in the ball mesh UVs
+    const float2 decalUV = float2(fract(0.5935 + atan2(n_obj.y, n_obj.x) * 0.1339),
+                                  0.5 + asin(clamp(n_obj.z, -1., 1.)) * 0.2678);
+
+    const float3 nspin = (orientation * float4(n_obj, 0.)).xyz;
+    const float3 N = normalize((float4(nspin, 0.) * matWorldViewInverse[int(eye)]).xyz); // actually: mul(vec4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+    const float3 V = normalize(/*camera=0,0,0,1*/-hit_view);
     const float3 R = reflect(V, N);
 
     float3 ballImageColor;
@@ -213,7 +288,7 @@ void main()
       ballImageColor = textureLod(tex_ball_color, uv, lod).rgb;
     }
 
-    const float4 decalColorT = texture(tex_ball_decal, float2(normal_t0x.w, worldPos_t0y.w));
+    const float4 decalColorT = texture(tex_ball_decal, decalUV);
     float3 decalColor = decalColorT.rgb;
 
     if (!%PARAM1%) // decalMode
@@ -228,7 +303,7 @@ void main()
 
     BRANCH if (disableLighting)
     {
-       color = float4(ballImageColor,cBase_Alpha.a);
+       color = float4(ballImageColor,cBase_Alpha.a * coverage);
        return;
     }
 
@@ -246,8 +321,8 @@ void main()
 
     //const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,0.), matWorldView[int(eye)]);
     const float3 playfield_p0 = matWorldView[int(eye)][3].xyz;
-    const float t = dot(playfield_normal, worldPos_t0y.xyz - playfield_p0) / NdotR;
-    const float3 playfield_hit = worldPos_t0y.xyz - t * R;
+    const float t = dot(playfield_normal, hit_view - playfield_p0) / NdotR;
+    const float3 playfield_hit = hit_view - t * R;
 
     // New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
     // Move the hit point back to world space, then reproject it with the view-projection the previous frame was rendered with
@@ -284,8 +359,8 @@ void main()
     if(!%PARAM1%) // decalMode
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
-    color.rgb = ballLightLoop(worldPos_t0y.xyz, N, V, diffuse, glossy, specular, 1.0, false, eye);
-    color.a = cBase_Alpha.a;
+    color.rgb = ballLightLoop(hit_view, N, V, diffuse, glossy, specular, 1.0, false, eye);
+    color.a = cBase_Alpha.a * coverage;
 }
 
 ////psBallDebug
@@ -315,9 +390,9 @@ void main()
 
 ////TECHNIQUES
 
-RenderBall:P0:vsBall():gsBall():psBall(true, false)
-RenderBall_DecalMode:P0:vsBall():gsBall():psBall(true, true)
-RenderBall_SphericalMap:P0:vsBall():gsBall():psBall(false, false)
-RenderBall_SphericalMap_DecalMode:P0:vsBall():gsBall():psBall(false, true)
+RenderBall:P0:vsBallQuad():gsBallQuad():psBall(true, false)
+RenderBall_DecalMode:P0:vsBallQuad():gsBallQuad():psBall(true, true)
+RenderBall_SphericalMap:P0:vsBallQuad():gsBallQuad():psBall(false, false)
+RenderBall_SphericalMap_DecalMode:P0:vsBallQuad():gsBallQuad():psBall(false, true)
 RenderBall_Debug:P0:vsBall():gsBall():psBallDebug()
 RenderBallTrail:P0:vsBallTrail():gsBallTrail():psBallTrail()
