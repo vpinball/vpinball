@@ -188,6 +188,13 @@ TEST_CASE("def.h helpers")
       #ifndef _WIN32
       CHECK(convert("\xB0\xFE"s, false) == "\xE2\x96\x91\xE2\x96\xA0"); // code page 437 graphics, up to 3 UTF-8 bytes each
       #endif
+      // Backslash separators (.NET Framework, Compress-Archive), which miniz leaves in names that are not flagged or pure ASCII
+      CHECK(convert("dir\\sub\\plain.txt"s, false) == "dir/sub/plain.txt");
+      CHECK(convert("dir\\Gr\xC3\xBC\xC3\x9F" "e.txt"s, true) == "dir/Gr\xC3\xBC\xC3\x9F" "e.txt");
+      #ifdef _WIN32
+      if (GetOEMCP() == 437 || GetOEMCP() == 850 || GetOEMCP() == CP_UTF8)
+      #endif
+         CHECK(convert("dir\\Gr\x81\xE1" "e.txt"s, false) == "dir/Gr\xC3\xBC\xC3\x9F" "e.txt");
    }
 
    SUBCASE("UTF-8 and wide text conversions")

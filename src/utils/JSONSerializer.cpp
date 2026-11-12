@@ -1186,7 +1186,8 @@ public:
          mz_zip_archive_file_stat stat;
          if (!mz_zip_reader_file_stat(&m_zipArchive, i, &stat) || mz_zip_reader_is_file_a_directory(&m_zipArchive, i))
             continue;
-         // The full name (stat.m_filename is truncated to 511 bytes), as UTF-8: packs zipped again by other tools may not flag UTF-8 names
+         // The full name (stat.m_filename truncates longer names, see MZ_ZIP_MAX_ARCHIVE_FILENAME_SIZE), as UTF-8 with '/' separators: packs zipped
+         // again by other tools may not flag UTF-8 names, or use backslash separators
          string name(mz_zip_reader_get_filename(&m_zipArchive, i, nullptr, 0), '\0');
          name.resize(name.empty() ? 0 : mz_zip_reader_get_filename(&m_zipArchive, i, name.data(), static_cast<mz_uint>(name.size())) - 1);
          name = ZipEntryNameToUTF8(name.data(), name.size(), (stat.m_bit_flag & (1 << 11)) != 0); // Bit 11: MZ_ZIP_GENERAL_PURPOSE_BIT_FLAG_UTF8, only declared in miniz.c

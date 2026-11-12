@@ -896,7 +896,7 @@ string string_from_utf8_or_cp1252(const char* src, size_t srcSize)
    return string(src, srcSize);
 }
 
-string ZipEntryNameToUTF8(const char* name, size_t length, bool utf8Flag)
+static string DecodeZipEntryName(const char* name, size_t length, bool utf8Flag)
 {
    // Names without the UTF-8 flag that are valid UTF-8 anyway are kept too: some archivers write UTF-8 without setting it (f.e. macOS)
    if (utf8Flag || IsValidUTF8(name, length))
@@ -942,6 +942,16 @@ string ZipEntryNameToUTF8(const char* name, size_t length, bool utf8Flag)
          utf8 += static_cast<char>(0x80 | (cp & 0x3F));
       }
    }
+   return utf8;
+}
+
+string ZipEntryNameToUTF8(const char* name, size_t length, bool utf8Flag)
+{
+   string utf8 = DecodeZipEntryName(name, length, utf8Flag);
+   // Backslash as a path separator (.NET Framework, PowerShell Compress-Archive): miniz (MINIZ_ZIP_BACKSLASH_SEPARATORS) only converts it in
+   // flagged or pure ASCII names, as in a DBCS code page (f.e. Shift-JIS) the 0x5C byte may be the trail byte of a character. Once
+   // decoded, a 0x5C byte can only be an actual backslash, so it is converted for every name
+   std::ranges::replace(utf8, '\\', '/');
    return utf8;
 }
 

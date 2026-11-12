@@ -48,7 +48,7 @@ static int CountEntriesInDirectory(const std::filesystem::path& dirPath)
 // Entry name as UTF-8 (see ZipEntryNameToUTF8 for names without the UTF-8 flag)
 static string GetEntryName(mz_zip_archive& archive, mz_uint index, const mz_zip_archive_file_stat& stat)
 {
-   string name(mz_zip_reader_get_filename(&archive, index, nullptr, 0), '\0'); // Not stat.m_filename, which is truncated to 511 bytes
+   string name(mz_zip_reader_get_filename(&archive, index, nullptr, 0), '\0'); // Not stat.m_filename, which truncates longer names (MZ_ZIP_MAX_ARCHIVE_FILENAME_SIZE)
    name.resize(name.empty() ? 0 : mz_zip_reader_get_filename(&archive, index, name.data(), static_cast<mz_uint>(name.size())) - 1);
    return ZipEntryNameToUTF8(name.data(), name.size(), (stat.m_bit_flag & (1 << 11)) != 0); // Bit 11: MZ_ZIP_GENERAL_PURPOSE_BIT_FLAG_UTF8, only declared in miniz.c
 }
@@ -154,7 +154,9 @@ bool ZipUtils::Unzip(const std::filesystem::path& sourcePath, const std::filesys
       const std::filesystem::path destFilePath = destPath / PathFromUTF8(filename);
 
       std::error_code ec;
-      if (filename.back() == '/') {
+      // Directory as decided by miniz, or empty entry whose decoded name ends with a separator: miniz leaves the backslash of an unflagged non-ASCII name
+      // (e.g. a name with umlauts from .NET given a code page encoding) alone, as it may be a DBCS trail byte, which in a non-empty entry is taken as part of a file name
+      if (fileStat.m_is_directory || (filename.back() == '/' && fileStat.m_uncomp_size == 0)) {
          std::filesystem::create_directories(destFilePath, ec);
          if (ec) {
             PLOGE << "Unable to create directory: " << PathToUTF8(destFilePath) << ", error=" << ec.message();
