@@ -147,6 +147,12 @@ public:
    unsigned int GetEyeHeight() const { return m_eyeHeight; }
 
    bool IsOverridingLockbarWidth() const { return m_overrideLockbarWidth; }
+   // While controller view centering is active with a custom lockbar width, the width is measured from the controllers every frame
+#ifdef ENABLE_XR
+   bool IsMeasuringLockbarWidth() const { return m_controllerRecenterEnabled && m_overrideLockbarWidth; }
+#else
+   bool IsMeasuringLockbarWidth() const { return false; }
+#endif
    void SetOverrideLockbarWidth(bool overrideWidth)
    {
       m_overrideLockbarWidth = overrideWidth;
@@ -233,6 +239,7 @@ private:
    float m_controllerCabYOffset = 0.0f; // Y offset applied when using controller view centering in cm
    float m_controllerCabZOffset = 0.0f; // Z offset applied when using controller view centering in cm
    float m_controllerCabWidthOffset = 0.0f; // Width offset added to the measured controller distance when using controller view centering in cm
+   bool m_lockbarWidthMeasured = false; // The lockbar width was measured from the controllers this session (then persisted on exit)
    bool m_lockFeetToGround = true;
    float m_seatedTilt = 0.0f; // Cabinet tilt toward the player for seated/reclined play, in degrees
    float m_roomYaw = 0.0f;

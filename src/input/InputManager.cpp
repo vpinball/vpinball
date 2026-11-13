@@ -953,7 +953,11 @@ void InputManager::CreateInputActions()
       [this](InputAction& action, bool wasPressed, bool isPressed)
       {
          if (isPressed && m_player->IsVR())
+         {
             m_player->m_vrDevice->EnableControllerRecenter(!m_player->m_vrDevice->IsControllerRecenterEnabled());
+            if (m_player->m_liveUI)
+               m_player->m_liveUI->m_inGameUI.RequestRebuildAll(); // The VR settings page shows whether the lockbar width is measured
+         }
       }));
    m_vrControllerViewCenteringActionId = vrControllerCalibration->GetActionId();
    #endif

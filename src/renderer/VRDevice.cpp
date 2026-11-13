@@ -1222,7 +1222,10 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
                // When scaling to a custom lockbar, the horizontal distance between the controllers measures the physical
                // lockbar width, plus a user offset to compensate where the controllers rest relative to its ends
                if (m_overrideLockbarWidth)
+               {
                   m_customLockbarWidth = sqrtf(lockbarAxis.x * lockbarAxis.x + lockbarAxis.z * lockbarAxis.z) * 100.f + m_controllerCabWidthOffset;
+                  m_lockbarWidthMeasured = true;
+               }
 
                // Compute the effective lockbar scale here rather than relying on m_cabinetScale,
                // which is only updated when the space transforms are recomputed later in the frame
@@ -1584,6 +1587,7 @@ void VRDevice::SaveVRSettings(Settings& settings) const
    settings.SetPlayerVR_RoomOffsetY(m_roomOffset.y, false);
    settings.SetPlayerVR_RoomOffsetZ(m_roomOffset.z, false);
 
-   // The lockbar width may have been measured from the controllers while centering the view
-   settings.SetPlayer_LockbarWidth(m_customLockbarWidth, false);
+   // So is a lockbar width measured from the controllers. One only edited in the in-game UI is saved (or not) from there
+   if (m_lockbarWidthMeasured)
+      settings.SetPlayer_LockbarWidth(m_customLockbarWidth, false);
 }

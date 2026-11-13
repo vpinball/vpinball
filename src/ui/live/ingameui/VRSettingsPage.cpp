@@ -109,10 +109,19 @@ void VRSettingsPage::BuildPage()
       }));
 
    if (m_player->m_vrDevice->IsOverridingLockbarWidth())
+   {
+      // While controller view centering measures the width every frame, the item shows it but does not edit it (the Cabinet Width Offset adjusts it)
+      if (m_player->m_vrDevice->IsMeasuringLockbarWidth())
+         AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Lockbar width is measured from the controllers while view centering is active"s));
       addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
          Settings::m_propPlayer_LockbarWidth, 1.f, "%4.1f cm"s, //
          [this]() { return m_player->m_vrDevice->GetCustomLockbarWidth(); }, //
-         [this](float, float v) { m_player->m_vrDevice->SetCustomLockbarWidth(v); }));
+         [this](float, float v)
+         {
+            if (!m_player->m_vrDevice->IsMeasuringLockbarWidth())
+               m_player->m_vrDevice->SetCustomLockbarWidth(v);
+         }));
+   }
 
    addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_OverrideLockbarHeight, //
