@@ -199,6 +199,29 @@ TEST_CASE("PhysicsEngine: wall collisions")
       CHECK(bounced);
       CHECK(maxY < 2000.f); // contact at ~1975
    }
+
+   SUBCASE("sloped glass: the side walls seal up to the glass")
+   {
+      PinTable *const table = harness.GetTable();
+      table->m_glassTopHeight = 210.f;
+      table->m_glassBottomHeight = 100.f;
+      // Flying ball above the low glass end but below the sloped glass plane: flat-topped side
+      // walls left the sides open below the glass and the ball escaped from the table
+      Ball *const ball = harness.AddBall(500.f, 200.f, 135.f, -400.f, 0.f, 0.f); // center at z=160, toward the left edge
+      harness.Start();
+
+      float minX = 500.f;
+      const bool bounced = harness.AdvanceUntil(
+         [&]()
+         {
+            minX = min(minX, ball->m_hitBall.m_d.m_pos.x);
+            return ball->m_hitBall.m_d.m_vel.x > 0.f;
+         },
+         2000);
+
+      CHECK(bounced);
+      CHECK(minX > 0.f); // the ball never left the table (contact at ~25)
+   }
 }
 
 TEST_CASE("PhysicsEngine: trigger volume")

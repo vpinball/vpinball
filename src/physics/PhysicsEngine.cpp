@@ -270,12 +270,32 @@ void PhysicsEngine::CollectColliders(IEditable *editable, vector<HitObject *> *h
 void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
 {
    // TODO these are the only colliders that are added without an associated editable. We could enforce one here to guarantee m_editable != nullptr and simplify the code
-   
-   // simple outer borders:
-   AddCollider(new LineSeg(table, Vertex2D(table->m_right, table->m_top), Vertex2D(table->m_right, table->m_bottom), 0.f, table->m_glassTopHeight), false);
-   AddCollider(new LineSeg(table, Vertex2D(table->m_left, table->m_bottom), Vertex2D(table->m_left, table->m_top), 0.f, table->m_glassBottomHeight), false);
+
+   // simple outer borders: the side walls must follow the (possibly sloped) glass, so each is a
+   // rectangular segment up to the lowest glass height, completed by a triangle wedge sealing the
+   // gap up to the glass on its high end when the glass is sloped
+   const float lowGlass = min(table->m_glassTopHeight, table->m_glassBottomHeight);
+   AddCollider(new LineSeg(table, Vertex2D(table->m_right, table->m_top), Vertex2D(table->m_right, table->m_bottom), 0.f, lowGlass), false);
+   AddCollider(new LineSeg(table, Vertex2D(table->m_left, table->m_bottom), Vertex2D(table->m_left, table->m_top), 0.f, lowGlass), false);
    AddCollider(new LineSeg(table, Vertex2D(table->m_right, table->m_bottom), Vertex2D(table->m_left, table->m_bottom), 0.f, table->m_glassBottomHeight),  false);
    AddCollider(new LineSeg(table, Vertex2D(table->m_left, table->m_top), Vertex2D(table->m_right, table->m_top), 0.f, table->m_glassTopHeight), false);
+   if (table->m_glassTopHeight != table->m_glassBottomHeight)
+   {
+      const float hiEndY = (table->m_glassTopHeight > table->m_glassBottomHeight) ? table->m_top : table->m_bottom;
+      const float hiGlass = max(table->m_glassTopHeight, table->m_glassBottomHeight);
+      for (const float x : { table->m_left, table->m_right })
+      {
+         const Vertex3Ds lowTop(x, table->m_top, lowGlass), lowBottom(x, table->m_bottom, lowGlass), high(x, hiEndY, hiGlass);
+         Vertex3Ds rgv3D[3] = { lowTop, lowBottom, high };
+         if (x == table->m_left)
+            std::swap(rgv3D[1], rgv3D[2]); // HitTriangle is single-sided: face the playfield like the segments do
+         HitTriangle *const wedge = new HitTriangle(table, rgv3D, m_physicProfile);
+         if (wedge->IsDegenerate())
+            delete wedge;
+         else
+            AddCollider(wedge, false);
+      }
+   }
 
    /*
    // playfield:
