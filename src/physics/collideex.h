@@ -155,6 +155,8 @@ public:
    SpinnerMoverObject m_spinnerMover;
 };
 
+class HitGate;
+
 class GateMoverObject final : public MoverObject
 {
 public:
@@ -163,7 +165,32 @@ public:
 
    bool AddToList() const override { return true; }
 
+   // Precise ball-to-wire/plate interaction (physics profile 10.9+): the gate axis is in
+   // the XY plane along m_tangent, the wire/plate hangs from it and swings toward m_normal
+   // for positive applied angles (the applied angle is the rendered one: two-way gates use
+   // m_angle directly, one-way gates use -m_angle so their open range is [-max,-min]).
+   // True when the ball is inside the zone where it may touch the hanging wire/plate.
+   bool IsInsideZone(const BallS& ball) const;
+   // True when the ball touches the wire/plate, giving the applied angle matching the
+   // contact (unclamped) and the normal from the wire/plate toward the ball. blocked is
+   // set when reaching that angle would sweep the wire/plate through the ball: the
+   // contact then presses the wire/plate in place instead of being followed.
+   bool EvalContact(const BallS& ball, float& appliedAngle, bool& blocked, Vertex3Ds& normal) const;
+   // True when moving the wire/plate from its current angle to the given applied angle
+   // sweeps it through the ball's center in the swing plane.
+   bool WireSweepThroughBall(const float appliedAngle, const float s) const;
+   // Same solve as EvalContact, at a given swing-plane position (used for swept hits).
+   bool SolveContact(const float s, const float h, const float u, const float ballRadius, float& appliedAngle, Vertex3Ds& normal) const;
+   // Time at which the ball's straight motion reaches contact of the wire/plate at its
+   // current angle, or -1 (returns the swing-plane entry position in s, h, u).
+   float HitTestContact(const BallS& ball, const float dtime, float& s, float& h, float& u) const;
+   // True when the ball overlaps the wire/plate set at the given applied angle.
+   bool OverlapsWire(const BallS& ball, const float appliedAngle, Vertex3Ds& normal, const float slack = 0.f) const;
+   // Applies the gate limits to an applied angle (open range: +-max for two-way, -max..-min for one-way)
+   float ClampAppliedAngle(const float appliedAngle) const;
+
    Gate *m_pgate;
+   HitGate* m_pHitGate = nullptr; // Collider owning this mover (set at construction, for hit events)
 
    float m_anglespeed;
    float m_angle;
@@ -174,12 +201,28 @@ public:
    bool m_open; // True if the table logic is opening the gate, not just the ball passing through
    bool m_forcedMove;   // True if the table logic is opening/closing the gate
    bool m_hitDirection; // For the direction of the little bounce-back
+
+   // Wire/plate interaction zone & shape (10.9+ model, object space is scaled by the gate length)
+   Vertex2D m_tangent = Vertex2D(1.f, 0.f); // gate axis direction
+   Vertex2D m_normal = Vertex2D(0.f, 1.f); // direction the wire/plate tips toward for positive applied angles
+   Vertex2D m_center; // pivot position
+   float m_pivotZ = 0.f; // pivot axis height
+   float m_wireHalfSpan = 0.f; // extent of the hanging wire/plate along the axis
+   float m_wireDepth = 0.f; // distance from the axis to the wire bottom / plate bottom
+   float m_wireRadius = 0.f; // wire section radius / plate half-thickness
+   bool m_plate = false; // true for plate gates (flat surface), false for wire gates (bottom bar)
+   float m_zoneSMin = 0.f, m_zoneSMax = 0.f; // interaction zone extents along m_normal (wire sweep + margin)
+   float m_zoneZLow = 0.f, m_zoneZHigh = 0.f;
+   vector<HitBall*> m_balls; // balls inside the interaction zone (computed each step)
+   vector<HitBall*> m_touching; // balls that touched the wire/plate since they entered the zone
+   bool m_atLimit = false; // the dragged wire/plate reached a limit (EOS fired once)
 };
 
 class HitGate final : public HitObject
 {
 public:
-   HitGate(Gate * const pgate, const float height);
+   // profile selects the collider model: legacy rigid segments, or the 10.9+ interaction zone
+   HitGate(Gate* const pgate, const float height, PhysicProfile profile = PhysicProfile::V10_8);
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return eGate; }
@@ -193,6 +236,10 @@ public:
 
    GateMoverObject m_gateMover;
    bool m_twoWay;
+   // For one-way gates under the 10.9 model: the rigid one-sided segment standing for
+   // the wire/plate resting on its stop (created by Gate::PhysicSetup, enabled by the
+   // mover while the wire is at its min angle)
+   LineSeg* m_pblockseg = nullptr;
 
 private:
    Gate *m_pgate;

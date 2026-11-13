@@ -282,6 +282,12 @@ FIXES:
   . contact forces handled the ball mass wrongly, so balls with a non-default mass rested/rolled differently on surfaces
     (no change for the default mass of 1)
   . very thin playfield triangles (nearly degenerate normals) could produce wrong collision responses
+  . gates now model the actual moving wire/plate instead of a pair of static line segments (plus a rigid blocking line and
+    post colliders for one-way gates): the collider is a trigger zone covering the wire/plate sweep between its angle
+    limits (shifted by a non-zero rest angle, one or both sides depending on the gate being one-way or two-way), and each
+    ball inside it is tracked to solve the wire/plate angle matching the contact. The ball is only stopped when the wire
+    cannot follow (closed side of a one-way gate, or pushed against an angle limit), giving more accurate pass-through and
+    bounce behavior
 
 - physics behavior changes that may make existing tables play slightly differently, but are more physically correct:
   . ball-ball contacts are now handled as resting contacts (like ball vs. playfield/walls), and the ball-ball contact normal is now evaluated at the actual hit time.

@@ -66,6 +66,7 @@ set(VPX_TEST_SOURCES
    tests/physics/test-ball-spin.cpp
    tests/physics/test-cabinet.cpp
    tests/physics/test-collide.cpp
+   tests/physics/test-gate-physics.cpp
    tests/physics/test-hittimer.cpp
    tests/physics/test-motion-kalman.cpp
    tests/physics/test-physics-defects.cpp
