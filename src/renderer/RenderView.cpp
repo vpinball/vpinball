@@ -674,7 +674,7 @@ void RenderView::SetSpaceReference(PartGroupData::SpaceReference spaceReference,
       {
          const Matrix3D nudgeMat = Matrix3D::MatrixTranslate(r->m_visualNudgeStrength * MTOVPU(nudge.x), r->m_visualNudgeStrength * MTOVPU(nudge.y), 0.f);
          for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
-            m_mvp.SetView(eye, nudgeMat * m_mvp.GetView(eye));
+            m_mvp.SetView(eye, nudgeMat * m_mvp.GetBaseView(eye)); // Use base view to not apply the reflection twice (which would cancel it)
       }
    }
 

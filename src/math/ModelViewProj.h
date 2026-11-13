@@ -47,6 +47,8 @@ public:
 
    const Matrix3D& GetModel() const { return m_matModel; }
    const Matrix3D& GetView(const unsigned int eye) const { Update(); return m_matReflectedView[eye]; }
+   // Base view matrix, without the reflection applied (GetView returns the reflected view)
+   const Matrix3D& GetBaseView(const unsigned int eye) const { return m_matView[eye]; }
    const Matrix3D& GetProj(const unsigned int eye) const { return m_matProj[eye]; }
    // Projection matching GetView, including the flip: maps view space positions to the rendered (possibly flipped) image
    const Matrix3D& GetFlippedProj(const unsigned int eye) const { Update(); return m_matFlippedProj[eye]; }
