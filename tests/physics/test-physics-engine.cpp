@@ -23,8 +23,8 @@ TEST_CASE("PhysicsEngine: engine setup and stepping")
 
    SUBCASE("an empty table has the cabinet bounding hit shapes")
    {
-      // 4 side walls + top glass polygon (the playfield and top glass planes are not in the quadtree)
-      CHECK(physics->GetHitObjects().size() == 5);
+      // 4 side walls (the playfield and top glass planes are not in the quadtree)
+      CHECK(physics->GetHitObjects().size() == 4);
       CHECK(physics->GetBalls().empty());
    }
 
