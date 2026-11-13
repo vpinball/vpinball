@@ -2457,7 +2457,8 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 0, 0, 64));
          for (auto pho : m_editor.m_player->m_physics->GetHitObjects())
             if (pho != nullptr
-               && (m_editor.m_physOverlay == EditorUI::PhysicOverlay::All || (m_editor.m_physOverlay == EditorUI::PhysicOverlay::Selected && m_editor.IsEditableSelected(pho->m_editable))))
+               && (m_editor.IsEditableSelected(pho->m_editable)
+                  || (m_editor.m_physOverlay == EditorUI::PhysicOverlay::All && (pho->m_editable == nullptr || pho->m_editable->IsUIVisible(true)))))
                pho->DrawUI(project, overlayDrawList, true);
          ImGui::PopStyleColor(2);
       }
