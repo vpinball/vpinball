@@ -8,39 +8,55 @@
 
 #include "doctest.h"
 
-// The raytraced ball impostor quad is sized from the projected fit points: once scaled, they must reach the sphere
-// surface in every direction, or the ball outline gets clipped
-TEST_CASE("Ball impostor bounds enclose the sphere")
+// The raytraced ball impostor quad is sized from the exact clip space bounds of the (anti stretched) ball: they must
+// match the bounds of densely sampled surface points, which they enclose
+TEST_CASE("Ball impostor bounds are the exact projected bounds")
 {
-   const AntiStretchHelper ash;
-   float worst = 0.f;
-   // Directions on a dense Fibonacci sphere
-   constexpr int n = 20000;
-   for (int k = 0; k < n; k++)
+   // Perspective projection (row vectors, depth 0..1 like Matrix3D::MatrixPerspectiveFovLH)
+   constexpr float f = 1.5f, aspect = 1.6f, zn = 10.f, zf = 5000.f;
+   const Matrix3D proj(f / aspect, 0.f, 0.f, 0.f, 0.f, f, 0.f, 0.f, 0.f, 0.f, zf / (zf - zn), 1.f, 0.f, 0.f, -zn * zf / (zf - zn), 0.f);
+   for (int k = 0; k < 24; k++)
    {
-      const float z = 1.f - 2.f * ((float)k + 0.5f) / (float)n;
-      const float r = sqrtf(1.f - z * z);
-      const float phi = (float)k * 2.39996323f;
-      const float ux = r * cosf(phi), uy = r * sinf(phi), uz = z;
-      float reach = -FLT_MAX;
-      for (int i = 0; i < AntiStretchHelper::npts * 3; i += 3)
-         reach = max(reach, ux * ash.m_stretchFitPoints[i] + uy * ash.m_stretchFitPoints[i + 1] + uz * ash.m_stretchFitPoints[i + 2]);
-      worst = max(worst, 1.f - reach);
-   }
-   CHECK(worst > 0.09f); // The unscaled points really fall short (else boundScale is not needed anymore)
-   CHECK(AntiStretchHelper::boundScale * (1.f - worst) >= 1.f);
-
-   // Through an orthographic projection, the bounds of the scaled points enclose the projected sphere in any orientation
-   for (int k = 0; k < 64; k++)
-   {
-      const Matrix3D rot = Matrix3D::MatrixRotateX((float)k * 0.37f) * Matrix3D::MatrixRotateZ((float)k * 0.91f);
+      // Ellipsoids (anti stretch scales one axis), rotated, at various places in front of the camera
+      const Matrix3D toClip = Matrix3D::MatrixScale(25.f * (1.f + 0.1f * (float)(k % 3)), 25.f, 25.f) * Matrix3D::MatrixRotateX((float)k * 0.37f)
+         * Matrix3D::MatrixRotateZ((float)k * 0.91f) * Matrix3D::MatrixTranslate(-300.f + 25.f * (float)k, 200.f - 17.f * (float)k, 100.f + 40.f * (float)k) * proj;
       float xMin = FLT_MAX, xMax = -FLT_MAX, yMin = FLT_MAX, yMax = -FLT_MAX, zMin = FLT_MAX;
-      REQUIRE_FALSE(ash.computeProjBounds(rot, xMin, xMax, yMin, yMax, zMin));
-      CHECK(xMin <= -1.f);
-      CHECK(xMax >= 1.f);
-      CHECK(yMin <= -1.f);
-      CHECK(yMax >= 1.f);
+      REQUIRE(AccumulateUnitSphereClipBounds(toClip, xMin, xMax, yMin, yMax, zMin));
+
+      // Points on a dense Fibonacci sphere, in double so that they lie on the sphere whatever the float model of the build
+      double sxMin = DBL_MAX, sxMax = -DBL_MAX, syMin = DBL_MAX, syMax = -DBL_MAX, szMin = DBL_MAX;
+      constexpr int n = 20000;
+      for (int i = 0; i < n; i++)
+      {
+         const double z = 1. - 2. * (i + 0.5) / n;
+         const double r = sqrt(1. - z * z);
+         const double phi = fmod(i * 2.399963229728653, 2. * M_PI);
+         const double p[3] = { r * cos(phi), r * sin(phi), z };
+         double c[4];
+         for (int j = 0; j < 4; j++)
+            c[j] = p[0] * toClip.m[0][j] + p[1] * toClip.m[1][j] + p[2] * toClip.m[2][j] + toClip.m[3][j];
+         sxMin = min(sxMin, c[0] / c[3]);
+         sxMax = max(sxMax, c[0] / c[3]);
+         syMin = min(syMin, c[1] / c[3]);
+         syMax = max(syMax, c[1] / c[3]);
+         szMin = min(szMin, c[2] / c[3]);
+      }
+      // The bounds are rounded to float
+      CHECK(xMin <= sxMin + 1e-6);
+      CHECK(xMax >= sxMax - 1e-6);
+      CHECK(yMin <= syMin + 1e-6);
+      CHECK(yMax >= syMax - 1e-6);
+      CHECK(zMin <= szMin + 1e-6);
+      CHECK(xMin >= sxMin - 1e-3f);
+      CHECK(xMax <= sxMax + 1e-3f);
+      CHECK(yMin >= syMin - 1e-3f);
+      CHECK(yMax <= syMax + 1e-3f);
+      CHECK(zMin >= szMin - 1e-4f);
    }
+
+   // A ball reaching the camera plane has no usable bounds
+   float xMin = FLT_MAX, xMax = -FLT_MAX, yMin = FLT_MAX, yMax = -FLT_MAX, zMin = FLT_MAX;
+   CHECK_FALSE(AccumulateUnitSphereClipBounds(Matrix3D::MatrixScale(25.f) * Matrix3D::MatrixTranslate(0.f, 0.f, 20.f) * proj, xMin, xMax, yMin, yMax, zMin));
 }
 
 TEST_CASE("Ball part")

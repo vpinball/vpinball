@@ -456,21 +456,31 @@ void Ball::Render(const unsigned int renderMask)
    m_renderer->m_renderDevice->m_ballShader->SetTechnique(sphericalMapping ? m_d.m_decalMode ? ShaderTechnique::RenderBall_SphericalMap_DecalMode : ShaderTechnique::RenderBall_SphericalMap
                                                      : m_d.m_decalMode ? ShaderTechnique::RenderBall_DecalMode : ShaderTechnique::RenderBall);
 
-   // The ball is rendered as an analytic raytraced impostor: a quad covering its projected bounds in clip space (same
-   // bounds evaluation as the anti stretch above). The fragment shader raytraces a unit sphere (an ellipsoid with anti
-   // stretch), giving the exact silhouette, surface point, normal and per pixel depth. The vertex shader passes the clip
-   // space corners on, the camera ray is derived from them through the inverse projection.
-   // TODO The rays start at the camera position (view space origin), which only holds for a perspective projection. Under
-   // an orthographic one (Live Editor ortho viewports) they are parallel, so shading and depth are slightly off (nearly
-   // right while the camera is far from the ball). Fix: unproject a near and a far point per pixel for origin and direction
-   const unsigned int nEyes = m_renderer->GetMVP().m_nEyes;
-   Matrix3D invFlippedProj[2];
+   // The ball is rendered as an analytic raytraced impostor: a quad covering its exact projected bounds in clip space. The
+   // fragment shader raytraces the unit sphere in its own space (an ellipsoid once transformed, with anti stretch), giving the
+   // exact silhouette, surface point, normal and per pixel depth. The vertex shader maps the clip space corners to the camera
+   // rays (unprojected, so any projection works: off center, scaled, sheared, orthographic) in view space and in unit sphere
+   // space, which interpolate exactly. Both spaces share the ray parameter, giving the view space hit point.
+   const ModelViewProj &mvp = m_renderer->GetMVP();
+   const unsigned int nEyes = mvp.m_nEyes;
+   Matrix3D proj[2], projInv[2];
+   std::array<Matrix3D, 2> worldViewInverse, worldViewProj; // Combined with the ball transform once it is known (see below)
    for (unsigned int eye = 0; eye < nEyes; eye++)
    {
-      invFlippedProj[eye] = m_renderer->GetMVP().GetFlippedProj(eye);
-      invFlippedProj[eye].Invert();
+      proj[eye] = mvp.GetFlippedProj(eye);
+      projInv[eye] = proj[eye];
+      projInv[eye].Invert();
+      worldViewInverse[eye] = mvp.GetModelViewInverse(eye);
+      worldViewProj[eye] = mvp.GetModelViewProj(eye);
    }
-   m_renderer->m_renderDevice->m_ballShader->SetMatrix(ShaderUniform::matProjInv, invFlippedProj, nEyes);
+   if (nEyes == 1)
+   {
+      // Copied whole into the command below
+      worldViewInverse[1] = worldViewInverse[0];
+      worldViewProj[1] = worldViewProj[0];
+   }
+   m_renderer->m_renderDevice->m_ballShader->SetMatrix(ShaderUniform::matProj, proj, nEyes);
+   m_renderer->m_renderDevice->m_ballShader->SetMatrix(ShaderUniform::matProjInv, projInv, nEyes);
    m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    Vertex3D_NoTex2 quadVertices[4] = {}; // Filled at render frame submission time below
 #if defined(ENABLE_DX9)
@@ -490,10 +500,9 @@ void Ball::Render(const unsigned int renderMask)
    // Note that this code must be kept in sync with the ball motion blur code
    ShaderState *ss = m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->GetShaderState();
    Vertex3D_NoTex2 *const quadVerts = static_cast<Vertex3D_NoTex2 *>(m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->GetQuadVertices());
-   const Matrix3D mvps[2] = { m_renderer->GetMVP().GetModelViewProj(0), m_renderer->GetMVP().GetModelViewProj(nEyes - 1) };
    AddRef(); // The ball may be destroyed by the script, so we need to hold a ref on it until the end of frame command below releases it
    m_renderer->m_renderDevice->AddBeginOfFrameCmd(
-      [this, rotScale = rot * scale, ss, quadVerts, mvp0 = mvps[0], mvp1 = mvps[1], nEyes, rd = m_renderer->m_renderDevice, scheduleTimestamp = usec()]()
+      [this, rotScale = rot * scale, ss, quadVerts, worldViewInverse, worldViewProj, nEyes, rd = m_renderer->m_renderDevice, scheduleTimestamp = usec()]()
       {
          // Adjust ball position to latest physics position
          vec3 posl = m_hitBall.m_d.m_pos;
@@ -510,16 +519,22 @@ void Ball::Render(const unsigned int renderMask)
             posl.z -= m_hitBall.m_d.m_radius;
          const Matrix3D m3D_fulll = rotScale * Matrix3D::MatrixTranslate(posl);
          ss->SetMatrix(ShaderUniform::orientation, &m3D_fulll.m[0][0]);
-         const Matrix3D m3D_fullInv = Matrix3D::MatrixInverse(m3D_fulll);
-         ss->SetMatrix(ShaderUniform::orientationInv, &m3D_fullInv.m[0][0]);
 
-         // Update the impostor quad to cover the projected bounds of the ball at its latest position (union of both eyes)
+         // View space to unit sphere space, for the impostor raycast (see the shaders)
+         const Matrix3D m3D_fullInv = Matrix3D::MatrixInverse(m3D_fulll);
+         Matrix3D viewToObj[2];
          float xMin = FLT_MAX, xMax = -FLT_MAX, yMin = FLT_MAX, yMax = -FLT_MAX, zMin = FLT_MAX;
-         bool behindCamera = m_ash.computeProjBounds(m3D_fulll * mvp0, xMin, xMax, yMin, yMax, zMin);
-         if (nEyes > 1)
-            behindCamera |= m_ash.computeProjBounds(m3D_fulll * mvp1, xMin, xMax, yMin, yMax, zMin);
+         bool inFront = true;
+         for (unsigned int eye = 0; eye < nEyes; eye++)
+         {
+            viewToObj[eye] = worldViewInverse[eye] * m3D_fullInv;
+            // The impostor quad covers the projected bounds of the ball at its latest position, union of both eyes
+            inFront &= AccumulateUnitSphereClipBounds(m3D_fulll * worldViewProj[eye], xMin, xMax, yMin, yMax, zMin);
+         }
+         ss->SetMatrix(ShaderUniform::ballViewToObj, &viewToObj[0].m[0][0], nEyes);
+
          float xL = xMin, xR = xMax, yB = yMin, yT = yMax, z = zMin;
-         if (behindCamera)
+         if (!inFront)
          {
             // Ball is behind/partially behind the camera: fall back to a fullscreen quad at near depth, and let the
             // fragment shader raycast sort out the visible part (the sphere is still tested analytically)
@@ -529,8 +544,7 @@ void Ball::Render(const unsigned int renderMask)
          }
          else
          {
-            // The bounds enclose the ball (see AntiStretchHelper::boundScale): add about a pixel for the antialiased rim,
-            // and move the quad slightly in front of the nearest projected surface depth
+            // Add about a pixel for the antialiased rim, and move the quad slightly in front of the nearest surface depth
             constexpr float padXY = 0.002f;
             xL -= padXY;
             xR += padXY;

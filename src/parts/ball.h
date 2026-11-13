@@ -82,37 +82,42 @@ public:
       return false;
    }
 
-   // The fit points lie on the unit sphere, so their hull is inside it: up to 10.4% short of it along some directions
-   // (for these 35 points). Scaled by this factor, their hull encloses the sphere, and so their projected bounds the projected sphere
-   static constexpr float boundScale = 1.12f;
-
-   // Accumulates the clip space bounds of the fit points, scaled by boundScale, through the given object to clip space
-   // transform (bounds of the raytraced ball impostor quad; anti stretch ellipsoids are covered as the full object
-   // transform is applied). zMin receives the nearest projected depth. Returns true when a point ends up behind the
-   // camera (the bounds are then unusable).
-   bool computeProjBounds(const Matrix3D &toClip, float &xMin, float &xMax, float &yMin, float &yMax, float &zMin) const
-   {
-      for (int i = 0; i < AntiStretchHelper::npts * 3; i += 3)
-      {
-         const float px = boundScale * m_stretchFitPoints[i];
-         const float py = boundScale * m_stretchFitPoints[i + 1];
-         const float pz = boundScale * m_stretchFitPoints[i + 2];
-         const float xp = toClip._11 * px + toClip._21 * py + toClip._31 * pz + toClip._41;
-         const float yp = toClip._12 * px + toClip._22 * py + toClip._32 * pz + toClip._42;
-         const float zp = toClip._13 * px + toClip._23 * py + toClip._33 * pz + toClip._43;
-         const float wp = toClip._14 * px + toClip._24 * py + toClip._34 * pz + toClip._44;
-         if (wp <= 1e-3f)
-            return true;
-         const float xn = xp / wp, yn = yp / wp, zn = zp / wp;
-         xMin = min(xMin, xn);
-         xMax = max(xMax, xn);
-         yMin = min(yMin, yn);
-         yMax = max(yMax, yn);
-         zMin = min(zMin, zn);
-      }
-      return false;
-   }
 };
+
+// Accumulates the exact clip space bounds of the unit sphere through the given object to clip space transform (row vectors),
+// that is of the ellipsoid it maps to (anti stretch): the raytraced ball impostor quad. zMin receives the nearest projected
+// depth. Returns false when the ellipsoid reaches the camera plane (the bounds are then unusable).
+// A clip space plane x = s w is tangent to the ellipsoid when its object space plane c_x - s c_w (c_k: column k of toClip)
+// is tangent to the unit sphere, that is when (c_x - s c_w) Q (c_x - s c_w) = 0 with Q = diag(1, 1, 1, -1): a quadratic in
+// s, whose two roots are the bounds (likewise for y and z).
+inline bool AccumulateUnitSphereClipBounds(const Matrix3D &toClip, float &xMin, float &xMax, float &yMin, float &yMax, float &zMin)
+{
+   const auto column = [&toClip](const int k) { return std::array<double, 4> { toClip.m[0][k], toClip.m[1][k], toClip.m[2][k], toClip.m[3][k] }; };
+   const auto dotQ = [](const std::array<double, 4> &a, const std::array<double, 4> &b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] - a[3] * b[3]; };
+   const std::array<double, 4> cw = column(3);
+   // Nearest w of the ellipsoid: w of its center minus the length of the w gradient
+   if (cw[3] - sqrt(cw[0] * cw[0] + cw[1] * cw[1] + cw[2] * cw[2]) <= 1e-3)
+      return false;
+   const double a = dotQ(cw, cw); // < 0 as the camera plane misses the ellipsoid
+   const auto roots = [&](const int k, double &s0, double &s1)
+   {
+      const std::array<double, 4> ck = column(k);
+      const double b = dotQ(ck, cw);
+      const double r = sqrt(max(b * b - a * dotQ(ck, ck), 0.));
+      s0 = (b + r) / a; // a < 0: the smaller root
+      s1 = (b - r) / a;
+   };
+   double s0, s1;
+   roots(0, s0, s1);
+   xMin = min(xMin, static_cast<float>(s0));
+   xMax = max(xMax, static_cast<float>(s1));
+   roots(1, s0, s1);
+   yMin = min(yMin, static_cast<float>(s0));
+   yMax = max(yMax, static_cast<float>(s1));
+   roots(2, s0, s1);
+   zMin = min(zMin, static_cast<float>(s0));
+   return true;
+}
 
 class BallData final : public BaseProperty
 {

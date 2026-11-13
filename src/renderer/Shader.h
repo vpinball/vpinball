@@ -323,7 +323,7 @@ enum class ShaderUniform : unsigned int
 
    // Ball Shader
    SHADER_UNIFORM(ShaderUniformType::Float4x3, orientation, 1),
-   SHADER_UNIFORM(ShaderUniformType::Float4x3, orientationInv, 1), // Inverse of orientation (unit sphere object space to world), for the raytraced impostor
+   SHADER_UNIFORM(ShaderUniformType::Float4x4, ballViewToObj, 2), // Raytraced impostor: view space to unit sphere space, +1 Matrix for stereo
    SHADER_UNIFORM(ShaderUniformType::Float4, invTableRes_reflection, 1),
    SHADER_UNIFORM(ShaderUniformType::Float4, w_h_disableLighting, 1),
    SHADER_UNIFORM(ShaderUniformType::Float4x4, matPrevViewProj, 2), // Previous frame view-projection (to reproject the previous frame render as ball reflection probe), +1 Matrix for stereo

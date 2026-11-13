@@ -1,6 +1,6 @@
 // license:GPLv3+
 
-$input v_tablePos // view space point on the camera ray (unnormalized direction)
+$input v_rayOriginView, v_rayDirView, v_rayOriginObj, v_rayDirObj // camera ray in view space and in unit sphere space (same ray parameter)
 #ifdef STEREO
     $input v_eye
 #endif
@@ -10,35 +10,34 @@ $input v_tablePos // view space point on the camera ray (unnormalized direction)
 
 #define NUM_BALL_LIGHTS 8
 
-uniform mat4 orientation;    // unit sphere object space to world space (rot * scale * translate)
-uniform mat4 orientationInv; // world space to unit sphere object space
+uniform mat4 orientation; // unit sphere object space to world space (rot * scale * translate)
 #ifdef STEREO
     uniform mat4 matView[2];
     uniform mat4 matWorldView[2];
     uniform mat4 matWorldViewInverse[2];
-    uniform mat4 matRotViewProj[2];
-    uniform vec4 cameraPosWorld[2];
     uniform mat4 matPrevViewProj[2];
+    uniform mat4 matProj[2];
+    uniform mat4 ballViewToObj[2];
     // FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
     #define mView             matView[int(round(v_eye))]
     #define mWorldView        matWorldView[int(round(v_eye))]
     #define mWorldViewInverse matWorldViewInverse[int(round(v_eye))]
-    #define mRotViewProj      matRotViewProj[int(round(v_eye))]
-    #define cCameraPosWorld   cameraPosWorld[int(round(v_eye))].xyz
     #define mPrevViewProj     matPrevViewProj[int(round(v_eye))]
+    #define mProj             matProj[int(round(v_eye))]
+    #define mBallViewToObj    ballViewToObj[int(round(v_eye))]
 #else
     uniform mat4 matView;
     uniform mat4 matWorldView;
     uniform mat4 matWorldViewInverse;
-    uniform mat4 matRotViewProj;
-    uniform vec4 cameraPosWorld;
     uniform mat4 matPrevViewProj;
+    uniform mat4 matProj;
+    uniform mat4 ballViewToObj;
     #define mView             matView
     #define mWorldView        matWorldView
     #define mWorldViewInverse matWorldViewInverse
-    #define mRotViewProj      matRotViewProj
-    #define cCameraPosWorld   cameraPosWorld.xyz
     #define mPrevViewProj     matPrevViewProj
+    #define mProj             matProj
+    #define mBallViewToObj    ballViewToObj
 #endif
 #ifdef CLIP
     uniform vec4 clip_plane;
@@ -106,61 +105,58 @@ vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, co
 
 void main()
 {
-    // Analytic raycast of the unit sphere: v_tablePos carries a view space point on the camera ray
-    // (the impostor vertex shader unprojects the quad corner through the inverse projection). The
-    // ray is transformed to unit sphere space by the inverse view and inverse orientation, then
-    // intersected to get the exact silhouette, surface point and normal. Since the ray is moved
-    // by orientationInv, this supports the anti stretch ellipsoid for free.
-    const vec3 o_w = mul(mWorldViewInverse, vec4(0., 0., 0., 1.)).xyz;
-    const vec3 d_w = mul(mWorldViewInverse, vec4(v_tablePos, 0.)).xyz;
-    const vec3 o_o = mul(orientationInv, vec4(o_w, 1.)).xyz;
-    const vec3 d_o = mul(orientationInv, vec4(d_w, 0.)).xyz;
-    const float a = dot(d_o, d_o);
-    const float b = dot(o_o, d_o);
-    const float c = dot(o_o, o_o) - 1.0;
-    const float discr = b * b - a * c;
-    // Analytic silhouette antialiasing: fade out the coverage over ~1 pixel around the outline
-    // (discr/a is the squared projection of the hit on the ray, = 0 at the sphere outline)
-    const float coverage = saturate(discr / (a * max(fwidth(discr / a), 1e-7)) + 0.5);
-    // Evaluated before the discards (for a ray missing the sphere, at its closest point): the decal gradient computation needs every pixel of the 2x2 quad
-    const float t_hit = (-b - sqrt(max(discr, 0.0))) / a;
-    const vec3 n_obj = normalize(o_o + t_hit * d_o); // hit point on the unit sphere = exact normal
+    // Analytic raycast of the unit sphere, in its own space (so the anti stretch ellipsoid comes for free): exact silhouette, surface point and normal
+    const vec3 o_o = v_rayOriginObj;
+    const vec3 d_o = v_rayDirObj;
+    // Numerically stable form, for balls small relative to their distance: with a normalized direction, the squared
+    // distance of the ray to the center is computed directly instead of as a difference of large terms
+    const float invLenD = inversesqrt(dot(d_o, d_o));
+    const vec3 dir = d_o * invLenD;
+    const float b = dot(o_o, dir);
+    const vec3 h = o_o - b * dir; // ray point closest to the center
+    const float discr = 1.0 - dot(h, h);
+    // Analytic silhouette antialiasing: fade out the coverage over ~1 pixel around the outline (discr is 0 there)
+    const float coverage = saturate(discr / max(fwidth(discr), 1e-7) + 0.5);
+    // Evaluated before the discards (for a ray missing the sphere, at its closest point): the decal gradients need every
+    // pixel of each 2x2 quad
+    const float t_dir = -b - sqrt(max(discr, 0.0)); // along the normalized direction
+    const vec3 n_obj = normalize(o_o + t_dir * dir); // hit point on the unit sphere = exact normal
+    const float t_hit = t_dir * invLenD; // ray parameter, shared with view space
 
     // Decal UV, reproducing the ball mesh UVs, with explicit gradients: implicit ones jump where the longitude wraps
-    // (at +-pi, and u at 1), selecting the smallest mip along a meridian. The longitude gradient is taken from whichever
-    // of two longitudes, wrapping on opposite sides, varies least (they only differ across a wrap)
-    const float lon = atan2(n_obj.y, n_obj.x);
-    const float lonFlipped = atan2(-n_obj.y, -n_obj.x); // lon -+ pi, wrapping at 0
-    const vec2 decalUV = vec2(fract(0.5935 + lon * 0.1339), 0.5 + asin(clamp(n_obj.z, -1., 1.)) * 0.2678);
-    const float dLonX = abs(dFdx(lonFlipped)) < abs(dFdx(lon)) ? dFdx(lonFlipped) : dFdx(lon);
-    const float dLonY = abs(dFdy(lonFlipped)) < abs(dFdy(lon)) ? dFdy(lonFlipped) : dFdy(lon);
+    // (at +-pi, and u at 1), selecting the smallest mip along a meridian. The longitude gradient is derived from the
+    // normal instead, d(atan2(y, x)) = (x dy - y dx) / (x^2 + y^2), which has no wrap (clamped to pi like a wrapped
+    // difference, as it grows unbounded at the poles)
+    const vec2 decalUV = vec2(fract(0.5935 + atan2(n_obj.y, n_obj.x) * 0.1339), 0.5 + asin(clamp(n_obj.z, -1., 1.)) * 0.2678);
+    const vec2 nxyDx = dFdx(n_obj.xy);
+    const vec2 nxyDy = dFdy(n_obj.xy);
+    const float invLen2 = 1.0 / max(dot(n_obj.xy, n_obj.xy), 1e-6);
+    const float dLonX = clamp((n_obj.x * nxyDx.y - n_obj.y * nxyDx.x) * invLen2, -3.14159265, 3.14159265);
+    const float dLonY = clamp((n_obj.x * nxyDy.y - n_obj.y * nxyDy.x) * invLen2, -3.14159265, 3.14159265);
     const vec2 decalDx = vec2(dLonX * 0.1339, dFdx(decalUV.y));
     const vec2 decalDy = vec2(dLonY * 0.1339, dFdy(decalUV.y));
 
     if (coverage <= 0.0)
         discard;
-    if (t_hit <= 0.0)
+    if (t_hit <= 0.0) // Before the ray origin, that is in front of the near plane: clipped like the rest of the frame
         discard;
-    const vec3 hit_world = mul(orientation, vec4(n_obj, 1.0)).xyz;
-    const vec3 hit_view = mul(mWorldView, vec4(hit_world, 1.0)).xyz;
-
     #ifdef CLIP
     // Test the clip plane at the analytic surface point (not at the impostor quad depth)
-    if (dot(clip_plane, vec4(hit_world, 1.0)) < 0.0)
+    if (dot(clip_plane, vec4(mul(orientation, vec4(n_obj, 1.0)).xyz, 1.0)) < 0.0)
        discard;
     #endif
+    const vec3 hit_view = v_rayOriginView + t_hit * v_rayDirView;
 
-    // Exact per pixel depth of the analytic hit (uses the same camera relative transform as the rest of the frame)
-    const vec4 hit_clip = mul(mRotViewProj, vec4(hit_world - cCameraPosWorld, 1.0));
+    // Exact per pixel depth of the analytic hit
+    const vec4 hit_clip = mul(mProj, vec4(hit_view, 1.0));
     #if BGFX_SHADER_LANGUAGE_GLSL || BGFX_SHADER_LANGUAGE_ESSL
         gl_FragDepth = 0.5 + 0.5 * (hit_clip.z / hit_clip.w);
     #else
         gl_FragDepth = hit_clip.z / hit_clip.w;
     #endif
 
-    const vec3 nspin = mul(orientation, vec4(n_obj, 0.0)).xyz;
-    // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore mWorldView is not orthonormal
-    const vec3 N = normalize(mul(vec4(nspin, 0.0), mWorldViewInverse).xyz); // actually: mul(vec4(nspin,0.), mWorldViewInverseTranspose), but optimized to save one matrix
+    // Normals transform by the transpose of the inverse transform (normalized as it is not orthonormal with anti stretch)
+    const vec3 N = normalize(mul(vec4(n_obj, 0.0), mBallViewToObj).xyz);
     const vec3 V = normalize(/*camera=0,0,0,1*/-hit_view);
     const vec3 R = reflect(V, N);
 

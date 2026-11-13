@@ -14,7 +14,10 @@ const float4x3 matWorldViewInverse;
 //const float4x4 matWorldViewInverseTranspose; // matWorldViewInverse used instead and multiplied from other side
 const float4x3 matView;
 const float4x4 matPrevViewProj; // view-projection the previous frame was rendered with (to reproject it as a reflection probe)
-const float4x4 matProjInv;      // inverse (flipped) projection, mapping rendered clip space back to view space (raytraced impostor)
+// Raytraced impostor (see Ball::Render)
+const float4x4 matProj;       // (flipped) projection
+const float4x4 matProjInv;    // inverse (flipped) projection, mapping rendered clip space back to view space
+const float4x4 ballViewToObj; // view space to unit sphere space
 //const float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
 
 texture  Texture0; // base texture
@@ -57,7 +60,6 @@ sampler2D tex_ball_playfield : TEXUNIT4 = sampler_state // playfield
 #include "Material.fxh"
 
 const float4x3 orientation;
-const float4x3 orientationInv; // inverse of orientation, mapping world space back to unit sphere object space (raytraced impostor)
 const float4   clip_plane;     // clip plane in table coordinate system, tested against the analytic hit point
 const float4   invTableRes_reflection;
 const float4   w_h_disableLighting;
@@ -85,7 +87,11 @@ struct vout
 struct voutQuad
 {
     float4 position : POSITION0;
-    float3 ray      : TEXCOORD0; // clip space position on the impostor quad
+    // camera ray in view space and in unit sphere space (same ray parameter)
+    float3 rayOriginView : TEXCOORD0;
+    float3 rayDirView    : TEXCOORD1;
+    float3 rayOriginObj  : TEXCOORD2;
+    float3 rayDirObj     : TEXCOORD3;
 };
 
 //vertex to pixel shader structure
@@ -120,11 +126,19 @@ vout vsBall( const in vin IN )
 
 voutQuad vsBallQuad( const in vin IN )
 {
-    // IN.position is a clip space corner of the impostor quad (see Ball::Render), at the nearest projected ball depth.
-    // The pixel shader derives the camera ray by unprojecting the interpolated clip position
+    // IN.position is a clip space corner of the impostor quad (see Ball::Render), at the nearest projected ball depth
     voutQuad OUT;
     OUT.position = float4(IN.position.xyz, 1.0);
-    OUT.ray = IN.position.xyz;
+    // Ray through the corner, between its unprojected points at clip depth 0 (the origin) and 1. The projection center is
+    // not assumed to be the view space origin, which it is not with scene scale, layback, stereo eye shift or orthographic
+    // views. The unprojected w only depends on the clip depth, so the points are linear across the quad and interpolate
+    // exactly. The ray is also expressed in unit sphere space (affine, so with the same ray parameter)
+    const float4 p0 = mul(float4(IN.position.xy, 0.0, 1.0), matProjInv);
+    const float4 p1 = mul(float4(IN.position.xy, 1.0, 1.0), matProjInv);
+    OUT.rayOriginView = p0.xyz / p0.w;
+    OUT.rayDirView = p1.xyz / p1.w - OUT.rayOriginView;
+    OUT.rayOriginObj = mul(float4(OUT.rayOriginView, 1.0), ballViewToObj).xyz;
+    OUT.rayDirObj = mul(float4(OUT.rayDirView, 0.0), ballViewToObj).xyz;
     return OUT;
 }
 
@@ -179,53 +193,51 @@ float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 di
 
 float4 psBall( const in voutQuad IN, uniform bool equirectangularMap, uniform bool decalMode, out float depth : DEPTH ) : COLOR
 {
-    // Analytic raycast of the unit sphere: unproject the interpolated clip position to get the
-    // camera ray, move it to unit sphere space by the inverse view and inverse orientation, then
-    // intersect to get the exact silhouette, surface point and normal. Since the ray is moved by
-    // orientationInv, this supports the anti stretch ellipsoid for free.
-    const float3 d_v = mul(float4(IN.ray, 1.0), matProjInv).xyz;
-    const float3 o_w = mul_w1(float3(0.,0.,0.), matWorldViewInverse);
-    const float3 d_w = mul_w0(d_v, matWorldViewInverse);
-    const float3 o_o = mul_w1(o_w, orientationInv);
-    const float3 d_o = mul_w0(d_w, orientationInv);
-    const float a = dot(d_o, d_o);
-    const float b = dot(o_o, d_o);
-    const float c = dot(o_o, o_o) - 1.0;
-    const float discr = b * b - a * c;
-    // Analytic silhouette antialiasing: fade out the coverage over ~1 pixel around the outline
-    // (discr/a is 0 at the sphere outline)
-    const float coverage = saturate(discr / (a * max(fwidth(discr / a), 1e-7)) + 0.5);
-    // Evaluated before the discards (for a ray missing the sphere, at its closest point): the decal gradient computation needs every pixel of the 2x2 quad
-    const float t_hit = (-b - sqrt(max(discr, 0.0))) / a;
-    const float3 n_obj = normalize(o_o + t_hit * d_o); // hit point on the unit sphere = exact normal
+    // Analytic raycast of the unit sphere, in its own space (so the anti stretch ellipsoid comes for free): exact silhouette, surface point and normal
+    const float3 o_o = IN.rayOriginObj;
+    const float3 d_o = IN.rayDirObj;
+    // Numerically stable form, for balls small relative to their distance: with a normalized direction, the squared
+    // distance of the ray to the center is computed directly instead of as a difference of large terms
+    const float invLenD = rsqrt(dot(d_o, d_o));
+    const float3 dir = d_o * invLenD;
+    const float b = dot(o_o, dir);
+    const float3 h = o_o - b * dir; // ray point closest to the center
+    const float discr = 1.0 - dot(h, h);
+    // Analytic silhouette antialiasing: fade out the coverage over ~1 pixel around the outline (discr is 0 there)
+    const float coverage = saturate(discr / max(fwidth(discr), 1e-7) + 0.5);
+    // Evaluated before the discards (for a ray missing the sphere, at its closest point): the decal gradients need every
+    // pixel of each 2x2 quad
+    const float t_dir = -b - sqrt(max(discr, 0.0)); // along the normalized direction
+    const float3 n_obj = normalize(o_o + t_dir * dir); // hit point on the unit sphere = exact normal
+    const float t_hit = t_dir * invLenD; // ray parameter, shared with view space
 
     // Decal UV, reproducing the ball mesh UVs, with explicit gradients: implicit ones jump where the longitude wraps
-    // (at +-pi, and u at 1), selecting the smallest mip along a meridian. The longitude gradient is taken from whichever
-    // of two longitudes, wrapping on opposite sides, varies least (they only differ across a wrap)
-    const float lon = atan2(n_obj.y, n_obj.x);
-    const float lonFlipped = atan2(-n_obj.y, -n_obj.x); // lon -+ pi, wrapping at 0
-    const float2 decalUV = float2(frac(0.5935 + lon * 0.1339), 0.5 + asin(clamp(n_obj.z, -1., 1.)) * 0.2678);
-    const float dLonX = abs(ddx(lonFlipped)) < abs(ddx(lon)) ? ddx(lonFlipped) : ddx(lon);
-    const float dLonY = abs(ddy(lonFlipped)) < abs(ddy(lon)) ? ddy(lonFlipped) : ddy(lon);
+    // (at +-pi, and u at 1), selecting the smallest mip along a meridian. The longitude gradient is derived from the
+    // normal instead, d(atan2(y, x)) = (x dy - y dx) / (x^2 + y^2), which has no wrap (clamped to pi like a wrapped
+    // difference, as it grows unbounded at the poles)
+    const float2 decalUV = float2(frac(0.5935 + atan2(n_obj.y, n_obj.x) * 0.1339), 0.5 + asin(clamp(n_obj.z, -1., 1.)) * 0.2678);
+    const float2 nxyDx = ddx(n_obj.xy);
+    const float2 nxyDy = ddy(n_obj.xy);
+    const float invLen2 = 1.0 / max(dot(n_obj.xy, n_obj.xy), 1e-6);
+    const float dLonX = clamp((n_obj.x * nxyDx.y - n_obj.y * nxyDx.x) * invLen2, -3.14159265, 3.14159265);
+    const float dLonY = clamp((n_obj.x * nxyDy.y - n_obj.y * nxyDy.x) * invLen2, -3.14159265, 3.14159265);
     const float2 decalDx = float2(dLonX * 0.1339, ddx(decalUV.y));
     const float2 decalDy = float2(dLonY * 0.1339, ddy(decalUV.y));
 
     if (coverage <= 0.0)
         discard;
-    if (t_hit <= 0.0)
+    if (t_hit <= 0.0) // Before the ray origin, that is in front of the near plane: clipped like the rest of the frame
         discard;
-    const float3 hit_world = mul_w1(n_obj, orientation);
-    const float3 hit_view = mul_w1(hit_world, matWorldView);
-
     // Test the clip plane at the analytic surface point (not at the impostor quad depth)
-    clip(dot(clip_plane, float4(hit_world, 1.0)));
+    clip(dot(clip_plane, float4(mul_w1(n_obj, orientation), 1.0)));
+    const float3 hit_view = IN.rayOriginView + t_hit * IN.rayDirView;
 
     // Exact per pixel depth of the analytic hit
-    const float4 hit_clip = mul(float4(hit_world, 1.0), matWorldViewProj);
+    const float4 hit_clip = mul(float4(hit_view, 1.0), matProj);
     depth = hit_clip.z / hit_clip.w;
 
-    const float3 nspin = mul_w0(n_obj, orientation);
-    const float3 N = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+    // Normals transform by the transpose of the inverse transform (normalized as it is not orthonormal with anti stretch)
+    const float3 N = normalize(mul(ballViewToObj, float4(n_obj, 0.0)).xyz);
     const float3 V = normalize(/*camera=0,0,0,1*/-hit_view);
     const float3 R = reflect(V, N);
 
