@@ -116,8 +116,8 @@ void Flasher::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          return;
 
       const int cvertex = (int)vvertex.size();
-      Vertex3Ds *const rgv3d = new Vertex3Ds[cvertex];
-      
+      vector<Vertex3Ds> rgv3d(cvertex);
+
       assert(m_renderer != nullptr); // as m_min, m_max are only defined between RenderSetup/RenderRelease
 
       const float height = m_d.m_height;
@@ -136,8 +136,15 @@ void Flasher::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          rgv3d[i].z = v.z;
       }
 
-      Hit3DPoly *const ph3dp = new Hit3DPoly(this, rgv3d, cvertex);
-      physics->AddCollider(ph3dp, isUI);
+      // The shape may be arbitrarily tilted (rotX/rotY): use triangles, whose 3D
+      // inside test works at any orientation, instead of the XY-only Hit3DPoly
+      for (int i = 0; i + 2 < cvertex; ++i)
+      {
+         const Vertex3Ds rgv[3] = { rgv3d[0], rgv3d[i + 1], rgv3d[i + 2] };
+         if (CrossProduct(rgv[2] - rgv[0], rgv[1] - rgv[0]).LengthSquared() < 0.01f)
+            continue; // degenerate sliver: nothing to pick (matches HitTriangle's degenerate threshold)
+         physics->AddCollider(new HitTriangle(this, rgv, physics->GetPhysicProfile()), isUI);
+      }
    }
 }
 

@@ -352,11 +352,11 @@ TEST_CASE("Unequal-mass ball/ball collision conserves momentum")
 }
 
 // ---------------------------------------------------------------------------
-// Hit3DPoly::HitTest performs its inside-polygon test in the XY plane even
-// though the polygon may have any orientation; a polygon perpendicular to the
-// playfield projects onto a line and rejects every hit (the source comment
-// acknowledges this: "this need to be changed to a point in polygon on 3D
-// plane").
+// Hit3DPoly::HitTest performs its inside-polygon test in the XY plane, so the
+// class is contractually limited to polygons with a non-degenerate XY
+// projection (asserted in Hit3DPoly::Init): all its uses are flat by
+// construction. Tilted geometry goes through HitTriangle (3D barycentric,
+// e.g. the flasher picking quads) or HitPlane (e.g. the top glass).
 // ---------------------------------------------------------------------------
 
 TEST_CASE("A vertical HitTriangle registers hits")
@@ -373,18 +373,19 @@ TEST_CASE("A vertical HitTriangle registers hits")
    CHECK(coll.m_hitnormal.x == doctest::Approx(-1.f));
 }
 
-TEST_CASE("A vertical Hit3DPoly registers hits" * doctest::should_fail())
+TEST_CASE("A flat Hit3DPoly registers hits")
 {
-   // Quad perpendicular to the playfield (x=600): its XY projection collapses
-   // to a line, so the winding test always rejects the hit.
-   Vertex3Ds *const rgv = new Vertex3Ds[4] { Vertex3Ds(600.f, 400.f, 0.f), Vertex3Ds(600.f, 600.f, 0.f), //
+   // Quad parallel to the playfield (z=100), wound so its normal faces +z: its
+   // XY projection is the quad itself, and the winding test accepts the hit.
+   Vertex3Ds *const rgv = new Vertex3Ds[4] { Vertex3Ds(400.f, 400.f, 100.f), Vertex3Ds(400.f, 600.f, 100.f), //
       Vertex3Ds(600.f, 600.f, 100.f), Vertex3Ds(600.f, 400.f, 100.f) };
    Hit3DPoly poly(nullptr, rgv, 4);
    poly.CalcHitBBox();
 
    CollisionEvent coll;
-   const BallS ball = MakeBallState(Vertex3Ds(575.f, 500.f, 50.f), Vertex3Ds(100.f, 0.f, 0.f));
+   const BallS ball = MakeBallState(Vertex3Ds(500.f, 500.f, 130.f), Vertex3Ds(0.f, 0.f, -100.f));
    CHECK(poly.HitTest(ball, 1.f, coll) >= 0.f);
+   CHECK(coll.m_hitnormal.z == doctest::Approx(1.f));
 }
 
 // ---------------------------------------------------------------------------

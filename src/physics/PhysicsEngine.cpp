@@ -277,14 +277,6 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    AddCollider(new LineSeg(table, Vertex2D(table->m_right, table->m_bottom), Vertex2D(table->m_left, table->m_bottom), 0.f, table->m_glassBottomHeight),  false);
    AddCollider(new LineSeg(table, Vertex2D(table->m_left, table->m_top), Vertex2D(table->m_right, table->m_top), 0.f, table->m_glassTopHeight), false);
 
-   // glass:
-   Vertex3Ds * const rgv3D = new Vertex3Ds[4];
-   rgv3D[0] = Vertex3Ds(table->m_left, table->m_top, table->m_glassTopHeight);
-   rgv3D[1] = Vertex3Ds(table->m_right, table->m_top, table->m_glassTopHeight);
-   rgv3D[2] = Vertex3Ds(table->m_right, table->m_bottom, table->m_glassBottomHeight);
-   rgv3D[3] = Vertex3Ds(table->m_left, table->m_bottom, table->m_glassBottomHeight);
-   AddCollider(new Hit3DPoly(table, rgv3D, 4), false);
-
    /*
    // playfield:
    Vertex3Ds * const rgv3D = new Vertex3Ds[4];
@@ -311,7 +303,8 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    // glass:
    Vertex3Ds glassNormal(0, table->m_bottom - table->m_top, table->m_glassBottomHeight - table->m_glassTopHeight);
    glassNormal.Normalize();
-   m_hitTopGlass = HitPlane(table, Vertex3Ds(0, glassNormal.z, -glassNormal.y), -table->m_glassTopHeight);
+   const Vertex3Ds glassN(0, glassNormal.z, -glassNormal.y);
+   m_hitTopGlass = HitPlane(table, glassN, glassN.Dot(Vertex3Ds(0, table->m_top, table->m_glassTopHeight)));
    m_hitTopGlass.SetPhysics(this); // copy assignment above does not preserve it
    m_hitTopGlass.m_elasticity = 0.2f;
 }

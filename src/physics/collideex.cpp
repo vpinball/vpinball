@@ -968,6 +968,9 @@ void Hit3DPoly::Init(Vertex3Ds * const rgv, const int count)
    m_normal.y *= inv_len;
    m_normal.z *= inv_len;
 
+   // HitTest's inside test projects the polygon onto XY: use HitTriangle or HitPlane for tilted polygons
+   assert(fabsf(m_normal.z) > 0.5f);
+
    m_elasticity = 0.3f;
    SetFriction(0.3f);
    m_scatter = 0.f;
