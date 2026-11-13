@@ -179,6 +179,8 @@ private:
    void AddJoint2D(class PhysicsEngine *physics, const Vertex2D &p, const float zlow, const float zhigh, const bool isUI);
    void CheckJoint(class PhysicsEngine *physics, const HitTriangle *const ph3d1, const HitTriangle *const ph3d2, const bool isUI);
    void AddWallLineSeg(class PhysicsEngine* physics, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight, const bool isUI);
+   Vertex3Ds AddWallQuad(class PhysicsEngine *physics, const Vertex2D &pv1, const float height1, const Vertex2D &pv2, const float height2, const float wallheight,
+      const Vertex3Ds &prevNormal, const bool addStartJoint, const bool addEndJoint, const bool isUI);
    void SetupHitObject(class PhysicsEngine* physics, HitObject *obj, const bool isUI);
 
    void GenerateVertexBuffer();

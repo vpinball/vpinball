@@ -288,6 +288,9 @@ FIXES:
     ball inside it is tracked to solve the wire/plate angle matching the contact. The ball is only stopped when the wire
     cannot follow (closed side of a one-way gate, or pushed against an angle limit), giving more accurate pass-through and
     bounce behavior
+  . ramp side walls are now the exact sloped quads instead of rectangles subdivided along the slope whose height window
+    was swapped on the direction keeping the ball on the ramp, leaving dead zones near segment ends where the ball
+    escaped through the wall on steep sections (and phantom hits for balls rolling below raised parts)
 
 - physics behavior changes that may make existing tables play slightly differently, but are more physically correct:
   . ball-ball contacts are now handled as resting contacts (like ball vs. playfield/walls), and the ball-ball contact normal is now evaluated at the actual hit time.

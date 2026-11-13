@@ -111,6 +111,10 @@
 //   pushed it up, and the ball climbed off the playfield until it dropped back.
 // - HitFlipper::Contact tests the gap acceleration with the ball's center acceleration instead of the one of its material
 //   contact point, whose centripetal term (>= 0 along the normal for any spin) made a spinning ball lose its support.
+// - Ramp side walls were LineSeg rectangles subdivided along the slope; the segments running from the high end to the low
+//   end got their height windows swapped during the subdivision, so the wall was dead wherever the floor height fell
+//   outside the swapped window (a ball on the ramp escaped through the wall on steep sections, while balls below were
+//   phantom-blocked). Walls are now the exact sloped quads (two single-sided HitTriangle faces and edge joints).
 //
 // Always enabled (new in 10.9 but not gated by the profile):
 // - Ball/ball contacts (HitBall::Contact): the contact friction uses the motion relative to the other ball, which was

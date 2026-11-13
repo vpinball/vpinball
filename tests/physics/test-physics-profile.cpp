@@ -10,8 +10,11 @@
 #include "../vpx-test.h"
 #include "physics-harness.h"
 
+#include "math/dragpoint.h"
+#include "parts/ball.h"
 #include "parts/flipper.h"
 #include "parts/pintable.h"
+#include "parts/ramp.h"
 #include "physics/PhysicsEngine.h"
 #include "physics/collide.h"
 #include "physics/collideex.h"
@@ -254,5 +257,86 @@ TEST_CASE("PhysicsProfile: flipper inertia model and mass round-trip")
       CHECK(std::isfinite(mover.m_inertia));
       CHECK(mover.GetMass() == doctest::Approx(2.f * partMass));
       CHECK(mover.m_inertia == doctest::Approx(2.f * partMass * (running == PhysicProfile::V10_9 ? mover.m_inertiaShape : rod)));
+   }
+}
+
+// ---------------------------------------------------------------------------
+// Ramp side walls (https://github.com/vpinball/vpinball/issues/222): V10_8 walls are LineSeg rectangles subdivided
+// along the slope, and the segments walking the slope from high to low got their subdivided height windows
+// swapped, so the collider keeping the ball on the ramp is dead wherever the floor height falls outside the
+// swapped window: the ball escapes through the wall on steep sections, while balls rolling on the playfield
+// below the raised wall are phantom-blocked. V10_9 builds the exact sloped quads.
+// ---------------------------------------------------------------------------
+
+TEST_CASE("PhysicsProfile: ramp side wall blocks the ball along the whole slope")
+{
+   for (const PhysicProfile profile : kProfiles)
+   {
+      CAPTURE(ProfileName(profile));
+      PhysicsTestHarness harness;
+
+      // The issue's repro: a straight 2-point ramp, heights 0 -> 105, widths 115 -> 65, wall heights 60
+      Ramp *const ramp = Ramp::COMCreate();
+      ramp->Init(500.f, 1000.f, false);
+      ramp->SetName("TestRamp");
+      ramp->m_curve.ClearPoints();
+      ramp->m_curve.PushPoint(std::make_unique<DragPoint>(&ramp->m_curve, 500.f, 1400.f, 0.f, true));
+      ramp->m_curve.PushPoint(std::make_unique<DragPoint>(&ramp->m_curve, 500.f, 600.f, 0.f, true));
+      ramp->m_d.m_type = RampTypeFlat;
+      ramp->m_d.m_heightbottom = 0.f;
+      ramp->m_d.m_heighttop = 105.f;
+      ramp->m_d.m_widthbottom = 115.f;
+      ramp->m_d.m_widthtop = 65.f;
+      ramp->m_d.m_leftwallheight = 60.f;
+      ramp->m_d.m_rightwallheight = 60.f;
+      ramp->m_d.m_collidable = true;
+      ramp->m_d.m_overwritePhysics = true;
+      ramp->m_d.m_elasticity = 0.3f;
+      ramp->m_d.m_friction = 0.3f;
+      ramp->m_d.m_scatter = 0.f;
+      harness.GetTable()->AddPart(ramp);
+      ramp->Release(); // owned by the table
+
+      const PhysicProfile running = StartWithProfile(harness, profile);
+
+      // x of the right outline at height y (the wall line): the outline is a trapezoid, the edge
+      // widens to 557.5 at the bottom, so "outside" must be tested against the edge at the ball's y
+      const auto rightEdge = [](const float y)
+      {
+         const float t = (1400.f - y) / 800.f;
+         return 500.f + 0.5f * (115.f - 50.f * (t < 0.f ? 0.f : (t > 1.f ? 1.f : t)));
+      };
+
+      // t ~= 0.9 of the ramp: floor height ~94.5, right outline x = 535 — inside the deepest V10_8 dead zone
+      SUBCASE("a ball on the ramp cannot escape through the wall")
+      {
+         Ball *const ball = harness.AddBall(520.f, 680.f, 94.5f, 300.f, 0.f, 0.f);
+         // "escaped" = outside the outline above playfield height (a ball that fell to the playfield and rolls under the wall is not an escape)
+         const auto escaped = [&ball, &rightEdge]()
+         {
+            const Vertex3Ds &p = ball->m_hitBall.m_d.m_pos;
+            return p.x > rightEdge(p.y) && p.z > 60.f;
+         };
+         CAPTURE(ball->m_hitBall.m_d.m_pos);
+         if (running == PhysicProfile::V10_9)
+            CHECK(!harness.AdvanceUntil(escaped, 2000));
+         else
+            CHECK(harness.AdvanceUntil(escaped, 2000)); // the dead zone lets it leave through the wall
+      }
+
+      SUBCASE("a ball on the playfield rolls under the raised wall")
+      {
+         Ball *const ball = harness.AddBall(520.f, 680.f, 0.f, 300.f, 0.f, 0.f);
+         const auto passed = [&ball, &rightEdge]()
+         {
+            const Vertex3Ds &p = ball->m_hitBall.m_d.m_pos;
+            return p.x > rightEdge(p.y);
+         };
+         CAPTURE(ball->m_hitBall.m_d.m_pos);
+         if (running == PhysicProfile::V10_9)
+            CHECK(harness.AdvanceUntil(passed, 2000)); // the wall's bottom edge follows the ramp, the ball passes under
+         else
+            CHECK(!harness.AdvanceUntil(passed, 2000)); // the swapped height window phantom-blocks it at the wall line
+      }
    }
 }
