@@ -730,8 +730,9 @@ STDMETHODIMP DispReel::SetValue(LONG Value)
       i--;
    }
 
-   // force a immediate screen update
-   m_timeNextUpdate = g_pplayer->m_time_msec;
+   // force an immediate screen update
+   if (g_pplayer)
+      m_timeNextUpdate = g_pplayer->m_time_msec;
 
    return S_OK;
 }

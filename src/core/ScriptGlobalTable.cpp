@@ -209,98 +209,140 @@ STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
    return S_OK;
 }
 
+// Without a player, the input actions do not exist: the key getters then return 0, which matches no key. This happens when
+// the editor is used to compile the script, as it runs it (top-level code executes)
+static bool NoInputActions(LONG *pVal)
+{
+   if (g_pplayer != nullptr)
+      return false;
+   *pVal = 0;
+   return true;
+}
+
 STDMETHODIMP ScriptGlobalTable::get_LeftFlipperKey(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | (g_pplayer->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetRightFlipperActionId() :  g_pplayer->m_pininput.GetLeftFlipperActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightFlipperKey(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | (g_pplayer->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetLeftFlipperActionId() : g_pplayer->m_pininput.GetRightFlipperActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StagedLeftFlipperKey(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | (g_pplayer->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetStagedRightFlipperActionId() : g_pplayer->m_pininput.GetStagedLeftFlipperActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StagedRightFlipperKey(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | (g_pplayer->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetStagedLeftFlipperActionId() : g_pplayer->m_pininput.GetStagedRightFlipperActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LeftTiltKey(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | (g_pplayer->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetRightNudgeActionId() : g_pplayer->m_pininput.GetLeftNudgeActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightTiltKey(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | (g_pplayer->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetLeftNudgeActionId() : g_pplayer->m_pininput.GetRightNudgeActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_CenterTiltKey(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetCenterNudgeActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_PlungerKey(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetLaunchBallActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StartGameKey(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetStartActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_AddCreditKey(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(0);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_AddCreditKey2(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetAddCreditActionId(1);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_MechanicalTilt(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetTiltActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LeftMagnaSave(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | (g_pplayer->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetRightMagnaActionId() : g_pplayer->m_pininput.GetLeftMagnaActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightMagnaSave(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | (g_pplayer->m_tblMirrorEnabled ? g_pplayer->m_pininput.GetLeftMagnaActionId() : g_pplayer->m_pininput.GetRightMagnaActionId());
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_ExitGame(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetExitGameActionId();
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LockbarKey(LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetLockbarActionId();
    return S_OK;
 }
@@ -309,12 +351,16 @@ STDMETHODIMP ScriptGlobalTable::get_JoyCustomKey(LONG index, LONG *pVal)
 {
    if (index < 1 || index > 4)
       return E_FAIL;
+   if (NoInputActions(pVal))
+      return S_OK;
    *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetJoyCustomActionId(index - 1);
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_VPXActionKey(LONG index, LONG *pVal)
 {
+   if (NoInputActions(pVal))
+      return S_OK;
    switch (index)
    {
    case 0: *pVal = (LONG)0x10000 | g_pplayer->m_pininput.GetLeftFlipperActionId(); break;
@@ -848,6 +894,11 @@ STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
 
 STDMETHODIMP ScriptGlobalTable::CreatePluginObject(/*[in]*/ BSTR classId, /*[out, retval]*/ IDispatch** pVal)
 {
+   if (g_pplayer == nullptr) // Plugins are only loaded while playing, not when the editor compiles (so runs) the script
+   {
+      *pVal = nullptr;
+      return E_FAIL;
+   }
    VPXPluginAPIImpl &pi = g_pplayer->m_pluginAPI;
    *pVal = pi.CreateCOMPluginObject(MakeString(classId));
    return (*pVal != nullptr) ? S_OK : E_FAIL;
@@ -1213,9 +1264,10 @@ STDMETHODIMP ScriptGlobalTable::GetSerialDevices(VARIANT *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_RenderingMode(int *pVal)
 {
-   if (g_pplayer->m_renderer->m_stereo3D == STEREO_VR)
+   // No player when the editor compiles (so runs) the script: 2D then
+   if (g_pplayer && g_pplayer->m_renderer->m_stereo3D == STEREO_VR)
       *pVal = 2; // VR
-   else if ((g_pplayer->m_renderer->m_stereo3D != STEREO_OFF) && g_pplayer->m_renderer->m_stereo3Denabled)
+   else if (g_pplayer && (g_pplayer->m_renderer->m_stereo3D != STEREO_OFF) && g_pplayer->m_renderer->m_stereo3Denabled)
       *pVal = 1; // Stereo 3D (3DTV or anaglyph)
    else {
 #ifndef __STANDALONE__
