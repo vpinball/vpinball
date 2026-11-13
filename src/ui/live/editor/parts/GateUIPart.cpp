@@ -162,12 +162,12 @@ void GateUIPart::UpdatePropertyPane(PropertyPane& props)
          [](Gate* gate, float v) { gate->m_d.m_height = v; }, PropertyPane::Unit::VPLength, 1);
       props.InputFloat<Gate>(
          m_part, "Open Angle"s, //
-         [](const Gate* gate) { return gate->m_d.m_angleMax; }, //
-         [](Gate* gate, float v) { gate->m_d.m_angleMax = v; }, PropertyPane::Unit::Degree, 1);
+         [](const Gate* gate) { return RADTOANG(gate->m_d.m_angleMax); }, //
+         [](Gate* gate, float v) { gate->m_d.m_angleMax = ANGTORAD(v); }, PropertyPane::Unit::Degree, 1);
       props.InputFloat<Gate>(
          m_part, "Close Angle"s, //
-         [](const Gate* gate) { return gate->m_d.m_angleMin; }, //
-         [](Gate* gate, float v) { gate->m_d.m_angleMin = v; }, PropertyPane::Unit::Degree, 1);
+         [](const Gate* gate) { return RADTOANG(gate->m_d.m_angleMin); }, //
+         [](Gate* gate, float v) { gate->m_d.m_angleMin = ANGTORAD(v); }, PropertyPane::Unit::Degree, 1);
       props.EndSection();
    }
 
