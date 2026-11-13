@@ -82,17 +82,21 @@ public:
       return false;
    }
 
-   // Projects the unit-sphere fit points through the given object-to-clip-space transform and accumulates
-   // their clip space bounds (used to bound the raytraced ball impostor quad, including anti-stretch
-   // ellipsoids since the full object transform is applied to each point). zMin receives the nearest
-   // projected depth. Returns true when a point ends up behind the camera (bounds are then unusable).
+   // The fit points lie on the unit sphere, so their hull is inside it: up to 10.4% short of it along some directions
+   // (for these 35 points). Scaled by this factor, their hull encloses the sphere, and so their projected bounds the projected sphere
+   static constexpr float boundScale = 1.12f;
+
+   // Accumulates the clip space bounds of the fit points, scaled by boundScale, through the given object to clip space
+   // transform (bounds of the raytraced ball impostor quad; anti stretch ellipsoids are covered as the full object
+   // transform is applied). zMin receives the nearest projected depth. Returns true when a point ends up behind the
+   // camera (the bounds are then unusable).
    bool computeProjBounds(const Matrix3D &toClip, float &xMin, float &xMax, float &yMin, float &yMax, float &zMin) const
    {
       for (int i = 0; i < AntiStretchHelper::npts * 3; i += 3)
       {
-         const float px = m_stretchFitPoints[i];
-         const float py = m_stretchFitPoints[i + 1];
-         const float pz = m_stretchFitPoints[i + 2];
+         const float px = boundScale * m_stretchFitPoints[i];
+         const float py = boundScale * m_stretchFitPoints[i + 1];
+         const float pz = boundScale * m_stretchFitPoints[i + 2];
          const float xp = toClip._11 * px + toClip._21 * py + toClip._31 * pz + toClip._41;
          const float yp = toClip._12 * px + toClip._22 * py + toClip._32 * pz + toClip._42;
          const float zp = toClip._13 * px + toClip._23 * py + toClip._33 * pz + toClip._43;

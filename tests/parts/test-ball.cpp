@@ -8,6 +8,41 @@
 
 #include "doctest.h"
 
+// The raytraced ball impostor quad is sized from the projected fit points: once scaled, they must reach the sphere
+// surface in every direction, or the ball outline gets clipped
+TEST_CASE("Ball impostor bounds enclose the sphere")
+{
+   const AntiStretchHelper ash;
+   float worst = 0.f;
+   // Directions on a dense Fibonacci sphere
+   constexpr int n = 20000;
+   for (int k = 0; k < n; k++)
+   {
+      const float z = 1.f - 2.f * ((float)k + 0.5f) / (float)n;
+      const float r = sqrtf(1.f - z * z);
+      const float phi = (float)k * 2.39996323f;
+      const float ux = r * cosf(phi), uy = r * sinf(phi), uz = z;
+      float reach = -FLT_MAX;
+      for (int i = 0; i < AntiStretchHelper::npts * 3; i += 3)
+         reach = max(reach, ux * ash.m_stretchFitPoints[i] + uy * ash.m_stretchFitPoints[i + 1] + uz * ash.m_stretchFitPoints[i + 2]);
+      worst = max(worst, 1.f - reach);
+   }
+   CHECK(worst > 0.09f); // The unscaled points really fall short (else boundScale is not needed anymore)
+   CHECK(AntiStretchHelper::boundScale * (1.f - worst) >= 1.f);
+
+   // Through an orthographic projection, the bounds of the scaled points enclose the projected sphere in any orientation
+   for (int k = 0; k < 64; k++)
+   {
+      const Matrix3D rot = Matrix3D::MatrixRotateX((float)k * 0.37f) * Matrix3D::MatrixRotateZ((float)k * 0.91f);
+      float xMin = FLT_MAX, xMax = -FLT_MAX, yMin = FLT_MAX, yMax = -FLT_MAX, zMin = FLT_MAX;
+      REQUIRE_FALSE(ash.computeProjBounds(rot, xMin, xMax, yMin, yMax, zMin));
+      CHECK(xMin <= -1.f);
+      CHECK(xMax >= 1.f);
+      CHECK(yMin <= -1.f);
+      CHECK(yMax >= 1.f);
+   }
+}
+
 TEST_CASE("Ball part")
 {
    PinTable* const table = CreateTestTable();

@@ -122,12 +122,25 @@ void main()
     // Analytic silhouette antialiasing: fade out the coverage over ~1 pixel around the outline
     // (discr/a is the squared projection of the hit on the ray, = 0 at the sphere outline)
     const float coverage = saturate(discr / (a * max(fwidth(discr / a), 1e-7)) + 0.5);
+    // Evaluated before the discards (for a ray missing the sphere, at its closest point): the decal gradient computation needs every pixel of the 2x2 quad
+    const float t_hit = (-b - sqrt(max(discr, 0.0))) / a;
+    const vec3 n_obj = normalize(o_o + t_hit * d_o); // hit point on the unit sphere = exact normal
+
+    // Decal UV, reproducing the ball mesh UVs, with explicit gradients: implicit ones jump where the longitude wraps
+    // (at +-pi, and u at 1), selecting the smallest mip along a meridian. The longitude gradient is taken from whichever
+    // of two longitudes, wrapping on opposite sides, varies least (they only differ across a wrap)
+    const float lon = atan2(n_obj.y, n_obj.x);
+    const float lonFlipped = atan2(-n_obj.y, -n_obj.x); // lon -+ pi, wrapping at 0
+    const vec2 decalUV = vec2(fract(0.5935 + lon * 0.1339), 0.5 + asin(clamp(n_obj.z, -1., 1.)) * 0.2678);
+    const float dLonX = abs(dFdx(lonFlipped)) < abs(dFdx(lon)) ? dFdx(lonFlipped) : dFdx(lon);
+    const float dLonY = abs(dFdy(lonFlipped)) < abs(dFdy(lon)) ? dFdy(lonFlipped) : dFdy(lon);
+    const vec2 decalDx = vec2(dLonX * 0.1339, dFdx(decalUV.y));
+    const vec2 decalDy = vec2(dLonY * 0.1339, dFdy(decalUV.y));
+
     if (coverage <= 0.0)
         discard;
-    const float t_hit = (-b - sqrt(max(discr, 0.0))) / a;
     if (t_hit <= 0.0)
         discard;
-    const vec3 n_obj = normalize(o_o + t_hit * d_o); // hit point on the unit sphere = exact normal
     const vec3 hit_world = mul(orientation, vec4(n_obj, 1.0)).xyz;
     const vec3 hit_view = mul(mWorldView, vec4(hit_world, 1.0)).xyz;
 
@@ -144,10 +157,6 @@ void main()
     #else
         gl_FragDepth = hit_clip.z / hit_clip.w;
     #endif
-
-    // Decal UV, reproducing the mapping baked in the ball mesh UVs
-    const vec2 decalUV = vec2(fract(0.5935 + atan2(n_obj.y, n_obj.x) * 0.1339),
-                              0.5 + asin(clamp(n_obj.z, -1., 1.)) * 0.2678);
 
     const vec3 nspin = mul(orientation, vec4(n_obj, 0.0)).xyz;
     // Needs to use a 'normal' matrix, and to normalize since we allow non uniform stretching, therefore mWorldView is not orthonormal
@@ -174,7 +183,7 @@ void main()
         ballImageColor = texture2DLod(tex_ball_color, uv, lod).rgb;
     #endif
 
-    const vec4 decalColorT = texture2D(tex_ball_decal, decalUV);
+    const vec4 decalColorT = texture2DGrad(tex_ball_decal, decalUV, decalDx, decalDy);
     vec3 decalColor = decalColorT.rgb;
     #ifndef DECAL
         // decal texture is an alpha scratch texture and must be added to the ball texture
