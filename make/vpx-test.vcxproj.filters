@@ -263,6 +263,9 @@
     <ClCompile Include="../../tests/render/test-window.cpp">
       <Filter>render</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/ui/test-arc.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/ui/test-arealayout.cpp">
       <Filter>ui</Filter>
     </ClCompile>
