@@ -220,6 +220,12 @@ void InGameUIPage::SaveTableOverride()
    appSettings.Save();
 }
 
+void InGameUIPage::NotifySavedForNextStart()
+{
+   m_savedForNextStartNotifId
+      = m_player->m_liveUI->PushNotification("This change is automatically saved and will be applied after restarting the player."s, 5000, m_savedForNextStartNotifId);
+}
+
 bool InGameUIPage::HasSelectableItem() const
 {
    return std::ranges::any_of(m_items, [](const auto &item) { return item->IsSelectable(); });

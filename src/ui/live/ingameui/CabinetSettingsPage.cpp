@@ -71,7 +71,7 @@ void CabinetSettingsPage::BuildPage()
       [this]() { return g_settingsService.GetActiveSettings().GetPlayer_ScreenWidth(); }, //
       [this](float, float v)
       {
-         m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
+         NotifySavedForNextStart();
          g_settingsService.GetActiveSettings().SetPlayer_ScreenWidth(v, false);
       }));
 
@@ -81,7 +81,7 @@ void CabinetSettingsPage::BuildPage()
       [this]() { return g_settingsService.GetActiveSettings().GetPlayer_ScreenHeight(); }, //
       [this](float, float v)
       {
-         m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
+         NotifySavedForNextStart();
          g_settingsService.GetActiveSettings().SetPlayer_ScreenHeight(v, false);
       }));
 
@@ -91,7 +91,7 @@ void CabinetSettingsPage::BuildPage()
       [this]() { return g_settingsService.GetActiveSettings().GetPlayer_ScreenInclination(); }, //
       [this](float, float v)
       {
-         m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
+         NotifySavedForNextStart();
          g_settingsService.GetActiveSettings().SetPlayer_ScreenInclination(v, false);
       }));
 
@@ -101,7 +101,7 @@ void CabinetSettingsPage::BuildPage()
       [this]() { return g_settingsService.GetActiveSettings().GetPlayer_LockbarWidth(); }, //
       [this](float, float v)
       {
-         m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
+         NotifySavedForNextStart();
          g_settingsService.GetActiveSettings().SetPlayer_LockbarWidth(v, false);
       }));
 
@@ -111,7 +111,7 @@ void CabinetSettingsPage::BuildPage()
       [this]() { return g_settingsService.GetActiveSettings().GetPlayer_LockbarHeight(); }, //
       [this](float, float v)
       {
-         m_delayApplyNotifId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the game"s, 5000, m_delayApplyNotifId);
+         NotifySavedForNextStart();
          g_settingsService.GetActiveSettings().SetPlayer_LockbarHeight(v, false);
       }));
 

@@ -64,6 +64,10 @@ public:
    }
    virtual void BuildPage() = 0;
 
+   // For items which do not follow the standard live/save flow: they are persisted as soon as they are
+   // changed but only applied on the next start (usually because they impact device/setup creation).
+   void NotifySavedForNextStart();
+
 private:
    bool HasSelectableItem() const; // Selection loops search for a selectable item, so they must not run without one
 
@@ -98,6 +102,7 @@ private:
    vector<std::unique_ptr<InGameUIItem>> m_items;
    int m_selectedItem = 0;
    unsigned int m_resetNotifId = 0;
+   unsigned int m_savedForNextStartNotifId = 0;
    bool m_resettingToDefaults = false;
    bool m_resettingToInitialValues = false;
 
