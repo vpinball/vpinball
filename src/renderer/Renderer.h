@@ -245,8 +245,13 @@ public:
 
    void SetTable(PinTable* table); // Rebind to a new table (currently limited to base table / live copy swaps)
 
-   RenderProbe::ReflectionMode GetMaxReflectionMode() const;
-   int GetAOMode() const; // 0=Off, 1=Static, 2=Dynamic
+   RenderProbe::ReflectionMode GetMaxReflectionMode() const; // Effective reflection mode (user selected mode adapted to the active render pipeline)
+   RenderProbe::ReflectionMode GetPFReflectionMode() const { return m_maxReflectionMode; } // User selected reflection mode
+   void SetPFReflectionMode(RenderProbe::ReflectionMode mode);
+
+   int GetAOMode() const; // 0=Off, 1=Static, 2=Dynamic (effective mode, also accounts for table/display capabilities)
+   int GetSelectedAOMode() const { return m_disableAO ? 0 : (m_dynamicAO ? 2 : 1); } // User selected AO mode
+   void SetAOMode(int mode); // 0=Disabled, 1=Static, 2=Dynamic
 
    bool UseAnisoFiltering() const;
    void SetAnisoFiltering(bool enable);

@@ -73,14 +73,14 @@ void InputSettingsPage::BuildPage()
       [this]() { return m_player->m_pininput.GetBallBallRumbleStrength(); }, //
       [this](float, float v) { m_player->m_pininput.SetBallBallRumbleStrength(v); }));
    // FIXME deprecated, just remove
-   // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
+   // Applied live (read per frame) and persisted globally as it is an input mode, not a per-table property
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_EnableCameraModeFlyAround, //
       [this]() { return g_settingsService.GetActiveSettings().GetPlayer_EnableCameraModeFlyAround(); }, //
       [this](bool v)
       {
-         NotifySavedForNextStart();
          g_settingsService.GetActiveSettings().SetPlayer_EnableCameraModeFlyAround(v, false);
+         m_player->m_liveUI->PushNotification("This change is directly persisted."s, 3000);
       }));
 }
 

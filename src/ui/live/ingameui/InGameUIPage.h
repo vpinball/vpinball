@@ -68,6 +68,10 @@ public:
    // changed but only applied on the next start (usually because they impact device/setup creation).
    void NotifySavedForNextStart();
 
+   // For items which follow the standard live/save flow but whose edited value is only applied on the
+   // next start (usually because they impact device/setup creation).
+   void NotifyApplyOnNextStart();
+
 private:
    bool HasSelectableItem() const; // Selection loops search for a selectable item, so they must not run without one
 
