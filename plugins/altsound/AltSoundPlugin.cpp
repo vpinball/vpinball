@@ -9,6 +9,7 @@
 #include "common.h"
 #include "plugins/VPXPlugin.h"
 #include "pinmame/PinMAMEPlugin.h"
+#include "AltSoundPlugin.h"
 #include <altsound.h>
 
 #include "plugins/PluginStrings.h"
@@ -37,6 +38,7 @@ static unsigned int getVpxApiId;
 static unsigned int getMachineStateId = 0;
 static unsigned int onAudioCmdId = 0;
 static unsigned int onAudioUpdateId = 0;
+static unsigned int getPackInfoId = 0;
 static std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<ControllerDef>> controllers;
 static std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<AudioSrcId>> altsoundAudioSrc;
 
@@ -94,22 +96,15 @@ static void OnGameEvent(const unsigned int eventId, void* userData, void* msgDat
    }
 }
 
-static void SetupAltSound()
+// Look for the AltSound pack of a game. On success, basePath is the folder holding 'altsound/<romName>' and altsoundGamePath the pack folder
+static bool FindPack(const string& gameId, std::filesystem::path& basePath, std::filesystem::path& altsoundGamePath, string& romName)
 {
-   assert(!isRunning);
-
-   const ControllerDef controller = controllers->With([](const std::vector<ControllerDef>& items) { return items.empty() ? ControllerDef { } : items.front(); });
-   if (controller.gameId == nullptr || controller.endpointId == 0)
-      return;
-   const string pinmamePrefix(PMPI_GAMEID_PREFIX);
-   const string gameId = string(controller.gameId).substr(pinmamePrefix.length());
-
    VPXTableInfo tableInfo {};
    vpxApi->GetTableInfo(&tableInfo);
    const std::filesystem::path tablePath = PluginStrings::PathFromNative(tableInfo.path);
 
-   std::filesystem::path basePath;
-   std::filesystem::path altsoundGamePath;
+   basePath.clear();
+   altsoundGamePath.clear();
 
    // Priority 1: altsound/<rom> (library adds /altsound/<rom> to basePath)
    // The base comes from the match, keeping the actual case of its folders (e.g. 'pinmame')
@@ -136,19 +131,52 @@ static void SetupAltSound()
    }
 
    if (basePath.empty())
-      return;
+      return false;
 
    // The library appends 'altsound/<rom>' to the base as is: pass the rom folder name as found on disk, the 'altsound' folder still needs this exact case
-   const string romName = altsoundGamePath.empty() ? gameId : PluginStrings::PathToUTF8(altsoundGamePath.filename());
+   romName = altsoundGamePath.empty() ? gameId : PluginStrings::PathToUTF8(altsoundGamePath.filename());
    const std::filesystem::path libraryGamePath = basePath / "altsound"sv / PluginStrings::PathFromUTF8(romName);
    if (std::error_code ec; !std::filesystem::exists(libraryGamePath, ec))
    {
       if (!altsoundGamePath.empty())
          LOGW(std::format("AltSound folder {} is not used: its parent folder must be named 'altsound', with this case", PluginStrings::PathToUTF8(altsoundGamePath)));
-      return;
+      return false;
    }
    if (altsoundGamePath.empty())
       altsoundGamePath = libraryGamePath;
+   return true;
+}
+
+// The PinMAME plugin asks this before it starts a game: the sound command log of some machines has to be set up before the
+// game runs, and which one depends on the pack (see 'new_sound_commands' in altsound.ini), while AltSound itself only starts
+// once the game runs
+static void OnGetPackInfo(const unsigned int eventId, void* userData, void* msgData)
+{
+   AltSoundPackInfoMsg* const msg = static_cast<AltSoundPackInfoMsg*>(msgData);
+   if (msg == nullptr || msg->version != 1 || msg->gameName == nullptr)
+      return;
+   std::filesystem::path basePath, altsoundGamePath;
+   string romName;
+   if (!FindPack(msg->gameName, basePath, altsoundGamePath, romName))
+      return;
+   msg->found = 1;
+   msg->newSoundCommands = AltSoundGetNewSoundCommands(PluginStrings::PathToNative(basePath), romName) ? 1 : 0;
+}
+
+static void SetupAltSound()
+{
+   assert(!isRunning);
+
+   const ControllerDef controller = controllers->With([](const std::vector<ControllerDef>& items) { return items.empty() ? ControllerDef { } : items.front(); });
+   if (controller.gameId == nullptr || controller.endpointId == 0)
+      return;
+   const string pinmamePrefix(PMPI_GAMEID_PREFIX);
+   const string gameId = string(controller.gameId).substr(pinmamePrefix.length());
+
+   std::filesystem::path basePath, altsoundGamePath;
+   string romName;
+   if (!FindPack(gameId, basePath, altsoundGamePath, romName))
+      return;
 
    LOGI(std::format("Found altsound directory for game: {} at {}", gameId, PluginStrings::PathToUTF8(altsoundGamePath)));
    PinMAMEMachineStateMsg state { };
@@ -237,6 +265,8 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginLoad(const uint32_t sessionId, const Ms
 
    msgApi->SubscribeMsg(endpointId, onAudioCmdId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_CMD), OnGameEvent, nullptr);
    getMachineStateId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_GET_MACHINE_STATE);
+
+   msgApi->SubscribeMsg(endpointId, getPackInfoId = msgApi->GetMsgID(ALTSOUNDPI_NAMESPACE, ALTSOUNDPI_GET_PACK_INFO_MSG), OnGetPackInfo, nullptr);
 }
 
 MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
@@ -252,6 +282,8 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
    altsoundAudioSrc = nullptr;
 
    msgApi->UnsubscribeMsg(onAudioCmdId, OnGameEvent, nullptr);
+   msgApi->UnsubscribeMsg(getPackInfoId, OnGetPackInfo, nullptr);
+   msgApi->ReleaseMsgID(getPackInfoId);
    msgApi->ReleaseMsgID(onAudioUpdateId);
    msgApi->ReleaseMsgID(onAudioCmdId);
 
