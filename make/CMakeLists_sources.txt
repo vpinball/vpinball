@@ -319,6 +319,8 @@ set(VPX_SOURCES
    src/ui/live/editor/parts/BallUIPart.cpp
    src/ui/live/editor/parts/BumperUIPart.h
    src/ui/live/editor/parts/BumperUIPart.cpp
+   src/ui/live/editor/ops/CurveEditOp.h
+   src/ui/live/editor/ops/CurveEditOp.cpp
    src/ui/live/editor/parts/DecalUIPart.h
    src/ui/live/editor/parts/DecalUIPart.cpp
    src/ui/live/editor/parts/DispReelUIPart.h
