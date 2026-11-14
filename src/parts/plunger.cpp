@@ -133,7 +133,7 @@ void Plunger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       rgv3D[3] = Vertex3Ds(xMax, yMin, height + 2.f * m_d.m_width);
       Hit3DPoly *const ph3dpoly = new Hit3DPoly(this, rgv3D, 4);
       ph3dpoly->m_ObjType = ePlunger;
-      physics->AddCollider(ph3dpoly, isUI);
+      AddHitObject(physics, ph3dpoly, isUI);
    }
    else
    {
@@ -141,7 +141,7 @@ void Plunger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
       HitPlunger *const php = new HitPlunger(m_d.m_v.x - m_d.m_width, m_d.m_v.y + m_d.m_height, m_d.m_v.x + m_d.m_width, zheight, m_d.m_v.y - m_d.m_stroke, m_d.m_v.y, this);
 
-      physics->AddCollider(php, isUI);
+      AddHitObject(physics, php, isUI);
       php->m_pplunger = this;
       m_phitplunger = php;
    }
@@ -149,8 +149,9 @@ void Plunger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
 void Plunger::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
+   ReleaseHitObjects(isUI);
    if (!isUI)
-      m_phitplunger = nullptr; // possible memory leak here?
+      m_phitplunger = nullptr;
 }
 
 #pragma endregion

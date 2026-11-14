@@ -146,7 +146,7 @@ void Light::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       default:
       {
          Hit3DPoly *const pcircle = new Hit3DPoly(this, m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_falloff, 32);
-         physics->AddCollider(pcircle, isUI);
+         AddHitObject(physics, pcircle, isUI);
          break;
       }
 
@@ -168,14 +168,14 @@ void Light::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          }
 
          Hit3DPoly *const ph3dp = new Hit3DPoly(this, rgv3d, cvertex);
-         physics->AddCollider(ph3dp, isUI);
+         AddHitObject(physics, ph3dp, isUI);
          break;
       }
       }
    }
 }
 
-void Light::PhysicRelease(PhysicsEngine* physics, const bool isUI) { }
+void Light::PhysicRelease(PhysicsEngine *physics, const bool isUI) { ReleaseHitObjects(isUI); }
 
 float Light::GetDepth(const Vertex3Ds& viewDir) const
 {

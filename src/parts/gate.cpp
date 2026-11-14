@@ -212,7 +212,7 @@ void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       }
       Hit3DPoly *const ph3dpoly = new Hit3DPoly(this, rgv3D, 4);
       ph3dpoly->m_ObjType = eGate;
-      physics->AddCollider(ph3dpoly, isUI);
+      AddHitObject(physics, ph3dpoly, isUI);
    }
    else
    {
@@ -238,7 +238,7 @@ void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       m_phitgate->m_obj = (IFireEvents *)this;
       m_phitgate->m_fe = true;
       m_phitgate->m_enabled = m_d.m_collidable;
-      physics->AddCollider(m_phitgate, isUI);
+      AddHitObject(physics, m_phitgate, isUI);
 
       if (!m_d.m_twoWay)
       {
@@ -267,26 +267,27 @@ void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          m_plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
          if (profile109)
             m_phitgate->m_pblockseg = m_plineseg;
-         physics->AddCollider(m_plineseg, isUI);
+         AddHitObject(physics, m_plineseg, isUI);
       }
 
       if (m_d.m_showBracket && !profile109)
       {
           HitCircle *phitcircle;
           phitcircle = new HitCircle(this, m_d.m_vCenter + halflength * tangent, 0.01f, height, height + h);
-          physics->AddCollider(phitcircle, isUI);
+          AddHitObject(physics, phitcircle, isUI);
 
           phitcircle = new HitCircle(this, m_d.m_vCenter - halflength * tangent, 0.01f, height, height + h);
-          physics->AddCollider(phitcircle, isUI);
+          AddHitObject(physics, phitcircle, isUI);
       }
    }
 }
 
 void Gate::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
+   ReleaseHitObjects(isUI);
    if (!isUI)
    {
-      // HitObjects are owned by the physics engine, just clear the reference
+      // HitObjects were deleted by ReleaseHitObjects, just clear the references
       m_phitgate = nullptr;
       m_plineseg = nullptr;
    }

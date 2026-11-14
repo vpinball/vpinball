@@ -45,8 +45,8 @@ public:
    Vertex2D GetCenter() const override { return Vertex2D(0.f, 0.f); }
    void Translate(const Vertex2D &offset) override { }
 
-   // IHitable: hands the pending objects over to the engine (physics colliders only,
-   // they are not registered for UI picking). The engine owns them once added.
+   // IHitable: contributes the pending objects to the engine (physics colliders only,
+   // they are not registered for UI picking). The part owns them once added.
    void PhysicSetup(PhysicsEngine *physics, const bool isUI) override
    {
       if (isUI)
@@ -55,16 +55,16 @@ public:
       {
          HitObject *const obj = m_objects[m_added].release();
          obj->m_editable = this;
-         physics->AddCollider(obj, false);
+         AddHitObject(physics, obj, false);
       }
    }
    void PhysicRelease(PhysicsEngine *physics, const bool isUI) override
    {
       if (isUI)
          return;
-      // The engine deletes the registered objects itself; only objects that were
-      // added but never set up are still owned (and therefore deleted) here.
-      m_objects.clear();
+      ReleaseHitObjects(isUI); // Deletes the contributed objects
+      // Drop the slots of contributed objects, keeping the ones added but not set up yet
+      m_objects.erase(m_objects.begin(), m_objects.begin() + m_added);
       m_added = 0;
    }
 
@@ -72,7 +72,7 @@ public:
 
 private:
    vector<std::unique_ptr<HitObject>> m_objects;
-   size_t m_added = 0; // objects already handed over to the engine (PhysicSetup is re-entrant for live adds)
+   size_t m_added = 0; // objects already contributed to the engine (PhysicSetup is re-entrant for live adds)
 };
 
 
@@ -133,7 +133,7 @@ void PhysicsTestHarness::AddHitObject(std::unique_ptr<HitObject> hitObject)
    REQUIRE(hitObject != nullptr);
    m_hitObjectSet->Add(std::move(hitObject));
    if (m_physics) // live add through the editable update path
-      m_physics->Add(m_hitObjectSet.get());
+      m_physics->Update(m_hitObjectSet.get());
 }
 
 Ball *PhysicsTestHarness::AddBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)

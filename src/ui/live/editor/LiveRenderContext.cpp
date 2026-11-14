@@ -84,7 +84,7 @@ void LiveRenderContext::DrawHitObjects(IEditable *editable) const
 {
    if (m_drawlist)
    {
-      const vector<HitObject *> hitObjects = m_player->m_physics->GetUIHitObjects(editable);
+      const vector<HitObject *> &hitObjects = m_player->m_physics->GetUIHitObjects(editable);
       if (hitObjects.empty())
          return;
       // Skip parts whose colliders project fully off-screen: the drawing cost scales with the

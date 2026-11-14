@@ -34,8 +34,9 @@ public:
    void Add(IEditable *editable);
    void Remove(IEditable *editable);
 
-   // Add or remove a collider, as a consequence of PhysicSetup/Release
-   // Colliders are given to the physics engine which owns them, except for balls which always owns their HitBall (therefore, being the only one using RemoveCollider)
+   // Add or remove a ball collider, as a consequence of PhysicSetup/Release
+   // Balls are the only parts which do not own their collider: their HitBall is a member,
+   // registered through here (all the other parts own their colliders, see IHitable)
    void AddCollider(HitObject * collider, const bool isUI);
    void RemoveCollider(HitObject * collider, const bool isUI);
    void CollectColliders(IEditable *editable, vector<HitObject *> *hitObjects, bool isUI);
@@ -58,7 +59,7 @@ public:
    string GetPerfInfo(bool resetMax);
 
    const vector<HitObject *>& GetHitObjects() const { return m_hitoctree.GetHitObjects(); }
-   vector<HitObject *> GetUIHitObjects(IEditable *editable);
+   const vector<HitObject *> &GetUIHitObjects(IEditable *editable);
 
    bool IsStarted() const { return m_physicsStarted; }
    uint64_t GetStartTime() const { return m_startTime_usec; }
@@ -163,7 +164,7 @@ private:
 
    vector<MoverObject *> m_vmover; // moving objects for physics simulation
 
-   vector<HitObject *>* m_pendingHitObjects = nullptr; // Hit objects pending insertion in quadtree, only defined while collecting through AddCollider callback method
+   vector<HitObject *> m_cabinetHitObjects; // Colliders bounding the playfield, owned by this engine as they are not contributed by a part (see AddCabinetBoundingHitShapes)
 
    /*HitKD*/ HitQuadtree m_hitoctree;
    bool m_staticQuadTreeDirty = false; // Hit object list of m_hitoctree was modified without rebuilding its structure (rebuilt lazily, see FlushStaticQuadTree)

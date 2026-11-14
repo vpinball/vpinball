@@ -3,7 +3,6 @@
 #pragma once
 
 #include "collide.h"
-#include "unordered_dense.h"
 #include <semaphore>
 
 // QuadTree for mostly static hit objects
@@ -19,6 +18,11 @@
 //
 // Note that updating the quadtree is a fairly heavy multithreaded operation, so it should be only performed
 // when the editable won't be moved again.
+//
+// The quadtree only references the hit objects: they are owned by the parts contributing them
+// (see IHitable), created by PhysicSetup and deleted by PhysicRelease. Therefore, before releasing
+// a part's hit objects, their references must have been removed from the quadtree (all the mutating
+// methods purge any pending asynchronous update first to guarantee this).
 
 class HitQuadtree;
 class PhysicsEngine;
@@ -40,7 +44,7 @@ public:
    void HitTestXRay(const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll);
 
    HitQuadtree* GetQuadTree() const { return m_quadTree; }
-   vector<HitObject*> GetHitObjects(IEditable* editable);
+   const vector<HitObject*>& GetHitObjects(IEditable* editable);
 
 private:
    void UpdateAsync();
@@ -49,12 +53,6 @@ private:
    PhysicsEngine* const m_physics;
    const bool m_isUI;
    HitQuadtree* m_quadTree;
-
-   // Per-editable index of the static quadtree's hit objects, lazily rebuilt when invalidated:
-   // editor overlays query the hit objects of each displayed part once per frame, so scanning
-   // the whole table collider set per query is not affordable
-   bool m_staticHitObjectsDirty = true;
-   ankerl::unordered_dense::map<IEditable*, vector<HitObject*>> m_staticHitObjects;
 
    // Dynamic parts datas
    class DynamicEditable
@@ -65,7 +63,6 @@ private:
 
       IEditable* editable;
       bool pendingStaticInclusion = false;
-      vector<HitObject*> hitObjects;
 
       void HitTestBall(const HitBall* const pball, CollisionEvent& coll) const;
       void HitTestXRay(const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const;
@@ -82,7 +79,6 @@ private:
    HitQuadtree* m_pendingQuadTree = nullptr; // Result of async update
    vector<std::unique_ptr<DynamicEditable>> m_updatedEditables; // Objects that are being processed or have been updated by the update thread
    vector<HitObject*>* m_quadTreeHitobjects = nullptr; // List of objects of the updated quadtree
-   vector<HitObject*> m_deferredDeleteHitObjects; // HitObjects that have been recreated (their editable was updated) but not deleted as they were part of an in progress update
    std::binary_semaphore m_quadtreeUpdateWaiting { 0 };
    std::binary_semaphore m_quadtreeUpdateReady { 0 };
    std::thread m_quadtreeUpdateThread;

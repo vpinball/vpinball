@@ -175,12 +175,20 @@ void Ball::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
       return;
 
-   physics->AddCollider(&m_hitBall, isUI);
+   if (isUI)
+   {
+      m_hitBall.SetPhysics(physics);
+      m_hitBall.CalcHitBBox();
+   }
+   else
+      physics->AddCollider(&m_hitBall, false); // Register the ball and its HitBall with the dynamic quadtree & movers
+   TrackHitObject(&m_hitBall, isUI); // HitBall is a member: tracked as contributed but not owned
 }
 
 void Ball::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
    physics->RemoveCollider(&m_hitBall, isUI);
+   UntrackHitObjects(isUI);
 }
 
 #pragma endregion

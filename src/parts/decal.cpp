@@ -230,11 +230,11 @@ void Decal::PhysicSetup(PhysicsEngine *physics, const bool isUI)
       Vertex3Ds *const rgv3d = new Vertex3Ds[4];
       for (int i = 0; i < 4; i++)
          rgv3d[i] = Vertex3Ds(quad[3 - i].x, quad[3 - i].y, height); // Reversed winding so that the quad faces up and can be picked from the top-down editor views
-      physics->AddCollider(new Hit3DPoly(this, rgv3d, 4), isUI);
+      AddHitObject(physics, new Hit3DPoly(this, rgv3d, 4), isUI);
    }
 }
 
-void Decal::PhysicRelease(PhysicsEngine *physics, const bool isUI) { }
+void Decal::PhysicRelease(PhysicsEngine *physics, const bool isUI) { ReleaseHitObjects(isUI); }
 
 void Decal::Rotate(const float ang, const Vertex2D& pvCenter, const bool useElementCenter)
 {
