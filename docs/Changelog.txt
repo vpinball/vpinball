@@ -287,7 +287,10 @@ FIXES:
     limits (shifted by a non-zero rest angle, one or both sides depending on the gate being one-way or two-way), and each
     ball inside it is tracked to solve the wire/plate angle matching the contact. The ball is only stopped when the wire
     cannot follow (closed side of a one-way gate, or pushed against an angle limit), giving more accurate pass-through and
-    bounce behavior
+    bounce behavior. Hit events keep their previous behavior (one per axis plane crossing)
+
+- the gate wire/plate is now animated from the ball contact under all physics profiles (the ball pushes the wire/plate
+  as it passes, instead of the wire/plate lagging the axis hit), without changing ball behavior under the 10.8 profile
   . ramp side walls are now the exact sloped quads instead of rectangles subdivided along the slope whose height window
     was swapped on the direction keeping the ball on the ramp, leaving dead zones near segment ends where the ball
     escaped through the wall on steep sections (and phantom hits for balls rolling below raised parts)

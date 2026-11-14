@@ -44,6 +44,16 @@ static float GateAngleDeg(const Gate *gate)
    return angle;
 }
 
+// The dedicated one-sided segment standing for the wire/plate pressed on its
+// stop (10.9 profile): the only LineSeg collider owned by the gate
+static LineSeg *FindBlockSeg(PhysicsTestHarness &harness, const Gate *gate)
+{
+   for (HitObject *const hobj : harness.GetEngine()->GetHitObjects())
+      if (LineSeg *const seg = dynamic_cast<LineSeg *>(hobj); seg && seg->m_editable == gate)
+         return seg;
+   return nullptr;
+}
+
 static float MaxAngleDuring(PhysicsTestHarness &harness, const Gate *gate, const uint32_t ms)
 {
    float peak = 0.f;
@@ -69,6 +79,27 @@ TEST_CASE("Gate: one-way gate (10.9)")
       CHECK(peak > 60.f); // the ball dragged the wire to follow its contact
       CHECK(harness.AdvanceUntil([&] { return ball->m_hitBall.m_d.m_pos.y < 600.f; }, 300));
       CHECK(ball->m_hitBall.m_d.m_vel.y == doctest::Approx(-30.f).epsilon(0.01)); // the wire follows kinematically, ball unaffected
+   }
+
+   SUBCASE("an open one-way gate does not block: the segment follows the wire position")
+   {
+      PhysicsTestHarness harness;
+      harness.SetGravity(0.f, 0.f);
+      Gate *const gate = AddTestGate(harness, false);
+      Ball *const ball = harness.AddBall(500.f, 1300.f, 0.f, 0.f, -60.f, 0.f);
+      harness.Start();
+
+      CHECK(harness.AdvanceUntil([&] { return fabsf(GateAngleDeg(gate)) > 40.f; }, 300));
+      ball->m_hitBall.m_d.m_vel = Vertex3Ds(0.f, 60.f, 0.f); // sent back down-table while the wire is still up
+      // While the wire is off its stop, the blocking segment must not stand,
+      // even when no ball is being followed
+      LineSeg *const blockseg = FindBlockSeg(harness, gate);
+      REQUIRE(blockseg != nullptr);
+      CHECK(harness.AdvanceUntil([&] { return ball->m_hitBall.m_d.m_pos.y > 1150.f && fabsf(GateAngleDeg(gate)) > 5.f && !blockseg->m_enabled; }, 300));
+      ball->m_hitBall.m_d.m_vel = Vertex3Ds(0.f, -60.f, 0.f); // and straight back through the still-raised wire
+      bool passed = harness.AdvanceUntil([&] { return ball->m_hitBall.m_d.m_pos.y < 950.f; }, 500);
+      INFO("wire angle when stopped: ", GateAngleDeg(gate), " ball y: ", ball->m_hitBall.m_d.m_pos.y);
+      CHECK(passed);
    }
 
    SUBCASE("ball rolling toward the closed side bounces on the wire")
@@ -186,6 +217,20 @@ TEST_CASE("Gate: one-way gate (10.9)")
 
       harness.AdvanceMs(500); // pass + settle
       CHECK(harness.AdvanceUntil([&] { return fabsf(GateAngleDeg(gate) - 0.f) < 2.f; }, 3000));
+   }
+
+   SUBCASE("wire lifted by a ball that falls back returns to its rest position")
+   {
+      PhysicsTestHarness harness;
+      harness.SetGravity(0.f, 0.f);
+      Gate *const gate = AddTestGate(harness, false);
+      Ball *const ball = harness.AddBall(500.f, 1080.f, 0.f, 0.f, -60.f, 0.f); // pushes the wire up...
+      harness.Start();
+
+      CHECK(harness.AdvanceUntil([&] { return fabsf(GateAngleDeg(gate)) > 30.f; }, 300));
+      ball->m_hitBall.m_d.m_vel = Vertex3Ds(0.f, 60.f, 0.f); // ...but rolls back before clearing the wire
+      harness.AdvanceMs(300); // ball retreats out of the zone
+      CHECK(harness.AdvanceUntil([&] { return fabsf(GateAngleDeg(gate) - 0.f) < 2.f; }, 3000)); // wire falls back to its stop
    }
 }
 
