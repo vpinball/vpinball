@@ -47,7 +47,7 @@ void MiscSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetController_DOFContactors(v, false);
-         m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
+         NotifySavedForNextStart();
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -57,7 +57,7 @@ void MiscSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetController_DOFKnocker(v, false);
-         m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
+         NotifySavedForNextStart();
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -67,7 +67,7 @@ void MiscSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetController_DOFChimes(v, false);
-         m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
+         NotifySavedForNextStart();
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -77,7 +77,7 @@ void MiscSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetController_DOFBell(v, false);
-         m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
+         NotifySavedForNextStart();
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -87,7 +87,7 @@ void MiscSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetController_DOFGear(v, false);
-         m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
+         NotifySavedForNextStart();
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -97,7 +97,7 @@ void MiscSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetController_DOFShaker(v, false);
-         m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
+         NotifySavedForNextStart();
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -107,7 +107,7 @@ void MiscSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetController_DOFFlippers(v, false);
-         m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
+         NotifySavedForNextStart();
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -117,7 +117,7 @@ void MiscSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetController_DOFTargets(v, false);
-         m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
+         NotifySavedForNextStart();
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -127,7 +127,7 @@ void MiscSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetController_DOFDropTargets(v, false);
-         m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
+         NotifySavedForNextStart();
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -137,7 +137,7 @@ void MiscSettingsPage::BuildPage()
       [this](bool v)
       {
          g_settingsService.GetActiveSettings().SetController_ForceDisableB2S(v, false);
-         m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
+         NotifySavedForNextStart();
       }));
 }
 

@@ -113,7 +113,7 @@ void GraphicSettingsPage::BuildPage()
          [this, renderers](int, int v)
          {
             g_settingsService.GetActiveSettings().SetPlayer_GfxBackend(renderers[v], false);
-            m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+            NotifySavedForNextStart();
          },
          [](Settings&) { /* Nothing to do as this is directly persisted for the time being */ },
          [](int, Settings&, bool) { /* Nothing to do as this is directly persisted for the time being */ }));
@@ -243,7 +243,7 @@ void GraphicSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetPlayer_MaxPrerenderedFrames(v, false);
-         m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+         NotifySavedForNextStart();
       }));
 #endif
 
@@ -259,7 +259,7 @@ void GraphicSettingsPage::BuildPage()
       [this](float, float v)
       {
          g_settingsService.GetActiveSettings().SetPlayer_AAFactor(v, false);
-         m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+         NotifySavedForNextStart();
       }));
 
 #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
@@ -270,7 +270,7 @@ void GraphicSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetPlayer_MSAASamples(v, false);
-         m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+         NotifySavedForNextStart();
       }));
 #endif
 
@@ -325,6 +325,7 @@ void GraphicSettingsPage::BuildPage()
          g_settingsService.GetActiveSettings().ResetPlayer_DynamicAO();
          g_settingsService.GetActiveSettings().SetPlayer_DisableAO(v == 0, false);
          g_settingsService.GetActiveSettings().SetPlayer_DynamicAO(v == 2, false);
+         NotifySavedForNextStart();
       },
       [](Settings&) { /* Nothing to do as this is directly persisted for the time being */ },
       [](int, Settings&, bool) { /* Nothing to do as this is directly persisted for the time being */ }));
@@ -337,7 +338,7 @@ void GraphicSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetPlayer_MaxTexDimension(v, false);
-         m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+         NotifySavedForNextStart();
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -347,7 +348,7 @@ void GraphicSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetPlayer_PFReflection(v, false);
-         m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+         NotifySavedForNextStart();
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -358,7 +359,7 @@ void GraphicSettingsPage::BuildPage()
       [this](int, int v)
       {
          g_settingsService.GetActiveSettings().SetPlayer_AlphaRampAccuracy(v, false);
-         m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+         NotifySavedForNextStart();
       }));
 
    AddItem(std::make_unique<InGameUIItem>( //
@@ -373,7 +374,7 @@ void GraphicSettingsPage::BuildPage()
       [this](float, float v)
       {
          g_settingsService.GetActiveSettings().SetPlayer_HDRGlobalExposure(v, false);
-         m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+         NotifySavedForNextStart();
       }));
 
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -384,7 +385,7 @@ void GraphicSettingsPage::BuildPage()
       [this](bool v)
       {
          g_settingsService.GetActiveSettings().SetPlayer_CompressTextures(v, false);
-         m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+         NotifySavedForNextStart();
       }));
 #endif
 
@@ -396,7 +397,7 @@ void GraphicSettingsPage::BuildPage()
       [this](bool v)
       {
          g_settingsService.GetActiveSettings().SetPlayer_UseNVidiaAPI(v, false);
-         m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+         NotifySavedForNextStart();
       }));
 #endif
 
@@ -424,7 +425,7 @@ void GraphicSettingsPage::BuildPage()
       [this](bool v)
       {
          g_settingsService.GetActiveSettings().SetPlayer_SoftwareVertexProcessing(v, false);
-         m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+         NotifySavedForNextStart();
       }));
 #endif
 
@@ -474,7 +475,7 @@ void GraphicSettingsPage::BuildPage()
          [this](const string&, const string& v)
          {
             g_settingsService.GetActiveSettings().SetPlayer_BallImage(v, false);
-            m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+            NotifySavedForNextStart();
          }));
 
       // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
@@ -484,7 +485,7 @@ void GraphicSettingsPage::BuildPage()
          [this](const string&, const string& v)
          {
             g_settingsService.GetActiveSettings().SetPlayer_DecalImage(v, false);
-            m_notificationId = m_player->m_liveUI->PushNotification("This change will be applied after restarting the player."s, 3000, m_notificationId);
+            NotifySavedForNextStart();
          }));
    }
 }

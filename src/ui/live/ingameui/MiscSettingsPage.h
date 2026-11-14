@@ -18,7 +18,6 @@ private:
    void BuildPage() override;
    void RequestDynamicRendererUpdate();
 
-   unsigned int m_difficultyNotification = 0; 
    bool m_staticPrepassDisabled = false;
 };
 

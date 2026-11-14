@@ -168,7 +168,7 @@ void StereoSettingsPage::BuildPage()
          const bool stereoRT = m_player->m_renderer->m_stereo3D != STEREO_OFF;
          const bool stereoSel = v != STEREO_OFF;
          if (stereoRT != stereoSel)
-            m_player->m_liveUI->PushNotification("Toggling stereo rendering will be applied after restarting the game"s, 5000);
+            NotifySavedForNextStart();
          else
             m_player->m_renderer->m_stereo3D = (StereoMode)v;
          g_settingsService.GetActiveSettings().SetPlayer_Stereo3D((StereoMode)v, false);

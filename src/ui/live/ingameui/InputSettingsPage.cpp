@@ -79,7 +79,7 @@ void InputSettingsPage::BuildPage()
       [this]() { return g_settingsService.GetActiveSettings().GetPlayer_EnableCameraModeFlyAround(); }, //
       [this](bool v)
       {
-         m_difficultyNotification = m_player->m_liveUI->PushNotification("This change will only be applied after restart."s, 5000, m_difficultyNotification);
+         NotifySavedForNextStart();
          g_settingsService.GetActiveSettings().SetPlayer_EnableCameraModeFlyAround(v, false);
       }));
 }

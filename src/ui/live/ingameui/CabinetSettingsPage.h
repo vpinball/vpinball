@@ -29,7 +29,6 @@ private:
 
    vec3 m_playerPos;
    bool m_staticPrepassDisabled = false;
-   unsigned int m_delayApplyNotifId = 0;
 
    CabinetRender m_cabinetRender;
 };
