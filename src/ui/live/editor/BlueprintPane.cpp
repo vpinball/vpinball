@@ -842,6 +842,7 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
                m_boxSelectActive = true;
          }
       }
+      CircleWallOp::Drag(editor, Unproject(ImGui::GetMousePos())); // Radius of a round wall being placed
 
       // In-progress drags: move selection, drag point/center, box select
       if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
