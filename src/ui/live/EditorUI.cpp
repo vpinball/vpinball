@@ -247,6 +247,16 @@ void EditorUI::PlayTest()
          vp->GetView()->m_renderScene = false; // The leaf is hidden while a playtest table is stacked
 }
 
+void EditorUI::PlayTestVR()
+{
+   if (IsInspectMode() || m_table->IsLocked() || m_fileOp != nullptr)
+      return;
+   // The editor visibility overrides must not leak into the duplicated table used for the play session
+   RestorePartsVisibility();
+   PinTable *const liveTable = m_table->CopyForPlay();
+   m_player->RequestSessionRestart(liveTable, Player::PlayMode::Play, Player::VROverride::ForceOn, true);
+}
+
 void EditorUI::SaveTable()
 {
    if (m_table->IsLocked() || m_fileOp != nullptr)
@@ -947,6 +957,13 @@ void EditorUI::RenderUI()
          if (!IsInspectMode() && !m_table->IsLocked())
             PlayTest();
       }
+#ifdef ENABLE_XR
+      else if (ImGui::IsKeyPressed(ImGuiKey_F5) && !io.KeyCtrl && !io.KeyAlt && io.KeyShift)
+      {
+         // Play a shallow copy of the edited table in a VR session
+         PlayTestVR();
+      }
+#endif
       else if (ImGui::IsKeyPressed(ImGuiKey_N))
       {
          // New table from the default blank template

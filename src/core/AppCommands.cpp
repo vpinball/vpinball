@@ -93,22 +93,32 @@ CComObject<PinTable>* TableBasedCommand::LoadTable()
 // released by this function.
 static void RunPlayerSessions(PinTable* table, Player::PlayMode playMode, const std::function<void(Player*)>& onSessionStart = nullptr)
 {
-   while (table != nullptr)
+   Player::SessionSwitch sessionSwitch;
+   sessionSwitch.table = table;
+   sessionSwitch.playMode = playMode;
+   while (sessionSwitch.table != nullptr)
    {
-      PinTable* nextTable = nullptr;
+      table = sessionSwitch.table;
+      const Player::PlayMode sessionMode = sessionSwitch.playMode;
+      const Player::VROverride sessionVR = sessionSwitch.vr;
+      const bool openEditor = sessionSwitch.openEditor;
+      vector<Player::StackedTable> suspended = std::move(sessionSwitch.suspended);
+      sessionSwitch = Player::SessionSwitch();
       {
          LoadProgress loadProgress;
-         auto player = std::make_unique<Player>(table, playMode, loadProgress);
+         auto player = std::make_unique<Player>(table, sessionMode, loadProgress, sessionVR);
+         player->AdoptSuspendedSessions(std::move(suspended));
          {
             ScopedUserMessageSink msgSink(player->m_liveUI);
+            if (openEditor)
+               player->m_liveUI->OpenEditorUI();
             if (onSessionStart)
                onSessionStart(player.get());
             player->GameLoop();
          }
-         nextTable = player->TakeTableSwitch(playMode);
+         player->TakeTableSwitch(sessionSwitch);
       }
       table->Release();
-      table = nextTable;
    }
 }
 

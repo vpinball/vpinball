@@ -91,6 +91,9 @@ public:
 
    // Start playing a shallow copy of the edited table (edition is suspended, restored when the play session ends)
    void PlayTest();
+   // Same as PlayTest but in a VR session: the player is restarted as VR can not be toggled on a running
+   // render device (edition is suspended and restored through the session restart)
+   void PlayTestVR();
 
    bool IsPreview() const
    {

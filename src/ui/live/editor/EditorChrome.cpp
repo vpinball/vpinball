@@ -117,6 +117,10 @@ void EditorChrome::RenderMenuBar()
          ImGui::Separator();
          if (ImGui::MenuItem(ICON_LC_PLAY " Play", "F5", false, !editor.m_table->IsLocked()))
             editor.PlayTest();
+#ifdef ENABLE_XR
+         if (ImGui::MenuItem(ICON_LC_RECTANGLE_GOGGLES " Play in VR", "Shift+F5", false, !editor.m_table->IsLocked()))
+            editor.PlayTestVR();
+#endif
          ImGui::Separator();
          if (ImGui::MenuItem(ICON_LC_X " Quit"))
             editor.RequestClose(Player::CS_CLOSE_APP);
@@ -430,17 +434,29 @@ void EditorChrome::RenderMenuBar()
       if (editor.IsInspectMode())
          buttonWidth += IconButtonInkSize(ICON_LC_REPLY).x;
       buttonWidth += IconButtonInkSize(ICON_LC_X).x;
-      // Play button, centered in the free space left between the layout buttons and the close buttons
+      // Play buttons, centered in the free space left between the layout buttons and the close buttons
       const float playWidth = IconButtonInkSize(ICON_LC_PLAY).x;
+#ifdef ENABLE_XR
+      const float playVRWidth = IconButtonInkSize(ICON_LC_RECTANGLE_GOGGLES).x + ImGui::GetStyle().ItemSpacing.x;
+#else
+      const float playVRWidth = 0.f;
+#endif
       const float freeWidth = ImGui::GetContentRegionAvail().x - buttonWidth;
-      if (freeWidth > playWidth)
+      if (freeWidth > playWidth + playVRWidth)
       {
-         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (freeWidth - playWidth) * 0.5f);
+         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (freeWidth - playWidth - playVRWidth) * 0.5f);
          ImGui::BeginDisabled(editor.m_table->IsLocked());
          if (BarIconButtonInk(ICON_LC_PLAY, "##PlayTest"))
             editor.PlayTest();
          if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Play test (F5)");
+#ifdef ENABLE_XR
+         ImGui::SameLine();
+         if (BarIconButtonInk(ICON_LC_RECTANGLE_GOGGLES, "##PlayTestVR"))
+            editor.PlayTestVR();
+         if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Play test in VR (Shift+F5)");
+#endif
          ImGui::EndDisabled();
          ImGui::SameLine();
       }

@@ -77,7 +77,17 @@ public:
       CaptureAttract
    };
 
-   Player(PinTable *const table, const PlayMode playMode, LoadProgress &loadProgress);
+   // Overrides for the PlayerVR.AskToTurnOn setting (and the forced-off rule of the edit modes) when a
+   // session is restarted by the host: used by play tests requiring a different render configuration
+   // (e.g. a VR play test requested from the live editor).
+   enum class VROverride
+   {
+      Auto, // Follow the setting and the play mode rules
+      ForceOn, // Require a VR session (with desktop fallback if OpenXR/headset initialization fails)
+      ForceOff // Do not create a VR device whatever the setting says
+   };
+
+   Player(PinTable *const table, const PlayMode playMode, LoadProgress &loadProgress, const VROverride vrOverride = VROverride::Auto);
    ~Player();
 
    void LockForegroundWindow(const bool enable);
@@ -116,23 +126,49 @@ public:
    bool HasPendingTableTransition() const { return m_pendingTable; }
    bool HasStackedTableSession() const { return !m_tableStack.empty(); }
 
-   // To be called by the host after the game loop has ended: if the session was ended by a SetTable
-   // request for a table of a different base table, returns that table (the caller adopts its
-   // reference) and the play mode to use for its session. Returns nullptr otherwise.
-   PinTable *TakeTableSwitch(PlayMode &playMode);
-
-private:
-   // A table session suspended by a stacked SetTable, restored when the newer session ends
+   // A table session suspended by a stacked SetTable or carried across a session restart,
+   // restored when the newer session ends
    struct StackedTable
    {
-      PinTable *table;   // Table of the suspended session (a reference is owned by the stack)
+      PinTable *table; // Table of the suspended session (a reference is owned by the stack)
       PlayMode playMode; // Play mode to restore when getting back to this session
       bool editorWasOpened;
+      bool wasVR; // True if the suspended session ran a VR device: restoring it requires
+      // a session restart when the current session has a different VR state
    };
+
+   // Requests the host to end this session and create a new player on the given table (a reference is
+   // adopted). Unlike SetTable this also applies to tables of the same base table / live copy pair: it is
+   // needed when the new session must run a different render configuration (e.g. a VR play test from the
+   // live editor). With suspend = true, the current session (and any already suspended sessions of the
+   // same base table) is pushed onto the suspended stack carried over to the new session, and restored
+   // when the new session ends.
+   void RequestSessionRestart(PinTable *table, PlayMode playMode, VROverride vr, bool suspend);
+
+   // A session switch request pending at game loop end, taken over by the host (see TakeTableSwitch)
+   struct SessionSwitch
+   {
+      PinTable *table = nullptr; // Table to create the new player on (a reference is owned)
+      PlayMode playMode = PlayMode::Play; // Play mode to use for the new session
+      VROverride vr = VROverride::Auto; // VR override to apply to the new session
+      bool openEditor = false; // Open the editor UI in the new session (suspended session had it opened)
+      vector<StackedTable> suspended; // Suspended sessions carried over (references are owned)
+   };
+
+   // To be called by the host after the game loop has ended: if the session was ended by a session
+   // switch request (SetTable with a table of a different base table, or RequestSessionRestart), fills
+   // out with the new session to create (the caller adopts the owned references) and returns true.
+   // Returns false otherwise.
+   bool TakeTableSwitch(SessionSwitch &out);
+
+   // Gives suspended sessions carried over by a session switch to this player (restored by stack pops
+   // when the newer sessions end). To be called before GameLoop.
+   void AdoptSuspendedSessions(vector<StackedTable> &&stack) { m_tableStack = std::move(stack); }
+
+private:
    vector<StackedTable> m_tableStack;
    PinTable *m_pendingTable = nullptr; // Table requested through SetTable (a reference is owned until applied)
-   PinTable *m_pendingSwitchTable = nullptr; // Table of a different base table requested through SetTable (a reference is owned until taken by the host)
-   PlayMode m_pendingSwitchMode = PlayMode::Play; // Play mode to use for the m_pendingSwitchTable session
+   SessionSwitch m_pendingSwitch; // Session switch requested through SetTable/RequestSessionRestart (references are owned until taken by the host)
    bool m_pendingTableStack = false;
    volatile bool m_pendingTablePop = false;
    bool m_frameMutexHeld = false; // True while the game thread owns the render frame mutex, in which case table transitions must be deferred (BGFX only)
