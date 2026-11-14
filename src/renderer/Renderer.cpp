@@ -2381,6 +2381,23 @@ RenderProbe::ReflectionMode Renderer::GetMaxReflectionMode() const
    return !IsUsingStaticPrepass() && m_maxReflectionMode >= RenderProbe::REFL_STATIC ? RenderProbe::REFL_DYNAMIC : m_maxReflectionMode;
 }
 
+void Renderer::SetPFReflectionMode(RenderProbe::ReflectionMode mode)
+{
+   if (m_maxReflectionMode == mode)
+      return;
+   m_maxReflectionMode = mode;
+   MarkStaticsDirty(); // Static reflections are baked into the accumulated static prerender
+}
+
+void Renderer::SetAOMode(int mode)
+{
+   if (GetSelectedAOMode() == mode)
+      return;
+   m_disableAO = (mode == 0);
+   m_dynamicAO = (mode == 2);
+   MarkStaticsDirty(); // Static AO is baked into the accumulated static prerender
+}
+
 int Renderer::GetAOMode() const // 0=Off, 1=Static, 2=Dynamic
 {
    // We must evaluate this dynamically since AO scale and enabled/disable can be changed from script
