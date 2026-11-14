@@ -17,22 +17,30 @@ void DragPointCurve::UpdateBoundsAndCentroid() const
       m_maxBound.y = -FLT_MAX;
       vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
-      for (const auto &v : vvertex)
+      if (vvertex.empty())
       {
-         m_minBound.x = min(m_minBound.x, v.x);
-         m_maxBound.x = max(m_maxBound.x, v.x);
-         m_minBound.y = min(m_minBound.y, v.y);
-         m_maxBound.y = max(m_maxBound.y, v.y);
+         // Degenerate curve (all points coincide or are non-finite): fall back to
+         // the control points so the bounds and center stay meaningful
+         for (const auto &v : m_dragpoints)
+         {
+            if (infNaN(v->GetX()) || infNaN(v->GetY()))
+               continue;
+            m_minBound.x = min(m_minBound.x, v->GetX());
+            m_maxBound.x = max(m_maxBound.x, v->GetX());
+            m_minBound.y = min(m_minBound.y, v->GetY());
+            m_maxBound.y = max(m_maxBound.y, v->GetY());
+         }
       }
-      /*
-      for (const auto& v : m_dragpoints)
+      else
       {
-         m_minBound.x = min(m_minBound.x, v->GetX());
-         m_maxBound.x = max(m_maxBound.x, v->GetX());
-         m_minBound.y = min(m_minBound.y, v->GetY());
-         m_maxBound.y = max(m_maxBound.y, v->GetY());
+         for (const auto &v : vvertex)
+         {
+            m_minBound.x = min(m_minBound.x, v.x);
+            m_maxBound.x = max(m_maxBound.x, v.x);
+            m_minBound.y = min(m_minBound.y, v.y);
+            m_maxBound.y = max(m_maxBound.y, v.y);
+         }
       }
-      */
       m_center = 0.5f * (m_maxBound + m_minBound);
       m_centroid.SetZero();
       for (const auto &v : m_dragpoints)
@@ -158,6 +166,10 @@ void DragPointCurve::GetTextureCoords(const vector<RenderVertex> &vv, float **pp
    const int cpoints = (int)vv.size();
    int icontrolpoint = 0;
 
+   *ppcoords = nullptr;
+   if ((cpoints == 0) || m_dragpoints.empty())
+      return; // Degenerate outline: no render vertices to map
+
    *ppcoords = new float[cpoints];
    memset(*ppcoords, 0, sizeof(float) * cpoints);
 
@@ -166,7 +178,7 @@ void DragPointCurve::GetTextureCoords(const vector<RenderVertex> &vv, float **pp
       const RenderVertex *const prv = &vv[i];
       if (prv->controlPoint)
       {
-         if (!m_dragpoints[icontrolpoint]->IsAutoTextureCoordinate())
+         if ((icontrolpoint < (int)m_dragpoints.size()) && !m_dragpoints[icontrolpoint]->IsAutoTextureCoordinate())
          {
             vitexpoints.push_back(icontrolpoint);
             virenderpoints.push_back(i);

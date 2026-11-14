@@ -141,6 +141,9 @@ class RenderVertex3D final : public Vertex3Ds
 public:
    void set(const Vertex3Ds &v) { x = v.x; y = v.y; z = v.z; }
 
+   // infNaN is a bit test, reliable even under -ffast-math (unlike std::isfinite)
+   bool IsFinite() const { return !infNaN(x) && !infNaN(y) && !infNaN(z); }
+
    static constexpr int Dim = 3;
 
    bool smooth;
@@ -156,6 +159,8 @@ public:
    void set(const RenderVertex &v) { *this = v; }
    void set(const RenderVertex3D &v) { x = v.x; y = v.y; smooth = v.smooth; slingshot = v.slingshot; controlPoint = v.controlPoint; }
 
+   bool IsFinite() const { return !infNaN(x) && !infNaN(y); }
+
    static constexpr int Dim = 2;
 
    bool smooth;
@@ -165,7 +170,7 @@ public:
 };
 
 template <class CurveType, class VtxType, class VtxContType>
-void RecurseSmoothLine(const CurveType & cc, const float t1, const float t2, const VtxType & vt1, const VtxType & vt2, VtxContType & vv, const float accuracy)
+void RecurseSmoothLine(const CurveType& cc, const float t1, const float t2, const VtxType& vt1, const VtxType& vt2, VtxContType& vv, const float accuracy, const int depth = 0)
 {
    const float tMid = (t1 + t2)*0.5f;
    VtxType vmid;
@@ -174,17 +179,22 @@ void RecurseSmoothLine(const CurveType & cc, const float t1, const float t2, con
    vmid.slingshot = false; // Slingshots can't be along curves
    vmid.controlPoint = false; // We created this point, so it can't be a control point
 
-   if (FlatWithAccuracy(vt1, vt2, vmid, accuracy))
+   // A degenerate curve (e.g. non-finite coefficients from non-finite control
+   // points) can never satisfy the flatness test: bound the subdivision instead
+   // of recursing until the stack overflows.
+   constexpr int maxDepth = 16; // t resolution ~1.5e-5, ample for any finite curve
+
+   if (vmid.IsFinite() && (depth < maxDepth) && !FlatWithAccuracy(vt1, vt2, vmid, accuracy))
+   {
+      RecurseSmoothLine(cc, t1, tMid, vt1, vmid, vv, accuracy, depth + 1);
+      RecurseSmoothLine(cc, tMid, t2, vmid, vt2, vv, accuracy, depth + 1);
+   }
+   else
    {
       // Add first segment point to array.
       // Last point never gets added by this recursive loop,
       // but that's where it wraps around to the next curve.
       vv.push_back(vt1);
-   }
-   else
-   {
-      RecurseSmoothLine(cc, t1, tMid, vt1, vmid, vv, accuracy);
-      RecurseSmoothLine(cc, tMid, t2, vmid, vt2, vv, accuracy);
    }
 }
 

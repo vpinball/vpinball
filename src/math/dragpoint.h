@@ -125,11 +125,16 @@ public:
          const DragPoint *const pdp1 = m_dragpoints[i].get();
          const DragPoint *const pdp2 = m_dragpoints[(i < cpoint - 1) ? (i + 1) : 0].get();
 
-         if ((pdp1->GetX() == pdp2->GetX()) && (pdp1->GetY() == pdp2->GetY()) && (pdp1->GetZ() == pdp2->GetZ()))
-         {
-            // Special case - two points coincide
+         // Special case - two points coincide (in the coordinates the curve uses:
+         // CatmullCurve<2> ignores z). A zero-length segment would make the curve
+         // bow out into a phantom loop instead of producing no vertex.
+         if ((pdp1->GetX() == pdp2->GetX()) && (pdp1->GetY() == pdp2->GetY()) && ((Dim != 3) || (pdp1->GetZ() == pdp2->GetZ())))
             continue;
-         }
+
+         // Non-finite endpoints are degenerate too: NaN coefficients can never
+         // satisfy the flatness test and used to recurse without bound
+         if (infNaN(pdp1->GetX()) || infNaN(pdp1->GetY()) || ((Dim == 3) && infNaN(pdp1->GetZ())) || infNaN(pdp2->GetX()) || infNaN(pdp2->GetY()) || ((Dim == 3) && infNaN(pdp2->GetZ())))
+            continue;
 
          int iprev = (pdp1->IsSmooth() ? i - 1 : i);
          if (iprev < 0)
@@ -158,13 +163,19 @@ public:
          RecurseSmoothLine(cc, 0.f, 1.f, rendv1, rendv2, vv, accuracy);
       }
 
-      if (!loop)
+      if (!loop && !m_dragpoints.empty())
       {
-         // Add the very last point to the list because nobody else added it
-         rendv2.smooth = true;
-         rendv2.slingshot = false;
-         rendv2.controlPoint = false;
-         vv.push_back(rendv2);
+         // Add the very last point to the list because nobody else added it. rendv2
+         // may not have been set above when every segment was skipped as degenerate,
+         // so take it from the last control point (dropped too if it is degenerate).
+         rendv2.set(m_dragpoints.back()->GetVertex());
+         if (rendv2.IsFinite())
+         {
+            rendv2.smooth = true;
+            rendv2.slingshot = false;
+            rendv2.controlPoint = false;
+            vv.push_back(rendv2);
+         }
       }
    }
 
