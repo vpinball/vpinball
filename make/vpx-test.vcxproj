@@ -108,6 +108,7 @@
     <ClCompile Include="../../tests/physics/test-physics-engine.cpp" />
     <ClCompile Include="../../tests/physics/test-physics-profile.cpp" />
     <ClCompile Include="../../tests/physics/test-quadtree.cpp" />
+    <ClCompile Include="../../tests/physics/test-spinner-physics.cpp" />
     <ClCompile Include="../../tests/plugins/alphadmd/test-alphanumeric.cpp" />
     <ClCompile Include="../../tests/plugins/b2s/test-b2s-datamodel.cpp" />
     <ClCompile Include="../../tests/plugins/colorization/test-colorization.cpp" />

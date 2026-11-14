@@ -73,6 +73,7 @@ set(VPX_TEST_SOURCES
    tests/physics/test-physics-engine.cpp
    tests/physics/test-physics-profile.cpp
    tests/physics/test-quadtree.cpp
+   tests/physics/test-spinner-physics.cpp
    tests/plugins/alphadmd/test-alphanumeric.cpp
    tests/plugins/b2s/test-b2s-datamodel.cpp
    tests/plugins/colorization/test-colorization.cpp

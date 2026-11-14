@@ -215,6 +215,9 @@
     <ClCompile Include="../../tests/physics/test-quadtree.cpp">
       <Filter>physics</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/physics/test-spinner-physics.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/plugins/alphadmd/test-alphanumeric.cpp">
       <Filter>plugins</Filter>
     </ClCompile>

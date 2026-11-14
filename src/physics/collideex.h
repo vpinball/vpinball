@@ -178,6 +178,7 @@ public:
    bool AddToList() const override { return true; }
 
    Spinner* m_pspinner;
+   HitSpinner* m_pHitSpinner = nullptr; // collider owning this mover (set at construction)
 
    float m_anglespeed;
    float m_angle;
@@ -186,6 +187,13 @@ public:
    float m_elasticity;
    float m_damping;
    bool m_visible;
+
+   // The swinging plate as a lamina centered on its axis (see SwingLamina):
+   // drives the ball-tracking plate animation under all profiles while the
+   // axis segments keep handling the ball physics
+   SwingLamina m_lamina;
+   bool m_hadContact = false; // a ball touched the plate during the last substep
+   float m_releaseSpeed = 0.f; // angular speed the contacting ball could transfer to the plate
 };
 
 class HitSpinner final : public HitObject
