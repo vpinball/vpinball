@@ -12,6 +12,8 @@
 
 #include "doctest.h"
 
+#include <limits>
+
 namespace
 {
 
@@ -221,6 +223,80 @@ TEST_CASE("DragPoint curve")
       CHECK(points[1]->GetX() == 4.f);
       CHECK(points[1]->GetY() == 5.f);
       CHECK(points[1]->GetZ() == 6.f);
+   }
+
+   SUBCASE("fully coincident points produce a bounded degenerate tessellation")
+   {
+      DragPointCurve curve(owner, 2);
+      AddPoint(curve, 5.f, 6.f);
+      AddPoint(curve, 5.f, 6.f);
+      AddPoint(curve, 5.f, 6.f);
+
+      vector<RenderVertex> vv;
+      curve.GetRgVertex(vv);
+      CHECK(vv.empty());
+
+      // Bounds fall back to the control points instead of staying +-FLT_MAX
+      CHECK(curve.GetMinBound().x == doctest::Approx(5.f));
+      CHECK(curve.GetMaxBound().x == doctest::Approx(5.f));
+      CHECK(curve.GetCenter().x == doctest::Approx(5.f));
+      CHECK(curve.GetCenter().y == doctest::Approx(6.f));
+
+      vector<RenderVertex> open;
+      curve.GetRgVertex(open, false);
+      REQUIRE(open.size() == 1); // Only the endpoint is emitted
+      CHECK(open[0].x == 5.f);
+      CHECK(open[0].y == 6.f);
+   }
+
+   SUBCASE("points differing only in z are coincident for 2D tessellation")
+   {
+      DragPointCurve curve(owner, 2);
+      AddPoint(curve, 0.f, 0.f, 0.f);
+      AddPoint(curve, 0.f, 0.f, 50.f); // Same XY: a zero-length 2D segment
+      AddPoint(curve, 10.f, 0.f, 0.f);
+
+      vector<RenderVertex> vv2d;
+      curve.GetRgVertex(vv2d, false);
+      // The z-only step emits nothing in 2D (it used to bow out into a phantom loop)
+      REQUIRE(vv2d.size() == 2);
+      CHECK(vv2d[0].x == 0.f);
+      CHECK(vv2d[1].x == 10.f);
+
+      vector<RenderVertex3D> vv3d;
+      curve.GetRgVertex(vv3d, false);
+      // The z step is a real segment in 3D
+      REQUIRE(vv3d.size() == 3);
+      CHECK(vv3d[1].z == 50.f);
+   }
+
+   SUBCASE("non-finite control points do not hang the tessellation")
+   {
+      DragPointCurve curve(owner, 2);
+      AddPoint(curve, 0.f, 0.f);
+      AddPoint(curve, std::numeric_limits<float>::infinity(), 1.f);
+      AddPoint(curve, 10.f, 0.f);
+
+      vector<RenderVertex> vv;
+      curve.GetRgVertex(vv, false); // Segments touching the Inf point are skipped
+      REQUIRE(vv.size() == 1);
+      CHECK(vv[0].x == 10.f);
+   }
+
+   SUBCASE("RecurseSmoothLine terminates on a non-finite curve")
+   {
+      const float nan = std::numeric_limits<float>::quiet_NaN();
+      CatmullCurve<2> cc;
+      cc.SetCurve(Vertex2D(0.f, 0.f), Vertex2D(0.f, 0.f), Vertex2D(nan, nan), Vertex2D(10.f, 10.f));
+
+      RenderVertex v1, v2;
+      v1.x = 0.f;
+      v1.y = 0.f;
+      v2.x = nan;
+      v2.y = nan;
+      vector<RenderVertex> vv;
+      RecurseSmoothLine(cc, 0.f, 1.f, v1, v2, vv, 4.f); // Would recurse until stack overflow
+      CHECK(vv.size() == 1);
    }
 
    owner->Release();
