@@ -73,10 +73,18 @@ vector<HitObject*> AsyncDynamicQuadTree::GetHitObjects(IEditable* editable)
    if (updEdIt != m_updatedEditables.end())
       return (*updEdIt)->hitObjects;
 
-   vector<HitObject*> result;
-   const vector<HitObject*> &  vho = m_quadTree->GetHitObjects();
-   std::ranges::copy_if(vho.begin(), vho.end(), std::back_inserter(result), [editable](HitObject* ho) { return (ho != nullptr) && (ho->m_editable == editable); });
-   return result;
+   // Per-editable hit object lists of the static quadtree, rebuilt lazily after each mutation of
+   // the list: editor overlays query them once per displayed part and per frame
+   if (m_staticHitObjectsDirty)
+   {
+      m_staticHitObjectsDirty = false;
+      m_staticHitObjects.clear();
+      for (HitObject* const ho : m_quadTree->GetHitObjects())
+         if (ho != nullptr)
+            m_staticHitObjects[ho->m_editable].push_back(ho);
+   }
+   const auto it = m_staticHitObjects.find(editable);
+   return (it != m_staticHitObjects.end()) ? it->second : vector<HitObject*>();
 }
 
 bool AsyncDynamicQuadTree::IsStatic(IEditable* editable) const
@@ -117,6 +125,7 @@ void AsyncDynamicQuadTree::SetDynamic(IEditable* editable)
       else
       {
          // The updated editable is part of the active quadtree and is not being updated, remove its hit objects from there
+         m_staticHitObjectsDirty = true;
          vector<HitObject*>& vho = m_quadTree->BeginReset(); // FIXME somewhat hacky way to get a non const access to the ho vector
          for (size_t i = 0, n = vho.size(); i < n; i++)
          {
@@ -163,6 +172,7 @@ void AsyncDynamicQuadTree::AddEditable(IEditable* editable)
    m_physics->CollectColliders(editable, &hitObjects, m_isUI);
    if (hitObjects.empty())
       return;
+   m_staticHitObjectsDirty = true;
    vector<HitObject*>& vho = m_quadTree->BeginReset();
    std::erase(vho, nullptr); // Compact away the slots nulled for dynamic parts (their recorded indices would be stale after insertion anyway)
    m_nullSlots.clear();
@@ -184,6 +194,7 @@ void AsyncDynamicQuadTree::Remove(IEditable* editable)
          m_quadtreeUpdateReady.release();
          UpdateAsync();
       }
+      m_staticHitObjectsDirty = true;
       vector<HitObject*>& vho = m_quadTree->BeginReset();
       std::erase_if(vho, [editable](HitObject* ho) { return (ho != nullptr) && (ho->m_editable == editable); });
       std::erase(vho, nullptr); // Compact away the slots nulled for dynamic parts (their recorded indices would be stale after removal anyway)
@@ -261,6 +272,7 @@ void AsyncDynamicQuadTree::UpdateAsync()
       m_updatedEditables.clear();
 
       m_quadTreeUpdateInProgress = false;
+      m_staticHitObjectsDirty = true;
       // Swap quad trees (to limit memory reallocations)
       HitQuadtree* tmp = m_quadTree;
       m_quadTree = m_pendingQuadTree;

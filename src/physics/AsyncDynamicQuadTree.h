@@ -3,6 +3,7 @@
 #pragma once
 
 #include "collide.h"
+#include "unordered_dense.h"
 #include <semaphore>
 
 // QuadTree for mostly static hit objects
@@ -48,6 +49,12 @@ private:
    PhysicsEngine* const m_physics;
    const bool m_isUI;
    HitQuadtree* m_quadTree;
+
+   // Per-editable index of the static quadtree's hit objects, lazily rebuilt when invalidated:
+   // editor overlays query the hit objects of each displayed part once per frame, so scanning
+   // the whole table collider set per query is not affordable
+   bool m_staticHitObjectsDirty = true;
+   ankerl::unordered_dense::map<IEditable*, vector<HitObject*>> m_staticHitObjects;
 
    // Dynamic parts datas
    class DynamicEditable
