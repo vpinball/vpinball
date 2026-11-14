@@ -11,7 +11,10 @@
 
 #define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
 #define MA_ENABLE_CUSTOM
+#pragma push_macro("__forceinline")
+#undef __forceinline
 #include "miniaudio/extras/stb_vorbis.c"
+#pragma pop_macro("__forceinline")
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio/miniaudio.h"
 #include "miniaudio/extras/miniaudio_libopus.h"
