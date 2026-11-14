@@ -549,6 +549,12 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/BallUIPart.cpp">
       <Filter>ui\live\editor\parts</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/BevelMath.cpp">
+      <Filter>ui\live\editor\ops</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/BevelOp.cpp">
+      <Filter>ui\live\editor\ops</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/BumperUIPart.cpp">
       <Filter>ui\live\editor\parts</Filter>
     </ClCompile>
@@ -1714,6 +1720,12 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/BallUIPart.h">
       <Filter>ui\live\editor\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/BevelMath.h">
+      <Filter>ui\live\editor\ops</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/BevelOp.h">
+      <Filter>ui\live\editor\ops</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/BumperUIPart.h">
       <Filter>ui\live\editor\parts</Filter>

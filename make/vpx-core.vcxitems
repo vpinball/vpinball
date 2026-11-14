@@ -959,6 +959,8 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/BlueprintPane.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/BlueprintRenderContext.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/BallUIPart.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/BevelMath.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/BevelOp.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/BumperUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/CurveEditOp.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/DecalUIPart.cpp" />
@@ -1938,6 +1940,8 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/BlueprintPane.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/BlueprintRenderContext.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/BallUIPart.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/BevelMath.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/BevelOp.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/BumperUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/CurveEditOp.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/DecalUIPart.h" />
