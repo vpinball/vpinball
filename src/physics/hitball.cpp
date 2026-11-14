@@ -378,7 +378,7 @@ void HitBall::HandleStaticContact(const CollisionEvent& coll, const float fricti
       }
       else
       {
-         const Vertex3Ds fe = m_d.m_mass * m_physics->GetGravity(); // external forces (only gravity for now)
+         const Vertex3Ds fe = m_d.m_mass * (m_physics->GetGravity() + m_physics->GetFrameAcceleration()); // external forces (gravity and the nudge pseudo-force)
          const float dot = fe.Dot(coll.m_hitnormal);
          if (profile109)
          {
@@ -415,7 +415,7 @@ void HitBall::HandleStaticContact(const CollisionEvent& coll, const float fricti
       if (coll.m_hitdistance < 0.f)
       {
          const float pushOut = std::min(C_EMBEDVELLIMIT, -coll.m_hitdistance * (float)(1.0 / PHYS_FACTOR));
-         const float target = other ? pushOut : pushOut - m_physics->GetGravity().Dot(coll.m_hitnormal) * dtime;
+         const float target = other ? pushOut : pushOut - (m_physics->GetGravity() + m_physics->GetFrameAcceleration()).Dot(coll.m_hitnormal) * dtime;
          const float vn = (other ? m_d.m_vel - other->m_d.m_vel : m_d.m_vel).Dot(coll.m_hitnormal);
          if (vn < target)
          {
@@ -511,9 +511,10 @@ void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const
    // V10_9: Coulomb cone: bound the friction impulse by mu times the normal impulse the contact
    // actually applied this step (normalImpulse is the delta-v applied by HandleStaticContact), instead of
    // the gravity component alone which collapses on walls and on the top glass.
-   // V10_8: the normal force is approximated by the gravity component pressing the ball on the surface: none if gravity
+   // V10_8: the normal force is approximated by the external acceleration pressing the ball on the surface: none if it
    // pulls it away (e.g. touching the underside of a wall due to the table slope, or the glass), then there is no friction either
-   const float maxImpulse = fixed ? fmaxf(fricCoeff, 0.f) * m_d.m_mass * normalImpulse : fmaxf(fricCoeff, 0.f) * m_d.m_mass * fmaxf(-m_physics->GetGravity().Dot(hitnormal), 0.f);
+   const float maxImpulse = fixed ? fmaxf(fricCoeff, 0.f) * m_d.m_mass * normalImpulse
+                                  : fmaxf(fricCoeff, 0.f) * m_d.m_mass * fmaxf(-(m_physics->GetGravity() + m_physics->GetFrameAcceleration()).Dot(hitnormal), 0.f);
 
    const float slipspeed = slip.Length();
    Vertex3Ds slipDir;
@@ -575,8 +576,8 @@ Vertex3Ds HitBall::SurfaceAcceleration(const Vertex3Ds& surfP) const
 {
    const Vertex3Ds angularvelocity = m_angularmomentum / Inertia();
    // if we had any external torque, we would have to add "(deriv. of ang.vel.) x surfP" here
-   // V10_8 wrongly scaled the linear acceleration by 1/mass
-   const Vertex3Ds linear = GetPhysicProfile() == PhysicProfile::V10_9 ? m_physics->GetGravity() : m_physics->GetGravity() / m_d.m_mass;
+   // V10_8 wrongly scaled the linear acceleration by 1/mass (the pseudo-force is an acceleration, it is not scaled)
+   const Vertex3Ds linear = (GetPhysicProfile() == PhysicProfile::V10_9 ? m_physics->GetGravity() : m_physics->GetGravity() / m_d.m_mass) + m_physics->GetFrameAcceleration();
    return linear // linear acceleration
       + CrossProduct(angularvelocity, CrossProduct(angularvelocity, surfP)); // centripetal acceleration
 }
@@ -673,6 +674,8 @@ void BallMoverObject::UpdateVelocities()
 
 void HitBall::UpdateVelocities()
 {
+   // A kicker-locked ball is frozen in the cabinet frame: it deliberately feels neither gravity
+   // nor the nudge pseudo-force (the cabinet it rides in shakes, the captured ball does not).
    if (!m_d.m_lockedInKicker) // Gravity
    {
       BallControl* const ballControl = m_physics->GetBallControl();
@@ -690,11 +693,7 @@ void HitBall::UpdateVelocities()
          m_d.m_vel += (float)PHYS_FACTOR * m_physics->GetGravity() /* * m_d.m_mass / m_d.m_mass */; // Gravity F = m.G
 
          // Table velocity due to nudge (fictitious force due to change of reference frame, therefore mass is not applied)
-         const float slope = ANGTORAD(m_pBall->GetPTable()->GetPlayfieldSlope()); // nudge acceleration is in the horizontal cabinet plane, reference frame is the playfield
-         const Vertex2D cabinetAcceleration = m_physics->GetCabinetAcceleration();
-         m_d.m_vel.x -= (float)PHYS_FACTOR * MS2TOVPUVPT2(cabinetAcceleration.x);
-         m_d.m_vel.y -= (float)PHYS_FACTOR * MS2TOVPUVPT2(cabinetAcceleration.y) * cosf(slope);
-         m_d.m_vel.z -= (float)PHYS_FACTOR * MS2TOVPUVPT2(cabinetAcceleration.y) * sinf(slope);
+         m_d.m_vel += (float)PHYS_FACTOR * m_physics->GetFrameAcceleration();
       }
    }
 

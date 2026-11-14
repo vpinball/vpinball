@@ -87,6 +87,70 @@ TEST_CASE("PhysicsEngine: gravity")
    }
 }
 
+// ---------------------------------------------------------------------------
+// Cabinet nudge: the pseudo-force is injected as a per-step delta-v on every free ball
+// (HitBall::UpdateVelocities), projected from the cabinet's horizontal acceleration into
+// the playfield frame (PhysicsEngine::GetFrameAcceleration). Headless, the cabinet
+// acceleration comes from SetCabinetAcceleration (with a player it is the nudge handler's).
+// ---------------------------------------------------------------------------
+
+TEST_CASE("PhysicsEngine: cabinet nudge pseudo-force")
+{
+   PhysicsTestHarness harness;
+
+   SUBCASE("the frame acceleration is the slope-projected cabinet acceleration")
+   {
+      harness.Start();
+      PhysicsEngine *const physics = harness.GetEngine();
+
+      // Flat playfield: the front/back component stays in the playfield plane
+      harness.GetTable()->m_angletiltMin = harness.GetTable()->m_angletiltMax = 0.f;
+      physics->SetCabinetAcceleration(Vertex2D(2.f, -3.f));
+      Vertex3Ds frame = physics->GetFrameAcceleration();
+      CHECK(frame.x == doctest::Approx(-MS2TOVPUVPT2(2.f)));
+      CHECK(frame.y == doctest::Approx(MS2TOVPUVPT2(3.f)));
+      CHECK(fabsf(frame.z) < 1e-6f);
+
+      // Tilted: the front/back component splits between the playfield and its normal
+      harness.GetTable()->m_angletiltMin = harness.GetTable()->m_angletiltMax = 30.f;
+      frame = physics->GetFrameAcceleration();
+      CHECK(frame.y == doctest::Approx(MS2TOVPUVPT2(3.f) * cosf(ANGTORAD(30.f))));
+      CHECK(frame.z == doctest::Approx(MS2TOVPUVPT2(3.f) * sinf(ANGTORAD(30.f))));
+
+      physics->SetCabinetAcceleration(Vertex2D(0.f, 0.f));
+      CHECK(physics->GetFrameAcceleration().LengthSquared() == doctest::Approx(0.f));
+   }
+
+   SUBCASE("a free ball gains the nudge as a per-step delta-v")
+   {
+      harness.SetPlayfieldFloorEnabled(false);
+      harness.SetGravity(0.f, 0.f); // isolate the pseudo-force
+      Ball *const ball = harness.AddBall(500.f, 1000.f, 800.f);
+      harness.Start();
+      harness.GetEngine()->SetCabinetAcceleration(Vertex2D(2.f, 0.f));
+
+      harness.Step();
+      CHECK(ball->m_hitBall.m_d.m_vel.x == doctest::Approx(-MS2TOVPUVPT2(2.f) * PHYS_FACTOR));
+      CHECK(fabsf(ball->m_hitBall.m_d.m_vel.y) < 1e-6f);
+
+      harness.AdvanceMs(4);
+      CHECK(ball->m_hitBall.m_d.m_vel.x == doctest::Approx(-5.f * MS2TOVPUVPT2(2.f) * PHYS_FACTOR));
+   }
+
+   SUBCASE("a kicker-captured ball does not feel the nudge")
+   {
+      // Documented contract: a locked ball is frozen in the cabinet frame, no pseudo-force, no gravity
+      Ball *const ball = harness.AddBall(500.f, 1000.f, 0.f);
+      harness.Start();
+      ball->m_hitBall.m_d.m_lockedInKicker = true;
+      harness.GetEngine()->SetCabinetAcceleration(Vertex2D(5.f, 5.f));
+
+      harness.AdvanceMs(200);
+      CHECK(ball->m_hitBall.m_d.m_pos == Vertex3Ds(500.f, 1000.f, DEFAULT_BALL_SIZE));
+      CHECK(ball->m_hitBall.m_d.m_vel == Vertex3Ds(0.f, 0.f, 0.f));
+   }
+}
+
 TEST_CASE("PhysicsEngine: wall collisions")
 {
    PhysicsTestHarness harness;

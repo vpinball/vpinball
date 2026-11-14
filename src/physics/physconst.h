@@ -120,7 +120,11 @@
 // - Ball/ball contacts (HitBall::Contact): the contact friction uses the motion relative to the other ball, which was
 //   treated as a static surface, and C_BALL_BALL_FRICTION (was 0.3).
 // - The plunger model (sensor position/velocity, auto-plunger release detection, fire normalization) and the cabinet
-//   nudge application (slope-projected acceleration) are input-side improvements kept under all profiles.
+//   nudge application (slope-projected acceleration) are input-side improvements kept under all profiles. The nudge
+//   pseudo-force also feeds the contact acceleration model (PhysicsEngine::GetFrameAcceleration): the static-friction
+//   slip acceleration, HandleStaticContact's external-force anticipation, HitFlipper::Contact's gap criterion and the
+//   V10_8 friction cone all see it, so a resting ball resists a sustained nudge up to mu.N instead of creeping.
+//   It only affects nudge processing: the frame acceleration is zero without an active nudge.
 // - A ball/ball contact cancels at most a contact-scale approach (C_CONTACTVEL plus a step of gravity): it cancelled all of
 //   it, so an impact a ball received in the same cycle (a ball hit into a resting pair) was absorbed instead of reaching
 //   the other ball (Newton's cradle).

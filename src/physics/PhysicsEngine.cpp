@@ -949,7 +949,14 @@ void PhysicsEngine::OnBallWallHit(const HitBall& ball, const Vertex3Ds& hitNorma
       plunger->OnBallWallHit(ball, hitNormal, impactSpeed);
 }
 
-Vertex2D PhysicsEngine::GetCabinetAcceleration() const { return g_pplayer ? g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration() : Vertex2D(0.f, 0.f); }
+Vertex2D PhysicsEngine::GetCabinetAcceleration() const { return g_pplayer ? g_pplayer->m_pininput.m_nudgeHandler->GetCabinetAcceleration() : m_cabinetAcceleration; }
+
+Vertex3Ds PhysicsEngine::GetFrameAcceleration() const
+{
+   const float slope = ANGTORAD(m_table->GetPlayfieldSlope()); // nudge acceleration is in the horizontal cabinet plane, reference frame is the playfield
+   const Vertex2D a = GetCabinetAcceleration();
+   return Vertex3Ds(-MS2TOVPUVPT2(a.x), -MS2TOVPUVPT2(a.y) * cosf(slope), -MS2TOVPUVPT2(a.y) * sinf(slope));
+}
 
 BallControl *PhysicsEngine::GetBallControl() const { return (g_pplayer && g_pplayer->m_liveUI) ? &g_pplayer->m_liveUI->m_ballControl : nullptr; }
 
