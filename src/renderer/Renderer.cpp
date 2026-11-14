@@ -304,6 +304,7 @@ void Renderer::ApplyTableSettings()
       m_ancillaryWndRotation[wnd] = 90 * clamp(m_table->GetSettings().GetWindow_Rotation(wnd), 0, 3); // Setting is an index in the 0 / 90 / 180 / 270 literals
    m_vrDesktop = static_cast<VRDesktopMode>(m_table->GetSettings().GetPlayerVR_DesktopDisplay());
    m_vrDesktopShrink = m_table->GetSettings().GetPlayerVR_ShrinkDesktopDisplay();
+   m_vrDesktopLimitReflections = m_table->GetSettings().GetPlayerVR_DesktopLimitReflections();
    m_FXAA = m_table->GetSettings().GetPlayer_FXAA();
    m_sharpen = m_table->GetSettings().GetPlayer_Sharpen();
    m_ss_refl = m_table->GetSettings().GetPlayer_SSRefl();
@@ -2376,6 +2377,9 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
 
 RenderProbe::ReflectionMode Renderer::GetMaxReflectionMode() const
 {
+   // The VR desktop preview only keeps ball reflections: full dynamic reflections would add costly extra scene passes
+   if (m_activeView->IsMirror() && m_vrDesktopLimitReflections)
+      return min(m_maxReflectionMode, RenderProbe::REFL_BALLS);
    // For dynamic mode, static reflections are not available so adapt the mode
    return !IsUsingStaticPrepass() && m_maxReflectionMode >= RenderProbe::REFL_STATIC ? RenderProbe::REFL_DYNAMIC : m_maxReflectionMode;
 }
