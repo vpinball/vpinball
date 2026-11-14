@@ -294,6 +294,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 void Renderer::ApplyTableSettings()
 {
    m_stereo3Denabled = true; // m_table->GetSettings().GetPlayer_Stereo3DEnabled();
+   Settings::SetTableOverride_ToneMapper_Default(m_table->GetToneMapper());
    m_toneMapper = GetValidToneMapper(m_table->GetSettings().GetTableOverride_ToneMapper());
    m_HDRforceDisableToneMapper = m_table->GetSettings().GetPlayer_HDRDisableToneMapper();
    Settings::SetTableOverride_Exposure_Default(m_table->GetExposure());
