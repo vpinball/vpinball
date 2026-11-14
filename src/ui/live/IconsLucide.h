@@ -58,6 +58,7 @@
 #define ICON_LC_PLAY "\xee\x84\xbc" // U+E13C
 #define ICON_LC_PLUS "\xee\x84\xbd" // U+E13D
 #define ICON_LC_POINTER "\xee\x87\xa8" // U+E1E8
+#define ICON_LC_RECTANGLE_GOGGLES "\xee\x99\x96" // U+E656
 #define ICON_LC_REFRESH_CW "\xee\x85\x85" // U+E145
 #define ICON_LC_REPLY "\xee\x88\xaa" // U+E22A
 #define ICON_LC_ROTATE_3D "\xee\x8b\xaa" // U+E2EA

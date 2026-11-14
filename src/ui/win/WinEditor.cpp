@@ -30,6 +30,7 @@
 #include "parts/textbox.h"
 #include "parts/timer.h"
 #include "parts/trigger.h"
+#include "ui/live/LiveUI.h"
 #include "ui/VPXFileFeedback.h"
 #include "ui/win/PinTableMDI.h"
 #include "ui/win/ProgressDialog.h"
@@ -894,19 +895,21 @@ void WinEditor::DoPlay(const int playMode)
       pt->EnableWindow(FALSE);
 
    // Switch to Player's main loop (needed to avoid interference between editor's Window Msg loop and player's specific msg loop, also Player has a fairly specific msg loop).
-   // Consecutive sessions are run when the player ends on a table switch request to a different base table.
+   // Consecutive sessions are run when the player ends on a session switch request (table switch to a
+   // different base table, or a session restart like a VR play test from the live editor).
    bool appExitRequested = false;
    while (true)
    {
       g_pplayer->GameLoop();
       appExitRequested |= (g_pplayer->GetCloseState() == Player::CS_CLOSE_APP);
-      PinTable *const nextTable = g_pplayer->TakeTableSwitch(sessionMode);
+      Player::SessionSwitch sessionSwitch;
+      const bool hasNext = g_pplayer->TakeTableSwitch(sessionSwitch);
       delete g_pplayer;
       assert(g_pplayer == nullptr);
       sessionTable->Release();
-      sessionTable = nextTable;
-      if (sessionTable == nullptr)
+      if (!hasNext)
          break;
+      sessionTable = sessionSwitch.table;
       // Only show the load progress dialog when the editor window is not minimized
       ProgressDialog loadProgress;
       if (!IsIconic())
@@ -914,14 +917,19 @@ void WinEditor::DoPlay(const int playMode)
          loadProgress.Create(GetHwnd());
          loadProgress.ShowWindow(SW_SHOWNORMAL);
       }
-      Player *const player = new Player(sessionTable, sessionMode, loadProgress);
+      Player *const player = new Player(sessionTable, sessionSwitch.playMode, loadProgress, sessionSwitch.vr);
       player->m_disablePauseMenu = m_disable_pause_menu;
       loadProgress.Destroy();
       if (g_pplayer == nullptr)
       {
          sessionTable->Release();
+         for (Player::StackedTable &stacked : sessionSwitch.suspended)
+            stacked.table->Release();
          break;
       }
+      player->AdoptSuspendedSessions(std::move(sessionSwitch.suspended));
+      if (sessionSwitch.openEditor)
+         player->m_liveUI->OpenEditorUI();
    }
 
    // Play session ended with a request to close the application: go through the normal frame close path

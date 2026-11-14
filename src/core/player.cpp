@@ -102,7 +102,7 @@ using namespace VPX;
 #endif
 
 
-Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loadProgress)
+Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loadProgress, const VROverride vrOverride)
    : m_ptable(table)
    , m_playMode(playMode)
    , m_pluginAPI(m_pluginManager)
@@ -241,7 +241,13 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    bool useVR = false;
    #if defined(ENABLE_XR)
       // The live editor is not available in VR, so force VR off in the modes that open it (LiveEdit / FullEdit)
-      const int vrDetectionMode = (m_playMode == PlayMode::LiveEdit || m_playMode == PlayMode::FullEdit) ? 2 : m_ptable->GetSettings().GetPlayerVR_AskToTurnOn();
+   int vrDetectionMode;
+   switch (vrOverride)
+   {
+   case VROverride::ForceOn: vrDetectionMode = 0; break;
+   case VROverride::ForceOff: vrDetectionMode = 2; break;
+   default: vrDetectionMode = (m_playMode == PlayMode::LiveEdit || m_playMode == PlayMode::FullEdit) ? 2 : m_ptable->GetSettings().GetPlayerVR_AskToTurnOn(); break;
+   }
       if (vrDetectionMode != 2) // 2 is VR off (0 is VR on, 1 is autodetect)
       {
          m_vrDevice = new VRDevice(m_ptable->GetSettings());
@@ -1215,7 +1221,7 @@ void Player::SetTable(PinTable *const table, const TableTransition transition)
          table->Release(); // Release the adopted reference
          return;
       }
-      if (m_pendingSwitchTable != nullptr)
+      if (m_pendingSwitch.table != nullptr)
       {
          PLOGE << "Player::SetTable: a table switch is already pending, dropping the new request";
          table->Release(); // Release the adopted reference
@@ -1234,14 +1240,14 @@ void Player::SetTable(PinTable *const table, const TableTransition transition)
          m_pendingTableStack = false;
       }
       m_pendingTablePop = false; // A pending stacked session pop is superseded as well (the stack is released with the player)
-      m_pendingSwitchTable = table;
-      m_pendingSwitchMode = m_playMode;
+      m_pendingSwitch.table = table;
+      m_pendingSwitch.playMode = m_playMode;
       // Set the closing state directly, bypassing SetCloseState's stacked session handling which would
       // pop back to the previous table instead of ending the session
       m_closing = CS_STOP_PLAY;
       return;
    }
-   if (m_pendingTable != nullptr || m_pendingSwitchTable != nullptr)
+   if (m_pendingTable != nullptr || m_pendingSwitch.table != nullptr)
    {
       PLOGE << "Player::SetTable: a table switch is already pending, dropping the new request";
       table->Release(); // Release the adopted reference
@@ -1251,21 +1257,67 @@ void Player::SetTable(PinTable *const table, const TableTransition transition)
    m_pendingTableStack = (transition == TableTransition::Stack);
 }
 
-PinTable *Player::TakeTableSwitch(PlayMode &playMode)
+void Player::RequestSessionRestart(PinTable *const table, const PlayMode playMode, const VROverride vr, const bool suspend)
 {
-   playMode = m_pendingSwitchMode;
-   PinTable *const table = m_pendingSwitchTable;
-   m_pendingSwitchTable = nullptr;
    if (table == nullptr)
-      return nullptr;
+      return;
+   if (m_pendingSwitch.table != nullptr)
+   {
+      PLOGE << "Player::RequestSessionRestart: a table switch is already pending, dropping the new request";
+      table->Release(); // Release the adopted reference
+      return;
+   }
+   if (m_closing != CS_PLAYING && m_closing != CS_USER_INPUT)
+   {
+      // The session is already ending: the request can not be honored, drop it
+      table->Release(); // Release the adopted reference
+      return;
+   }
+   if (m_pendingTable != nullptr) // A pending in-place transition is superseded by the session switch
+   {
+      m_pendingTable->Release();
+      m_pendingTable = nullptr;
+      m_pendingTableStack = false;
+   }
+   m_pendingTablePop = false; // A pending stacked session pop is superseded as well (the stack is carried over below)
+   if (suspend)
+   {
+      // Only sessions of the new session's base table / live copy pair can be carried over (restoring
+      // a session of a different base table would fail the same-base transition check)
+      PinTable *const baseTable = table->m_liveBaseTable ? table->m_liveBaseTable : table;
+      if (m_ptable == baseTable || m_ptable->m_liveBaseTable == baseTable)
+      {
+         const bool editorWasOpened = m_liveUI->IsEditorUIOpened();
+         m_ptable->AddRef(); // Reference owned by the stack
+         m_tableStack.push_back({ m_ptable, m_playMode, editorWasOpened, IsVR() });
+         m_pendingSwitch.suspended = std::move(m_tableStack);
+      }
+   }
+   m_pendingSwitch.table = table;
+   m_pendingSwitch.playMode = playMode;
+   m_pendingSwitch.vr = vr;
+   // Set the closing state directly, bypassing SetCloseState's stacked session handling which would
+   // pop back to the previous table instead of ending the session
+   m_closing = CS_STOP_PLAY;
+}
+
+bool Player::TakeTableSwitch(SessionSwitch &out)
+{
+   out = std::move(m_pendingSwitch);
+   m_pendingSwitch = SessionSwitch();
+   if (out.table == nullptr)
+      return false;
    // Only honor the request if the session was ended for it: a later close request (e.g. QuitPlayer
-   // with CS_CLOSE_APP) overrides it and the table is released here
+   // with CS_CLOSE_APP) overrides it and the references are released here
    if (m_closing != CS_STOP_PLAY)
    {
-      table->Release();
-      return nullptr;
+      out.table->Release();
+      for (StackedTable &stacked : out.suspended)
+         stacked.table->Release();
+      out = SessionSwitch();
+      return false;
    }
-   return table;
+   return true;
 }
 
 void Player::RequestCloseFromOS()
@@ -1329,6 +1381,32 @@ void Player::ApplyTableTransition(PinTable *const newTable, const bool stackTabl
       return;
    }
 
+   // Restoring a suspended session whose VR state differs from the current one can not be done
+   // in-place (the render device configuration is bound at player creation): reroute the restore
+   // as a session switch, letting the host recreate the player for it
+   if (restore != nullptr && restore->wasVR != IsVR())
+   {
+      // When leaving a live copy, copy back the settings edited during play to the base table (as the Win32 editor does)
+      if (oldTable->m_liveBaseTable)
+      {
+         oldTable->m_liveBaseTable->GetSettings().Load(oldTable->GetSettings());
+         oldTable->m_liveBaseTable->GetSettings().SetModified(oldTable->GetSettings().IsModified());
+      }
+      if (m_pendingTable != nullptr) // A pending in-place transition is superseded by the session switch
+      {
+         m_pendingTable->Release();
+         m_pendingTable = nullptr;
+         m_pendingTableStack = false;
+      }
+      m_pendingSwitch.table = newTable; // The stack's reference is adopted by the switch
+      m_pendingSwitch.playMode = restore->playMode;
+      m_pendingSwitch.vr = restore->wasVR ? VROverride::ForceOn : VROverride::ForceOff;
+      m_pendingSwitch.openEditor = restore->editorWasOpened;
+      m_pendingSwitch.suspended = std::move(m_tableStack); // Carry over the remaining suspended sessions
+      m_closing = CS_STOP_PLAY;
+      return;
+   }
+
    // Close the UIs before ending the session so that pending events are still dispatched to the script
    const bool editorWasOpened = m_liveUI->IsEditorUIOpened();
    if (m_liveUI->IsInGameUIOpened())
@@ -1351,7 +1429,7 @@ void Player::ApplyTableTransition(PinTable *const newTable, const bool stackTabl
    if (stackTable)
    {
       oldTable->AddRef(); // Reference owned by the stack
-      m_tableStack.push_back({ oldTable, m_playMode, editorWasOpened });
+      m_tableStack.push_back({ oldTable, m_playMode, editorWasOpened, IsVR() });
    }
 
    ShutdownTableSession();
@@ -1403,11 +1481,14 @@ Player::~Player()
       m_pendingTable->Release();
       m_pendingTable = nullptr;
    }
-   if (m_pendingSwitchTable)
+   if (m_pendingSwitch.table)
    {
-      m_pendingSwitchTable->Release();
-      m_pendingSwitchTable = nullptr;
+      m_pendingSwitch.table->Release();
+      m_pendingSwitch.table = nullptr;
    }
+   for (StackedTable &stacked : m_pendingSwitch.suspended)
+      stacked.table->Release();
+   m_pendingSwitch.suspended.clear();
 
    // Release plugin message Ids
    const MsgPluginAPI *msgApi = &m_pluginManager.GetMsgAPI();
@@ -2339,6 +2420,11 @@ bool Player::CallbackSteppedGameLoop()
    // Discard step if the player is not in one of the running states
    if (GetCloseState() != CS_PLAYING && GetCloseState() != CS_USER_INPUT && GetCloseState() != CS_CLOSE_CAPTURE_SCREENSHOT)
       return false;
+
+   // The OpenXR runtime ended the session (headset removed, runtime exit): stop the play
+   // session, which gets back to a suspended editor session if this was a play test
+   if (m_vrDevice && !m_vrDevice->IsApplicationRunning())
+      SetCloseState(CS_STOP_PLAY);
 
    // Continuously process input, synchronize with emulation and step physics to keep latency low
    UpdateGameLogic();

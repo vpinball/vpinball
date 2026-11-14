@@ -11,6 +11,7 @@
 #include "parts/pintable.h"
 #include "renderer/Renderer.h"
 #include "ui/LoadProgress.h"
+#include "ui/live/LiveUI.h"
 #include "VPXProgress.h"
 #include "WebServer.h"
 
@@ -145,10 +146,11 @@ void VPinballLib::AppIterate()
 
       m_gameLoop = nullptr;
 
-      // If the session was ended by a table switch request to a different base table, take it over and
-      // restart a new player on the requested table (all played tables are CComObject<PinTable> instances)
-      Player::PlayMode nextMode = Player::PlayMode::Play;
-      PinTable* const nextTable = g_pplayer->TakeTableSwitch(nextMode);
+      // If the session was ended by a session switch request (table switch to a different base table, or
+      // a session restart like a VR play test), take it over and restart a new player on the requested
+      // table (all played tables are CComObject<PinTable> instances)
+      Player::SessionSwitch sessionSwitch;
+      const bool hasNext = g_pplayer->TakeTableSwitch(sessionSwitch);
 
       delete g_pplayer;
       g_pplayer = nullptr;
@@ -157,12 +159,15 @@ void VPinballLib::AppIterate()
       m_pTable->Release();
       m_pTable = nullptr;
 
-      if (nextTable != nullptr)
+      if (hasNext)
       {
-         m_pTable = static_cast<CComObject<PinTable>*>(nextTable);
+         m_pTable = static_cast<CComObject<PinTable>*>(sessionSwitch.table);
          static LoadProgress loadProgress;
          m_playerReadySent = false;
-         new Player(m_pTable, nextMode, loadProgress);
+         Player* const player = new Player(m_pTable, sessionSwitch.playMode, loadProgress, sessionSwitch.vr);
+         player->AdoptSuspendedSessions(std::move(sessionSwitch.suspended));
+         if (sessionSwitch.openEditor)
+            player->m_liveUI->OpenEditorUI();
          OnPlayerCreated();
       }
    }

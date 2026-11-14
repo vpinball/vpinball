@@ -132,6 +132,8 @@
    #include "input/XRInputHandler.h"
 #endif
 
+#include <atomic>
+
 #include "math/matrix.h"
 #include "parts/PartGroup.h"
 
@@ -224,6 +226,13 @@ public:
    void UpdateVRPosition(PartGroupData::SpaceReference spaceRef, ModelViewProj& mvp);
 
    float GetPredictedDisplayTimestamp() const { return m_predictedDisplayTimestamp; }
+
+   // False when the OpenXR runtime ended the session (headset removed, runtime exit) — always true without XR support
+#ifdef ENABLE_XR
+   bool IsApplicationRunning() const { return m_applicationRunning; }
+#else
+   bool IsApplicationRunning() const { return true; }
+#endif
 
    void SetShowUILayer(bool show) { m_showUILayer = show; }
 
@@ -318,7 +327,7 @@ private:
 
    XrSession m_session = {};
    XrSessionState m_sessionState = XR_SESSION_STATE_UNKNOWN;
-   bool m_applicationRunning = true;
+   std::atomic<bool> m_applicationRunning { true };
    bool m_sessionRunning = false;
 
    std::vector<XrViewConfigurationType> m_applicationViewConfigurations = { XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, XR_VIEW_CONFIGURATION_TYPE_PRIMARY_MONO };
