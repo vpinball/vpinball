@@ -84,6 +84,28 @@ void LiveRenderContext::DrawHitObjects(IEditable *editable) const
 {
    if (m_drawlist)
    {
+      const vector<HitObject *> hitObjects = m_player->m_physics->GetUIHitObjects(editable);
+      if (hitObjects.empty())
+         return;
+      // Skip parts whose colliders project fully off-screen: the drawing cost scales with the
+      // part's collider count (curve parts can have hundreds of segment colliders)
+      FRect3D bounds;
+      for (const HitObject *const pho : hitObjects)
+         bounds.Extend(pho->m_hitBBox);
+      ImVec2 pMin(FLT_MAX, FLT_MAX), pMax(-FLT_MAX, -FLT_MAX);
+      for (int i = 0; i < 8; i++)
+      {
+         const ImVec2 p = Project(Vertex3Ds((i & 1) ? bounds.right : bounds.left, (i & 2) ? bounds.bottom : bounds.top, (i & 4) ? bounds.zhigh : bounds.zlow));
+         if (p.x == FLT_MAX)
+            continue;
+         pMin.x = min(pMin.x, p.x);
+         pMin.y = min(pMin.y, p.y);
+         pMax.x = max(pMax.x, p.x);
+         pMax.y = max(pMax.y, p.y);
+      }
+      const ImVec2 cMin = m_drawlist->GetClipRectMin(), cMax = m_drawlist->GetClipRectMax();
+      if (pMax.x < cMin.x || pMin.x > cMax.x || pMax.y < cMin.y || pMin.y > cMax.y)
+         return;
       auto project = [this](Vertex3Ds v)
       {
          const ImVec2 pt = Project(v);
@@ -93,7 +115,7 @@ void LiveRenderContext::DrawHitObjects(IEditable *editable) const
       const ImU32 alpha = (color & 0x00FFFFFFu) | 0x20000000u;
       ImGui::PushStyleColor(ImGuiCol_PlotLines, color);
       ImGui::PushStyleColor(ImGuiCol_PlotHistogram, alpha);
-      for (auto pho : m_player->m_physics->GetUIHitObjects(editable))
+      for (auto pho : hitObjects)
          pho->DrawUI(project, m_drawlist, true);
       ImGui::PopStyleColor(2);
    }
