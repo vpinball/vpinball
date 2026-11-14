@@ -317,6 +317,10 @@ set(VPX_SOURCES
    src/ui/live/editor/BlueprintRenderContext.cpp
    src/ui/live/editor/parts/BallUIPart.h
    src/ui/live/editor/parts/BallUIPart.cpp
+   src/ui/live/editor/ops/BevelMath.h
+   src/ui/live/editor/ops/BevelMath.cpp
+   src/ui/live/editor/ops/BevelOp.h
+   src/ui/live/editor/ops/BevelOp.cpp
    src/ui/live/editor/parts/BumperUIPart.h
    src/ui/live/editor/parts/BumperUIPart.cpp
    src/ui/live/editor/ops/CurveEditOp.h

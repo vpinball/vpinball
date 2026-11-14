@@ -125,6 +125,7 @@
     <ClCompile Include="../../tests/render/test-vr-spaces.cpp" />
     <ClCompile Include="../../tests/render/test-window.cpp" />
     <ClCompile Include="../../tests/ui/test-arealayout.cpp" />
+    <ClCompile Include="../../tests/ui/test-bevel.cpp" />
     <ClCompile Include="../../tests/ui/test-referenceimage.cpp" />
     <ClCompile Include="../../tests/ui/test-scriptanalysis.cpp" />
   </ItemGroup>
