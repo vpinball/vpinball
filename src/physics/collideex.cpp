@@ -884,6 +884,23 @@ HitSpinner::HitSpinner(Spinner* const pspinner, const float height)
    m_lineseg[0].CalcNormalAndLength();
    m_lineseg[1].CalcNormalAndLength();
 
+   // The swinging plate as a lamina centered on the axle (render mesh units,
+   // scaled by the length): drives the ball-tracking plate animation under all
+   // profiles while the axis segments keep handling the ball physics
+   SwingLamina& lm = m_spinnerMover.m_lamina;
+   lm.m_tangent = Vertex2D(cs, sn);
+   lm.m_normal = Vertex2D(-sn, cs); // a positive applied angle tips the plate toward this side
+   lm.m_center = pspinner->m_d.m_vCenter;
+   lm.m_pivotZ = height + pspinner->m_d.m_height;
+   lm.m_halfSpan = 0.3625f * pspinner->m_d.m_length;
+   lm.m_alongMin = -0.2813f * pspinner->m_d.m_length;
+   lm.m_alongMax = 0.2813f * pspinner->m_d.m_length;
+   lm.m_halfThick = 0.0275f * pspinner->m_d.m_length;
+   lm.m_zoneZLow = lm.m_pivotZ - lm.m_alongMax - (float)PHYS_SKIN;
+   lm.m_zoneZHigh = lm.m_pivotZ + lm.m_alongMax + (float)PHYS_SKIN;
+   lm.UpdateZone(-(float)M_PI, (float)M_PI); // the plate sweeps the full circle
+   m_spinnerMover.m_pHitSpinner = this;
+
    m_spinnerMover.m_angleMax = ANGTORAD(pspinner->m_d.m_angleMax);
    m_spinnerMover.m_angleMin = ANGTORAD(pspinner->m_d.m_angleMin);
 
@@ -957,6 +974,48 @@ void HitSpinner::Collide(const CollisionEvent& coll)
 
 void SpinnerMoverObject::UpdateDisplacements(const float dtime)
 {
+   // Drive the rendered plate from the ball contact (visual only, all profiles):
+   // while a ball touches the plate, steer the rotation toward the angle matching
+   // the contact so the plate follows the ball instead of only getting a kick
+   // from the axis segments (which keep handling the ball physics unchanged)
+   if (dtime > 0.f && m_pHitSpinner->m_enabled)
+   {
+      const float curApplied = -m_angle; // the plate renders RotateX(-m_angle)
+      float delta = 0.f;
+      bool contact = false;
+      for (HitBall* const pball : m_physics->GetBalls())
+      {
+         if (pball->m_d.m_lockedInKicker || !m_lamina.IsInsideZone(pball->m_d))
+            continue;
+         float appliedAngle;
+         bool blocked;
+         Vertex3Ds normal;
+         if (!m_lamina.EvalContact(pball->m_d, curApplied, appliedAngle, blocked, normal))
+            continue;
+         contact = true;
+         float d = appliedAngle - curApplied;
+         d -= (float)(2.0 * M_PI) * floorf(d / (float)(2.0 * M_PI) + 0.5f); // nearest revolution to the current angle
+         if (fabsf(d) > fabsf(delta))
+         {
+            delta = d;
+            // The angular speed this ball can leave to the plate once the
+            // contact ends: same massless kinematic model as the axis kick in
+            // Collide (ball speed through the swing plane at the axis height),
+            // so a slow ball only leaves a slow spin
+            const float h = m_pspinner->m_d.m_height * 0.5f;
+            const float vs = pball->m_d.m_vel.x * m_lamina.m_normal.x + pball->m_d.m_vel.y * m_lamina.m_normal.y;
+            m_releaseSpeed = fabsf(h) > 1.0f ? fabsf(vs / h) : fabsf(vs);
+         }
+      }
+      if (contact)
+         m_anglespeed = clamp(-delta / dtime, -20.f, 20.f); // applied angle is -m_angle; bounded rate like the gate drag (rad per 10ms)
+      else if (m_hadContact)
+         // The contact just ended: the steering rate is artificial (it can be
+         // large when the contact angle whips near the pivot), keep only the
+         // spin the ball could actually transfer
+         m_anglespeed = clamp(m_anglespeed, -m_releaseSpeed, m_releaseSpeed);
+      m_hadContact = contact;
+   }
    if (m_pspinner->m_d.m_angleMin != m_pspinner->m_d.m_angleMax) // blocked spinner, limited motion spinner
    {
       m_angle += m_anglespeed * dtime;
