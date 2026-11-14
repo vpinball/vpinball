@@ -1150,7 +1150,9 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
       // V10_9: the gap closes with the acceleration of the ball's center, not of its material contact point: the centripetal
       // term of the latter (w x (w x rB), >= 0 along the normal for any spin) read as accelerating away, and a spinning
       // ball lost its support (early out, or a weaker contact impulse). Friction below keeps the material point (slip)
-      const float normAcc = (m_flipperMover.GetPhysicProfile() == PhysicProfile::V10_9 ? (pball->m_physics->GetGravity() - aF).Dot(normal) : arel.Dot(normal)) + 2.0f * normalDeriv.Dot(vrel);
+      const float normAcc
+         = (m_flipperMover.GetPhysicProfile() == PhysicProfile::V10_9 ? (pball->m_physics->GetGravity() + pball->m_physics->GetFrameAcceleration() - aF).Dot(normal) : arel.Dot(normal))
+         + 2.0f * normalDeriv.Dot(vrel);
 
       if (normAcc >= 0.f) // objects accelerating away from each other, nothing to do
          return;

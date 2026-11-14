@@ -340,3 +340,134 @@ TEST_CASE("PhysicsProfile: ramp side wall blocks the ball along the whole slope"
       }
    }
 }
+
+// ---------------------------------------------------------------------------
+// The cabinet nudge pseudo-force is part of the ball's external acceleration
+// (PhysicsEngine::GetFrameAcceleration), feeding the contact model under all
+// profiles (nudge-only: it is zero without an active nudge, see physconst.h).
+// It is an acceleration, so V10_8's 1/mass scaling quirk stays limited to gravity.
+// ---------------------------------------------------------------------------
+
+TEST_CASE("PhysicsProfile: the ball acceleration includes the nudge pseudo-force")
+{
+   for (const PhysicProfile profile : kProfiles)
+   {
+      CAPTURE(ProfileName(profile));
+      PhysicsTestHarness harness;
+      harness.GetTable()->m_angletiltMin = harness.GetTable()->m_angletiltMax = 0.f; // flat projection
+      const PhysicProfile running = StartWithProfile(harness, profile); // flat gravity (0, 0, -G)
+      harness.GetEngine()->SetCabinetAcceleration(Vertex2D(2.f, 0.f)); // pushes the balls toward -x
+
+      HitBall ball;
+      ball.SetPhysics(harness.GetEngine());
+      ball.m_d.m_mass = 2.f;
+      ball.m_angularmomentum.SetZero(); // no centripetal term
+
+      const float f = MS2TOVPUVPT2(2.f); // pseudo-acceleration magnitude
+      const Vertex3Ds acc = ball.SurfaceAcceleration(Vertex3Ds(0.f, 0.f, -DEFAULT_BALL_SIZE));
+      const float gravityScale = running == PhysicProfile::V10_8 ? 0.5f : 1.f; // the 1/mass quirk only applies to gravity
+      CHECK(acc.x == doctest::Approx(-f));
+      CHECK(fabsf(acc.y) < 1e-6f);
+      CHECK(acc.z == doctest::Approx(-GRAVITYCONST * gravityScale));
+   }
+}
+
+TEST_CASE("PhysicsProfile: a contact anticipates the nudge pressing the ball into it")
+{
+   for (const PhysicProfile profile : kProfiles)
+   {
+      CAPTURE(ProfileName(profile));
+      PhysicsTestHarness harness;
+      const PhysicProfile running = StartWithProfile(harness, profile); // flat gravity
+      harness.GetEngine()->SetCabinetAcceleration(Vertex2D(2.f, 0.f)); // pushes the ball toward -x
+
+      HitBall ball;
+      ball.SetPhysics(harness.GetEngine());
+      ball.m_d.m_vel.SetZero();
+      ball.m_angularmomentum.SetZero();
+
+      // Support on the ball's -x side: the contact must anticipate the next step's
+      // pseudo-force injection the same way it anticipates gravity.
+      CollisionEvent coll;
+      coll.m_hitnormal = Vertex3Ds(1.f, 0.f, 0.f);
+      coll.m_hitdistance = 1.f; // outside PHYS_TOUCH: no embed correction
+      coll.m_hit_org_normalvelocity = 0.f;
+
+      ball.HandleStaticContact(coll, 0.3f, (float)PHYS_FACTOR);
+      CHECK(ball.m_d.m_vel.x == doctest::Approx(MS2TOVPUVPT2(2.f) * PHYS_FACTOR));
+
+      // Without a nudge, the same contact applies no impulse
+      harness.GetEngine()->SetCabinetAcceleration(Vertex2D(0.f, 0.f));
+      HitBall idle;
+      idle.SetPhysics(harness.GetEngine());
+      idle.m_d.m_vel.SetZero();
+      idle.m_angularmomentum.SetZero();
+      idle.HandleStaticContact(coll, 0.3f, (float)PHYS_FACTOR);
+      CHECK(fabsf(idle.m_d.m_vel.x) < 1e-6f);
+   }
+}
+
+TEST_CASE("PhysicsProfile: the flipper contact sees the nudge pressing the ball into it")
+{
+   for (const PhysicProfile profile : kProfiles)
+   {
+      CAPTURE(ProfileName(profile));
+      PhysicsTestHarness harness;
+      const PhysicProfile running = StartWithProfile(harness, profile); // flat gravity
+      harness.GetEngine()->SetCabinetAcceleration(Vertex2D(2.f, 0.f)); // pushes the ball toward -x
+
+      Flipper *const flipperPart = Flipper::COMCreate();
+      flipperPart->Init(0.f, 0.f, false);
+      flipperPart->SetName("TestFlipperNudge");
+      harness.GetTable()->AddPart(flipperPart);
+      flipperPart->Release(); // owned by the table
+
+      // Flipper at angle 0 pointing toward -y: face2 on the +x side (same layout as the flipper face tests)
+      HitFlipper flipper(Vertex2D(500.f, 500.f), 30.f, 15.f, 80.f, 0.f, 0.f, 0.f, 100.f, flipperPart, running);
+      flipper.SetPhysics(harness.GetEngine());
+      const Vertex2D F(flipper.m_flipperMover.m_zeroAngNorm);
+      const Vertex2D T(F.y, -F.x);
+      const Vertex2D facePoint = Vertex2D(500.f, 500.f) + F * 30.f + T * (80.f * F.x * 0.5f);
+
+      HitBall ball;
+      ball.SetPhysics(harness.GetEngine());
+      ball.m_d.m_pos = Vertex3Ds(facePoint.x + F.x * DEFAULT_BALL_SIZE, facePoint.y + F.y * DEFAULT_BALL_SIZE, DEFAULT_BALL_SIZE);
+      ball.m_d.m_vel.SetZero();
+      ball.m_angularmomentum.SetZero();
+
+      // The nudge presses the ball into the face: the gap-closing criterion must see
+      // it, so the contact applies an impulse instead of early-outing (normAcc = 0
+      // without the frame term: gravity is tangential to the vertical face).
+      CollisionEvent coll;
+      coll.m_ball = &ball;
+      coll.m_hitnormal = Vertex3Ds(F.x, F.y, 0.f);
+      coll.m_hitdistance = 0.f;
+      coll.m_hit_org_normalvelocity = 0.f;
+
+      flipper.Contact(coll, (float)PHYS_FACTOR);
+      CHECK(ball.m_d.m_vel.Dot(coll.m_hitnormal) > 0.f);
+   }
+}
+
+TEST_CASE("PhysicsProfile: a ball nudged into a wall keeps contact")
+{
+   for (const PhysicProfile profile : kProfiles)
+   {
+      CAPTURE(ProfileName(profile));
+      PhysicsTestHarness harness;
+      harness.GetTable()->m_physicProfile = profile;
+      harness.AddWallSegment(100.f, 900.f, 100.f, 1100.f); // wall at x ~100, normal +-x
+      Ball *const ball = harness.AddBall(101.f + DEFAULT_BALL_SIZE, 1000.f, 0.f); // resting against its +x face
+      StartWithProfile(harness, profile); // flat gravity
+
+      harness.AdvanceMs(500); // settle into the contact
+
+      harness.GetEngine()->SetCabinetAcceleration(Vertex2D(3.f, 0.f)); // presses the ball into the wall
+      harness.AdvanceMs(1000);
+
+      const BallS &d = ball->m_hitBall.m_d;
+      CHECK(d.m_pos.x > 101.f + DEFAULT_BALL_SIZE - 1.f); // did not sink into the wall
+      CHECK(d.m_pos.x < 101.f + DEFAULT_BALL_SIZE + 5.f); // stays pressed against it
+      CHECK(d.m_vel.Length() < 2.f); // no runaway velocity
+   }
+}

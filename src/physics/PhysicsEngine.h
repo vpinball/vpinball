@@ -94,6 +94,12 @@ public:
    PlungerHandler *GetPlungerHandler() const;
    InputAction *GetLaunchBallAction() const;
    Vertex2D GetCabinetAcceleration() const;
+   // Source of the cabinet acceleration when there is no player nudge handler (tests, headless runs), in m/s^2
+   void SetCabinetAcceleration(const Vertex2D &acceleration) { m_cabinetAcceleration = acceleration; }
+   // Fictitious acceleration experienced by the balls in the non-inertial cabinet frame (the nudge
+   // pseudo-force HitBall::UpdateVelocities injects as a delta-v each step): -a_cabinet with its
+   // front/back component slope-projected onto the playfield, in VPU/VPT^2. Zero without a nudge.
+   Vertex3Ds GetFrameAcceleration() const;
    void PlayBallBallRumble(float impactSpeed) const;
    void PlaySlingshotRumble() const;
    void PlayFlipperContactRumble(float impactSpeed) const;
@@ -118,6 +124,8 @@ private:
    const PhysicProfile m_physicProfile; // See GetPhysicProfile
 
    Vertex3Ds m_gravity;
+
+   Vertex2D m_cabinetAcceleration = Vertex2D(0.f, 0.f); // Cabinet acceleration without a player nudge handler (see SetCabinetAcceleration), m/s^2 in the horizontal cabinet plane
 
    vector<HitBall *> m_vballs; // Balls registered in the simulation (add/remove through AddCollider/RemoveCollider)
 
