@@ -308,6 +308,10 @@ set(VPX_SOURCES
    src/ui/live/PlumbOverlay.cpp
    src/ui/live/PlumbOverlay.h
    
+   src/ui/live/editor/ops/ArcMath.h
+   src/ui/live/editor/ops/ArcMath.cpp
+   src/ui/live/editor/ops/ArcOp.h
+   src/ui/live/editor/ops/ArcOp.cpp
    src/ui/live/editor/AreaLayout.h
    src/ui/live/editor/AreaLayout.cpp
    src/ui/live/editor/BlueprintContextMenu.cpp
