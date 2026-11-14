@@ -1140,7 +1140,9 @@ static void UpdateTableInfoFile(const PinTable *const table, const std::function
    {
       // The file was removed since GetInfoFileName located it: leave it be
       if (ec)
+      {
          PLOGE << "Failed to access table info file " << infoPath << " (" << ec.message() << "), leaving it unmodified";
+      }
       return;
    }
    if (std::filesystem::file_size(infoPath, ec) > 0)

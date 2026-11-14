@@ -323,7 +323,9 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                         {
                            sigMatch = std::wstring_view(strBuf).starts_with(L"OpenPinballDeviceStruct/"sv);
                            if (!sigMatch)
+			   {
                               PLOGW << "Pinball Device found, but its usage string is not an Open Pinball Device signature";
+			   }
                         }
                         else
                         {
