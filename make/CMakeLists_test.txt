@@ -94,6 +94,7 @@ set(VPX_TEST_SOURCES
    tests/ui/test-bevel.cpp
    tests/ui/test-referenceimage.cpp
    tests/ui/test-scriptanalysis.cpp
+   tests/ui/test-wallcircle.cpp
    tests/vpx-test.cpp
    tests/vpx-test.h
 )

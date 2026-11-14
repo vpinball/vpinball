@@ -275,6 +275,9 @@
     <ClCompile Include="../../tests/ui/test-referenceimage.cpp">
       <Filter>ui</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/ui/test-wallcircle.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../tests/physics/physics-harness.h">

@@ -564,6 +564,12 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/BumperUIPart.cpp">
       <Filter>ui\live\editor\parts</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/CircleMath.cpp">
+      <Filter>ui\live\editor\ops</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/CircleWallOp.cpp">
+      <Filter>ui\live\editor\ops</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/CurveEditOp.cpp">
       <Filter>ui\live\editor\ops</Filter>
     </ClCompile>
@@ -1741,6 +1747,12 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/BumperUIPart.h">
       <Filter>ui\live\editor\parts</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/CircleMath.h">
+      <Filter>ui\live\editor\ops</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/CircleWallOp.h">
+      <Filter>ui\live\editor\ops</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/CurveEditOp.h">
       <Filter>ui\live\editor\ops</Filter>

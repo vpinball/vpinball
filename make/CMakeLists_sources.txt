@@ -327,6 +327,10 @@ set(VPX_SOURCES
    src/ui/live/editor/ops/BevelOp.cpp
    src/ui/live/editor/parts/BumperUIPart.h
    src/ui/live/editor/parts/BumperUIPart.cpp
+   src/ui/live/editor/ops/CircleMath.h
+   src/ui/live/editor/ops/CircleMath.cpp
+   src/ui/live/editor/ops/CircleWallOp.h
+   src/ui/live/editor/ops/CircleWallOp.cpp
    src/ui/live/editor/ops/CurveEditOp.h
    src/ui/live/editor/ops/CurveEditOp.cpp
    src/ui/live/editor/parts/DecalUIPart.h

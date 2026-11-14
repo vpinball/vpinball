@@ -2840,6 +2840,12 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                m_boxSelectActive = true;
          }
       }
+      {
+         // Radius of a round wall being placed, in the playfield space its center was placed in (as add part mode above)
+         const Vertex2D mouse = UnprojectToPlane(ImGui::GetMousePos(), 0.f);
+         const Vertex3Ds mousePf = ViewSpaceTransform() * Vertex3Ds(mouse.x, mouse.y, 0.f);
+         CircleWallOp::Drag(m_editor, Vertex2D(mousePf.x, mousePf.y));
+      }
       if (!modalMouse && m_boxSelectActive)
       {
          if (ImGui::IsMouseDown(ImGuiMouseButton_Left))

@@ -18,6 +18,7 @@
 #include "editor/RendererInspectionModal.h"
 #include "editor/ScriptPanel.h"
 #include "editor/ViewportPane.h"
+#include "editor/ops/CircleWallOp.h"
 #include "editor/ops/CurveEditOp.h"
 #include "editor/ops/LayerSpaceChangeOp.h"
 #include "editor/ops/ReferenceImageOp.h"
@@ -74,6 +75,7 @@ class EditorUI final
    friend class ViewportSidebar;
    friend class SetOriginOp;
    friend class CurveEditOp;
+   friend class CircleWallOp;
    friend class LayerSpaceChangeOp;
    friend class ReferenceImageOp;
 
@@ -272,7 +274,8 @@ private:
          Move,
          Rotate,
          Scale,
-         CurveEdit // Drag point curve operation of the point edit mode (see CurveEditOp)
+         CurveEdit, // Drag point curve operation of the point edit mode (see CurveEditOp)
+         CircleWall // Add a round wall (see CircleWallOp)
       };
       Type type = Type::None;
       uint64_t undoId = 0; // PinUndo::TopRecordId() after the operation
