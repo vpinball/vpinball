@@ -189,11 +189,11 @@ void Textbox::PhysicSetup(PhysicsEngine *physics, const bool isUI)
       rgv3d[1] = Vertex3Ds(x1, y2, 0.f);
       rgv3d[2] = Vertex3Ds(x2, y2, 0.f);
       rgv3d[3] = Vertex3Ds(x2, y1, 0.f);
-      physics->AddCollider(new Hit3DPoly(this, rgv3d, 4), isUI);
+      AddHitObject(physics, new Hit3DPoly(this, rgv3d, 4), isUI);
    }
 }
 
-void Textbox::PhysicRelease(PhysicsEngine *physics, const bool isUI) { }
+void Textbox::PhysicRelease(PhysicsEngine *physics, const bool isUI) { ReleaseHitObjects(isUI); }
 
 
 #pragma region Rendering

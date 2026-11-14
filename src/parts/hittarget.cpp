@@ -345,6 +345,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
 void HitTarget::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
+   ReleaseHitObjects(isUI);
    if (!isUI)
       m_vhoCollidable.clear();
 }
@@ -382,7 +383,7 @@ void HitTarget::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const boo
    obj->m_obj = (IFireEvents*)this;
    obj->m_fe = setHitObject && m_d.m_hitEvent;
 
-   physics->AddCollider(obj, isUI);
+   AddHitObject(physics, obj, isUI);
 
    if (!isUI)
       m_vhoCollidable.push_back(obj);	//remember hit components of primitive

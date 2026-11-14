@@ -623,6 +623,7 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
 void Ramp::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
+   ReleaseHitObjects(isUI);
    if (!isUI)
       m_vhoCollidable.clear();
 }
@@ -740,7 +741,7 @@ void Ramp::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const bool isU
    obj->m_obj = (IFireEvents*)this;
    obj->m_fe = m_d.m_hitEvent;
 
-   physics->AddCollider(obj, isUI);
+   AddHitObject(physics, obj, isUI);
    if (!isUI)
       m_vhoCollidable.push_back(obj); //remember hit components of primitive
 }

@@ -216,6 +216,7 @@ void Surface::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
 void Surface::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
+   ReleaseHitObjects(isUI);
    if (!isUI)
    {
       m_vlinesling.clear();
@@ -251,7 +252,7 @@ void Surface::SetupHitObject(PhysicsEngine* physics, HitObject * const obj, cons
       obj->m_threshold = m_d.m_threshold;
    }
 
-   physics->AddCollider(obj, isUI);
+   AddHitObject(physics, obj, isUI);
    if (!isUI)
    {
       m_vhoCollidable.push_back(obj); //remember hit components of wall

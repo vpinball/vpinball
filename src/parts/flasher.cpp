@@ -143,14 +143,12 @@ void Flasher::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          const Vertex3Ds rgv[3] = { rgv3d[0], rgv3d[i + 1], rgv3d[i + 2] };
          if (CrossProduct(rgv[2] - rgv[0], rgv[1] - rgv[0]).LengthSquared() < 0.01f)
             continue; // degenerate sliver: nothing to pick (matches HitTriangle's degenerate threshold)
-         physics->AddCollider(new HitTriangle(this, rgv, physics->GetPhysicProfile()), isUI);
+         AddHitObject(physics, new HitTriangle(this, rgv, physics->GetPhysicProfile()), isUI);
       }
    }
 }
 
-void Flasher::PhysicRelease(PhysicsEngine* physics, const bool isUI)
-{
-}
+void Flasher::PhysicRelease(PhysicsEngine *physics, const bool isUI) { ReleaseHitObjects(isUI); }
 
 void Flasher::FlipY(const Vertex2D& pvCenter)
 {
@@ -903,9 +901,13 @@ void Flasher::RenderSetup(Renderer *renderer)
       m_vertices[i].ny = 0.f;
       m_vertices[i].nz = 1.f;
    }
-   
-   const float inv_width = 1.0f / (m_curve.GetMaxBound().x - m_curve.GetMinBound().x);
-   const float inv_height = 1.0f / (m_curve.GetMaxBound().y - m_curve.GetMinBound().y);
+
+   // A degenerate curve scaled flat on an axis has a zero extent: 1/0 would make
+   // the texture coordinates Inf, and (x-min)*Inf produces NaN vertices
+   const float boundWidth = m_curve.GetMaxBound().x - m_curve.GetMinBound().x;
+   const float boundHeight = m_curve.GetMaxBound().y - m_curve.GetMinBound().y;
+   const float inv_width = (boundWidth != 0.f) ? 1.0f / boundWidth : 0.f;
+   const float inv_height = (boundHeight != 0.f) ? 1.0f / boundHeight : 0.f;
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
    for (auto& v : m_vertices)

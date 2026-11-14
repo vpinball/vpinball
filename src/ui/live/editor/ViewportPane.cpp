@@ -1912,7 +1912,8 @@ void ViewportPane::HitTestMarkers(const ImVec2& mousePos, vector<std::pair<float
       // Only the parts the ray cast cannot hit: part groups are excluded from picking anyway
       if (editable == nullptr || editable->GetItemType() == eItemPartGroup || !m_editor.IsEditablePickable(editable, m_viewType == ViewMode::DesktopBackdrop))
          continue;
-      const vector<HitObject*> hitObjects = (editable->GetIHitable() != nullptr) ? m_editor.m_player->m_physics->GetUIHitObjects(editable) : vector<HitObject*>();
+      static const vector<HitObject*> noHitObjects;
+      const vector<HitObject*>& hitObjects = (editable->GetIHitable() != nullptr) ? m_editor.m_player->m_physics->GetUIHitObjects(editable) : noHitObjects;
       if (hitObjects.empty())
       {
          // Collider-less parts (timer, light sequencer,...): pick by their projected center

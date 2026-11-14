@@ -35,20 +35,19 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
    // Collect all hit objects
    const FRect3D tableBounds = table->GetBoundingBox();
    m_hitoctree.SetBounds(FRect(tableBounds.left, tableBounds.right, tableBounds.top, tableBounds.bottom)); // Limit to table bounds as we don't expect to play outside of it
-   m_pendingHitObjects = &m_hitoctree.BeginReset();
-   m_pendingHitObjects->clear();
+   vector<HitObject *> &hitObjects = m_hitoctree.BeginReset();
+   hitObjects.clear();
    for (IEditable *const pe : table->GetParts())
-      if (IHitable *const ph = pe->GetIHitable(); ph)
-         ph->PhysicSetup(this, false);
+      CollectColliders(pe, &hitObjects, false);
 
    AddCabinetBoundingHitShapes(table);
-   for (HitObject *const pho : *m_pendingHitObjects)
+   hitObjects.insert(hitObjects.end(), m_cabinetHitObjects.begin(), m_cabinetHitObjects.end());
+   for (HitObject *const pho : hitObjects)
       RegisterHitObject(pho);
 
    PLOGI << "Initializing octree"; // For profiling
    m_hitoctree.EndReset();
    m_hitoctree.Finalize();
-   m_pendingHitObjects = nullptr;
    #if !defined(NDEBUG) && defined(PRINT_DEBUG_COLLISION_TREE)
       m_hitoctree.DumpTree(0);
    #endif
@@ -84,30 +83,27 @@ PhysicsEngine::~PhysicsEngine()
 {
    delete m_UIQuadTtree;
 
-   if (m_pendingHitObjects)
-      ReleaseVHO(*m_pendingHitObjects, false);
+   // The contributed hit objects are released by their parts' PhysicRelease (balls untrack their member-owned HitBall)
+   ReleaseVHO(m_hitoctree_dynamic.GetHitObjects(), false);
    ReleaseVHO(m_hitoctree.GetHitObjects(), false);
+   for (HitObject *const ho : m_cabinetHitObjects)
+      delete ho;
 
    if (g_pplayer)
       g_pplayer->m_pluginAPI.ReleaseMsgID(m_onUpdatePhysicsMsgId);
-
-   // We should release objects from the dynamic tree except HitBall (but there are only HitBall...)
 }
 
 void PhysicsEngine::ReleaseVHO(const vector<HitObject *> &vho, bool isUI)
 {
+   // Collect the contributing editables first: PhysicRelease deletes their hit objects, so the
+   // references in vho can not be dereferenced anymore once an editable has been released
    vector<IEditable *> editables;
-   for (size_t i = 0; i < vho.size(); i++)
-   {
-      if (FindIndexOf(editables, vho[i]->m_editable) == -1)
-      {
-         editables.push_back(vho[i]->m_editable);
-         if (auto ph = vho[i]->m_editable->GetIHitable(); ph)
-            ph->PhysicRelease(this, isUI);
-      }
-      if (vho[i]->GetType() != eBall) // As balls own their HitBall hit object
-         delete vho[i];
-   }
+   for (HitObject *const ho : vho)
+      if (ho != nullptr && FindIndexOf(editables, ho->m_editable) == -1)
+         editables.push_back(ho->m_editable);
+   for (IEditable *const editable : editables)
+      if (auto ph = editable->GetIHitable(); ph)
+         ph->PhysicRelease(this, isUI);
 }
 
 void PhysicsEngine::SetGravity(float slopeDeg, float strength)
@@ -183,19 +179,13 @@ void PhysicsEngine::AddStaticColliders(IEditable *editable)
 
 void PhysicsEngine::ReleaseStaticColliders(IEditable *editable)
 {
-   editable->GetIHitable()->PhysicRelease(this, false); // Balls remove their HitBall from the dynamic quadtree through RemoveCollider
+   IHitable *const ph = editable->GetIHitable();
+   // Unregister the part's colliders (flippers, plungers, movers) while they are still alive
+   for (HitObject *const ho : ph->GetHitObjects(false))
+      UnregisterHitObject(ho);
    vector<HitObject *> &vho = m_hitoctree.BeginReset();
-   std::erase_if(vho,
-      [this, editable](HitObject *ho)
-      {
-         if (ho->m_editable == editable)
-         {
-            UnregisterHitObject(ho);
-            delete ho;
-            return true;
-         }
-         return false;
-      });
+   std::erase_if(vho, [editable](HitObject *ho) { return ho->m_editable == editable; });
+   ph->PhysicRelease(this, false); // Deletes the colliders contributed by the part (balls remove their HitBall from the dynamic quadtree through RemoveCollider)
 }
 
 void PhysicsEngine::RegisterHitObject(HitObject *hitObject)
@@ -230,21 +220,15 @@ void PhysicsEngine::FlushStaticQuadTree()
 void PhysicsEngine::AddCollider(HitObject *collider, const bool isUI)
 {
    assert(collider->m_editable != nullptr);
+   // Only balls route through here: all the other colliders are owned by their contributing part (see IHitable::AddHitObject)
+   assert(!isUI && (collider->GetType() == eBall));
    collider->SetPhysics(this); // Also its mover
    collider->CalcHitBBox();
-   if (!isUI && (collider->GetType() == eBall))
-   {
-      HitBall *const hitBall = static_cast<HitBall *>(collider);
-      m_vmover.push_back(&hitBall->m_mover); // balls are always added separately to this list!
-      m_vballs.push_back(hitBall);
-      m_hitoctree_dynamic.Insert(collider);
-   }
-   else
-   {
-      assert(m_pendingHitObjects != nullptr);
-      m_pendingHitObjects->push_back(collider);
-      //assert(collider->m_hitBBox.left >= -100000); // Invalid bound
-   }
+   HitBall *const hitBall = static_cast<HitBall *>(collider);
+   m_vmover.push_back(&hitBall->m_mover); // balls are always added separately to this list!
+   m_vballs.push_back(hitBall);
+   m_hitoctree_dynamic.Insert(collider);
+   //assert(collider->m_hitBBox.left >= -100000); // Invalid bound
 }
 
 void PhysicsEngine::RemoveCollider(HitObject * collider, const bool isUI)
@@ -260,11 +244,15 @@ void PhysicsEngine::RemoveCollider(HitObject * collider, const bool isUI)
 
 void PhysicsEngine::CollectColliders(IEditable *editable, vector<HitObject *> *hitObjects, bool isUI)
 {
-   assert(m_pendingHitObjects == nullptr);
-   m_pendingHitObjects = hitObjects;
    if (auto ph = editable->GetIHitable(); ph)
+   {
       ph->PhysicSetup(this, isUI);
-   m_pendingHitObjects = nullptr;
+      for (HitObject *const ho : ph->GetHitObjects(isUI))
+         // Balls register their HitBall with the dynamic quadtree & movers themselves (see PhysicsEngine::AddCollider):
+         // only UI picking collects it as a static collider
+         if (isUI || (ho->GetType() != eBall))
+            hitObjects->push_back(ho);
+   }
 }
 
 void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
@@ -274,11 +262,17 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    // simple outer borders: the side walls must follow the (possibly sloped) glass, so each is a
    // rectangular segment up to the lowest glass height, completed by a triangle wedge sealing the
    // gap up to the glass on its high end when the glass is sloped
+   const auto addBound = [this](HitObject *const ho)
+   {
+      ho->SetPhysics(this);
+      ho->CalcHitBBox();
+      m_cabinetHitObjects.push_back(ho);
+   };
    const float lowGlass = min(table->m_glassTopHeight, table->m_glassBottomHeight);
-   AddCollider(new LineSeg(table, Vertex2D(table->m_right, table->m_top), Vertex2D(table->m_right, table->m_bottom), 0.f, lowGlass), false);
-   AddCollider(new LineSeg(table, Vertex2D(table->m_left, table->m_bottom), Vertex2D(table->m_left, table->m_top), 0.f, lowGlass), false);
-   AddCollider(new LineSeg(table, Vertex2D(table->m_right, table->m_bottom), Vertex2D(table->m_left, table->m_bottom), 0.f, table->m_glassBottomHeight),  false);
-   AddCollider(new LineSeg(table, Vertex2D(table->m_left, table->m_top), Vertex2D(table->m_right, table->m_top), 0.f, table->m_glassTopHeight), false);
+   addBound(new LineSeg(table, Vertex2D(table->m_right, table->m_top), Vertex2D(table->m_right, table->m_bottom), 0.f, lowGlass));
+   addBound(new LineSeg(table, Vertex2D(table->m_left, table->m_bottom), Vertex2D(table->m_left, table->m_top), 0.f, lowGlass));
+   addBound(new LineSeg(table, Vertex2D(table->m_right, table->m_bottom), Vertex2D(table->m_left, table->m_bottom), 0.f, table->m_glassBottomHeight));
+   addBound(new LineSeg(table, Vertex2D(table->m_left, table->m_top), Vertex2D(table->m_right, table->m_top), 0.f, table->m_glassTopHeight));
    if (table->m_glassTopHeight != table->m_glassBottomHeight)
    {
       const float hiEndY = (table->m_glassTopHeight > table->m_glassBottomHeight) ? table->m_top : table->m_bottom;
@@ -293,7 +287,7 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
          if (wedge->IsDegenerate())
             delete wedge;
          else
-            AddCollider(wedge, false);
+            addBound(wedge);
       }
    }
 
@@ -309,7 +303,7 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    ph3dpoly->m_elasticity = table->m_overridePhysics ? table->m_fOverrideElasticity : table->m_elasticity;
    ph3dpoly->m_elasticityFalloff = table->m_overridePhysics ? table->m_fOverrideElasticityFalloff : table->m_elasticityFalloff;
    ph3dpoly->m_scatter = ANGTORAD(table->m_overridePhysics ? table->m_fOverrideScatterAngle : table->m_scatter);
-   AddCollider(ph3dpoly, false);
+   addBound(ph3dpoly);
    */
 
    // playfield:
@@ -349,10 +343,7 @@ AsyncDynamicQuadTree *PhysicsEngine::GetUIQuadTree()
    return m_UIQuadTtree;
 }
 
-vector<HitObject *> PhysicsEngine::GetUIHitObjects(IEditable *editable)
-{
-   return GetUIQuadTree()->GetHitObjects(editable);
-}
+const vector<HitObject *> &PhysicsEngine::GetUIHitObjects(IEditable *editable) { return GetUIQuadTree()->GetHitObjects(editable); }
 
 void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit)
 {

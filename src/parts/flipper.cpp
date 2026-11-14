@@ -261,13 +261,14 @@ void Flipper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    HitFlipper *const phf = new HitFlipper(m_d.m_Center, baseRadius, endRadius, max(m_d.m_FlipperRadius, 0.01f), ANGTORAD(m_d.m_StartAngle),
       ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this, physics->GetPhysicProfile());
    phf->m_flipperMover.m_enabled = m_d.m_enabled;
-   physics->AddCollider(phf, isUI);
+   AddHitObject(physics, phf, isUI);
    if (!isUI)
       m_phitflipper = phf;
 }
 
 void Flipper::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
+   ReleaseHitObjects(isUI);
    if (!isUI)
       m_phitflipper = nullptr;
 }

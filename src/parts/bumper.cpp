@@ -112,7 +112,7 @@ void Bumper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    if (isUI)
    {
       HitCircle *const pcircle = new HitCircle(this, m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_heightScale);
-      physics->AddCollider(pcircle, isUI);
+      AddHitObject(physics, pcircle, isUI);
    }
    else
    {
@@ -121,12 +121,13 @@ void Bumper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       phitcircle->m_enabled = m_d.m_collidable;
       phitcircle->m_scatter = ANGTORAD(m_d.m_scatter);
       m_pbumperhitcircle = phitcircle;
-      physics->AddCollider(phitcircle, isUI);
+      AddHitObject(physics, phitcircle, isUI);
    }
 }
 
 void Bumper::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
+   ReleaseHitObjects(isUI);
    if (!isUI)
       m_pbumperhitcircle = nullptr;
 }

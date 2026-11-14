@@ -157,7 +157,7 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          assert(m_ptriggerhitcircle == nullptr);
          m_ptriggerhitcircle = hitcircle;
       }
-      physics->AddCollider(hitcircle, isUI);
+      AddHitObject(physics, hitcircle, isUI);
    }
    else
    {
@@ -179,7 +179,7 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             : new TriggerLineSeg(this, pv1, pv2, height, height + max(m_d.m_hit_height - 8.0f, 0.f));
          plineseg->m_ObjType = eTrigger;
          plineseg->m_obj = (IFireEvents *)this;
-         physics->AddCollider(plineseg, isUI);
+         AddHitObject(physics, plineseg, isUI);
       }
 
       Vertex3Ds *const rgv3D = new Vertex3Ds[count];
@@ -197,12 +197,13 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          assert(m_ptriggerhitpoly == nullptr);
          m_ptriggerhitpoly = ph3dpoly;
       }
-      physics->AddCollider(ph3dpoly, isUI);
+      AddHitObject(physics, ph3dpoly, isUI);
    }
 }
 
 void Trigger::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
+   ReleaseHitObjects(isUI);
    if (!isUI)
    {
       m_ptriggerhitcircle = nullptr;

@@ -99,6 +99,7 @@ TEST_CASE("Rubber part")
       rubber->m_curve.ClearPoints();
       PhysicsEngine physics(table);
       rubber->PhysicSetup(&physics, false);
+      rubber->PhysicRelease(&physics, false);
    }
 
    SUBCASE("editor transforms move the curve")

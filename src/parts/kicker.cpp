@@ -104,7 +104,7 @@ void Kicker::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       HitCircle *const phitcircle = new HitCircle(this, m_d.m_vCenter, radius, height, height + m_d.m_hit_height); // height of kicker hit cylinder
       phitcircle->m_ObjType = eKicker;
       phitcircle->m_obj = (IFireEvents *)this;
-      physics->AddCollider(phitcircle, isUI);
+      AddHitObject(physics, phitcircle, isUI);
    }
    else
    {
@@ -128,12 +128,13 @@ void Kicker::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       phitcircle->m_obj = (IFireEvents *)this;
       phitcircle->m_pkicker = this;
       m_phitkickercircle = phitcircle;
-      physics->AddCollider(phitcircle, isUI);
+      AddHitObject(physics, phitcircle, isUI);
    }
 }
 
 void Kicker::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
+   ReleaseHitObjects(isUI);
    if (!isUI)
    {
       m_phitkickercircle = nullptr;

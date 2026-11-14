@@ -142,6 +142,7 @@ TEST_CASE("Ramp part")
       ramp->m_curve.ClearPoints();
       PhysicsEngine physics(table);
       ramp->PhysicSetup(&physics, false);
+      ramp->PhysicRelease(&physics, false);
 
       // Coincident control points produce a zero-length curve: generated heights stay finite
       ramp->m_curve.PushPoint(std::make_unique<DragPoint>(&ramp->m_curve, 10.f, 10.f, 0.f, true));

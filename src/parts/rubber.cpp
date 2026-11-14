@@ -450,6 +450,7 @@ void Rubber::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
 void Rubber::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
+   ReleaseHitObjects(isUI);
    if (!isUI)
       m_vhoCollidable.clear();
 }
@@ -492,8 +493,8 @@ void Rubber::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const bool i
    obj->m_obj = (IFireEvents *)this;
    obj->m_fe = m_d.m_hitEvent;
 
-   physics->AddCollider(obj, isUI);
-   
+   AddHitObject(physics, obj, isUI);
+
    if (!isUI)
       m_vhoCollidable.push_back(obj);	//remember hit components of primitive
 }
