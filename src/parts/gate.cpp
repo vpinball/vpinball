@@ -154,6 +154,7 @@ void Gate::SetOpenAngle(const float angle)
          m_phitgate->m_gateMover.m_angleMax = newVal; // then set new maximum
       else
          m_phitgate->m_gateMover.m_angleMin = newVal; // else set new min
+      m_phitgate->m_gateMover.UpdateZoneExtents();
    }
    else
       m_d.m_angleMax = newVal;
@@ -176,6 +177,7 @@ void Gate::SetCloseAngle(const float angle)
          m_phitgate->m_gateMover.m_angleMin = newVal; // then set new minumum
       else
          m_phitgate->m_gateMover.m_angleMax = newVal; // else set new max
+      m_phitgate->m_gateMover.UpdateZoneExtents();
    }
    else
       m_d.m_angleMin = newVal;
@@ -249,8 +251,8 @@ void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             // mover enables it only while the wire is near its min angle.
             const GateMoverObject &mv = m_phitgate->m_gateMover;
             const Vertex2D normal(-tangent.y, tangent.x);
-            const Vertex2D c = m_d.m_vCenter - normal * (mv.m_wireDepth * sinf(m_d.m_angleMin));
-            const float halfSpan = mv.m_wireHalfSpan + (float)PHYS_SKIN; // oversize by the ball's radius to prevent clipping through
+            const Vertex2D c = m_d.m_vCenter - normal * (mv.m_lamina.m_alongMax * sinf(m_d.m_angleMin));
+            const float halfSpan = mv.m_lamina.m_halfSpan + (float)PHYS_SKIN; // oversize by the ball's radius to prevent clipping through
             rgv[0] = c + halfSpan * tangent;
             rgv[1] = c - halfSpan * tangent;
          }
@@ -747,6 +749,7 @@ STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
       m_phitgate->m_gateMover.m_angleMin = m_d.m_angleMin;
 
       if (m_phitgate->m_enabled) m_phitgate->m_gateMover.m_angleMin = 0;
+      m_phitgate->m_gateMover.UpdateZoneExtents();
    }
    else
    {

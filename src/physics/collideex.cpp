@@ -135,54 +135,50 @@ HitGate::HitGate(Gate* const pgate, const float height, PhysicProfile profile)
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   if (profile == PhysicProfile::V10_9)
+   // Colliding part of the hanging wire/plate, in object space (render mesh units,
+   // scaled by the gate length): extent along the axis, hanging depth and section
+   // radius (wire) / half thickness (plate) - derived from src/meshes/gate*.h
+   // Used by the ball-tracking animation under all profiles, and by the contact
+   // collider model under the 10.9 profile.
+   float halfSpan, depth, halfThick;
+   switch (pgate->m_d.m_type)
    {
-      // Colliding part of the hanging wire/plate, in object space (render mesh units,
-      // scaled by the gate length): extent along the axis, hanging depth and section
-      // radius (wire) / half thickness (plate) - derived from src/meshes/gate*.h
-      float halfSpan, depth, halfThick;
-      m_gateMover.m_plate = (pgate->m_d.m_type == GatePlate || pgate->m_d.m_type == GateLongPlate);
-      switch (pgate->m_d.m_type)
-      {
-      case GateWireW:
-         halfSpan = 0.240f;
-         depth = 0.352f;
-         halfThick = 0.006f;
-         break;
-      case GateWireRectangle:
-         halfSpan = 0.216f;
-         depth = 0.341f;
-         halfThick = 0.005f;
-         break;
-      case GateLongPlate:
-         halfSpan = 0.161f;
-         depth = 0.490f;
-         halfThick = 0.005f;
-         break;
-      default:
-         halfSpan = 0.236f;
-         depth = 0.350f;
-         halfThick = 0.005f;
-         break;
-      }
-      GateMoverObject& mv = m_gateMover;
-      mv.m_tangent = Vertex2D(cs, sn);
-      mv.m_normal = Vertex2D(-sn, cs); // a positive applied angle tips the wire/plate toward this side
-      mv.m_center = pgate->m_d.m_vCenter;
-      mv.m_pivotZ = height + pgate->m_d.m_height;
-      mv.m_wireHalfSpan = halfSpan * pgate->m_d.m_length;
-      mv.m_wireDepth = depth * pgate->m_d.m_length;
-      mv.m_wireRadius = halfThick * pgate->m_d.m_length;
-      mv.m_zoneZLow = height;
-      mv.m_zoneZHigh = height + (float)(2.0 * PHYS_SKIN);
-      // The zone covers the wire/plate sweep between its limits (a one-way gate opens
-      // toward -m_normal), shifted to the rest position when the min angle is not 0,
-      // plus a ball radius margin on every side
-      const float sMax = mv.m_wireDepth * sinf(pgate->m_d.m_angleMax) + (float)PHYS_SKIN;
-      mv.m_zoneSMin = -sMax;
-      mv.m_zoneSMax = pgate->m_d.m_twoWay ? sMax : -mv.m_wireDepth * sinf(pgate->m_d.m_angleMin) + (float)PHYS_SKIN;
+   case GateWireW:
+      halfSpan = 0.240f;
+      depth = 0.352f;
+      halfThick = 0.006f;
+      break;
+   case GateWireRectangle:
+      halfSpan = 0.216f;
+      depth = 0.341f;
+      halfThick = 0.005f;
+      break;
+   case GateLongPlate:
+      halfSpan = 0.161f;
+      depth = 0.490f;
+      halfThick = 0.005f;
+      break;
+   default:
+      halfSpan = 0.236f;
+      depth = 0.350f;
+      halfThick = 0.005f;
+      break;
    }
-   else
+   GateMoverObject& mv = m_gateMover;
+   SwingLamina& lm = mv.m_lamina;
+   lm.m_tangent = Vertex2D(cs, sn);
+   lm.m_normal = Vertex2D(-sn, cs); // a positive applied angle tips the wire/plate toward this side
+   lm.m_center = pgate->m_d.m_vCenter;
+   lm.m_pivotZ = height + pgate->m_d.m_height;
+   lm.m_halfSpan = halfSpan * pgate->m_d.m_length;
+   lm.m_alongMin = 0.f;
+   lm.m_alongMax = depth * pgate->m_d.m_length;
+   lm.m_halfThick = halfThick * pgate->m_d.m_length;
+   lm.m_zoneZLow = height;
+   lm.m_zoneZHigh = height + (float)(2.0 * PHYS_SKIN);
+   mv.m_axisHalfSpan = pgate->m_d.m_length * 0.5f + (float)PHYS_SKIN; // legacy axis segment extent (crossing Hit events)
+
+   if (profile != PhysicProfile::V10_9)
    {
       const float halflength = pgate->m_d.m_length * 0.5f;
 
@@ -221,14 +217,271 @@ HitGate::HitGate(Gate* const pgate, const float height, PhysicProfile profile)
    m_gateMover.m_open = false;
    m_gateMover.m_forcedMove = false;
    m_gateMover.m_hitDirection = false;
+   m_gateMover.UpdateZoneExtents();
    m_twoWay = false;
 }
 
-bool GateMoverObject::IsInsideZone(const BallS& ball) const
+// Swinging lamina contact model (see collideex.h for the geometry description).
+// Coordinates are expressed in the swing frame: u along the axis, s along
+// m_normal, h below the pivot axis. The applied angle is the rotation of the
+// lamina around the axis: a lamina point at distance "along" from the pivot
+// sits at (s = along·sin(applied), h = -along·cos(applied)).
+
+bool SwingLamina::IsInsideZone(const BallS& ball) const
 {
    const float u = (ball.m_pos.x - m_center.x) * m_tangent.x + (ball.m_pos.y - m_center.y) * m_tangent.y;
    const float s = (ball.m_pos.x - m_center.x) * m_normal.x + (ball.m_pos.y - m_center.y) * m_normal.y;
-   return fabsf(u) <= m_wireHalfSpan + (float)PHYS_SKIN && s >= m_zoneSMin && s <= m_zoneSMax && ball.m_pos.z >= m_zoneZLow && ball.m_pos.z <= m_zoneZHigh;
+   return fabsf(u) <= m_halfSpan + (float)PHYS_SKIN && s >= m_zoneSMin && s <= m_zoneSMax && ball.m_pos.z >= m_zoneZLow && ball.m_pos.z <= m_zoneZHigh;
+}
+
+void SwingLamina::UpdateZone(const float appliedMin, const float appliedMax)
+{
+   // The zone covers the lamina end sweep over the applied angle range, plus a
+   // ball radius margin on every side
+   const float e = max(fabsf(m_alongMin), fabsf(m_alongMax));
+   float sMin = e * sinf(appliedMin);
+   float sMax = e * sinf(appliedMax);
+   if (sMin > sMax)
+      std::swap(sMin, sMax);
+   // The sweep may cover the interior extrema of sin at +-90 degrees
+   if (appliedMax - appliedMin >= 2.f * (float)M_PI || (appliedMin <= (float)(M_PI / 2.0) && appliedMax >= (float)(M_PI / 2.0)))
+      sMax = e;
+   if (appliedMax - appliedMin >= 2.f * (float)M_PI || (appliedMin <= (float)(-M_PI / 2.0) && appliedMax >= (float)(-M_PI / 2.0)))
+      sMin = -e;
+   m_zoneSMin = sMin - (float)PHYS_SKIN;
+   m_zoneSMax = sMax + (float)PHYS_SKIN;
+}
+
+// True when the ball touches the lamina at its current applied angle, giving
+// the applied angle matching the contact (unclamped) and the normal from the
+// lamina toward the ball. blocked is set when reaching that angle would sweep
+// the lamina through the ball: the contact then presses the lamina in place
+// instead of being followed.
+bool SwingLamina::EvalContact(const BallS& ball, const float curApplied, float& applied, bool& blocked, Vertex3Ds& normal) const
+{
+   // The contact can only be real when the ball actually touches the lamina at
+   // its current angle: the solve below also admits roots on the ball's other
+   // side (lamina swung through the ball), which must not engage
+   if (!Overlaps(ball, curApplied, normal, 2.f)) // slack: keeps a ball hovering at the contact boundary latched instead of flickering touch/no-touch
+      return false;
+
+   const float s = (ball.m_pos.x - m_center.x) * m_normal.x + (ball.m_pos.y - m_center.y) * m_normal.y;
+   const float h = ball.m_pos.z - m_pivotZ;
+   const float u = (ball.m_pos.x - m_center.x) * m_tangent.x + (ball.m_pos.y - m_center.y) * m_tangent.y;
+   return SolveContact(s, h, u, ball.m_radius, curApplied, applied, blocked, normal);
+}
+
+// Solves the lamina applied angle matching the contact, picking the root
+// closest to curApplied, and the normal from the lamina toward the ball.
+// u is folded in as an offset to the closest point on the lamina (its ends
+// count as contact points), shrinking the effective contact radius to
+// sqrt(r²-ue²).
+bool SwingLamina::SolveContact(const float s, const float h, const float u, const float ballRadius, const float curApplied, float& applied, bool& blocked, Vertex3Ds& normal) const
+{
+   const float ue = u - clamp(u, -m_halfSpan, m_halfSpan); // distance past the lamina ends, along the axis
+   const float r = ballRadius + m_halfThick;
+   const float rEff2 = r * r - ue * ue;
+   if (rEff2 <= 0.f)
+      return false;
+   const float re = sqrtf(rEff2);
+   const float rv = sqrtf(s * s + h * h);
+   if (rv < 1e-6f)
+      return false;
+   const float beta = atan2f(h, s);
+   // The candidate contact angles are ranked by how well they describe the
+   // contact: an angle the lamina can reach without sweeping its body through
+   // the ball is preferred, and among those an angle where the lamina stays
+   // clear of the ball is preferred over one where it would still penetrate
+   // (ball pressed into the lamina's swept disc: the least-bad rest is better
+   // than none). blocked is set when every rest angle would sweep through the
+   // ball: the contact then presses the lamina in place instead of being
+   // followed.
+   int bestKind = 2; // 0 = clear contact, 1 = penetrating contact, 2 = sweep-through
+   float best = FLT_MAX, bestDiff = FLT_MAX;
+   const auto pickBest = [&](const float a, const bool penetrating)
+   {
+      const float an = atan2f(sinf(a), cosf(a));
+      const int kind = SweepsBall(an, curApplied, s, h, ballRadius) ? 2 : (penetrating ? 1 : 0);
+      const float d = fabsf(atan2f(sinf(an - curApplied), cosf(an - curApplied))); // wrapped distance to the current angle
+      if (kind < bestKind || (kind == bestKind && d < bestDiff))
+      {
+         bestKind = kind;
+         bestDiff = d;
+         best = an;
+      }
+   };
+   // The lamina is a segment from the pivot along (sin a, -cos a): the ball
+   // touches a face when its center is at R + half thickness of the plane with
+   // the contact inside the segment. Face contacts need the ball center outside
+   // the pivot's contact sphere.
+   if (rv >= re)
+   {
+      const float t = acosf(clamp(re / rv, -1.f, 1.f));
+      const float faceRoots[4] = { beta + t, beta - t, beta + ((float)M_PI - t), beta - ((float)M_PI - t) };
+      for (const float a : faceRoots)
+      {
+         const float an = atan2f(sinf(a), cosf(a));
+         const float along = s * sinf(an) - h * cosf(an); // contact position along the lamina, from the pivot
+         if (along < m_alongMin || along > m_alongMax)
+            continue;
+         pickBest(a, false);
+      }
+   }
+   // The ball can also touch the lamina ends like a wire (the hanging tip of a
+   // gate wire/plate, both tips of a spinner plate).
+   for (const float e : { m_alongMin, m_alongMax })
+   {
+      if (e == 0.f)
+         continue;
+      const float k = (s * s + h * h + e * e - re * re) / (2.f * e);
+      if (fabsf(k) > rv)
+         continue;
+      const float tr = asinf(clamp(k / rv, -1.f, 1.f));
+      const float rimRoots[2] = { beta + tr, beta + ((float)M_PI - tr) };
+      for (const float a : rimRoots)
+      {
+         const float an = atan2f(sinf(a), cosf(a));
+         const float delta = s * cosf(an) + h * sinf(an);
+         const float along = s * sinf(an) - h * cosf(an);
+         const float off = along - clamp(along, m_alongMin, m_alongMax);
+         pickBest(a, delta * delta + off * off < (re - 0.25f) * (re - 0.25f)); // the lamina's body penetrates the ball at this angle
+      }
+   }
+   if (best == FLT_MAX)
+      return false;
+   blocked = (bestKind == 2);
+   applied = best;
+   const float along = s * sinf(best) - h * cosf(best);
+   const float delta = s * cosf(best) + h * sinf(best);
+   const float off = along - clamp(along, m_alongMin, m_alongMax); // from the closest point of the lamina toward the ball
+   const float ns = delta * cosf(best) + off * sinf(best), nh = delta * sinf(best) - off * cosf(best);
+   const float nl = sqrtf(ns * ns + nh * nh + ue * ue);
+   if (nl < 1e-6f)
+      return false;
+   normal = Vertex3Ds(m_normal.x * ns / nl + m_tangent.x * ue / nl, m_normal.y * ns / nl + m_tangent.y * ue / nl, nh / nl);
+   return true;
+}
+
+bool SwingLamina::Overlaps(const BallS& ball, const float applied, Vertex3Ds& normal, const float slack) const
+{
+   const float u = (ball.m_pos.x - m_center.x) * m_tangent.x + (ball.m_pos.y - m_center.y) * m_tangent.y;
+   const float ue = u - clamp(u, -m_halfSpan, m_halfSpan); // distance past the lamina ends, along the axis
+   const float s = (ball.m_pos.x - m_center.x) * m_normal.x + (ball.m_pos.y - m_center.y) * m_normal.y;
+   const float h = ball.m_pos.z - m_pivotZ;
+   const float r = ball.m_radius + m_halfThick + slack;
+   const float delta = s * cosf(applied) + h * sinf(applied); // distance to the lamina plane
+   const float along = s * sinf(applied) - h * cosf(applied); // contact position along the lamina
+   const float off = along - clamp(along, m_alongMin, m_alongMax); // from the closest point of the lamina segment toward the ball
+   const float ns = delta * cosf(applied) + off * sinf(applied), nh = delta * sinf(applied) - off * cosf(applied);
+   const float nl = sqrtf(ns * ns + nh * nh + ue * ue);
+   if (nl > r)
+      return false;
+   if (nl < 1e-6f)
+      normal = Vertex3Ds(m_normal.x, m_normal.y, 0.f);
+   else
+      normal = Vertex3Ds(m_normal.x * ns / nl + m_tangent.x * ue / nl, m_normal.y * ns / nl + m_tangent.y * ue / nl, nh / nl);
+   return true;
+}
+
+// True when rotating the lamina from curApplied to applied sweeps its
+// centerline through the ball: reaching the solved angle would push the lamina
+// through the ball instead of following it. The lamina contains the ball's
+// direction when its angle is beta+90° (ball on the along>0 side) or beta-90°
+// (along<0 side), and only while the ball is within that end's reach.
+bool SwingLamina::SweepsBall(const float applied, const float curApplied, const float s, const float h, const float ballRadius) const
+{
+   const float d = applied - curApplied;
+   if (d == 0.f)
+      return false;
+   if (m_alongMin == 0.f)
+   {
+      // One-ended lamina (gate wire/plate hanging from its axle): the tip is the
+      // leading edge — a rest angle whose tip lands past the ball's center in
+      // the swing direction pushes the wire/plate through the ball's side
+      // instead of resting on it
+      const float tipS = m_alongMax * sinf(applied);
+      if ((tipS - m_alongMax * sinf(curApplied)) * (s - tipS) > 0.f)
+         return true;
+   }
+   const float rv = sqrtf(s * s + h * h);
+   if (rv < 1e-6f)
+      return false;
+   const float beta = atan2f(h, s);
+   const float re = ballRadius + m_halfThick;
+   for (const float e : { m_alongMin, m_alongMax })
+   {
+      if (e == 0.f || rv > fabsf(e) + re)
+         continue; // this end cannot reach the ball
+      const float cross = e > 0.f ? beta + (float)(M_PI / 2.0) : beta - (float)(M_PI / 2.0);
+      float rel = cross - curApplied;
+      rel -= (float)(2.0 * M_PI) * floorf(rel / (float)(2.0 * M_PI)); // wrap to [0, 2pi)
+      if ((d > 0.f && rel < d) || (d < 0.f && rel > (float)(2.0 * M_PI) + d))
+         return true;
+   }
+   return false;
+}
+
+// Time at which the ball's straight-line motion reaches the contact distance of
+// the lamina frozen at curApplied, or -1. Needed to catch fast balls that would
+// jump through the contact region within a substep.
+float SwingLamina::HitTestContact(const BallS& ball, const float dtime, const float curApplied, float& s, float& h, float& u) const
+{
+   const float u0 = (ball.m_pos.x - m_center.x) * m_tangent.x + (ball.m_pos.y - m_center.y) * m_tangent.y;
+   const float s0 = (ball.m_pos.x - m_center.x) * m_normal.x + (ball.m_pos.y - m_center.y) * m_normal.y;
+   const float h0 = ball.m_pos.z - m_pivotZ;
+   const float vu = ball.m_vel.x * m_tangent.x + ball.m_vel.y * m_tangent.y;
+   const float vs = ball.m_vel.x * m_normal.x + ball.m_vel.y * m_normal.y;
+   const float vh = ball.m_vel.z;
+   const float ue = u0 - clamp(u0, -m_halfSpan, m_halfSpan);
+   const float r = ball.m_radius + m_halfThick;
+   const float rEff2 = r * r - ue * ue;
+   if (rEff2 <= 0.f)
+      return -1.0f;
+   const float re = sqrtf(rEff2);
+   float bestT = FLT_MAX;
+   // Lamina end rims (wire tip / plate edges), wire-like contact
+   const float a = vs * vs + vh * vh;
+   if (a > 1e-9f)
+   {
+      for (const float e : { m_alongMin, m_alongMax })
+      {
+         if (e == 0.f)
+            continue;
+         const float ws = e * sinf(curApplied), wh = -e * cosf(curApplied);
+         const float b = (s0 - ws) * vs + (h0 - wh) * vh;
+         const float c = (s0 - ws) * (s0 - ws) + (h0 - wh) * (h0 - wh) - re * re;
+         const float disc = b * b - a * c;
+         if (disc >= 0.f)
+         {
+            const float t = (-b - sqrtf(disc)) / a;
+            if (t >= 0.f && t < bestT)
+               bestT = t;
+         }
+      }
+   }
+   // Lamina faces: |signed distance to the plane| = r with the contact inside
+   // the segment
+   const float ca = cosf(curApplied), sa = sinf(curApplied);
+   const float d0 = s0 * ca + h0 * sa, dv = vs * ca + vh * sa;
+   if (fabsf(dv) > 1e-9f)
+   {
+      for (const float side : { 1.f, -1.f })
+      {
+         const float t = (side * re - d0) / dv;
+         if (t >= 0.f && t < bestT)
+         {
+            const float along = (s0 + vs * t) * sa - (h0 + vh * t) * ca;
+            if (along >= m_alongMin && along <= m_alongMax)
+               bestT = t;
+         }
+      }
+   }
+   if (bestT == FLT_MAX || bestT > dtime)
+      return -1.0f;
+   s = s0 + vs * bestT;
+   h = h0 + vh * bestT;
+   u = u0 + vu * bestT;
+   return bestT;
 }
 
 float GateMoverObject::ClampAppliedAngle(const float appliedAngle) const
@@ -241,206 +494,48 @@ float GateMoverObject::ClampAppliedAngle(const float appliedAngle) const
    return clamp(appliedAngle, -m_angleMax, -m_angleMin); // one-way gates open toward -m_normal
 }
 
-bool GateMoverObject::EvalContact(const BallS& ball, float& appliedAngle, bool& blocked, Vertex3Ds& normal) const
-{
-   // The contact can only be real when the ball actually touches the wire/plate at
-   // its current angle: the solve below also admits roots on the ball's other side
-   // (wire/plate swung through the ball), which must not engage
-   const float curAngle = m_pgate->m_d.m_twoWay ? m_angle : -m_angle;
-   if (!OverlapsWire(ball, curAngle, normal, 2.f)) // slack: keeps a ball hovering at the contact boundary latched instead of flickering touch/no-touch
-      return false;
+void GateMoverObject::UpdateZoneExtents() { m_lamina.UpdateZone(-m_angleMax, m_pgate->m_d.m_twoWay ? m_angleMax : -m_angleMin); }
 
-   const float s = (ball.m_pos.x - m_center.x) * m_normal.x + (ball.m_pos.y - m_center.y) * m_normal.y;
-   const float h = ball.m_pos.z - m_pivotZ;
-   const float u = (ball.m_pos.x - m_center.x) * m_tangent.x + (ball.m_pos.y - m_center.y) * m_tangent.y;
-   if (!SolveContact(s, h, u, ball.m_radius, appliedAngle, normal))
-      return false;
-   blocked = WireSweepThroughBall(appliedAngle, s);
-   return true;
+bool GateMoverObject::IsInCrossingRegion(const BallS& ball, float& s) const
+{
+   const float u = (ball.m_pos.x - m_lamina.m_center.x) * m_lamina.m_tangent.x + (ball.m_pos.y - m_lamina.m_center.y) * m_lamina.m_tangent.y;
+   s = (ball.m_pos.x - m_lamina.m_center.x) * m_lamina.m_normal.x + (ball.m_pos.y - m_lamina.m_center.y) * m_lamina.m_normal.y;
+   // Same footprint as the legacy axis segment: its extent along the axis and
+   // its z window (the segment accepts a hit whose z stays within half a ball
+   // radius of its height range)
+   return fabsf(u) <= m_axisHalfSpan && ball.m_pos.z + ball.m_radius * 0.5f >= m_lamina.m_zoneZLow && ball.m_pos.z - ball.m_radius * 0.5f <= m_lamina.m_zoneZHigh;
 }
 
-bool GateMoverObject::WireSweepThroughBall(const float appliedAngle, const float s) const
+void GateMoverObject::TrackAxisCrossings()
 {
-   const float curAngle = m_pgate->m_d.m_twoWay ? m_angle : -m_angle;
-   const float tipS = m_wireDepth * sinf(appliedAngle);
-   // The solved tip position lies past the ball's center in the swing direction:
-   // reaching it would push the wire/plate through the ball instead of following it
-   return (tipS - m_wireDepth * sinf(curAngle)) * (s - tipS) > 0.f;
-}
-
-// Ball in the gate's swing plane: s along m_normal, h below the pivot axis, u along the axis.
-// Solves the wire/plate angle matching the contact (unclamped), picking the root
-// closest to the current angle, and the normal from the wire/plate toward the ball.
-// u is folded in as an offset to the closest point on the wire/plate (its ends count
-// as contact points), shrinking the effective contact radius to sqrt(r²-ue²).
-bool GateMoverObject::SolveContact(const float s, const float h, const float u, const float ballRadius, float& appliedAngle, Vertex3Ds& normal) const
-{
-   const float curAngle = m_pgate->m_d.m_twoWay ? m_angle : -m_angle;
-   const float ue = u - clamp(u, -m_wireHalfSpan, m_wireHalfSpan); // distance past the wire ends, along the axis
-   const float r = ballRadius + m_wireRadius;
-   const float rEff2 = r * r - ue * ue;
-   if (rEff2 <= 0.f)
-      return false;
-   const float re = sqrtf(rEff2);
-   const float d = m_wireDepth;
-   const float rv = sqrtf(s * s + h * h);
-   if (rv < 1e-6f)
-      return false;
-   const float beta = atan2f(h, s);
-   if (m_plate)
+   // Keep only the balls still inside the crossing region, firing a Hit on each
+   // axis-plane crossing like the legacy axis segment did
+   size_t w = 0;
+   for (size_t i = 0; i < m_balls.size(); ++i)
    {
-      // The plate is a segment from the pivot along (sin a, -cos a): the ball touches
-      // a face when its center is at R + half thickness of the plane with the contact
-      // inside the segment, and it touches the bottom rim like a wire
-      if (rv < re)
-         return false;
-      float best = FLT_MAX;
-      const float t = acosf(clamp(re / rv, -1.f, 1.f));
-      const float faceRoots[4] = { beta + t, beta - t, beta + ((float)M_PI - t), beta - ((float)M_PI - t) };
-      for (const float a : faceRoots)
-      {
-         const float an = atan2f(sinf(a), cosf(a));
-         const float along = s * sinf(an) - h * cosf(an); // contact position along the plate, from the pivot
-         if (along < 0.f || along > d)
-            continue;
-         if (best == FLT_MAX || fabsf(an - curAngle) < fabsf(best - curAngle))
-            best = an;
-      }
-      const float k = (s * s + h * h + d * d - re * re) / (2.f * d);
-      if (fabsf(k) <= rv)
-      {
-         const float tr = asinf(clamp(k / rv, -1.f, 1.f));
-         const float rimRoots[2] = { beta + tr, beta + ((float)M_PI - tr) };
-         for (const float a : rimRoots)
-         {
-            const float an = atan2f(sinf(a), cosf(a));
-            if (best == FLT_MAX || fabsf(an - curAngle) < fabsf(best - curAngle))
-               best = an;
-         }
-      }
-      if (best == FLT_MAX)
-         return false;
-      appliedAngle = best;
-      const float along = s * sinf(best) - h * cosf(best);
-      const float delta = s * cosf(best) + h * sinf(best);
-      const float off = along - clamp(along, 0.f, d); // from the closest point of the plate segment toward the ball
-      const float ns = delta * cosf(best) + off * sinf(best), nh = delta * sinf(best) - off * cosf(best);
-      const float nl = sqrtf(ns * ns + nh * nh + ue * ue);
-      if (nl < 1e-6f)
-         return false;
-      normal = Vertex3Ds(m_normal.x * ns / nl + m_tangent.x * ue / nl, m_normal.y * ns / nl + m_tangent.y * ue / nl, nh / nl);
-      return true;
+      HitBall* const pball = m_balls[i];
+      float s;
+      if (FindIndexOf(m_physics->GetBalls(), pball) < 0 || pball->m_d.m_lockedInKicker || !IsInCrossingRegion(pball->m_d, s))
+         continue;
+      if (m_ballS[i] * s < 0.f) // axis-plane crossing since the last step
+         m_pHitGate->FireHitEvent(pball);
+      m_balls[w] = pball;
+      m_ballS[w] = s;
+      ++w;
    }
-   // The wire is modeled as a circle of radius wireRadius at depth d on the swing
-   // plane: the ball touches it when its center is at R + wireRadius of the circle
-   const float k = (s * s + h * h + d * d - re * re) / (2.f * d);
-   if (fabsf(k) > rv)
-      return false;
-   const float t = asinf(clamp(k / rv, -1.f, 1.f));
-   const float a1 = atan2f(sinf(beta + t), cosf(beta + t));
-   const float a2 = atan2f(sinf(beta + ((float)M_PI - t)), cosf(beta + ((float)M_PI - t)));
-   const float best = fabsf(a1 - curAngle) < fabsf(a2 - curAngle) ? a1 : a2;
-   appliedAngle = best;
-   const float ns = s - d * sinf(best), nh = h + d * cosf(best); // from the wire center toward the ball, in (s,h)
-   const float nl = sqrtf(ns * ns + nh * nh + ue * ue);
-   if (nl < 1e-6f)
-      return false;
-   normal = Vertex3Ds(m_normal.x * ns / nl + m_tangent.x * ue / nl, m_normal.y * ns / nl + m_tangent.y * ue / nl, nh / nl);
-   return true;
-}
-
-bool GateMoverObject::OverlapsWire(const BallS& ball, const float appliedAngle, Vertex3Ds& normal, const float slack) const
-{
-   const float u = (ball.m_pos.x - m_center.x) * m_tangent.x + (ball.m_pos.y - m_center.y) * m_tangent.y;
-   const float ue = u - clamp(u, -m_wireHalfSpan, m_wireHalfSpan); // distance past the wire ends, along the axis
-   const float s = (ball.m_pos.x - m_center.x) * m_normal.x + (ball.m_pos.y - m_center.y) * m_normal.y;
-   const float h = ball.m_pos.z - m_pivotZ;
-   const float r = ball.m_radius + m_wireRadius + slack;
-   float ns, nh; // from the closest point of the wire/plate toward the ball, in (s,h)
-   if (m_plate)
+   m_balls.resize(w);
+   m_ballS.resize(w);
+   for (HitBall* const pball : m_physics->GetBalls())
    {
-      const float delta = s * cosf(appliedAngle) + h * sinf(appliedAngle); // distance to the plate plane
-      const float along = s * sinf(appliedAngle) - h * cosf(appliedAngle); // contact position along the plate
-      const float off = along - clamp(along, 0.f, m_wireDepth);
-      ns = delta * cosf(appliedAngle) + off * sinf(appliedAngle);
-      nh = delta * sinf(appliedAngle) - off * cosf(appliedAngle);
-   }
-   else
-   {
-      ns = s - m_wireDepth * sinf(appliedAngle);
-      nh = h + m_wireDepth * cosf(appliedAngle);
-   }
-   const float nl = sqrtf(ns * ns + nh * nh + ue * ue);
-   if (nl > r)
-      return false;
-   if (nl < 1e-6f)
-      normal = Vertex3Ds(m_normal.x, m_normal.y, 0.f);
-   else
-      normal = Vertex3Ds(m_normal.x * ns / nl + m_tangent.x * ue / nl, m_normal.y * ns / nl + m_tangent.y * ue / nl, nh / nl);
-   return true;
-}
-
-// Time at which the ball's straight-line motion reaches the contact distance of
-// the wire/plate frozen at its current angle, or -1. Needed to catch fast balls
-// that would jump through the contact region within a substep.
-float GateMoverObject::HitTestContact(const BallS& ball, const float dtime, float& s, float& h, float& u) const
-{
-   const float u0 = (ball.m_pos.x - m_center.x) * m_tangent.x + (ball.m_pos.y - m_center.y) * m_tangent.y;
-   const float s0 = (ball.m_pos.x - m_center.x) * m_normal.x + (ball.m_pos.y - m_center.y) * m_normal.y;
-   const float h0 = ball.m_pos.z - m_pivotZ;
-   const float vu = ball.m_vel.x * m_tangent.x + ball.m_vel.y * m_tangent.y;
-   const float vs = ball.m_vel.x * m_normal.x + ball.m_vel.y * m_normal.y;
-   const float vh = ball.m_vel.z;
-   const float ue = u0 - clamp(u0, -m_wireHalfSpan, m_wireHalfSpan);
-   const float r = ball.m_radius + m_wireRadius;
-   const float rEff2 = r * r - ue * ue;
-   if (rEff2 <= 0.f)
-      return -1.0f;
-   const float re = sqrtf(rEff2);
-   const float d = m_wireDepth;
-   const float cur = m_pgate->m_d.m_twoWay ? m_angle : -m_angle;
-   float bestT = FLT_MAX;
-   // Wire tip / plate rim point (wire-like contact)
-   const float ws = d * sinf(cur), wh = -d * cosf(cur);
-   const float a = vs * vs + vh * vh;
-   if (a > 1e-9f)
-   {
-      const float b = (s0 - ws) * vs + (h0 - wh) * vh;
-      const float c = (s0 - ws) * (s0 - ws) + (h0 - wh) * (h0 - wh) - re * re;
-      const float disc = b * b - a * c;
-      if (disc >= 0.f)
+      if (pball->m_d.m_lockedInKicker || FindIndexOf(m_balls, pball) >= 0)
+         continue;
+      float s;
+      if (IsInCrossingRegion(pball->m_d, s))
       {
-         const float t = (-b - sqrtf(disc)) / a;
-         if (t >= 0.f && t <= dtime)
-            bestT = t;
+         m_balls.push_back(pball);
+         m_ballS.push_back(s);
       }
    }
-   if (m_plate)
-   {
-      // Plate faces: |signed distance to the plane| = r with the contact inside
-      // the segment
-      const float ca = cosf(cur), sa = sinf(cur);
-      const float d0 = s0 * ca + h0 * sa, dv = vs * ca + vh * sa;
-      if (fabsf(dv) > 1e-9f)
-      {
-         for (const float side : { 1.f, -1.f })
-         {
-            const float t = (side * re - d0) / dv;
-            if (t >= 0.f && t < bestT)
-            {
-               const float along = (s0 + vs * t) * sa - (h0 + vh * t) * ca;
-               if (along >= 0.f && along <= d)
-                  bestT = t;
-            }
-         }
-      }
-   }
-   if (bestT == FLT_MAX || bestT > dtime)
-      return -1.0f;
-   s = s0 + vs * bestT;
-   h = h0 + vh * bestT;
-   u = u0 + vu * bestT;
-   return bestT;
 }
 
 float HitGate::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
@@ -457,23 +552,24 @@ float HitGate::HitTest(const BallS& ball, const float dtime, CollisionEvent& col
       // when the wire/plate cannot follow the ball (pushed beyond its limits).
       if (ball.m_lockedInKicker)
          return -1.0f;
+      const float curApplied = m_pgate->m_d.m_twoWay ? m_gateMover.m_angle : -m_gateMover.m_angle;
       float appliedAngle;
       bool blocked;
       Vertex3Ds normal;
-      if (m_gateMover.IsInsideZone(ball) && m_gateMover.EvalContact(ball, appliedAngle, blocked, normal))
+      if (m_gateMover.m_lamina.IsInsideZone(ball) && m_gateMover.m_lamina.EvalContact(ball, curApplied, appliedAngle, blocked, normal))
       {
-         const float evalAngle = blocked ? m_gateMover.m_angle : m_gateMover.ClampAppliedAngle(appliedAngle);
-         if ((!blocked && evalAngle == appliedAngle) || !m_gateMover.OverlapsWire(ball, evalAngle, coll.m_hitnormal))
+         const float evalAngle = blocked ? curApplied : m_gateMover.ClampAppliedAngle(appliedAngle);
+         if ((!blocked && evalAngle == appliedAngle) || !m_gateMover.m_lamina.Overlaps(ball, evalAngle, coll.m_hitnormal))
             return -1.0f;
          return 0.0f;
       }
       // Not touching yet: detect the ball sweeping into contact during the step,
       // and report a rigid hit if it comes from a side the wire cannot follow
       float s, h, u;
-      const float t = m_gateMover.HitTestContact(ball, dtime, s, h, u);
-      if (t < 0.f || !m_gateMover.SolveContact(s, h, u, ball.m_radius, appliedAngle, normal))
+      const float t = m_gateMover.m_lamina.HitTestContact(ball, dtime, curApplied, s, h, u);
+      if (t < 0.f || !m_gateMover.m_lamina.SolveContact(s, h, u, ball.m_radius, curApplied, appliedAngle, blocked, normal))
          return -1.0f;
-      if (!m_gateMover.WireSweepThroughBall(appliedAngle, s) && m_gateMover.ClampAppliedAngle(appliedAngle) == appliedAngle)
+      if (!blocked && m_gateMover.ClampAppliedAngle(appliedAngle) == appliedAngle)
          return -1.0f; // the wire/plate can follow: the mover will drag it next step
       coll.m_hitnormal = normal;
       return t;
@@ -539,20 +635,20 @@ void HitGate::CalcHitBBox()
 {
    if (GetPhysicProfile() == PhysicProfile::V10_9)
    {
-      const GateMoverObject& mv = m_gateMover;
-      m_hitBBox.left = m_hitBBox.right = mv.m_center.x;
-      m_hitBBox.top = m_hitBBox.bottom = mv.m_center.y;
+      const SwingLamina& lm = m_gateMover.m_lamina;
+      m_hitBBox.left = m_hitBBox.right = lm.m_center.x;
+      m_hitBBox.top = m_hitBBox.bottom = lm.m_center.y;
       for (int i = 0; i < 4; ++i)
       {
-         const Vertex2D p = mv.m_center + mv.m_tangent * ((i & 1) ? mv.m_wireHalfSpan + (float)PHYS_SKIN : -(mv.m_wireHalfSpan + (float)PHYS_SKIN))
-            + mv.m_normal * ((i & 2) ? mv.m_zoneSMax : mv.m_zoneSMin);
+         const Vertex2D p
+            = lm.m_center + lm.m_tangent * ((i & 1) ? lm.m_halfSpan + (float)PHYS_SKIN : -(lm.m_halfSpan + (float)PHYS_SKIN)) + lm.m_normal * ((i & 2) ? lm.m_zoneSMax : lm.m_zoneSMin);
          m_hitBBox.left = min(m_hitBBox.left, p.x);
          m_hitBBox.right = max(m_hitBBox.right, p.x);
          m_hitBBox.top = min(m_hitBBox.top, p.y);
          m_hitBBox.bottom = max(m_hitBBox.bottom, p.y);
       }
-      m_hitBBox.zlow = mv.m_zoneZLow;
-      m_hitBBox.zhigh = mv.m_zoneZHigh;
+      m_hitBBox.zlow = lm.m_zoneZLow;
+      m_hitBBox.zhigh = lm.m_zoneZHigh;
       return;
    }
 
@@ -567,17 +663,17 @@ void HitGate::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* dra
    {
       if (!m_enabled)
          return;
-      const GateMoverObject& mv = m_gateMover;
+      const SwingLamina& lm = m_gateMover.m_lamina;
       const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines), fCol = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
-      const float halfU = mv.m_wireHalfSpan + (float)PHYS_SKIN;
+      const float halfU = lm.m_halfSpan + (float)PHYS_SKIN;
       const Vertex2D p0
-         = project(Vertex3Ds(mv.m_center.x - mv.m_tangent.x * halfU + mv.m_normal.x * mv.m_zoneSMin, mv.m_center.y - mv.m_tangent.y * halfU + mv.m_normal.y * mv.m_zoneSMin, mv.m_zoneZLow));
+         = project(Vertex3Ds(lm.m_center.x - lm.m_tangent.x * halfU + lm.m_normal.x * lm.m_zoneSMin, lm.m_center.y - lm.m_tangent.y * halfU + lm.m_normal.y * lm.m_zoneSMin, lm.m_zoneZLow));
       const Vertex2D p1
-         = project(Vertex3Ds(mv.m_center.x + mv.m_tangent.x * halfU + mv.m_normal.x * mv.m_zoneSMin, mv.m_center.y + mv.m_tangent.y * halfU + mv.m_normal.y * mv.m_zoneSMin, mv.m_zoneZLow));
+         = project(Vertex3Ds(lm.m_center.x + lm.m_tangent.x * halfU + lm.m_normal.x * lm.m_zoneSMin, lm.m_center.y + lm.m_tangent.y * halfU + lm.m_normal.y * lm.m_zoneSMin, lm.m_zoneZLow));
       const Vertex2D p2
-         = project(Vertex3Ds(mv.m_center.x + mv.m_tangent.x * halfU + mv.m_normal.x * mv.m_zoneSMax, mv.m_center.y + mv.m_tangent.y * halfU + mv.m_normal.y * mv.m_zoneSMax, mv.m_zoneZLow));
+         = project(Vertex3Ds(lm.m_center.x + lm.m_tangent.x * halfU + lm.m_normal.x * lm.m_zoneSMax, lm.m_center.y + lm.m_tangent.y * halfU + lm.m_normal.y * lm.m_zoneSMax, lm.m_zoneZLow));
       const Vertex2D p3
-         = project(Vertex3Ds(mv.m_center.x - mv.m_tangent.x * halfU + mv.m_normal.x * mv.m_zoneSMax, mv.m_center.y - mv.m_tangent.y * halfU + mv.m_normal.y * mv.m_zoneSMax, mv.m_zoneZLow));
+         = project(Vertex3Ds(lm.m_center.x - lm.m_tangent.x * halfU + lm.m_normal.x * lm.m_zoneSMax, lm.m_center.y - lm.m_tangent.y * halfU + lm.m_normal.y * lm.m_zoneSMax, lm.m_zoneZLow));
       if (p0.x != FLT_MAX && p1.x != FLT_MAX && p2.x != FLT_MAX && p3.x != FLT_MAX)
       {
          if (fill)
@@ -594,89 +690,73 @@ void HitGate::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* dra
 
 void GateMoverObject::UpdateDisplacements(const float dtime)
 {
-   if (GetPhysicProfile() == PhysicProfile::V10_9)
+   const bool profile109 = GetPhysicProfile() == PhysicProfile::V10_9;
+   // Track the balls near the gate and drag the wire/plate to the angle matching
+   // the contact. The drag only moves the rendered wire/plate and runs under all
+   // profiles; the events and the blocking segment are part of the 10.9 physics
+   // and stay profile-gated.
+   if (!m_forcedMove && m_pHitGate->m_enabled && dtime > 0.f)
    {
-      // Track the balls inside the interaction zone and drag the wire/plate to the
-      // angle matching the contact; without contact keep the legacy movement behavior
-      if (!m_forcedMove && m_pHitGate->m_enabled && dtime > 0.f)
+      if (profile109)
+         TrackAxisCrossings();
+      float target = m_angle;
+      float maxDrag = 0.f;
+      bool contact = false;
+      const float curApplied = m_pgate->m_d.m_twoWay ? m_angle : -m_angle;
+      for (HitBall* const pball : m_physics->GetBalls())
       {
-         m_balls.clear();
-         float target = m_angle;
-         float maxDrag = 0.f;
-         bool contact = false, blocked = false;
-         const float curAngle = m_pgate->m_d.m_twoWay ? m_angle : -m_angle;
-         for (HitBall* const pball : m_physics->GetBalls())
+         if (pball->m_d.m_lockedInKicker || !m_lamina.IsInsideZone(pball->m_d))
+            continue;
+         float appliedAngle;
+         bool ballBlocked;
+         Vertex3Ds normal;
+         if (!m_lamina.EvalContact(pball->m_d, curApplied, appliedAngle, ballBlocked, normal))
+            continue;
+         contact = true;
+         // A blocked contact (at a limit or pressing the wire/plate through) holds
+         // it at its current angle; a followed one drags it to the contact angle
+         const float clamped = ballBlocked ? curApplied : ClampAppliedAngle(appliedAngle);
+         const bool atLimit = ballBlocked || clamped != appliedAngle;
+         const float t = m_pgate->m_d.m_twoWay ? clamped : -clamped;
+         if (fabsf(t - m_angle) > maxDrag)
          {
-            if (pball->m_d.m_lockedInKicker || !IsInsideZone(pball->m_d))
-               continue;
-            m_balls.push_back(pball);
-            float appliedAngle;
-            bool ballBlocked;
-            Vertex3Ds normal;
-            if (!EvalContact(pball->m_d, appliedAngle, ballBlocked, normal))
-               continue;
-            if (FindIndexOf(m_touching, pball) < 0)
-            {
-               m_touching.push_back(pball);
-               m_pHitGate->FireHitEvent(pball); // start of touch: play the hit sound
-            }
-            contact = true;
-            // A blocked contact (at a limit or pressing the wire/plate through) holds
-            // it at its current angle; a followed one drags it to the contact angle
-            const float clamped = ballBlocked ? curAngle : ClampAppliedAngle(appliedAngle);
-            const bool atLimit = ballBlocked || clamped != appliedAngle;
-            blocked |= atLimit;
-            const float t = m_pgate->m_d.m_twoWay ? clamped : -clamped;
-            if (fabsf(t - m_angle) > maxDrag)
-            {
-               maxDrag = fabsf(t - m_angle);
-               target = t;
-               if (atLimit && !m_atLimit)
-                  m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG((t - m_angle) / dtime)));
-               m_atLimit = atLimit;
-            }
-            else if (!atLimit)
-               m_atLimit = false;
+            maxDrag = fabsf(t - m_angle);
+            target = t;
+            if (profile109 && atLimit && !m_atLimit)
+               m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG((t - m_angle) / dtime)));
+            m_atLimit = atLimit;
          }
-         // Balls that left the zone after having touched the wire/plate
-         for (size_t i = 0; i < m_touching.size();)
-         {
-            if (FindIndexOf(m_balls, m_touching[i]) < 0)
-            {
-               m_pgate->FireGroupEvent(DISPID_HitEvents_Unhit);
-               m_touching.erase(m_touching.begin() + i);
-            }
-            else
-               ++i;
-         }
-         // The one-way blocking segment only stands while the wire/plate presses its
-         // stop: it is lifted while a ball is being followed through (or when the
-         // wire is off its rest position, e.g. still swinging back or animated)
-         if (m_pHitGate->m_pblockseg)
-            m_pHitGate->m_pblockseg->m_enabled = m_pgate->m_d.m_collidable && (!contact || blocked);
-         if (contact)
-         {
-            // Drag the wire/plate toward the contact angle at a bounded rate:
-            // tracking a fast ball can need ~1 rad/ms, but an unbounded residual
-            // speed would be released into the free-swing path when the contact
-            // ends (gate stuck open or rattling against its limits)
-            const float maxRate = 20.f; // rad per 10ms
-            const float prevAngle = m_angle;
-            m_angle += clamp(target - m_angle, -maxRate * dtime, maxRate * dtime);
-            m_anglespeed = (m_angle - prevAngle) / dtime;
-            return;
-         }
-         m_atLimit = false;
+         else if (!atLimit)
+            m_atLimit = false;
       }
-      else
+      // The one-way blocking segment stands for the wire/plate on its stop: it
+      // only stands while the wire/plate has fallen back to its rest position.
+      // A lifted wire/plate (pushed open, followed through or still swinging
+      // back) never blocks: a ball stopped under it can always roll back out.
+      if (m_pHitGate->m_pblockseg)
+         m_pHitGate->m_pblockseg->m_enabled = m_pgate->m_d.m_collidable && m_angle <= m_angleMin + 1e-4f;
+      if (contact)
       {
-         // No ball tracking (script-driven move or collider disabled): the blocking
-         // segment simply follows the wire's rest position
-         if (m_pHitGate->m_pblockseg)
-            m_pHitGate->m_pblockseg->m_enabled = m_pgate->m_d.m_collidable && m_angle <= m_angleMin + 1e-4f;
-         m_balls.clear();
-         m_touching.clear();
+         // Drag the wire/plate toward the contact angle at a bounded rate:
+         // tracking a fast ball can need ~1 rad/ms, but an unbounded residual
+         // speed would be released into the free-swing path when the contact
+         // ends (gate stuck open or rattling against its limits)
+         const float maxRate = 20.f; // rad per 10ms
+         const float prevAngle = m_angle;
+         m_angle += clamp(target - m_angle, -maxRate * dtime, maxRate * dtime);
+         m_anglespeed = (m_angle - prevAngle) / dtime;
+         return;
       }
+      m_atLimit = false;
+   }
+   else
+   {
+      // No ball tracking (script-driven move or collider disabled): the blocking
+      // segment simply follows the wire's rest position
+      if (m_pHitGate->m_pblockseg)
+         m_pHitGate->m_pblockseg->m_enabled = m_pgate->m_d.m_collidable && m_angle <= m_angleMin + 1e-4f;
+      m_balls.clear();
+      m_ballS.clear();
    }
    if (m_pgate->m_d.m_twoWay)
    {
@@ -754,7 +834,11 @@ void GateMoverObject::UpdateVelocities()
          m_angle = m_angleMin;
          m_anglespeed = 0.0f;
       }
-      if (fabsf(m_anglespeed) != 0.0f && m_angle != m_angleMin)
+      // Gravity pulls the wire/plate back to hanging vertical even at zero
+      // speed: the contact drag can leave it lifted without residual speed
+      // once the ball has moved away, and it must fall back to its stop
+      const float restAngle = m_pgate->m_d.m_twoWay ? m_angleMin : (m_hitDirection ? -m_angleMin : m_angleMin);
+      if (m_angle != restAngle)
       {
          m_anglespeed -= sinf(m_angle) * m_gravityfactor * (float)(PHYS_FACTOR / 100.0); // Center of gravity towards bottom of object, makes it stop vertical
          m_anglespeed *= m_damping;
