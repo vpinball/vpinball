@@ -4,6 +4,7 @@
 #include "EditorChrome.h"
 #include "BlueprintPane.h"
 #include "EditorTheme.h"
+#include "ops/CurveEditOp.h"
 #include "ops/SetOriginOp.h"
 #include "ui/live/IconsLucide.h"
 #include "ViewportPane.h" // GetTargetViewport() (View menu camera actions, status bar hints)
@@ -288,6 +289,8 @@ void EditorChrome::RenderMenuBar()
             editor.CreateCollection(true);
          if (ImGui::MenuItem(ICON_LC_MOUSE_POINTER_2 " Edit Points", "Tab", false, editor.CanEnterPointEdit()))
             editor.EnterPointEditMode();
+         if (editor.m_pointEditPart != nullptr)
+            CurveEditOp::RenderMenuItems(editor); // Point edit mode tools (bevel,...)
          ImGui::Separator();
          if (ImGui::BeginMenu(ICON_LC_CIRCLE_DOT " Set Origin"))
          {

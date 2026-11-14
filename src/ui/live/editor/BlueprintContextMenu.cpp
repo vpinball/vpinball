@@ -93,6 +93,8 @@ void BlueprintPane::RenderContextMenu()
                   c->DeletePoint(point);
                }
             });
+      if (targets == editor.m_pointSel)
+         CurveEditOp::RenderMenuItems(editor); // Point edit mode tools (bevel,...): they apply to the point selection
       ImGui::EndDisabled();
    }
    else
