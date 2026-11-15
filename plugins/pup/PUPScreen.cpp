@@ -43,6 +43,7 @@ PUPScreen::PUPScreen(PUPManager* manager, PUPScreen::Mode mode, int screenNum, c
    , m_pCustomPos(std::move(pCustomPos))
    , m_apiThread(std::this_thread::get_id())
 {
+   m_raiseOnPlay = (mode != Mode::ForceBack);
    m_pMediaPlayerManager = std::make_unique<PUPMediaManager>(this);
 
    for (const PUPPlaylist* pPlaylist : playlists) {
@@ -257,6 +258,49 @@ void PUPScreen::Unduck()
       ApplyVolume(orig);
 }
 
+void PUPScreen::OnMediaStart()
+{
+   if (m_mode == Mode::Off || m_mode == Mode::MusicOnly)
+      return;
+   if (m_raiseOnPlay)
+      m_pManager->RaiseLayer(this, PUPManager::Layer::Window);
+   if (m_labelLayer && m_raiseLabelsOnPlay && !m_hideDuringPlay)
+      m_pManager->RaiseLayer(this, PUPManager::Layer::Labels);
+   if (m_keepBack)
+   {
+      m_pManager->LowerLayer(this, PUPManager::Layer::Window);
+      if (m_labelLayer)
+         m_pManager->LowerLayer(this, PUPManager::Layer::Labels);
+   }
+}
+
+void PUPScreen::OnLoaded()
+{
+   if (m_mode == Mode::ForceOn
+      || (m_raiseOnPlay && m_mode != Mode::Off && m_mode != Mode::MusicOnly && (m_pMediaPlayerManager->IsMainPlaying() || m_pMediaPlayerManager->IsBackgroundPlaying())))
+      m_pManager->RaiseLayer(this, PUPManager::Layer::Window);
+   if (m_labelLayer)
+      m_pManager->RaiseLayer(this, PUPManager::Layer::Labels);
+}
+
+void PUPScreen::BringToFront()
+{
+   m_pManager->RaiseLayer(this, PUPManager::Layer::Window);
+   if (m_labelLayer)
+      m_pManager->RaiseLayer(this, PUPManager::Layer::Labels);
+}
+
+void PUPScreen::KeepAtBack()
+{
+   m_topmost = false;
+   m_labelsTopmost = false;
+   m_raiseLabelsOnPlay = false;
+   m_keepBack = true;
+   m_pManager->LowerLayer(this, PUPManager::Layer::Window);
+   if (m_labelLayer)
+      m_pManager->LowerLayer(this, PUPManager::Layer::Labels);
+}
+
 void PUPScreen::OnMediaEnd()
 {
    assert(std::this_thread::get_id() == m_apiThread);
@@ -264,6 +308,8 @@ void PUPScreen::OnMediaEnd()
    {
       m_hideDuringPlay = false;
       m_hudVisible = true;
+      if (m_labelLayer && m_raiseLabelsOnPlay)
+         m_pManager->RaiseLayer(this, PUPManager::Layer::Labels);
    }
    // Resolve whatever LabelShowPage queued when a splash page started.
    const HudReturn action = m_hudReturn;
@@ -331,6 +377,11 @@ void PUPScreen::AddTrigger(PUPTrigger* pTrigger)
 void PUPScreen::LabelInit()
 {
    assert(std::this_thread::get_id() == m_apiThread);
+   if (!m_labelLayer)
+   {
+      m_labelLayer = true;
+      m_pManager->RaiseLayer(this, PUPManager::Layer::Labels);
+   }
    // PinUP's label canvas always starts with a pBACKGROUND label drawn below the others.
    if (!GetLabel("pBackground"s))
    {
@@ -559,36 +610,11 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
             m_staticImage.Load(imagePath);
             m_imageExpiry = (length > 0) ? (SDL_GetTicks() + static_cast<uint64_t>(length) * 1000) : 0;
          }
+         OnMediaStart();
          break;
       }
-      switch (m_mode)
-      {
-      case Mode::Off:
+      if (m_mode == Mode::Off)
          return;
-
-      case Mode::ForceBack:
-         // Don't send to back: this is only done on creation
-         break;
-
-      case Mode::ForcePopBack:
-         m_pManager->SendScreenToBack(this);
-         break;
-
-      case Mode::ForceOn:
-         // Don't send to front: this is only done on creation
-         break;
-
-      case Mode::ForcePop:
-         m_pManager->SendScreenToFront(this);
-         break;
-
-      case Mode::MusicOnly:
-         // No window ordering as we are only playing music
-         break;
-
-      case Mode::Show:
-         break;
-      }
       if (const int vol = ResolveVolume(volume, pPlaylist); m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, EffectiveVolume(vol), priority, action, length))
       {
          m_staticImage.Clear();

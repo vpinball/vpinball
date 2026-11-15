@@ -253,7 +253,10 @@ void PUPPinDisplay::Show(int screenNum)
 {
    std::shared_ptr<PUPScreen> pScreen = m_pupManager.GetScreen(screenNum, true);
    if (pScreen)
+   {
       pScreen->SetHidden(false);
+      m_pupManager.RaiseLayer(pScreen.get(), PUPManager::Layer::Window);
+   }
 }
 
 void PUPPinDisplay::Hide(int screenNum)
