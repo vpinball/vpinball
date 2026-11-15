@@ -1,7 +1,7 @@
 {
   "$type": "primitive",
   "ui_locked": false,
-  "ui_visible": false,
+  "ui_visible": true,
   "legacy_layer": 7,
   "named_layer": "VRRoom",
   "part_group": "VRRoom",
@@ -36,9 +36,9 @@
   "scatter": 0.0,
   "reflection_strength": 1.0,
   "refraction_thickness": 10.0,
-  "prim_rot1_x": 0.0,
+  "prim_rot1_x": -0.0,
   "prim_rot1_y": 0.0,
-  "prim_rot1_z": 0.0,
+  "prim_rot1_z": -0.0,
   "prim_trans_x": 0.0,
   "prim_trans_y": 0.0,
   "prim_trans_z": 0.0,
@@ -54,7 +54,7 @@
   "use_mesh": true,
   "position": {
     "x": 0.0,
-    "y": 0.0,
+    "y": 514.297119140625,
     "z": 0.0,
     "w": 0.0
   },

@@ -2,9 +2,9 @@
   "$type": "ramp",
   "timer_enabled": false,
   "timer_interval": 100,
-  "ui_locked": true,
+  "ui_locked": false,
   "ui_visible": true,
-  "legacy_layer": 11,
+  "legacy_layer": 10,
   "named_layer": "DTBlades",
   "part_group": "DTBlades",
   "dragpoints": [
@@ -23,8 +23,8 @@
     },
     {
       "center": {
-        "x": 970.7437133789063,
-        "y": -30.0
+        "x": 970.74365234375,
+        "y": 0.0
       },
       "ui_locked": false,
       "ui_visible": true,
@@ -38,9 +38,9 @@
   "alignment": 1,
   "collidable": false,
   "elasticity": 0.30000001192092896,
-  "height_bottom": 115.0,
+  "height_bottom": 117.64705657958984,
   "hitEvent": false,
-  "height_top": 235.0,
+  "height_top": 294.1176452636719,
   "image": "Right_rail_brighter",
   "image_walls": false,
   "physics_material": "",

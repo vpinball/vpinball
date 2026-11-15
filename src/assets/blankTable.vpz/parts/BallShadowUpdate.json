@@ -7,7 +7,7 @@
   "timer_enabled": true,
   "timer_interval": -1,
   "ui_locked": false,
-  "ui_visible": false,
+  "ui_visible": true,
   "legacy_layer": 2,
   "named_layer": "Shadows",
   "part_group": "Shadows",

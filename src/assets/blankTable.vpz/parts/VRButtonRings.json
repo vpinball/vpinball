@@ -1,7 +1,7 @@
 {
   "$type": "primitive",
-  "ui_locked": true,
-  "ui_visible": false,
+  "ui_locked": false,
+  "ui_visible": true,
   "legacy_layer": 6,
   "named_layer": "VRCabinet",
   "part_group": "VRCabinet",
@@ -22,7 +22,7 @@
   "image": "",
   "toy": true,
   "lightmap": "",
-  "mesh_file": "VRCab_ButtonsRings.obj",
+  "mesh_file": "",
   "physics_material": "",
   "material": "Plastic Red",
   "normal_map": "",
@@ -36,9 +36,9 @@
   "scatter": 0.0,
   "reflection_strength": 1.0,
   "refraction_thickness": 10.0,
-  "prim_rot1_x": 0.0,
+  "prim_rot1_x": 6.0,
   "prim_rot1_y": 0.0,
-  "prim_rot1_z": 0.0,
+  "prim_rot1_z": -0.0,
   "prim_trans_x": 0.0,
   "prim_trans_y": 0.0,
   "prim_trans_z": 0.0,
@@ -53,13 +53,13 @@
   "visible": true,
   "use_mesh": true,
   "position": {
-    "x": 0.0,
-    "y": 0.0,
-    "z": 0.0,
+    "x": 474.70281982421875,
+    "y": 2123.409912109375,
+    "z": 25.931379318237305,
     "w": 0.0
   },
   "size": {
-    "x": 1.0,
+    "x": 0.9591992497444153,
     "y": 1.0,
     "z": 1.0,
     "w": 0.0

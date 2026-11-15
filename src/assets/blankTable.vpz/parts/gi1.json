@@ -7,7 +7,7 @@
   "timer_enabled": false,
   "timer_interval": 100,
   "ui_locked": true,
-  "ui_visible": false,
+  "ui_visible": true,
   "legacy_layer": 4,
   "named_layer": "GI_Lights",
   "part_group": "GI_Lights",

@@ -3,8 +3,8 @@
   "timer_enabled": false,
   "timer_interval": 100,
   "ui_locked": false,
-  "ui_visible": false,
-  "legacy_layer": 11,
+  "ui_visible": true,
+  "legacy_layer": 9,
   "named_layer": "StockAssets",
   "part_group": "StockAssets",
   "dragpoints": [
