@@ -1,7 +1,7 @@
 {
   "$type": "primitive",
   "ui_locked": false,
-  "ui_visible": false,
+  "ui_visible": true,
   "legacy_layer": 2,
   "named_layer": "Shadows",
   "part_group": "Shadows",

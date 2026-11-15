@@ -2,9 +2,9 @@
   "$type": "primitive",
   "ui_locked": false,
   "ui_visible": true,
-  "legacy_layer": 9,
-  "named_layer": "DTCabinet",
-  "part_group": "DTCabinet",
+  "legacy_layer": 1,
+  "named_layer": "Visuals",
+  "part_group": "Visuals",
   "add_blend": false,
   "collidable": true,
   "color": 16777215,
@@ -38,7 +38,7 @@
   "refraction_thickness": 10.0,
   "prim_rot1_x": 90.0,
   "prim_rot1_y": 0.0,
-  "prim_rot1_z": 0.0,
+  "prim_rot1_z": -0.0,
   "prim_trans_x": 0.0,
   "prim_trans_y": 0.0,
   "prim_trans_z": 0.0,
@@ -53,13 +53,13 @@
   "visible": true,
   "use_mesh": true,
   "position": {
-    "x": 0.0,
+    "x": -0.3779296875,
     "y": 0.0,
     "z": 0.0,
     "w": 0.0
   },
   "size": {
-    "x": 1.0,
+    "x": 1.0007938146591187,
     "y": 1.0,
     "z": 1.0,
     "w": 0.0

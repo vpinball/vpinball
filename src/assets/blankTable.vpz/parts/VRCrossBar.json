@@ -1,7 +1,7 @@
 {
   "$type": "primitive",
-  "ui_locked": true,
-  "ui_visible": false,
+  "ui_locked": false,
+  "ui_visible": true,
   "legacy_layer": 6,
   "named_layer": "VRCabinet",
   "part_group": "VRCabinet",
@@ -36,9 +36,9 @@
   "scatter": 0.0,
   "reflection_strength": 1.0,
   "refraction_thickness": 10.0,
-  "prim_rot1_x": 0.0,
+  "prim_rot1_x": 6.200045108795166,
   "prim_rot1_y": 0.0,
-  "prim_rot1_z": 0.0,
+  "prim_rot1_z": -0.0,
   "prim_trans_x": 0.0,
   "prim_trans_y": 0.0,
   "prim_trans_z": 0.0,
@@ -53,15 +53,15 @@
   "visible": true,
   "use_mesh": true,
   "position": {
-    "x": 0.0,
-    "y": 0.0,
-    "z": 0.0,
+    "x": 477.4626159667969,
+    "y": -10.790304183959961,
+    "z": 259.688232421875,
     "w": 0.0
   },
   "size": {
     "x": 1.0,
-    "y": 1.0,
-    "z": 1.0,
+    "y": 0.8214460611343384,
+    "z": 0.9999998211860657,
     "w": 0.0
   },
   "use_depth_mask": true,

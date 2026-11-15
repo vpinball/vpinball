@@ -1,7 +1,7 @@
 {
   "$type": "primitive",
   "ui_locked": false,
-  "ui_visible": false,
+  "ui_visible": true,
   "legacy_layer": 7,
   "named_layer": "VRRoom",
   "part_group": "VRRoom",
@@ -22,7 +22,7 @@
   "image": "plastered_wall_05_diff_1k",
   "toy": true,
   "lightmap": "",
-  "mesh_file": "VRBackWall.obj",
+  "mesh_file": "",
   "physics_material": "",
   "material": "BackWall",
   "normal_map": "",
@@ -36,9 +36,9 @@
   "scatter": 0.0,
   "reflection_strength": 1.0,
   "refraction_thickness": 10.0,
-  "prim_rot1_x": 0.0,
+  "prim_rot1_x": -0.0,
   "prim_rot1_y": 0.0,
-  "prim_rot1_z": 0.0,
+  "prim_rot1_z": -0.0,
   "prim_trans_x": 0.0,
   "prim_trans_y": 0.0,
   "prim_trans_z": 0.0,
@@ -53,9 +53,9 @@
   "visible": true,
   "use_mesh": true,
   "position": {
-    "x": 0.0,
-    "y": 0.0,
-    "z": 0.0,
+    "x": 368.841552734375,
+    "y": -563.1270751953125,
+    "z": 2547.47509765625,
     "w": 0.0
   },
   "size": {
