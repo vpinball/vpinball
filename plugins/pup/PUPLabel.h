@@ -97,6 +97,7 @@ private:
    float m_autoFitWidth = 0;
    float m_autoFitHeight = 0;
    PUPScreen* m_pScreen = nullptr;
+   float m_renderYScale = 1.f; // screen shape factor the text texture was made with
    int m_anigif = 0; // frame interval in milliseconds, 0 to use the image's own frame delays
    bool m_gifLoop = true;
    int m_gifStart = -1;

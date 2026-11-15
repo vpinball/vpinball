@@ -1089,6 +1089,14 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       m_dirty = true;
    }
 
+   // Text size is a percentage of the screen height, scaled by the screen's shape (see PUPScreen::GetLabelYScale)
+   const float yScale = m_pScreen ? m_pScreen->GetLabelYScale(rect) : 1.f;
+   if (yScale != m_renderYScale)
+   {
+      m_renderYScale = yScale;
+      m_dirty = true;
+   }
+
    if (m_pendingTextureUpdate.valid())
    {
       if (m_pendingTextureUpdate.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
@@ -1112,10 +1120,10 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
          });
       }
       else if (m_pFont)
-         m_pendingTextureUpdate = std::async(std::launch::async, [this, rect, fontColor]() {
+         m_pendingTextureUpdate = std::async(std::launch::async, [this, rect, fontColor, yScale]() {
             std::lock_guard lock(m_mutex);
-            const float fontHeight = (EffectiveSize() / 100.0f) * static_cast<float>(rect.h);
-            return UpdateLabelTexture(rect.w, rect.h, m_pFont, m_szCaption, EffectiveSize(), fontColor, m_shadowType, m_shadowColor, GetShadowOffsetPixels(fontHeight));
+            const float fontHeight = (EffectiveSize() * yScale / 100.0f) * static_cast<float>(rect.h);
+            return UpdateLabelTexture(rect.w, rect.h, m_pFont, m_szCaption, EffectiveSize() * yScale, fontColor, m_shadowType, m_shadowColor, GetShadowOffsetPixels(fontHeight));
          });
    }
 
@@ -1275,7 +1283,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
 
    if (m_shadowType == 2)
    {
-      const float fontHeight = (EffectiveSize() / 100.0f) * static_cast<float>(rect.h);
+      const float fontHeight = (EffectiveSize() * m_renderYScale / 100.0f) * static_cast<float>(rect.h);
       const SDL_FPoint shadowOffset = GetShadowOffsetPixels(fontHeight);
       dest.x += static_cast<float>(static_cast<int>(shadowOffset.x)) * -2.f;
    }

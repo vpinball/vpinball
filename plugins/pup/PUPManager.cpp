@@ -1230,6 +1230,11 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
             // set screen volume multiplier { "mt":301, "SN": XX, "FN":26, "VL":100 }
             pScreen->SetVolumeMultiplier(json["VL"s].as<int>(0));
             break;
+         case 58:
+            // set the label size factor { "mt":301, "SN": XX, "FN":58, "YS":1.2 }, values up to 0.1 are ignored
+            if (const float ys = static_cast<float>(json["YS"s].as<double>(0.0)); ys > 0.1f)
+               pScreen->m_labelYScale = ys;
+            break;
          case 30:
             // {'mt':301, 'SN': XX, 'FN':30, 'PM':1 } set (play ?) jukebox mode: jukebox mode will auto advance to next media in playlist and you can use next/prior sub to manuall advance
             NOT_IMPLEMENTED(std::format("Jukebox mode not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
