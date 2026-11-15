@@ -562,6 +562,10 @@ private:
    bool ConsumedAreaEscape();
    bool ShouldRaiseAreaWindows() const;
    void Report(const string &message); // Posts a transient message (status bar report; toast while the bar is hidden)
+   // Notifications pushed when an action does not apply (fully or partially) because of UI locked parts:
+   // the lock is not visible in the viewport, so a silent skip would look like the action did nothing
+   void NotifyLockedPart(const IEditable *part);
+   void NotifyLockedParts(int lockedCount);
    string m_report; // Last operation report of the status bar (fades out a few seconds after m_reportTime)
    double m_reportTime = -1000.0;
    void ShowAreaEditor(AreaType type); // Hosts the given editor type in an area leaf (splitting the focused one)
