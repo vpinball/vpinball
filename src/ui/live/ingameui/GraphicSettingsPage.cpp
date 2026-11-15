@@ -23,8 +23,6 @@ void GraphicSettingsPage::Open(bool isBackwardAnimation)
    const Settings& settings = GetSettings();
    m_pendingAAFactor = settings.GetPlayer_AAFactor();
    m_pendingMSAASamples = settings.GetPlayer_MSAASamples();
-   m_pendingBallImage = settings.GetPlayer_BallImage();
-   m_pendingDecalImage = settings.GetPlayer_DecalImage();
 }
 
 void GraphicSettingsPage::Close(bool isBackwardAnimation)
@@ -462,34 +460,33 @@ void GraphicSettingsPage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_OverwriteBallImage, //
       [this]() { return m_player->m_renderer->m_overwriteBallImages; }, //
-      [this](bool v) { 
-         m_player->m_renderer->m_overwriteBallImages = v;
-         if (m_player->m_renderer->m_overwriteBallImages)
-         {
-            m_player->m_renderer->m_ballImage = BaseTexture::CreateFromFile(g_settingsService.GetActiveSettings().GetPlayer_BallImage(), g_settingsService.GetActiveSettings().GetPlayer_MaxTexDimension());
-            m_player->m_renderer->m_decalImage = BaseTexture::CreateFromFile(g_settingsService.GetActiveSettings().GetPlayer_DecalImage(), g_settingsService.GetActiveSettings().GetPlayer_MaxTexDimension());
-         }
+      [this](bool v)
+      {
+         // Keeps the images in use (possibly edited, not saved yet); the balls follow live
+         Renderer *const renderer = m_player->m_renderer.get();
+         renderer->SetBallImageOverride(v, renderer->m_ballImagePath, renderer->m_decalImagePath);
          RequestRebuild();
       }));
 
    if (m_player->m_renderer->m_overwriteBallImages)
    {
+      // The items show and edit the images the renderer uses (the live value of the live/save flow)
       AddItem(std::make_unique<InGameUIItem>(
          Settings::m_propPlayer_BallImage, //
-         [this]() { return m_pendingBallImage; }, //
+         [this]() { return m_player->m_renderer->m_ballImagePath; }, //
          [this](const string&, const string& v)
          {
-            m_pendingBallImage = v;
-            m_player->m_renderer->m_ballImage = BaseTexture::CreateFromFile(v, g_settingsService.GetActiveSettings().GetPlayer_MaxTexDimension());
+            Renderer *const renderer = m_player->m_renderer.get();
+            renderer->SetBallImageOverride(renderer->m_overwriteBallImages, v, renderer->m_decalImagePath);
          }));
 
       AddItem(std::make_unique<InGameUIItem>(
          Settings::m_propPlayer_DecalImage, //
-         [this]() { return m_pendingDecalImage; }, //
+         [this]() { return m_player->m_renderer->m_decalImagePath; }, //
          [this](const string&, const string& v)
          {
-            m_pendingDecalImage = v;
-            m_player->m_renderer->m_decalImage = BaseTexture::CreateFromFile(v, g_settingsService.GetActiveSettings().GetPlayer_MaxTexDimension());
+            Renderer *const renderer = m_player->m_renderer.get();
+            renderer->SetBallImageOverride(renderer->m_overwriteBallImages, renderer->m_ballImagePath, v);
          }));
    }
 }

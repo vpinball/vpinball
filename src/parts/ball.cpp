@@ -207,10 +207,18 @@ void Ball::RenderSetup(Renderer *renderer)
       m_d.m_bulb_intensity_scale = m_ptable->m_defaultBulbIntensityScaleOnBall;
       m_d.m_decalMode = m_ptable->m_BallDecalMode;
       m_d.m_szImage = m_ptable->m_ballImage;
-      m_d.m_pinballEnvSphericalMapping = m_ptable->m_ballSphericalMapping;
       m_d.m_imageDecal = m_ptable->m_ballImageDecal;
    }
 
+   ResolveImages();
+}
+
+void Ball::ResolveImages()
+{
+   if (m_renderer == nullptr) // Not set up for rendering yet: RenderSetup resolves them
+      return;
+   if (m_d.m_useTableRenderSettings) // Before the overwrite image forces it, so that it is restored when the overwrite is turned off
+      m_d.m_pinballEnvSphericalMapping = m_ptable->m_ballSphericalMapping;
    if (m_d.m_useTableRenderSettings && m_renderer->m_overwriteBallImages && m_renderer->m_ballImage)
    {
       m_pinballEnv = m_renderer->m_ballImage.get();

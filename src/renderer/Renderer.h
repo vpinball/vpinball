@@ -339,6 +339,12 @@ public:
    bool m_overwriteBallImages = false;
    std::shared_ptr<BaseTexture> m_ballImage = nullptr;
    std::shared_ptr<BaseTexture> m_decalImage = nullptr;
+   string m_ballImagePath; // Files of the overwrite images in use (may differ from the saved settings while edited)
+   string m_decalImagePath;
+   // Changes the overwrite ball images live. Balls cache raw texture pointers: they are resolved again, and the replaced
+   // textures are kept until the next 3D scene, as draws already recorded for the current frame may still use them.
+   void SetBallImageOverride(const bool overwrite, const string& ballImagePath, const string& decalImagePath);
+   vector<std::shared_ptr<BaseTexture>> m_retiredBallImages; // Replaced overwrite images, released by the next Render3DScene
    bool m_ballAntiStretch = false;
    bool IsBallLightingDisabled() const;
    void DisableBallLighting(bool disableLightingForBalls);

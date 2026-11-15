@@ -190,6 +190,9 @@ public:
    void Translate(const Vertex2D &offset) final;
    Vertex2D GetCenter() const final;
 
+   // Resolves the environment and decal textures: the ball/table images or the renderer's overwrite images (see Renderer::SetBallImageOverride)
+   void ResolveImages();
+
    // IEditable implementation
    void WriteRegDefaults() final;
 

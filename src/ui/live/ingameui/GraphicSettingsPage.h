@@ -22,8 +22,6 @@ private:
    bool m_staticPrepassDisabled = false;
    float m_pendingAAFactor = 0.f;
    int m_pendingMSAASamples = 0;
-   string m_pendingBallImage;
-   string m_pendingDecalImage;
 };
 
 }

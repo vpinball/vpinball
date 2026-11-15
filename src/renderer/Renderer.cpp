@@ -317,10 +317,12 @@ void Renderer::ApplyTableSettings()
    m_ballImage = nullptr;
    m_decalImage = nullptr;
    m_overwriteBallImages = m_table->GetSettings().GetPlayer_OverwriteBallImage();
+   m_ballImagePath = m_table->GetSettings().GetPlayer_BallImage();
+   m_decalImagePath = m_table->GetSettings().GetPlayer_DecalImage();
    if (m_overwriteBallImages)
    {
-      m_ballImage = BaseTexture::CreateFromFile(m_table->GetSettings().GetPlayer_BallImage(), m_table->GetSettings().GetPlayer_MaxTexDimension());
-      m_decalImage = BaseTexture::CreateFromFile(m_table->GetSettings().GetPlayer_DecalImage(), m_table->GetSettings().GetPlayer_MaxTexDimension());
+      m_ballImage = BaseTexture::CreateFromFile(m_ballImagePath, m_table->GetSettings().GetPlayer_MaxTexDimension());
+      m_decalImage = BaseTexture::CreateFromFile(m_decalImagePath, m_table->GetSettings().GetPlayer_MaxTexDimension());
    }
    m_vrApplyColorKey = m_stereo3D == STEREO_VR && m_table->GetSettings().GetPlayerVR_UsePassthroughColor();
    m_visualNudgeStrength = m_table->GetSettings().GetPlayer_NudgeStrength();
@@ -1520,9 +1522,30 @@ void Renderer::RemoveView(RenderView* view)
       m_activeView = m_primaryView.get();
 }
 
+void Renderer::SetBallImageOverride(const bool overwrite, const string& ballImagePath, const string& decalImagePath)
+{
+   for (const std::shared_ptr<BaseTexture>& tex : { m_ballImage, m_decalImage })
+      if (tex)
+         m_retiredBallImages.push_back(tex);
+   m_overwriteBallImages = overwrite;
+   m_ballImagePath = ballImagePath;
+   m_decalImagePath = decalImagePath;
+   const unsigned int maxTexDim = m_table->GetSettings().GetPlayer_MaxTexDimension();
+   m_ballImage = overwrite ? BaseTexture::CreateFromFile(ballImagePath, maxTexDim) : nullptr;
+   m_decalImage = overwrite ? BaseTexture::CreateFromFile(decalImagePath, maxTexDim) : nullptr;
+   if (g_pplayer)
+      for (Ball* const ball : g_pplayer->m_vball)
+         ball->ResolveImages();
+}
+
 void Renderer::Render3DScene()
 {
    m_activeView = m_primaryView.get();
+
+   // Release the overwrite ball images replaced since the previous 3D scene (see SetBallImageOverride)
+   for (const std::shared_ptr<BaseTexture>& tex : m_retiredBallImages)
+      m_renderDevice->m_texMan.UnloadTexture(tex.get());
+   m_retiredBallImages.clear();
 
    // Reinitialize parts that have been modified
    SetupShaders();
