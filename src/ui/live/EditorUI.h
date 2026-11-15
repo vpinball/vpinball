@@ -311,10 +311,11 @@ private:
       const char *name;
       std::shared_ptr<Sampler> icon;
       std::function<void()> action; // When set, invoked on pick instead of arming add part mode (e.g. dialogs)
+      bool newGroup = false; // Starts a separated group in the picker list
    };
    vector<AddPartButton> m_addPartButtons; // Lazily initialized part type picker buttons (shared by the viewport panes)
    void EnsureAddPartButtons();
-   void RenderAddPartPicker(); // Part type grid of the 'Add Part' picker popup (rendered inside the popup, in the host pane's window scope)
+   void RenderAddPartPicker(); // Part type list of the 'Add Part' picker popup (rendered inside the popup, in the host pane's window scope)
    // Part type icons (the same as the win32 toolbar, src/assets/editor/*.png), lazily loaded and shared
    // by the part picker, the outliner and the property pane. eItemInvalid maps to the reference image icon.
    std::shared_ptr<Sampler> PartTypeIcon(ItemTypeEnum type); // Icon of a part type, null when it has none

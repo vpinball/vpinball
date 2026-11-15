@@ -2196,46 +2196,65 @@ void EditorUI::EnsureAddPartButtons()
    {
       ItemTypeEnum type;
       const char *name;
+      bool newGroup; // Group separator before the entry
    } addParts[] = {
-      { eItemSurface, "Surface" }, //
-      { eItemGate, "Gate" }, //
-      { eItemRamp, "Ramp" }, //
-      { eItemFlipper, "Flipper" }, //
-      { eItemPlunger, "Plunger" }, //
-      { eItemBall, "Ball" }, //
-      { eItemBumper, "Bumper" }, //
-      { eItemSpinner, "Spinner" }, //
-      { eItemTimer, "Timer" }, //
-      { eItemTrigger, "Trigger" }, //
-      { eItemLight, "Light" }, //
-      { eItemKicker, "Kicker" }, //
-      { eItemHitTarget, "Target" }, //
-      { eItemDecal, "Decal" }, //
-      { eItemTextbox, "Textbox" }, //
-      { eItemDispReel, "Display Reel" }, //
-      { eItemLightSeq, "Light Seq" }, //
-      { eItemPrimitive, "Primitive" }, //
-      { eItemFlasher, "Flasher" }, //
-      { eItemRubber, "Rubber" }, //
+      // Passive colliders
+      { eItemSurface, "Surface", true }, //
+      { eItemRamp, "Ramp", false }, //
+      { eItemRubber, "Rubber", false }, //
+      { eItemPrimitive, "Primitive", false }, //
+      // Active colliders
+      { eItemFlipper, "Flipper", true }, //
+      { eItemBumper, "Bumper", false }, //
+      { eItemPlunger, "Plunger", false }, //
+      { eItemHitTarget, "Target", false }, //
+      { eItemKicker, "Kicker", false }, //
+      { eItemGate, "Gate", false }, //
+      { eItemSpinner, "Spinner", false }, //
+      // Ball
+      { eItemBall, "Ball", true }, //
+      // Visual only elements
+      { eItemLight, "Light", true }, //
+      { eItemFlasher, "Flasher", false }, //
+      { eItemDispReel, "Display Reel", false }, //
+      { eItemTextbox, "Textbox", false }, //
+      { eItemDecal, "Decal", false }, //
+      // Logic elements
+      { eItemTrigger, "Trigger", true }, //
+      { eItemTimer, "Timer", false }, //
+      { eItemLightSeq, "Light Seq", false }, //
    };
    for (const auto &def : addParts)
-      m_addPartButtons.push_back({ def.type, def.name, PartTypeIcon(def.type) });
+      m_addPartButtons.push_back({ def.type, def.name, PartTypeIcon(def.type), {}, def.newGroup });
    // Add-ons that are not part types: picking them runs their action instead of arming add part mode
-   m_addPartButtons.push_back({ eItemInvalid, "Reference Image", PartTypeIcon(eItemInvalid), [this]() { m_referenceImageOp.OpenAddDialog(); } });
+   m_addPartButtons.push_back({ eItemInvalid, "Reference Image", PartTypeIcon(eItemInvalid), [this]() { m_referenceImageOp.OpenAddDialog(); }, true });
 }
 
 void EditorUI::RenderAddPartPicker()
 {
    EnsureAddPartButtons();
-   const float iconSize = ImGui::GetFrameHeight();
-   int column = 0;
+   // Blender-style vertical list: a full width row per part type, its icon then its name
+   const ImGuiStyle &style = ImGui::GetStyle();
+   const float rowHeight = ImGui::GetFrameHeight();
+   const float iconSide = ImGui::GetTextLineHeight();
+   const float textX = style.FramePadding.x + iconSide + style.ItemInnerSpacing.x;
+   float rowWidth = 0.f;
+   for (const AddPartButton &button : m_addPartButtons)
+      if (button.icon != nullptr)
+         rowWidth = ImMax(rowWidth, textX + ImGui::CalcTextSize(button.name).x + style.FramePadding.x);
+   ImGui::MenuItem("Add", nullptr, false, false); // Blender-style menu title
+   ImGui::Separator();
+   ImDrawList *const drawList = ImGui::GetWindowDrawList();
+   bool first = true;
    for (const AddPartButton &button : m_addPartButtons)
    {
       if (button.icon == nullptr)
          continue;
-      if (column > 0)
-         ImGui::SameLine();
-      if (ImGui::ImageButton(button.name, button.icon, ImVec2(iconSize, iconSize)))
+      if (button.newGroup && !first)
+         ImGui::Separator();
+      first = false;
+      ImGui::PushID(button.name);
+      if (ImGui::Selectable("##part", false, 0, ImVec2(rowWidth, rowHeight)))
       {
          if (button.action)
             button.action();
@@ -2243,9 +2262,11 @@ void EditorUI::RenderAddPartPicker()
             m_addPartType = button.type;
          ImGui::CloseCurrentPopup();
       }
-      if (ImGui::IsItemHovered())
-         ImGui::SetTooltip("Add %s", button.name);
-      column = (column + 1) % 5;
+      ImGui::PopID();
+      const ImVec2 min = ImGui::GetItemRectMin();
+      const float iconY = min.y + (rowHeight - iconSide) * 0.5f;
+      drawList->AddImage(button.icon, ImVec2(min.x + style.FramePadding.x, iconY), ImVec2(min.x + style.FramePadding.x + iconSide, iconY + iconSide));
+      drawList->AddText(ImVec2(min.x + textX, min.y + (rowHeight - ImGui::GetTextLineHeight()) * 0.5f), ImGui::GetColorU32(ImGuiCol_Text), button.name);
    }
 }
 
