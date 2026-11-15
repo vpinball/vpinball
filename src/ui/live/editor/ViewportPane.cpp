@@ -844,9 +844,21 @@ void ViewportPane::FrameSelection()
 
 void ViewportPane::FrameAll()
 {
-   // Camera framing the whole table (Blender's View All, Home)
+   // Camera framing the whole table (Blender's View All, Home): the playfield bounds extended with the
+   // visible parts living outside of it in a non playfield reference space (cabinet, room, ...). Playfield
+   // parts outside of the table rectangle (display reels, helpers, ...) are left out like before
    const PinTable* const table = m_editor.m_table;
-   FrameBounds(FRect3D(0.f, table->m_right, 0.f, table->m_bottom, 0.f, table->m_glassTopHeight));
+   const bool backdrop = m_viewType == ViewMode::DesktopBackdrop;
+   FRect3D bounds;
+   bounds.Clear();
+   for (const auto& part : m_editor.m_editables)
+      if (part->GetEditable()->m_desktopBackdrop == backdrop && part->GetEditable()->IsUIVisible(true)
+         && (backdrop || EditorUI::GetPartSpace(part->GetEditable()) != PartGroupData::SpaceReference::SR_PLAYFIELD))
+         m_editor.ExtendBoundsWithPart(bounds, part);
+   if (!backdrop)
+      bounds.Extend(FRect3D(0.f, table->m_right, 0.f, table->m_bottom, 0.f, table->m_glassTopHeight));
+   if (bounds.left <= bounds.right)
+      FrameBounds(bounds);
 }
 
 void ViewportPane::FrameBounds(const FRect3D& bounds)

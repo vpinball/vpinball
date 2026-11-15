@@ -462,6 +462,11 @@ private:
    // 3D editor
    bool GetSelectionTransform(Matrix3D &transform) const;
    bool GetSelectionBounds(FRect3D &bounds) const;
+   // Extend the playfield space bounds with the part's bounds, converted from its reference space
+   void ExtendBoundsWithPart(FRect3D &bounds, const std::shared_ptr<EditorUIPart> &part) const;
+   // Transform from a part's reference space to the playfield space, identical to the renderer's
+   // (see RenderView::SetSpaceReference): all the non playfield spaces share the default transform
+   Matrix3D PartSpaceTransform(const IEditable *editable) const;
    void SetSelectionTransform(const Matrix3D &transform, bool clearPosition = false, bool clearScale = false, bool clearRotation = false) const;
    // Decompose a transform into the position/scale/rotation components the parts' SetTransform uses
    static void ExtractTRS(Matrix3D transform, vec3 &pos, vec3 &scale, vec3 &rot);
