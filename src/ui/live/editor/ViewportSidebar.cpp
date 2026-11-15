@@ -565,7 +565,7 @@ void ViewportSidebar::RenderViewTab()
       ImGui::TextUnformatted("Projection");
       ImGui::SameLine(64.f * editor.m_liveUI.GetDPI());
       const char* proj = m_pane.m_perspectiveCam ? "Perspective" : "Orthographic";
-      if (ImGui::BeginCombo("##proj", proj))
+      if (const MenuPopupPadding comboPad; ImGui::BeginCombo("##proj", proj))
       {
          if (ImGui::Selectable("Perspective", m_pane.m_perspectiveCam))
             m_pane.SetPerspectiveCam(true);

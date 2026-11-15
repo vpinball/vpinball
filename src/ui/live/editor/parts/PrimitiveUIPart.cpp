@@ -5,6 +5,7 @@
 #include "core/extern.h"
 #include "core/player.h"
 #include "ui/live/FileDialog.h"
+#include "ui/live/ImGuiHelpers.h"
 #include "math/matrix.h"
 #include "utils/color.h"
 
@@ -120,7 +121,7 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
    // Import option dialog (same options as the WinUI 'Wavefront OBJ Importer' dialog)
    if (!m_meshImportFileName.empty())
    {
-      if (ImGui::BeginPopupModal("Wavefront OBJ Importer", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+      if (const MenuPopupPadding menuPad; ImGui::BeginPopupModal("Wavefront OBJ Importer", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
       {
          ImGui::TextWrapped("%s", m_meshImportFileName.c_str());
          ImGui::Spacing();
@@ -167,7 +168,7 @@ void PrimitiveUIPart::UpdatePropertyPane(PropertyPane& props)
    // Export option dialog (same options as the WinUI 'Wavefront OBJ Exporter' dialog)
    if (!m_meshExportFileName.empty())
    {
-      if (ImGui::BeginPopupModal("Wavefront OBJ Exporter", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+      if (const MenuPopupPadding menuPad; ImGui::BeginPopupModal("Wavefront OBJ Exporter", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
       {
          ImGui::TextWrapped("%s", m_meshExportFileName.c_str());
          ImGui::Spacing();

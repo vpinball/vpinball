@@ -175,7 +175,7 @@ void PropertyPane::HeaderRow(const std::shared_ptr<Sampler>& icon, const char* c
    if (pickerClicked)
       ImGui::OpenPopup("##SiblingParts");
    ImGui::SetNextWindowPos(ImVec2(pickerMin.x, pickerMax.y), ImGuiCond_Always);
-   if (ImGui::BeginPopup("##SiblingParts"))
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopup("##SiblingParts"))
    {
       // The popup auto sizes to its widest row: make the rows wide enough for the icon column and the widest name
       float rowWidth = frameHeight;

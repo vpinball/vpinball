@@ -469,7 +469,7 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
       ImGui::SetCursorPosX(rightX);
    if (IconButtonInk(ICON_LC_STICKY_NOTE, "##ViewOptions")) // View options popover (shared with the win32 editor view)
       ImGui::OpenPopup("Overlay Popup");
-   if (ImGui::BeginPopup("Overlay Popup"))
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopup("Overlay Popup"))
    {
       ImGui::TextUnformatted("Blueprint options:");
       ImGui::Separator();
@@ -508,7 +508,7 @@ void BlueprintPane::RenderPane(const AreaRect& rect, const int leafId)
       ImGui::OpenPopup("Add Part");
    }
    ImGui::SetNextWindowPos(editor.m_addPartPopupPos, ImGuiCond_Appearing);
-   if (ImGui::BeginPopup("Add Part"))
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopup("Add Part"))
    {
       editor.RenderAddPartPicker();
       ImGui::EndPopup();

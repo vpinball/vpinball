@@ -538,7 +538,7 @@ void EditorChrome::RenderPreferences()
                settings.SetEditor_NavFovY(editor.m_navFovY, false);
             }
             static const char *selectionModes[] = { "Edges", "Edges + Tint", "Hidden" };
-            if (ImGui::BeginCombo("Selection Display", selectionModes[editor.m_navSelectionDisplay]))
+            if (const MenuPopupPadding comboPad; ImGui::BeginCombo("Selection Display", selectionModes[editor.m_navSelectionDisplay]))
             {
                for (int i = 0; i < 3; i++)
                   if (ImGui::Selectable(selectionModes[i], editor.m_navSelectionDisplay == i))

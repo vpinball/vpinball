@@ -1632,7 +1632,7 @@ void PropertiesPanel::CollectionProperties(PropertyPane &props, Collection *coll
       // Member picker listing the table's scriptable parts that are not members yet
       props.PropertyLabel("Add part"s);
       ImGui::SetNextItemWidth(-FLT_MIN);
-      if (ImGui::BeginCombo("##AddPart", "Select a part to add"))
+      if (const MenuPopupPadding comboPad; ImGui::BeginCombo("##AddPart", "Select a part to add"))
       {
          vector<IEditable *> candidates;
          for (IEditable *const part : editedTable->GetParts())
@@ -1753,7 +1753,7 @@ void PropertiesPanel::RenderPopups()
       ImGui::OpenPopup("Confirm Action");
       m_confirmRequested = false;
    }
-   if (ImGui::BeginPopupModal("Confirm Action", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopupModal("Confirm Action", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
    {
       ImGui::TextWrapped("%s", m_confirmMessage.c_str());
       ImGui::Separator();

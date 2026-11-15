@@ -17,6 +17,7 @@
 #include "parts/pintable.h"
 #include "renderer/RenderDevice.h"
 #include "ui/EditorClipboard.h"
+#include "ui/live/ImGuiHelpers.h"
 
 namespace VPX::EditorUI
 {
@@ -34,6 +35,7 @@ vector<std::shared_ptr<EditorUIPart>> BlueprintPane::MenuHitParts() const
 
 void BlueprintPane::RenderContextMenu()
 {
+   const MenuPopupPadding menuPad;
    if (!ImGui::BeginPopup("Blueprint Context"))
       return;
    EditorUI& editor = m_editor;
@@ -264,6 +266,7 @@ void BlueprintPane::RenderDialogs()
    case DialogKind::Translate:
    {
       const char* const title = m_dialog == DialogKind::Rotate ? "Rotate###BlueprintDialog" : m_dialog == DialogKind::Scale ? "Scale###BlueprintDialog" : "Translate###BlueprintDialog";
+      const MenuPopupPadding menuPad;
       if (!ImGui::BeginPopupModal(title, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
       {
          m_dialog = DialogKind::None;
@@ -361,6 +364,7 @@ void BlueprintPane::RenderDialogs()
    case DialogKind::OrderHit:
    case DialogKind::OrderSelect:
    {
+      const MenuPopupPadding menuPad;
       if (!ImGui::BeginPopupModal("Drawing Order###BlueprintDialog", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
       {
          m_dialog = DialogKind::None;

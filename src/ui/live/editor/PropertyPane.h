@@ -666,7 +666,7 @@ inline void PropertyPane::Combo(T* obj, const string& label, const std::vector<s
    const bool mixed = IsMixed(getter, sync.display, targets);
    if (trailing) // Leave room for the trailing widget inside the field column
       ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 2.f * m_syncWidth - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemInnerSpacing.x);
-   if (ImGui::BeginCombo(("##" + label).c_str(), mixed ? "-" : (displayIndex < 0 ? "" : values[displayIndex].c_str())))
+   if (const MenuPopupPadding comboPad; ImGui::BeginCombo(("##" + label).c_str(), mixed ? "-" : (displayIndex < 0 ? "" : values[displayIndex].c_str())))
    {
       for (size_t i = 0; i < values.size(); i++)
       {

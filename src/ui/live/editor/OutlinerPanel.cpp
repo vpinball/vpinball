@@ -385,6 +385,7 @@ void OutlinerPanel::RequestRename(const std::shared_ptr<EditorUIPart> &part)
 
 void OutlinerPanel::RenderPartContextMenu(const std::shared_ptr<EditorUIPart> &part)
 {
+   const MenuPopupPadding menuPad;
    EditorUI &editor = m_editor;
    // Menu rows are only the text line height, and the icon glyphs slightly overshoot it: give the
    // rows the extra room the icon ink needs (the same spacing the menu bar gives its popups)
@@ -555,7 +556,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          EditorChrome::DrawChevron(drawList, ImVec2(itemMax.x - style.FramePadding.x - half, centerY), EditorChrome::ChevronDir::Down, half, EditorTheme::TextDim);
          ImGui::SetItemTooltip("%s", modeNames[m_displayMode]);
          ImGui::SetNextWindowPos(ImVec2(itemMin.x, itemMax.y), ImGuiCond_Always);
-         if (ImGui::BeginPopup("##OutlinerModePopup"))
+         if (const MenuPopupPadding menuPad; ImGui::BeginPopup("##OutlinerModePopup"))
          {
             for (int mode = 0; mode < 2; ++mode)
                if (ImGui::Selectable((modeIcons[mode] + " "s + modeNames[mode]).c_str(), m_displayMode == mode))
@@ -586,7 +587,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          ImGui::PopStyleColor();
       ImGui::SetItemTooltip("Filters");
       ImGui::SetNextWindowPos(ImVec2(ImGui::GetItemRectMax().x, ImGui::GetItemRectMax().y), ImGuiCond_Always, ImVec2(1.f, 0.f));
-      if (ImGui::BeginPopup("##OutlinerFilterPopup"))
+      if (const MenuPopupPadding menuPad; ImGui::BeginPopup("##OutlinerFilterPopup"))
       {
          bool changed = false;
          if (ImGui::SmallButton("All"))
@@ -1170,7 +1171,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
       if (m_revealResource && selType == Selection::S_COLLECTION)
          ImGui::SetNextItemOpen(true);
       const bool collectionsOpened = ChevronTreeNode(categoryLabel(ICON_LC_LAYERS, "Collections", editor.m_table->GetCollections().size()));
-      if (ImGui::BeginPopupContextItem())
+      if (const MenuPopupPadding menuPad; ImGui::BeginPopupContextItem())
       {
          ImGui::BeginDisabled(!canEditCollections);
          if (ImGui::MenuItem("New Collection"))
