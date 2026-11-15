@@ -1333,9 +1333,16 @@ bool EditorUI::MoveSelectionToPartGroup(PartGroup *group)
 {
    // Gather the parts that can be moved to the target group (see CanMovePartToGroup)
    vector<IEditable *> moved;
+   int locked = 0;
    for (const auto &uiPart : m_multiSel)
-      if (IEditable *const editable = uiPart->GetEditable(); !editable->IsUILocked() && CanMovePartToGroup(editable, group))
+   {
+      IEditable *const editable = uiPart->GetEditable();
+      if (editable->IsUILocked())
+         ++locked;
+      else if (CanMovePartToGroup(editable, group))
          moved.push_back(editable);
+   }
+   NotifyLockedParts(locked);
    if (moved.empty())
       return false;
    // Parts moved to a group on another reference space have their transforms re-expressed so that
@@ -1867,7 +1874,10 @@ void EditorUI::FlipSelection(const bool flipX)
    if (m_pointEditPart)
    {
       if (m_pointEditPart->GetEditable()->IsUILocked())
+      {
+         NotifyLockedPart(m_pointEditPart->GetEditable());
          return;
+      }
       BeginPointEdit();
       if (m_pointEditCenter)
       {
@@ -1885,16 +1895,24 @@ void EditorUI::FlipSelection(const bool flipX)
       EndPointEdit();
       return;
    }
-   if (std::ranges::all_of(m_multiSel, [](const auto &part) { return part->GetEditable()->IsUILocked() || ReferenceImageOp::IsReferenceImage(part.get()); }))
+   int locked = 0;
+   bool anyFlippable = false;
+   for (const auto &part : m_multiSel)
+   {
+      if (part->GetEditable()->IsUILocked())
+         ++locked;
+      else if (!ReferenceImageOp::IsReferenceImage(part.get()))
+         anyFlippable = true;
+   }
+   NotifyLockedParts(locked);
+   if (!anyFlippable)
       return; // Nothing to flip (no empty undo step)
    m_undo.BeginUndo();
    for (const auto &part : m_multiSel)
    {
       IEditable *const editable = part->GetEditable();
-      if (editable->IsUILocked())
-         continue; // UI locked parts are not modified
-      if (ReferenceImageOp::IsReferenceImage(part.get()))
-         continue; // Flipping a reference image would need a mirrored image, which a flasher can not show
+      if (editable->IsUILocked() || ReferenceImageOp::IsReferenceImage(part.get()))
+         continue; // UI locked parts are not modified; flipping a reference image would need a mirrored image, which a flasher can not show
       m_undo.MarkForUndo(editable);
       if (flipX)
          editable->FlipX(center);
@@ -1911,7 +1929,10 @@ void EditorUI::RotateMultiSel(const float ang, const Vertex2D &center, const boo
    if (m_pointEditPart)
    {
       if (m_pointEditPart->GetEditable()->IsUILocked())
+      {
+         NotifyLockedPart(m_pointEditPart->GetEditable());
          return;
+      }
       const float sn = sinf(ANGTORAD(ang)), cs = cosf(ANGTORAD(ang));
       BeginPointEdit();
       const auto rotatePoint = [&center, sn, cs](Vertex2D &v)
@@ -1937,7 +1958,9 @@ void EditorUI::RotateMultiSel(const float ang, const Vertex2D &center, const boo
       EndPointEdit();
       return;
    }
-   if (std::ranges::all_of(m_multiSel, [](const auto &part) { return part->GetEditable()->IsUILocked(); }))
+   const int locked = (int)std::ranges::count_if(m_multiSel, [](const auto &part) { return part->GetEditable()->IsUILocked(); });
+   NotifyLockedParts(locked);
+   if (locked == (int)m_multiSel.size())
       return; // Nothing to transform (no empty undo step)
    m_undo.BeginUndo();
    for (const auto &part : m_multiSel)
@@ -1959,7 +1982,10 @@ void EditorUI::ScaleMultiSel(const float scalex, const float scaley, const Verte
    if (m_pointEditPart)
    {
       if (m_pointEditPart->GetEditable()->IsUILocked())
+      {
+         NotifyLockedPart(m_pointEditPart->GetEditable());
          return;
+      }
       BeginPointEdit();
       if (m_pointEditCenter)
       {
@@ -1975,7 +2001,9 @@ void EditorUI::ScaleMultiSel(const float scalex, const float scaley, const Verte
       EndPointEdit();
       return;
    }
-   if (std::ranges::all_of(m_multiSel, [](const auto &part) { return part->GetEditable()->IsUILocked(); }))
+   const int locked = (int)std::ranges::count_if(m_multiSel, [](const auto &part) { return part->GetEditable()->IsUILocked(); });
+   NotifyLockedParts(locked);
+   if (locked == (int)m_multiSel.size())
       return; // Nothing to transform (no empty undo step)
    m_undo.BeginUndo();
    for (const auto &part : m_multiSel)
@@ -1997,7 +2025,10 @@ void EditorUI::TranslateMultiSel(const Vertex2D &offset)
    if (m_pointEditPart)
    {
       if (m_pointEditPart->GetEditable()->IsUILocked())
+      {
+         NotifyLockedPart(m_pointEditPart->GetEditable());
          return;
+      }
       BeginPointEdit();
       if (m_pointEditCenter)
       {
@@ -2010,6 +2041,10 @@ void EditorUI::TranslateMultiSel(const Vertex2D &offset)
       EndPointEdit();
       return;
    }
+   const int locked = (int)std::ranges::count_if(m_multiSel, [](const auto &part) { return part->GetEditable()->IsUILocked(); });
+   NotifyLockedParts(locked);
+   if (locked == (int)m_multiSel.size())
+      return; // Nothing to move (no empty undo step)
    m_undo.BeginUndo();
    for (const auto &part : m_multiSel)
    {
@@ -2044,25 +2079,36 @@ void EditorUI::LockElements()
 void EditorUI::MoveSelectionInDrawOrder(const bool toFront)
 {
    // Draw In Front / Draw In Back of the win32 context menu (non undoable, like the win32 command)
+   int locked = 0;
    for (const auto &part : m_multiSel)
    {
       IEditable *const editable = part->GetEditable();
-      if (editable->GetItemType() == eItemPartGroup || editable->IsUILocked())
+      if (editable->IsUILocked())
+      {
+         ++locked;
+         continue;
+      }
+      if (editable->GetItemType() == eItemPartGroup)
          continue;
       if (toFront)
          m_table->MovePartToFront(editable);
       else
          m_table->MovePartToBack(editable);
    }
+   NotifyLockedParts(locked);
 }
 
 void EditorUI::ToggleCollectionMembership(const int collectionIndex)
 {
    vector<IEditable *> selection;
    selection.reserve(m_multiSel.size());
+   int locked = 0;
    for (const auto &part : m_multiSel)
-      if (!part->GetEditable()->IsUILocked())
+      if (part->GetEditable()->IsUILocked())
+         ++locked;
+      else
          selection.push_back(part->GetEditable());
+   NotifyLockedParts(locked);
    m_table->ToggleCollectionMembership(collectionIndex, selection);
 }
 
@@ -2349,7 +2395,10 @@ void EditorUI::PasteSelection(const ImVec2 *const pos)
    if (m_pointEditPart)
    {
       if (m_pointEditPart->GetEditable()->IsUILocked())
+      {
+         NotifyLockedPart(m_pointEditPart->GetEditable());
          return;
+      }
       // Paste the copied coordinates to the selected drag point or center point
       Vertex3Ds pointPos;
       if (m_pointEditCenter)
@@ -2505,10 +2554,17 @@ void EditorUI::DeleteSelection()
    // Balls are runtime objects and parts without a part group are live objects: they can not be deleted
    // (and stay selected). Root part groups are group-less by definition but they can be deleted.
    vector<IEditable *> partsToDelete;
+   int locked = 0;
    for (const auto &part : m_multiSel)
-      if (IEditable *const edit = part->GetEditable(); !edit->IsUILocked() && edit->GetItemType() != eItemBall && (edit->GetPartGroup() != nullptr || edit->GetItemType() == eItemPartGroup)
+   {
+      IEditable *const edit = part->GetEditable();
+      if (edit->IsUILocked())
+         ++locked;
+      else if (edit->GetItemType() != eItemBall && (edit->GetPartGroup() != nullptr || edit->GetItemType() == eItemPartGroup)
          && std::ranges::find(partsToDelete, edit) == partsToDelete.end())
          partsToDelete.push_back(edit);
+   }
+   NotifyLockedParts(locked);
    // Delete group content, nested groups included (partsToDelete grows while iterating)
    for (size_t i = 0; i < partsToDelete.size(); i++)
       if (partsToDelete[i]->GetItemType() == eItemPartGroup)
@@ -2909,7 +2965,13 @@ bool EditorUI::CanEnterPointEdit() const
 void EditorUI::EnterPointEditMode()
 {
    if (!CanEnterPointEdit())
+   {
+      // The lock is the only refusal worth reporting: the user asked to edit points of a part that visibly has some
+      if (m_pointEditPart == nullptr && m_selection.GetType() == Selection::S_EDITABLE && m_selection.GetPart() != nullptr && m_selection.GetPart()->GetEditable()->IsUILocked()
+         && (m_selection.GetPart()->GetDragPointCurve() != nullptr || m_selection.GetPart()->HasEditCenter()))
+         NotifyLockedPart(m_selection.GetPart()->GetEditable());
       return;
+   }
    m_savedSelection = m_selection;
    m_savedMultiSel = m_multiSel;
    OutlinerPanel::m_savedAnchor = OutlinerPanel::m_anchor;
@@ -3013,8 +3075,13 @@ void EditorUI::AddPointOnNearestSegment()
 
 void EditorUI::DeleteSelectedPoints()
 {
-   if (m_pointEditPart == nullptr || m_pointSel.empty() || m_table->IsLocked() || IsInspectMode() || m_pointEditPart->GetEditable()->IsUILocked())
+   if (m_pointEditPart == nullptr || m_pointSel.empty() || m_table->IsLocked() || IsInspectMode())
       return;
+   if (m_pointEditPart->GetEditable()->IsUILocked())
+   {
+      NotifyLockedPart(m_pointEditPart->GetEditable());
+      return;
+   }
    DragPointCurve *const curve = m_pointEditPart->GetDragPointCurve();
    vector<DragPoint *> deletable;
    for (DragPoint *point : m_pointSel)
@@ -3090,6 +3157,23 @@ void EditorUI::Report(const string &message)
    m_reportTime = ImGui::GetTime();
    if (m_chrome.GetStatusBarHeight() <= 0.f)
       m_liveUI.PushNotification(message, 3000);
+}
+
+void EditorUI::NotifyLockedPart(const IEditable *part)
+{
+   if (part != nullptr)
+      m_liveUI.PushNotification("'"s + part->GetName() + "' is locked"s, 3000);
+}
+
+void EditorUI::NotifyLockedParts(const int lockedCount)
+{
+   if (lockedCount <= 0)
+      return;
+   const int total = (int)m_multiSel.size();
+   if (lockedCount >= total)
+      m_liveUI.PushNotification(total == 1 ? "Nothing done: '"s + m_multiSel[0]->GetEditable()->GetName() + "' is locked"s : "Nothing done: all the selected parts are locked"s, 3000);
+   else
+      m_liveUI.PushNotification("Skipped "s + std::to_string(lockedCount) + " locked part(s)"s, 3000);
 }
 
 bool EditorUI::ConsumedAreaEscape()

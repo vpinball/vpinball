@@ -259,7 +259,13 @@ void ViewportPane::BeginTransformOp(const ImGuizmo::OPERATION operation)
    m_measureMode = false; // Arming a transform op moves away from measure mode
    Matrix3D transform;
    if (!m_editor.GetSelectionTransform(transform) || m_editor.m_table->IsLocked() || !m_editor.IsSelectionInViewDomain(m_viewType == ViewMode::DesktopBackdrop))
+   {
+      // The only refusal worth reporting: the selected part exists but its UI lock blocks the transform
+      const std::shared_ptr<EditorUIPart>& part = m_editor.m_pointEditPart != nullptr ? m_editor.m_pointEditPart : m_editor.m_selection.GetPart();
+      if (part != nullptr && part->GetEditable()->IsUILocked())
+         m_editor.NotifyLockedPart(part->GetEditable());
       return;
+   }
    if (m_op.op != ImGuizmo::OPERATION(0))
    {
       // Re-armed mid op (Blender switches operator): keep the start snapshot and the undo mark
@@ -311,6 +317,8 @@ void ViewportPane::BeginTransformOp(const ImGuizmo::OPERATION operation)
    m_op.grabStartPoint = m_op.pivot;
    RayPlaneHit(m_op.startMouse, m_op.pivot, m_op.viewDir, m_op.grabStartPoint);
    m_op.selection = m_editor.m_multiSel;
+   // Locked parts in the selection are skipped by the op apply: say so instead of silently ignoring them
+   m_editor.NotifyLockedParts((int)std::ranges::count_if(m_op.selection, [](const std::shared_ptr<EditorUIPart>& part) { return part->GetEditable()->IsUILocked(); }));
    m_op.pointSelection = m_editor.m_pointSel;
    m_op.centerSelected = m_editor.m_centerSelected;
    m_op.changed = false;

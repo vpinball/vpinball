@@ -856,6 +856,8 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
                {
                   m_moveDragPending = false;
                   m_moveDragActive = true;
+                  // Locked parts in the selection stay put during the drag: say so instead of silently ignoring them
+                  editor.NotifyLockedParts((int)std::ranges::count_if(editor.m_multiSel, [](const std::shared_ptr<EditorUIPart>& part) { return part->GetEditable()->IsUILocked(); }));
                   editor.m_undo.BeginUndo();
                   for (const auto& part : editor.m_multiSel)
                      editor.m_undo.MarkForUndo(part->GetEditable());
