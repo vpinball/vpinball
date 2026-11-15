@@ -14,6 +14,7 @@
 #include "renderer/Texture.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/FileDialog.h"
+#include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
 #include "ui/live/editor/EditorTheme.h"
 
@@ -282,6 +283,7 @@ void ReferenceImageOp::RenderModal()
       ImGui::OpenPopup(popupId);
    }
    ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30.f, 0.f), ImGuiCond_Appearing);
+   const MenuPopupPadding menuPad;
    if (!ImGui::BeginPopupModal(popupId, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
       return;
 

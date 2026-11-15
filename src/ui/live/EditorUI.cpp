@@ -3793,7 +3793,7 @@ void EditorUI::RenderAreaTypeButton(const int leafId)
    if (clicked)
       ImGui::OpenPopup(popup);
    ImGui::SetNextWindowPos(ImVec2(itemMin.x, itemMax.y), ImGuiCond_Always);
-   if (ImGui::BeginPopup(popup))
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopup(popup))
    {
       if (ImGui::IsKeyPressed(ImGuiKey_Escape, false))
       {
@@ -4133,7 +4133,7 @@ void EditorUI::RenderAreaEdgeMenu()
       ImGui::OpenPopup("##AreaEdgeMenu");
    }
    ImGui::SetNextWindowPos(m_edgeMenuPos, ImGuiCond_Appearing);
-   if (ImGui::BeginPopup("##AreaEdgeMenu"))
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopup("##AreaEdgeMenu"))
    {
       const AreaNode *const split = m_layout.Find(m_edgeMenuNode);
       if (split == nullptr || !split->isSplit || m_areaModal != AreaModalKind::None || !CanUseAreaTools())

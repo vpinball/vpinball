@@ -8,6 +8,7 @@
 #include "physics/PhysicsEngine.h"
 #include "renderer/Renderer.h"
 #include "ui/live/EditorUI.h"
+#include "ui/live/ImGuiHelpers.h"
 #include "ui/live/editor/parts/EditorUIPartRegistry.h"
 
 namespace VPX::EditorUI
@@ -333,7 +334,7 @@ void LayerSpaceChangeOp::RenderModal()
       m_openModal = false;
       ImGui::OpenPopup("Reference Space Change###ConfirmSpaceChange");
    }
-   if (ImGui::BeginPopupModal("Reference Space Change###ConfirmSpaceChange", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopupModal("Reference Space Change###ConfirmSpaceChange", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
    {
       vector<string> names;
       for (const Change &change : m_pending)

@@ -73,6 +73,22 @@ inline bool SquareIconButtonInk(const char *icon, const char *id)
    return pressed;
 }
 
+// Window padding for menu popups (context menus, pickers, dropdown lists, popup dialogs). The
+// editor panes run with WindowPadding 0 and popup windows opened inside them capture that at
+// Begin time, leaving menu items glued to the window edge. Declare before the BeginPopup /
+// BeginPopupContextItem / BeginCombo / BeginPopupModal call; the popup window keeps the padding
+// for its whole content (sub menus included). Sized on the (DPI scaled) frame padding so menus
+// keep the base style's proportions.
+struct MenuPopupPadding
+{
+   MenuPopupPadding()
+   {
+      const ImGuiStyle &style = ImGui::GetStyle();
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(style.FramePadding.x * 2.5f, style.FramePadding.y * 2.f));
+   }
+   ~MenuPopupPadding() { ImGui::PopStyleVar(); }
+};
+
 // Compact variant of IconButtonInk matching ImGui::SmallButton (no vertical frame padding).
 inline bool SmallIconButtonInk(const char *icon, const char *id)
 {

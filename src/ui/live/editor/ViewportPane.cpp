@@ -1176,13 +1176,14 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
          ImGui::SetCursorPosX(rightX);
       if (IconButtonInk(ICON_LC_STICKY_NOTE, "##Overlays")) // Overlay options popover
          ImGui::OpenPopup("Overlay Popup");
-      if (ImGui::BeginPopup("Overlay Popup"))
+      if (const MenuPopupPadding menuPad; ImGui::BeginPopup("Overlay Popup"))
       {
-         ImGui::TextUnformatted("Overlays:");
+         ImGui::MenuItem("Overlays", nullptr, false, false);
          ImGui::Separator();
          ImGui::Checkbox("Overlay selection", &editor.m_selectionOverlay);
          ImGui::Separator();
-         ImGui::TextUnformatted("Physic Overlay:");
+         ImGui::MenuItem("Physic Overlay", nullptr, false, false);
+         ImGui::Separator();
          if (ImGui::RadioButton("None", editor.m_physOverlay == EditorUI::PhysicOverlay::None))
             editor.m_physOverlay = EditorUI::PhysicOverlay::None;
          if (ImGui::RadioButton("Selected", editor.m_physOverlay == EditorUI::PhysicOverlay::Selected))
@@ -1194,13 +1195,13 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
       ImGui::SameLine();
       if (IconButtonInk(ICON_LC_FILTER, "##SelFilter")) // Selection filter popover
          ImGui::OpenPopup("Selection filter Popup");
-      if (ImGui::BeginPopup("Selection filter Popup"))
+      if (const MenuPopupPadding menuPad; ImGui::BeginPopup("Selection filter Popup"))
       {
          bool pf = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Playfield);
          bool prims = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Primitives);
          bool lights = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Lights);
          bool flashers = EditorUI::HasFlag(editor.m_selectionFilter, EditorUI::SelectionFilter::Flashers);
-         ImGui::TextUnformatted("Selection filters:");
+         ImGui::MenuItem("Selection filters", nullptr, false, false);
          ImGui::Separator();
          if (ImGui::Checkbox("Playfield", &pf))
             editor.m_selectionFilter = pf ? (editor.m_selectionFilter | EditorUI::SelectionFilter::Playfield) : (editor.m_selectionFilter & ~EditorUI::SelectionFilter::Playfield);
@@ -1240,7 +1241,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
       ImGui::OpenPopup("Add Part");
    }
    ImGui::SetNextWindowPos(editor.m_addPartPopupPos, ImGuiCond_Appearing);
-   if (ImGui::BeginPopup("Add Part"))
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopup("Add Part"))
    {
       editor.RenderAddPartPicker();
       ImGui::EndPopup();

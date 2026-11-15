@@ -7,6 +7,7 @@
 #include "core/VPXPluginAPIImpl.h"
 #include "plugins/ResURIBuilder.h"
 #include "ui/live/LiveUI.h"
+#include "ui/live/ImGuiHelpers.h"
 
 #include <memory>
 #include <optional>
@@ -141,6 +142,7 @@ void ResURIPicker::Render()
    const float dpi = g_pplayer->m_liveUI->GetDPI();
    ImGui::SetNextWindowSize(ImVec2(560.f * dpi, 540.f * dpi), ImGuiCond_FirstUseEver);
    bool open = true;
+   const MenuPopupPadding menuPad;
    if (!ImGui::BeginPopupModal("Link to controller source", &open))
    {
       // Popup was closed or the owning field is no longer rendered
