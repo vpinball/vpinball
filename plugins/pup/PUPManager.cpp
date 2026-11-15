@@ -1380,6 +1380,23 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    {
       if (root == nullptr || (root->GetParent() != nullptr && !root->HasChildren()))
          return false;
+      // A screen positioned on another one is drawn by the window of the screen at the top of its tree,
+      // with its children. When that screen is one a window draws, the positioned screen is not also
+      // the root of a second window: it would be moved to that window's bounds, and back, every frame,
+      // and its labels rasterized for the height of one window and drawn in the other, changing size
+      // from frame to frame (Aladdin: FullDMD screen 5 positioned on the backglass, with an Off screen 6
+      // positioned on it, was also drawn in the score view).
+      if (root->GetParent() != nullptr)
+      {
+         const PUPScreen* top = root.get();
+         while (top->GetParent())
+            top = top->GetParent();
+         switch (top->GetScreenNum())
+         {
+         case 0: case 1: case 2: case 5: case 6: return false;
+         default: break;
+         }
+      }
       for (const auto& screen : me->m_screenOrder)
       {
          if (screen->GetMode() == PUPScreen::Mode::Off || screen->GetMode() == PUPScreen::Mode::MusicOnly || screen->IsHidden())
