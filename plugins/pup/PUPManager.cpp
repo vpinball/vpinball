@@ -1376,51 +1376,38 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    // claiming a window for a dead tree would blank it and starve lower priority renderers (e.g.
    // the B2S backglass behind an Off backglass screen 2). Skipping dead candidates also routes
    // content to the fallback screen (e.g. videos on DMD screen 1 when screen 5 is Off).
-   auto hasRenderableTree = [me](const PUPScreen* root) -> bool
-   {
-      for (const auto& screen : me->m_screenOrder)
-      {
-         if (screen->GetMode() == PUPScreen::Mode::Off || screen->GetMode() == PUPScreen::Mode::MusicOnly || screen->IsHidden())
-            continue;
-         const PUPScreen* parent = screen.get();
-         while (parent && parent != root)
-            parent = parent->GetParent();
-         if (parent)
-            return true;
-      }
-      return false;
-   };
-   // The canvas a window draws when its screen is not positioned on another one (the tree of a
-   // positioned screen is drawn by the window of the canvas it lies on).
-   auto isWindowCanvas = [me, &hasRenderableTree](const PUPScreen* screen) -> bool
-   {
-      const auto canvas = [me, &hasRenderableTree](int screenNum) -> const PUPScreen*
-      {
-         const auto pScreen = me->GetScreen(screenNum);
-         return (pScreen && pScreen->GetParent() == nullptr && hasRenderableTree(pScreen.get())) ? pScreen.get() : nullptr;
-      };
-      const PUPScreen* const backglass = canvas(2);
-      const PUPScreen* const scoreView = canvas(5);
-      return screen == canvas(0) || screen == (backglass ? backglass : canvas(6)) || screen == (scoreView ? scoreView : canvas(1));
-   };
-   auto isUsableRoot = [&hasRenderableTree, &isWindowCanvas](const std::shared_ptr<PUPScreen>& root) -> bool
+   auto isUsableRoot = [me](const std::shared_ptr<PUPScreen>& root) -> bool
    {
       if (root == nullptr || (root->GetParent() != nullptr && !root->HasChildren()))
          return false;
-      // A screen positioned on a screen that a window draws is drawn there, with its children: drawing
-      // it in a second window would also move it to that window's bounds, and back, every frame. Its
-      // labels are then rasterized for the height of one window and drawn in the other, where they
-      // change size from frame to frame (Aladdin: FullDMD screen 5 positioned on the backglass, with an
-      // Off screen 6 positioned on it, was also drawn in the score view).
+      // A screen positioned on another one is drawn by the window of the screen at the top of its tree,
+      // with its children. When that screen is one a window draws, the positioned screen is not also
+      // the root of a second window: it would be moved to that window's bounds, and back, every frame,
+      // and its labels rasterized for the height of one window and drawn in the other, changing size
+      // from frame to frame (Aladdin: FullDMD screen 5 positioned on the backglass, with an Off screen 6
+      // positioned on it, was also drawn in the score view).
       if (root->GetParent() != nullptr)
       {
          const PUPScreen* top = root.get();
          while (top->GetParent())
             top = top->GetParent();
-         if (isWindowCanvas(top))
-            return false;
+         switch (top->GetScreenNum())
+         {
+         case 0: case 1: case 2: case 5: case 6: return false;
+         default: break;
+         }
       }
-      return hasRenderableTree(root.get());
+      for (const auto& screen : me->m_screenOrder)
+      {
+         if (screen->GetMode() == PUPScreen::Mode::Off || screen->GetMode() == PUPScreen::Mode::MusicOnly || screen->IsHidden())
+            continue;
+         const PUPScreen* parent = screen.get();
+         while (parent && parent != root.get())
+            parent = parent->GetParent();
+         if (parent)
+            return true;
+      }
+      return false;
    };
 
    int padLeft = 0;
