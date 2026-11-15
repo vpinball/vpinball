@@ -77,6 +77,9 @@ private:
    // Tree node with a line chevron instead of ImGui's filled triangle; while m_setAllOpen >= 0 every node is forced open/closed (expand/collapse all)
    // icon: the label's leading icon glyph, drawn ink-centered on the row (its glyph ink overshoots the line box); iconBadge: a grey chip behind it
    bool ChevronTreeNode(const char *label, ImGuiTreeNodeFlags flags = 0, const char *icon = nullptr, bool iconBadge = false);
+   // In place rename of a part: starts on a double click on its name or on F2 over the panel, commits on Enter, cancels on Escape/click away
+   void RequestRename(const std::shared_ptr<EditorUIPart> &part);
+   bool RenderRenameInput(IEditable *editable); // The name input field of the part being renamed (returns false once the edit is over)
    void ParseFilter();
    bool MatchesFilter(const string &name) const; // Name tokens only (non part lists)
    bool MatchesPartCached(size_t index) const; // All tokens, for m_editables[index] (needs RefreshFilterCache)
@@ -103,6 +106,11 @@ private:
    ImGuiID m_dragHoverGroup = 0; // Collapsed group hovered while dragging parts (opens after a short delay)
    double m_dragHoverSince = 0.0;
    vector<std::shared_ptr<EditorUIPart>> m_listedParts; // Rows drawn in the parts tree this frame, in order (for shift+click range selection)
+   std::weak_ptr<EditorUIPart> m_renamePart; // Part renamed in place in the tree (weak: it may be deleted while editing)
+   string m_renameText;
+   bool m_renameFocus = false; // Focus the rename input on the frame it first appears
+   bool m_renameRendered = false; // The rename input was drawn this frame
+   int m_renameMissFrames = 0; // Frames the renamed part was not listed (dropped after a short grace for the reveal)
    int m_setAllOpen = -1; // >= 0 for one frame: force every twirl-down node open (1) or closed (0) — the expand/collapse all button
    int m_openNodeCount = 0; // Twirl-down nodes drawn open this frame (decides the collapse/expand all button's action)
 

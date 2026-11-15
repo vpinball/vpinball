@@ -363,6 +363,53 @@ void OutlinerPanel::LoadSetup(const nlohmann::json &j)
    SetSelectedOnly(j.value("sel_only", false));
 }
 
+void OutlinerPanel::RequestRename(const std::shared_ptr<EditorUIPart> &part)
+{
+   // Same rules as the property pane's name field: no rename on the inspected live table, and only named parts
+   if (part == nullptr || m_editor.m_table->m_liveBaseTable != nullptr)
+      return;
+   IEditable *const editable = part->GetEditable();
+   if (editable == nullptr || editable->GetIScriptable() == nullptr || editable->GetItemType() == eItemBall)
+      return;
+   if (editable->IsUILocked())
+   {
+      m_editor.NotifyLockedPart(editable);
+      return;
+   }
+   m_renamePart = part;
+   m_renameText = editable->GetName();
+   m_renameFocus = true;
+   m_revealPart = part; // Make sure the row is visible when the rename field appears
+}
+
+bool OutlinerPanel::RenderRenameInput(IEditable *editable)
+{
+   m_renameRendered = true;
+   if (m_renameFocus)
+   {
+      ImGui::SetKeyboardFocusHere();
+      m_renameFocus = false;
+   }
+   bool editing = true;
+   // Commit on Enter only: validating each keystroke would unique-ify the name being typed (see PropertyPane)
+   if (ImGui::InputText("##Rename", &m_renameText, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+   {
+      if (m_renameText != editable->GetName())
+      {
+         m_editor.m_undo.BeginUndo();
+         m_editor.m_undo.MarkForUndo(editable);
+         m_editor.m_undo.EndUndo();
+         editable->SetName(m_renameText);
+      }
+      editing = false;
+   }
+   else if (ImGui::IsItemDeactivated())
+      editing = false; // Click outside, Escape, ... : cancel
+   if (!editing)
+      m_renamePart.reset();
+   return editing;
+}
+
 // '.' over the panel (routed by the viewport shortcut): frame the selection in the tree, the same
 // reveal the selection sync applies on selection change but on demand — an explicit request also
 // adopts the selection's display mode
@@ -397,6 +444,10 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
    ImGui::Begin(name, nullptr, window_flags);
    ImGui::PushID(leafId);
    const ImGuiStyle &style = ImGui::GetStyle();
+
+   // F2 renames the active selection part in place (Blender)
+   if (ImGui::IsKeyPressed(ImGuiKey_F2, false) && ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && !ImGui::GetIO().WantTextInput)
+      RequestRename(editor.m_selection.GetPart());
 
    // Selection made elsewhere (viewport, property pane, search): a synced tree adopts the selection's display
    // mode and reveals it; an unsynced one only scrolls to a selection already listed in its current mode (the
@@ -685,10 +736,20 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          const float nameX = textPos.x + iconSide + 6.f;
          const float eyeScreenX = ImGui::GetWindowPos().x - ImGui::GetScrollX() + eyeX; // Where the eye button is placed by SameLine(eyeX)
          const bool hovered = ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlappedByItem);
-         const string shown = EllipsizeToWidth(editable->GetName(), eyeScreenX - ImGui::GetStyle().ItemSpacing.x - nameX);
-         drawList->AddText(ImVec2(nameX, textPos.y), editable->IsUIVisible(false) ? EditorTheme::Text : (hovered ? EditorTheme::TextDim : EditorTheme::TextFaint), shown.c_str());
-         if (hovered && shown != editable->GetName() && ImGui::GetDragDropPayload() == nullptr)
-            ImGui::SetTooltip("%s", editable->GetName().c_str()); // Full name of an ellipsized row
+         if (m_renamePart.lock() == edit)
+         {
+            // In place rename: the name field is laid over the row where the name is drawn
+            ImGui::SetCursorScreenPos(ImVec2(nameX - ImGui::GetStyle().FramePadding.x, textPos.y));
+            ImGui::SetNextItemWidth(ImMax(40.f, eyeScreenX - ImGui::GetStyle().ItemSpacing.x - nameX));
+            RenderRenameInput(editable);
+         }
+         else
+         {
+            const string shown = EllipsizeToWidth(editable->GetName(), eyeScreenX - ImGui::GetStyle().ItemSpacing.x - nameX);
+            drawList->AddText(ImVec2(nameX, textPos.y), editable->IsUIVisible(false) ? EditorTheme::Text : (hovered ? EditorTheme::TextDim : EditorTheme::TextFaint), shown.c_str());
+            if (hovered && shown != editable->GetName() && ImGui::GetDragDropPayload() == nullptr)
+               ImGui::SetTooltip("%s", editable->GetName().c_str()); // Full name of an ellipsized row
+         }
       }
       if (clicked)
       {
@@ -705,8 +766,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
             editor.SetSelection(Selection(edit));
             m_anchor = edit;
             if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-               if (ViewportPane *const vp = editor.GetTargetViewport(); vp != nullptr)
-                  vp->FrameSelection(); // Blender's View Selected
+               RequestRename(edit); // Blender renames in place on a name double click
          }
       }
       partDragSource(edit);
@@ -842,10 +902,11 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
                   const bool isNewPartTarget = (group == newPartTarget);
                   const bool inactiveSel = isPartSelected(edit) && edit != editor.m_selection.GetPart();
                   PushRowColors(isPartSelected(edit), inactiveSel);
-                  // Folder icon and count are outside the ID (after ###) so that the node keeps its open state when they change
+                  // Folder icon and count are outside the ID (after ###) so that the node keeps its open state when they
+                  // change; the ID itself is pointer based so that it also survives a rename
                   const auto countIt = m_groupCounts.find(group);
                   const string &groupName = edit->GetEditable()->GetName();
-                  const string idPart = "###" + groupName;
+                  const string idPart = "###" + std::to_string(reinterpret_cast<uintptr_t>(edit->GetEditable()));
                   const bool wasOpen = ImGui::GetStateStorage()->GetInt(ImGui::GetID(idPart.c_str()), 0) != 0;
                   // Name shortened so that it ends before the count and the eye button
                   const string countText = std::to_string(countIt != m_groupCounts.end() ? countIt->second : 0);
@@ -853,7 +914,9 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
                   const string iconPart = icon + "  "s;
                   const float labelStartX = ImGui::GetCursorScreenPos().x + ImGui::GetTreeNodeToLabelSpacing();
                   const float labelEndX = ImGui::GetWindowPos().x - ImGui::GetScrollX() + eyeX - style.ItemSpacing.x * 2.f - ImGui::CalcTextSize(countText.c_str()).x;
-                  const string groupLabel = iconPart + EllipsizeToWidth(groupName, labelEndX - labelStartX - ImGui::CalcTextSize(iconPart.c_str()).x) + idPart;
+                  const bool renaming = m_renamePart.lock() == edit;
+                  // While renaming, only the icon and the ID are submitted: the input field is overlaid where the name was
+                  const string groupLabel = iconPart + (renaming ? ""s : EllipsizeToWidth(groupName, labelEndX - labelStartX - ImGui::CalcTextSize(iconPart.c_str()).x)) + idPart;
                   const bool groupHidden = !group->IsUIVisible(false);
                   if (groupHidden)
                      ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::V(EditorTheme::TextFaint));
@@ -865,8 +928,19 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
                   const bool rowHovered = ImGui::IsMouseHoveringRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
                   if (ImGui::IsItemHovered() && ImGui::GetDragDropPayload() == nullptr && groupLabel.substr(0, groupLabel.find("###")).find(groupName) == string::npos)
                      ImGui::SetTooltip("%s", groupName.c_str()); // Full name of an ellipsized row
+                  if (!vpxDragging && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::GetMousePos().x >= labelStartX)
+                     RequestRename(edit);
                   partDragSource(edit);
                   partDropTarget(group, true);
+                  if (renaming)
+                  {
+                     // In place rename: the name field is laid over the row where the name is drawn
+                     const ImVec2 itemMin = ImGui::GetItemRectMin();
+                     const float renameX = labelStartX + ImGui::CalcTextSize(iconPart.c_str()).x;
+                     ImGui::SetCursorScreenPos(ImVec2(renameX, itemMin.y));
+                     ImGui::SetNextItemWidth(ImMax(40.f, labelEndX - renameX));
+                     RenderRenameInput(edit->GetEditable());
+                  }
                   if (vpxDragging && !opened && rowHovered)
                   {
                      // Blender opens a collapsed collection hovered while dragging
@@ -1120,6 +1194,18 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
          }
       }
    }
+
+   // A renamed part whose row can not be drawn (collapsed group being revealed, filtered out) gets a few frames before the edit is dropped
+   if (m_renamePart.lock() != nullptr)
+   {
+      if (m_renameRendered)
+         m_renameMissFrames = 0;
+      else if (++m_renameMissFrames > 2)
+         m_renamePart.reset();
+   }
+   else
+      m_renameMissFrames = 0;
+   m_renameRendered = false;
 
    ImGui::PopID();
    m_setAllOpen = -1;
