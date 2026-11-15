@@ -64,18 +64,18 @@ For the smoothest result, also set the refresh rate to 90 Hz and turn adaptive b
 
 ## Space references
 
-The scene is rendered in 4 nested space references (used by table parts and groups, see
+The scene is rendered in 3 nested space references (used by table parts and groups, see
 `PartGroupData::SpaceReference`):
 
 - **Room**: the real world room, unscaled, matching your physical space. Room space parts (e.g. a VR
   room environment model) must be modeled at real world scale.
-- **Cabinet feet**: the cabinet legs/body, scaled with the cabinet and stretched so the feet always
-  touch the room ground.
-- **Cabinet**: the cabinet body, uniformly scaled so its lockbar matches the target lockbar width,
-  and positioned so its lockbar lands at the target lockbar height.
-- **Playfield**: the simulation space. It follows the cabinet and applies the playfield slope. This
-  is the only space that supports physics; everything on it (balls, flippers, ...) is simulated in
-  table coordinates.
+- **Cabinet feet**: the cabinet legs, standing upright on the room ground with their space origin
+  below the playfield origin (they follow the cabinet's placement): cabinet scaling applied on
+  X/Y and the legs stretched in Z so they always touch the room ground.
+- **Playfield**: the simulation space: the whole anchored assembly (cabinet included), uniformly
+  scaled so its lockbar matches the target lockbar width, positioned so its lockbar lands at the
+  target lockbar height, and inclined by the playfield slope. This is the only space that supports
+  physics; everything on it (balls, flippers, ...) is simulated in table coordinates.
 
 ![Space References](img/Space-references.svg)
 

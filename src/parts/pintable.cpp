@@ -4428,7 +4428,7 @@ Vertex2D PinTable::EvaluateGlassHeight() const
    IEditable *upperEditableY = nullptr;
    for (const auto edit : m_vedit)
    {
-      if (edit->GetPartGroup() != nullptr && edit->GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+      if (edit->GetPartGroup() != nullptr && edit->GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
          continue;
       Vertex2D prevResult = result;
       switch (edit->GetItemType())

@@ -21,7 +21,7 @@ TEST_CASE("PartGroup part")
       group->m_timerEnabled = true;
       group->m_timerInterval = 33;
       group->m_d.m_playerModeVisibilityMask = PartGroupData::PMVM_DESKTOP | PartGroupData::PMVM_CABINET;
-      group->m_d.m_spaceReference = PartGroupData::SpaceReference::SR_CABINET;
+      group->m_d.m_spaceReference = PartGroupData::SpaceReference::CabinetFeet;
       group->SetUILock(true);
       table->AddPart(group);
       group->Release();
@@ -37,7 +37,7 @@ TEST_CASE("PartGroup part")
       CHECK(copy->m_timerEnabled == true);
       CHECK(copy->m_timerInterval == 33);
       CHECK(copy->m_d.m_playerModeVisibilityMask == (PartGroupData::PMVM_DESKTOP | PartGroupData::PMVM_CABINET));
-      CHECK(copy->m_d.m_spaceReference == PartGroupData::SpaceReference::SR_CABINET);
+      CHECK(copy->m_d.m_spaceReference == PartGroupData::SpaceReference::CabinetFeet);
       CHECK(copy->IsUILocked() == true);
 
       CHECK(StreamsEqual(saved, SavePartToStream(copy)));
@@ -51,7 +51,7 @@ TEST_CASE("PartGroup part")
       group->Init(5.f, 6.f, false);
       group->SetName("Group2");
       group->m_d.m_playerModeVisibilityMask = PartGroupData::PMVM_VIRTUAL_REALITY;
-      group->m_d.m_spaceReference = PartGroupData::SpaceReference::SR_ROOM;
+      group->m_d.m_spaceReference = PartGroupData::SpaceReference::Room;
       table->AddPart(group);
       group->Release();
 
@@ -66,7 +66,7 @@ TEST_CASE("PartGroup part")
       root->Init(0.f, 0.f, false);
       root->SetName("Root");
       root->m_d.m_playerModeVisibilityMask = PartGroupData::PMVM_DESKTOP | PartGroupData::PMVM_FSS;
-      root->m_d.m_spaceReference = PartGroupData::SpaceReference::SR_CABINET;
+      root->m_d.m_spaceReference = PartGroupData::SpaceReference::CabinetFeet;
       table->AddPart(root);
       root->Release();
 
@@ -74,7 +74,7 @@ TEST_CASE("PartGroup part")
       child->Init(0.f, 0.f, false);
       child->SetName("Child");
       child->m_d.m_playerModeVisibilityMask = PartGroupData::PMVM_FSS | PartGroupData::PMVM_CABINET;
-      child->m_d.m_spaceReference = PartGroupData::SpaceReference::SR_INHERIT;
+      child->m_d.m_spaceReference = PartGroupData::SpaceReference::Inherit;
       table->AddPart(child);
       child->Release();
       child->SetPartGroup(root);
@@ -90,10 +90,10 @@ TEST_CASE("PartGroup part")
       CHECK(child->GetPlayerModeVisibilityMask() == PartGroupData::PMVM_FSS);
       CHECK(root->GetPlayerModeVisibilityMask() == (PartGroupData::PMVM_DESKTOP | PartGroupData::PMVM_FSS));
 
-      // SR_INHERIT resolves against the parent chain, root defaulting to playfield space
-      CHECK(child->GetReferenceSpace() == PartGroupData::SpaceReference::SR_CABINET);
-      root->m_d.m_spaceReference = PartGroupData::SpaceReference::SR_INHERIT;
-      CHECK(child->GetReferenceSpace() == PartGroupData::SpaceReference::SR_PLAYFIELD);
+      // Inherit resolves against the parent chain, root defaulting to playfield space
+      CHECK(child->GetReferenceSpace() == PartGroupData::SpaceReference::CabinetFeet);
+      root->m_d.m_spaceReference = PartGroupData::SpaceReference::Inherit;
+      CHECK(child->GetReferenceSpace() == PartGroupData::SpaceReference::Playfield);
 
       // Child detection and path strings follow the parenting
       CHECK(part->IsChild(child));

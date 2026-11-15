@@ -224,7 +224,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    m_hitEvent = false;
 
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    TransformVertices();

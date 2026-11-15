@@ -264,7 +264,7 @@ private:
       Matrix3D m_toWorld; // Matrix to transform from this viewpoint to world coordinates
       Matrix3D m_view[2];
    };
-   Viewpoint m_spaces[4]; // Indexed by PartGroupData::SpaceReference (SR_PLAYFIELD..SR_ROOM)
+   Viewpoint m_spaces[4]; // Indexed by PartGroupData::SpaceReference (Playfield..CabinetFeet, Inherit slot unused)
    Matrix3D m_roomProj[2];
    Matrix3D m_sceneProj[2];
 

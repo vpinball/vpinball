@@ -17,11 +17,10 @@ BOOL PartGroupVisualsProperty::OnInitDialog()
    AttachItem(IDC_SPACE_REFERENCE, m_referenceSpace);
    m_referenceSpace.SetRedraw(false);
    m_referenceSpace.ResetContent();
-   m_referenceSpace.AddString("Playfield");
-   m_referenceSpace.AddString("Cabinet");
-   m_referenceSpace.AddString("Cabinet Feet");
-   m_referenceSpace.AddString("Room");
    m_referenceSpace.AddString("Inherit");
+   m_referenceSpace.AddString("Playfield");
+   m_referenceSpace.AddString("Room");
+   m_referenceSpace.AddString("Cabinet Feet");
    m_referenceSpace.SetRedraw(true);
    AttachItem(IDC_MASK_DESKTOP, m_visibilityDesktop);
    AttachItem(IDC_MASK_FSS, m_visibilityFSS);

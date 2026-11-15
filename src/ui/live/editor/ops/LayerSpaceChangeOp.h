@@ -51,10 +51,10 @@ private:
    struct Change
    {
       PartGroup *group = nullptr; // Layer whose space reference is being changed (nullptr for reparenting changes)
-      PartGroupData::SpaceReference space = PartGroupData::SpaceReference::SR_INHERIT; // Requested space reference
+      PartGroupData::SpaceReference space = PartGroupData::SpaceReference::Inherit; // Requested space reference
       PartGroup *target = nullptr; // Reparenting: destination group (nullptr = top level)
       vector<IEditable *> moved; // Reparenting: parts being moved to the target group
-      PartGroupData::SpaceReference newSpace = PartGroupData::SpaceReference::SR_PLAYFIELD; // Resolved destination space
+      PartGroupData::SpaceReference newSpace = PartGroupData::SpaceReference::Playfield; // Resolved destination space
       vector<Conversion> parts; // Descendant parts exactly re-expressed in the new space
       vector<Conversion> approximated; // Descendant parts that can not be exactly converted (best effort applied)
       vector<Conversion> groups; // Descendant groups whose center marker is re-expressed (always exact)

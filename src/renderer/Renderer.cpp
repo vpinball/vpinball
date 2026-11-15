@@ -1420,7 +1420,7 @@ void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
          && editable->GetPartGroup() != nullptr && (editable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_activeView->m_visibilityMask) == 0))
       return;
 
-   const PartGroupData::SpaceReference spaceReference = editable->GetPartGroup() ? editable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
+   const PartGroupData::SpaceReference spaceReference = editable->GetPartGroup() ? editable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::Playfield;
    SetSpaceReference(spaceReference, false);
 
    // Parts flagged as "Show in Editor" are rendered shaded, even in wireframe shade modes

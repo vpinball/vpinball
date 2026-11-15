@@ -1395,12 +1395,12 @@ PartGroupData::SpaceReference EditorUI::GetPartSpace(const IEditable *editable)
    if (editable->GetItemType() == eItemPartGroup)
       return static_cast<const PartGroup *>(editable)->GetReferenceSpace();
    const PartGroup *const group = editable->GetPartGroup();
-   return group != nullptr ? group->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
+   return group != nullptr ? group->GetReferenceSpace() : PartGroupData::SpaceReference::Playfield;
 }
 
 Matrix3D EditorUI::PartSpaceTransform(const IEditable *editable) const
 {
-   return GetPartSpace(editable) == PartGroupData::SpaceReference::SR_PLAYFIELD ? Matrix3D::MatrixIdentity() : m_table->GetDefaultPlayfieldToCabMatrix();
+   return GetPartSpace(editable) == PartGroupData::SpaceReference::Playfield ? Matrix3D::MatrixIdentity() : m_table->GetDefaultRoomToPlayfieldMatrix();
 }
 
 std::optional<PartGroupData::SpaceReference> EditorUI::GetSelectionSpace() const
