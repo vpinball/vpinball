@@ -85,7 +85,7 @@ private:
    static void CollectPartResources(const IEditable *part, vector<UsedResource> &out);
    vector<UsedResource> BuildTabs(IEditable *displayed) const;
    void RenderItemTab(PropertyPane &props, bool uniformPartSel);
-   void RenderCollectionsTab(PropertyPane &props);
+   void RenderCollectionsTab(PropertyPane &props, const bool readOnly); // readOnly: inspected live side (not saved)
    void RenderResourceTab(PropertyPane &props, const UsedResource &res);
    void RenderFontTab(PropertyPane &props);
    // The part field edits' undo wrapper (one undo step per edit gesture), shared by the item and font tabs
@@ -136,6 +136,7 @@ private:
    // Pending destructive action confirmation popup
    string m_confirmMessage;
    std::function<void()> m_confirmAction;
+   bool m_confirmRequested = false; // RequestConfirm was called: RenderPopups opens the popup
 
    // When enabled, exported resource files are named after the object name instead of the import file name
    bool m_exportUseNames = false;

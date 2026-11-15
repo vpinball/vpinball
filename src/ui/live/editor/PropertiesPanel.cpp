@@ -171,9 +171,9 @@ void PropertiesPanel::RenderPane(const AreaRect &rect, const int leafId)
    case PaneTab::Item: RenderItemTab(props, uniformPartSel); break;
    case PaneTab::Collections:
       if (editor.IsInspectMode())
-         WithStartupLiveTabs(props, [this, &props](bool) { RenderCollectionsTab(props); });
+         WithStartupLiveTabs(props, [this, &props](bool isLive) { RenderCollectionsTab(props, isLive); });
       else
-         RenderCollectionsTab(props);
+         RenderCollectionsTab(props, false);
       break;
    case PaneTab::Font:
    {
@@ -186,7 +186,19 @@ void PropertiesPanel::RenderPane(const AreaRect &rect, const int leafId)
          ImGui::EndDisabled();
       };
       if (editor.IsInspectMode())
-         WithStartupLiveTabs(props, [&renderFont](bool) { renderFont(); });
+         WithStartupLiveTabs(props,
+            [this, &props, &renderFont](bool isLive)
+            {
+               renderFont();
+               props.EndEditScope();
+               if (props.GetModifiedField() > 0)
+               {
+                  RefreshEditedParts(props);
+                  // Recorded for Save like the item tab's live edits (Save reports the part types it cannot copy back)
+                  if (isLive)
+                     m_editor.m_liveEditedParts.insert(m_editor.m_selection.GetPart()->GetEditable());
+               }
+            });
       else
          RenderPartEditWithUndo(props, renderFont);
       break;
@@ -575,21 +587,23 @@ void PropertiesPanel::RenderPartEditWithUndo(PropertyPane &props, const std::fun
       RefreshEditedParts(props);
 }
 
-void PropertiesPanel::RenderCollectionsTab(PropertyPane &props)
+void PropertiesPanel::RenderCollectionsTab(PropertyPane &props, const bool readOnly)
 {
    EditorUI &editor = m_editor;
    IEditable *const displayed = props.GetEditedPart<IEditable>(editor.m_selection.GetPart()->GetEditable());
    PinTable *const displayedTable = displayed->GetPTable();
 
    // The membership is toggled for the whole selection: the displayed part plus every selected
-   // scriptable part (the collections tab does not require a uniform selection like field edits do)
+   // scriptable part (the collections tab does not require a uniform selection like field edits do),
+   // of the displayed table only (while inspecting, a part without a startup copy resolves to its
+   // live part, which must not end up in a startup collection)
    vector<IEditable *> targets { displayed };
    for (const std::shared_ptr<EditorUIPart> &part : editor.m_multiSel)
    {
       if (part == editor.m_selection.GetPart())
          continue;
       IEditable *const co = props.GetEditedPart<IEditable>(part->GetEditable());
-      if (co != nullptr && co->GetIScriptable() != nullptr && !co->IsUILocked())
+      if (co != nullptr && co->GetPTable() == displayedTable && co->GetIScriptable() != nullptr && !co->IsUILocked())
          targets.push_back(co);
    }
 
@@ -605,7 +619,7 @@ void PropertiesPanel::RenderCollectionsTab(PropertyPane &props)
             if (std::ranges::find(col->GetParts(), target) != col->GetParts().end())
                memberCount++;
          bool member = memberCount == static_cast<int>(targets.size());
-         ImGui::BeginDisabled(displayed->IsUILocked());
+         ImGui::BeginDisabled(readOnly || displayed->IsUILocked());
          ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, memberCount != 0 && !member);
          if (ImGui::Checkbox("##member", &member))
          {
@@ -618,6 +632,8 @@ void PropertiesPanel::RenderCollectionsTab(PropertyPane &props)
          }
          ImGui::PopItemFlag();
          ImGui::EndDisabled();
+         if (readOnly)
+            ImGui::SetItemTooltip("Edit the membership on the Startup tab: Save does not copy live membership changes back");
          ImGui::SameLine();
          // The collection itself is selectable like in the outliner (the startup one resolves to its live copy)
          if (ImGui::Selectable(col->m_name.c_str()))
@@ -1693,7 +1709,9 @@ void PropertiesPanel::RequestConfirm(const string &message, const std::function<
 {
    m_confirmMessage = message;
    m_confirmAction = action;
-   ImGui::OpenPopup("Confirm Action");
+   // Opened by RenderPopups: popup IDs depend on the ID stack, and requests come from the pane's scrolled
+   // content child while the popup belongs to the pane window
+   m_confirmRequested = true;
 }
 
 void PropertiesPanel::UsersSection(PropertyPane &props, const vector<WhereUsedInfo> &whereUsed)
@@ -1729,7 +1747,12 @@ void PropertiesPanel::UsersSection(PropertyPane &props, const vector<WhereUsedIn
 
 void PropertiesPanel::RenderPopups()
 {
-   // Confirmation popup for destructive resource actions (OpenPopup is called from this window's scope)
+   // Confirmation popup for destructive resource actions (opened here, in the ID scope of BeginPopupModal)
+   if (m_confirmRequested)
+   {
+      ImGui::OpenPopup("Confirm Action");
+      m_confirmRequested = false;
+   }
    if (ImGui::BeginPopupModal("Confirm Action", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
    {
       ImGui::TextWrapped("%s", m_confirmMessage.c_str());
