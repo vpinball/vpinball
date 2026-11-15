@@ -1466,14 +1466,55 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    // In the back (non-topmost) tier the popup video is drawn before the non-popup overlay so that
    // a full-window frame/overlay (e.g. a decorative backglass border) stays above the background
    // videos. In the front (topmost) tier popups are drawn last so callouts stay on top.
-   auto renderScreens = [&renderCtx, &screens](bool popup, bool topmost, int startPass, int endPass)
+   // Heuristic, not PinUP Player's rule: in PinUP the labels of each screen are a window of their own, always on top,
+   // stacked by which screen created or played a media last. Here the labels of a screen positioned on another one are
+   // drawn after the labels of the screens it is positioned on, even when those are in a higher tier: City Hunter shows
+   // its frame as the overlay of a ForceOn backglass and its scores as labels of a DMD screen positioned on it, which
+   // most likely come last in PinUP. Such labels wait for them.
+   vector<const PUPScreen*> labelsDrawn;
+   vector<PUPScreen*> labelsWaiting;
+   auto labelsReady = [&labelsDrawn, root = rootScreen.get()](const PUPScreen* screen)
+   {
+      for (const PUPScreen* parent = screen; parent != root && (parent = parent->GetParent()) != nullptr;)
+         if (parent->GetMode() != PUPScreen::Mode::Off && std::ranges::find(labelsDrawn, parent) == labelsDrawn.end())
+            return false;
+      return true;
+   };
+   auto renderLabels = [&renderCtx, &labelsDrawn, &labelsWaiting, &labelsReady](PUPScreen* screen)
+   {
+      if (!labelsReady(screen))
+      {
+         labelsWaiting.push_back(screen);
+         return;
+      }
+      screen->Render(renderCtx, 3);
+      labelsDrawn.push_back(screen);
+      for (auto it = labelsWaiting.begin(); it != labelsWaiting.end();)
+      {
+         if (labelsReady(*it))
+         {
+            (*it)->Render(renderCtx, 3);
+            labelsDrawn.push_back(*it);
+            labelsWaiting.erase(it);
+            it = labelsWaiting.begin();
+         }
+         else
+            ++it;
+      }
+   };
+   auto renderScreens = [&renderCtx, &screens, &renderLabels](bool popup, bool topmost, int startPass, int endPass)
    {
       for (int pass = startPass; pass <= endPass; pass++)
          std::ranges::for_each(screens,
-            [&renderCtx, pass, popup, topmost](const auto& screen)
+            [&renderCtx, &renderLabels, pass, popup, topmost](const auto& screen)
             {
                if (screen->IsPop() == popup && screen->IsTopmost() == topmost && screen->GetMode() != PUPScreen::Mode::Off)
-                  screen->Render(renderCtx, pass);
+               {
+                  if (pass == 3)
+                     renderLabels(screen.get());
+                  else
+                     screen->Render(renderCtx, pass);
+               }
             });
    };
 
