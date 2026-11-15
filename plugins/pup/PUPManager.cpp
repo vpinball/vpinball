@@ -1466,9 +1466,11 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    // In the back (non-topmost) tier the popup video is drawn before the non-popup overlay so that
    // a full-window frame/overlay (e.g. a decorative backglass border) stays above the background
    // videos. In the front (topmost) tier popups are drawn last so callouts stay on top.
-   // A screen positioned on another one lies on it: its labels are never covered by the labels of the
-   // screens it is positioned on, even when those are in a higher tier (e.g. a ForceOn backglass showing
-   // its frame as an overlay, with the scores on a DMD screen positioned on it). Such labels wait for them.
+   // Heuristic, not PinUP Player's rule: in PinUP the labels of each screen are a window of their own, always on top,
+   // stacked by which screen created or played a media last. Here the labels of a screen positioned on another one are
+   // drawn after the labels of the screens it is positioned on, even when those are in a higher tier: City Hunter shows
+   // its frame as the overlay of a ForceOn backglass and its scores as labels of a DMD screen positioned on it, which
+   // most likely come last in PinUP. Such labels wait for them.
    vector<const PUPScreen*> labelsDrawn;
    vector<PUPScreen*> labelsWaiting;
    auto labelsReady = [&labelsDrawn, root = rootScreen.get()](const PUPScreen* screen)
