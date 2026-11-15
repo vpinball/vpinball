@@ -2724,7 +2724,6 @@ void EditorUI::UpdateEditableList()
       OutlinerPanel::m_anchor.reset();
    // Add UI parts for new editables
    bool needSort = false;
-   ankerl::unordered_dense::set<PartGroup *> newGroups;
    for (const auto &edit : m_table->GetParts())
    {
       if (isLiveObject(edit))
@@ -2737,8 +2736,6 @@ void EditorUI::UpdateEditableList()
             uiPart = std::make_shared<BaseUIPart>(edit);
          if (m_table->m_liveBaseTable)
             edit->SetUIVisible(true);
-         else if (edit->GetItemType() == eItemPartGroup)
-            newGroups.insert(static_cast<PartGroup *>(edit));
          uiPart->SetOutlinerPath(edit->GetPathString(false));
          m_editables.push_back(uiPart);
          m_editableMap[edit] = std::move(uiPart);
@@ -2749,18 +2746,6 @@ void EditorUI::UpdateEditableList()
          needSort = true;
          it->second->SetOutlinerPath(edit->GetPathString(false));
       }
-   }
-   // Win32 UI does not manage PartGroup UI hidden/shown state, so we lazily initialize new groups in a
-   // single pass: hidden by default in edit mode, shown if they contain at least one visible part
-   if (!newGroups.empty())
-   {
-      for (PartGroup *group : newGroups)
-         group->SetUIVisible(false);
-      for (const auto &edit : m_table->GetParts())
-         if (edit->GetItemType() != eItemPartGroup && edit->IsUIVisible(false))
-            for (PartGroup *group = edit->GetPartGroup(); group != nullptr; group = group->GetPartGroup())
-               if (newGroups.contains(group))
-                  group->SetUIVisible(true);
    }
    // Sort in tree order for the outliner (root live objects first, then each group directly followed by its content, siblings by name).
    // Paths are compared name by name: comparing the joined path strings would put "Lights GI/..." between "Lights" and "Lights/..."
