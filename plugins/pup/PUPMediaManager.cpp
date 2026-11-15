@@ -29,6 +29,7 @@ void PUPMediaManager::SetGameTime(double gameTime)
       if (m_player.IsPlaying())
       {
          m_pScreen->OnMediaEnd();
+         m_player.SetVolume(m_pScreen->StartMediaVolume(m_queue.empty() ? m_bg.volume : m_queue.front().volume));
          ApplyDuckPrefix(m_queue.empty() ? m_bg.szPath : m_queue.front().szPath);
          m_pScreen->OnMediaStart(m_queue.empty() ? m_bg.szPath : m_queue.front().szPath);
       }
@@ -55,7 +56,7 @@ void PUPMediaManager::CheckEndTime()
    }
 }
 
-bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length)
+bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, int volume, int priority, PlayAction action, int length)
 {
    const bool isBg = (action == PlayAction::SetBG);
    const bool mainPlaying = !m_queue.empty();
@@ -104,7 +105,9 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
       pPlaylist->MarkPlayed();
       if (sameFile)
       {
-         m_player.SetVolume(volume);
+         if (mainPlaying)
+            m_queue.front().volume = volume;
+         m_pScreen->SetMediaVolume(volume);
          return true;
       }
       m_queue.clear();
@@ -115,7 +118,8 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
    if (mainPlaying && m_queue.front().szPath == szPath)
    {
       LOGD(std::format("MAIN SKIP (same file): screen={}, file={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(szPath.filename())));
-      m_player.SetVolume(volume);
+      m_queue.front().volume = volume;
+      m_pScreen->SetMediaVolume(volume);
       pPlaylist->MarkPlayed();
       return true;
    }
@@ -154,8 +158,8 @@ void PUPMediaManager::StartCurrent()
    if (m_queue.empty())
       return;
    const PlayItem& head = m_queue.front();
-   LOGD(std::format("MAIN PLAY: screen={}, vol={:.0f}, pri={}, file={}", m_pScreen->GetScreenNum(), head.volume, head.priority, PluginStrings::PathToUTF8(head.szPath.filename())));
-   m_player.Play(head.szPath, head.volume, head.resumeAt);
+   LOGD(std::format("MAIN PLAY: screen={}, vol={}, pri={}, file={}", m_pScreen->GetScreenNum(), head.volume, head.priority, PluginStrings::PathToUTF8(head.szPath.filename())));
+   m_player.Play(head.szPath, m_pScreen->StartMediaVolume(head.volume), head.resumeAt);
    m_queue.front().resumeAt = 0.0;
    m_player.SetLoop(head.loop);
    m_loopCount = m_player.GetLoopCount();
@@ -186,7 +190,7 @@ void PUPMediaManager::PlayBackground()
    {
       LOGD(std::format("BG PLAY: screen={}, file={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(m_bg.szPath.filename())));
       m_bgEndTicks = 0;
-      m_player.Play(m_bg.szPath, m_bg.volume, m_bgResumeAt);
+      m_player.Play(m_bg.szPath, m_pScreen->StartMediaVolume(m_bg.volume), m_bgResumeAt);
       m_bgResumeAt = 0.0;
       m_player.SetLoop(true);
       m_loopCount = m_player.GetLoopCount();
