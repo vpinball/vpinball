@@ -1251,8 +1251,7 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
          case 34:
             // "{ ""mt"":301, ""SN"": "& pDisp &", ""FN"": 34 }"             'hideoverlay text during next videoplay on DMD auto return
             // Labels are hidden and LabelSet/LabelShowPage ignored until the current media ends.
-            pScreen->m_hideDuringPlay = true;
-            pScreen->m_hudVisible = false;
+            pScreen->SetHideDuringPlay(true);
             break;
          case 41:
             // 'set safeloop mode on current playing media.  Good for background videos that refresh often?  { "mt":301, "SN": XX, "FN":41 }
