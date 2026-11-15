@@ -37,11 +37,13 @@ void LiveRenderContext::SetPaneProjection(const Matrix3D &mvp, const ImVec2 &ori
    m_projHalfH = halfH;
 }
 
-ImVec2 LiveRenderContext::Project(const Vertex3Ds &v) const
+ImVec2 LiveRenderContext::Project(const Vertex3Ds &v) const { return ProjectTransformed(v, m_spaceTransform); }
+
+ImVec2 LiveRenderContext::ProjectTransformed(const Vertex3Ds &v, const Matrix3D &spaceTransform) const
 {
    const float rClipWidth = m_hasPaneMvp ? m_projHalfW : (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
    const float rClipHeight = m_hasPaneMvp ? m_projHalfH : (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
-   const Matrix3D mvp = m_spaceTransform * (m_hasPaneMvp ? m_paneMvp : m_player->m_renderer->GetMVP().GetModelViewProj(0));
+   const Matrix3D mvp = spaceTransform * (m_hasPaneMvp ? m_paneMvp : m_player->m_renderer->GetMVP().GetModelViewProj(0));
    const float xp = mvp._11 * v.x + mvp._21 * v.y + mvp._31 * v.z + mvp._41;
    const float yp = mvp._12 * v.x + mvp._22 * v.y + mvp._32 * v.z + mvp._42;
    //const float zp = mvp._13 * v.x + mvp._23 * v.y + mvp._33 * v.z + mvp._43;
@@ -97,7 +99,8 @@ void LiveRenderContext::DrawHitObjects(IEditable *editable) const
       bool behindCamera = false;
       for (int i = 0; i < 8; i++)
       {
-         const ImVec2 p = Project(Vertex3Ds((i & 1) ? bounds.right : bounds.left, (i & 2) ? bounds.bottom : bounds.top, (i & 4) ? bounds.zhigh : bounds.zlow));
+         const ImVec2 p
+            = ProjectTransformed(Vertex3Ds((i & 1) ? bounds.right : bounds.left, (i & 2) ? bounds.bottom : bounds.top, (i & 4) ? bounds.zhigh : bounds.zlow), m_colliderSpaceTransform);
          if (p.x == FLT_MAX)
          {
             behindCamera = true;
@@ -114,7 +117,7 @@ void LiveRenderContext::DrawHitObjects(IEditable *editable) const
          return;
       auto project = [this](Vertex3Ds v)
       {
-         const ImVec2 pt = Project(v);
+         const ImVec2 pt = ProjectTransformed(v, m_colliderSpaceTransform);
          return Vertex2D(pt.x, pt.y);
       };
       const ImU32 color = GetColor(m_isSelected);
@@ -154,5 +157,4 @@ void LiveRenderContext::DrawWireframe(IEditable *editable) const
       g_pplayer->m_renderer->DrawWireframe(editable, fillColor, edgeColor, m_shadeMode != Renderer::ShadeMode::NoDepthWireframe);
    }
 }
-
 }

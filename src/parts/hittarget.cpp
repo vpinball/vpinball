@@ -229,6 +229,9 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
    TransformVertices();
 
+   // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
+   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetFlatSimple || m_d.m_targetType == DropTargetSimple)
    {
       ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
@@ -243,8 +246,8 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          const unsigned int i2 = m_indices[i + 2];
 
          const Vertex3Ds rgv3D[3] = { // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
-            Vertex3Ds(m_hitUIVertices[i0].x, m_hitUIVertices[i0].y, m_hitUIVertices[i0].z), Vertex3Ds(m_hitUIVertices[i2].x, m_hitUIVertices[i2].y, m_hitUIVertices[i2].z),
-            Vertex3Ds(m_hitUIVertices[i1].x, m_hitUIVertices[i1].y, m_hitUIVertices[i1].z)
+            uiSpace * Vertex3Ds(m_hitUIVertices[i0].x, m_hitUIVertices[i0].y, m_hitUIVertices[i0].z),
+            uiSpace * Vertex3Ds(m_hitUIVertices[i2].x, m_hitUIVertices[i2].y, m_hitUIVertices[i2].z), uiSpace * Vertex3Ds(m_hitUIVertices[i1].x, m_hitUIVertices[i1].y, m_hitUIVertices[i1].z)
          };
          HitTriangle *ht = new HitTriangle(this, rgv3D, physics->GetPhysicProfile());
          if (ht->IsDegenerate())
@@ -280,9 +283,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             vert.z *= m_d.m_vSize.z;
             vert = fullMatrix * vert;
 
-            rgv3D[i].x = vert.x + m_d.m_vPosition.x;
-            rgv3D[i].y = vert.y + m_d.m_vPosition.y;
-            rgv3D[i].z = vert.z + m_d.m_vPosition.z;
+            rgv3D[i] = uiSpace * Vertex3Ds(vert.x + m_d.m_vPosition.x, vert.y + m_d.m_vPosition.y, vert.z + m_d.m_vPosition.z);
          }
 
          for (unsigned int i = 0; i < num_dropTargetHitPlaneIndices; i += 3)
@@ -322,8 +323,8 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          const unsigned int i2 = m_indices[i + 2];
 
          const Vertex3Ds rgv3D[3] = { // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
-            Vertex3Ds(m_hitUIVertices[i0].x, m_hitUIVertices[i0].y, m_hitUIVertices[i0].z), Vertex3Ds(m_hitUIVertices[i2].x, m_hitUIVertices[i2].y, m_hitUIVertices[i2].z),
-            Vertex3Ds(m_hitUIVertices[i1].x, m_hitUIVertices[i1].y, m_hitUIVertices[i1].z)
+            uiSpace * Vertex3Ds(m_hitUIVertices[i0].x, m_hitUIVertices[i0].y, m_hitUIVertices[i0].z),
+            uiSpace * Vertex3Ds(m_hitUIVertices[i2].x, m_hitUIVertices[i2].y, m_hitUIVertices[i2].z), uiSpace * Vertex3Ds(m_hitUIVertices[i1].x, m_hitUIVertices[i1].y, m_hitUIVertices[i1].z)
          };
          HitTriangle *ht = new HitTriangle(this, rgv3D, physics->GetPhysicProfile());
          if (ht->IsDegenerate())

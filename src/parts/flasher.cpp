@@ -122,11 +122,11 @@ void Flasher::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
       const float height = m_d.m_height;
       const Vertex2D &center = m_curve.GetCenter();
+      // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
       const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-center.x, -center.y, 0.f)
-                             * (((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ))
-                                * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY)))
-                                * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX)))
-                                * Matrix3D::MatrixTranslate(center.x, center.y, height));
+         * (((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY))) * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX)))
+            * Matrix3D::MatrixTranslate(center.x, center.y, height))
+         * GetUISpaceTransform();
 
       for (int i = 0; i < cvertex; i++)
       {

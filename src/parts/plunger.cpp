@@ -126,11 +126,13 @@ void Plunger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       const float xMax = m_d.m_v.x + m_d.m_width;
       const float yMin = m_d.m_v.y - m_d.m_stroke; // furthest travel of the tip
       const float yMax = m_d.m_v.y + m_d.m_height; // housing behind the plunger
+      // The UI quadtree is a single quadtree in the playfield space: the UI collider bakes the part's reference space transform
+      const Matrix3D uiSpace = GetUISpaceTransform();
       Vertex3Ds *const rgv3D = new Vertex3Ds[4]; // CCW winding for upward facing normal
-      rgv3D[0] = Vertex3Ds(xMin, yMin, height + 2.f * m_d.m_width); // at the top of the rod
-      rgv3D[1] = Vertex3Ds(xMin, yMax, height + 2.f * m_d.m_width);
-      rgv3D[2] = Vertex3Ds(xMax, yMax, height + 2.f * m_d.m_width);
-      rgv3D[3] = Vertex3Ds(xMax, yMin, height + 2.f * m_d.m_width);
+      rgv3D[0] = uiSpace * Vertex3Ds(xMin, yMin, height + 2.f * m_d.m_width); // at the top of the rod
+      rgv3D[1] = uiSpace * Vertex3Ds(xMin, yMax, height + 2.f * m_d.m_width);
+      rgv3D[2] = uiSpace * Vertex3Ds(xMax, yMax, height + 2.f * m_d.m_width);
+      rgv3D[3] = uiSpace * Vertex3Ds(xMax, yMin, height + 2.f * m_d.m_width);
       Hit3DPoly *const ph3dpoly = new Hit3DPoly(this, rgv3D, 4);
       ph3dpoly->m_ObjType = ePlunger;
       AddHitObject(physics, ph3dpoly, isUI);

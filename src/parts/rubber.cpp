@@ -417,17 +417,20 @@ void Rubber::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       GenerateMesh(6, true); //!! adapt hacky code in the function if changing the "6" here
    UpdateRubber(false, m_d.m_hitHeight);
 
+   // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
+   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+
    // add collision triangles and edges
    for (size_t i = 0; i < m_ringIndices.size(); i += 3)
    {
       Vertex3Ds rgv3D[3];
       // HitTriangle wants CCW vertices, but for rendering we have them in CW order
       const Vertex3D_NoTex2 *v = &m_vertices[m_ringIndices[i]];
-      rgv3D[0] = Vertex3Ds(v->x, v->y, v->z);
+      rgv3D[0] = uiSpace * Vertex3Ds(v->x, v->y, v->z);
       v = &m_vertices[m_ringIndices[i + 2]];
-      rgv3D[1] = Vertex3Ds(v->x, v->y, v->z);
+      rgv3D[1] = uiSpace * Vertex3Ds(v->x, v->y, v->z);
       v = &m_vertices[m_ringIndices[i + 1]];
-      rgv3D[2] = Vertex3Ds(v->x, v->y, v->z);
+      rgv3D[2] = uiSpace * Vertex3Ds(v->x, v->y, v->z);
       HitTriangle *ht = new HitTriangle(this, rgv3D, physics->GetPhysicProfile());
       if (ht->IsDegenerate())
          delete ht;

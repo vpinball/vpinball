@@ -275,6 +275,10 @@ public:
 
    void SetPartGroup(class PartGroup *partGroup);
    class PartGroup* GetPartGroup() const { return m_partGroup; }
+   // The UI quadtree is a single quadtree with all the hit objects expressed in the playfield space: parts in a non
+   // playfield reference space must bake this transform into the coordinates of their UI hit objects (identity for
+   // the playfield space and the 2D desktop backdrop plane)
+   class Matrix3D GetUISpaceTransform() const;
    string GetPathString(const bool isDirOnly) const;
    bool IsChild(const PartGroup* group) const;
 

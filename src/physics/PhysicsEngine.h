@@ -176,6 +176,8 @@ private:
    HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
 #endif
 
+   // The UI quadtree is a single quadtree with all the hit objects expressed in the playfield space: parts in a
+   // non playfield reference space bake their space transform into their UI colliders (see IEditable::GetUISpaceTransform)
    AsyncDynamicQuadTree *GetUIQuadTree(); // Trigger UI quadtree creation/update
    AsyncDynamicQuadTree* m_UIQuadTtree = nullptr;
 

@@ -140,12 +140,16 @@ void Light::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       // Backdrop lights are flat, in the 2D backdrop XY plane
       const float height = m_desktopBackdrop ? 0.f : m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
+      // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
+      const Matrix3D uiSpace = GetUISpaceTransform();
+
       switch (m_d.m_shape)
       {
       case ShapeCircle:
       default:
       {
-         Hit3DPoly *const pcircle = new Hit3DPoly(this, m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_falloff, 32);
+         const Vertex3Ds c = uiSpace * Vertex3Ds(m_d.m_vCenter.x, m_d.m_vCenter.y, height);
+         Hit3DPoly *const pcircle = new Hit3DPoly(this, c.x, c.y, c.z, m_d.m_falloff, 32);
          AddHitObject(physics, pcircle, isUI);
          break;
       }
@@ -161,11 +165,7 @@ void Light::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          Vertex3Ds *const rgv3d = new Vertex3Ds[cvertex];
 
          for (int i = 0; i < cvertex; i++)
-         {
-            rgv3d[i].x = vvertex[i].x;
-            rgv3d[i].y = vvertex[i].y;
-            rgv3d[i].z = height;
-         }
+            rgv3d[i] = uiSpace * Vertex3Ds(vvertex[i].x, vvertex[i].y, height);
 
          Hit3DPoly *const ph3dp = new Hit3DPoly(this, rgv3d, cvertex);
          AddHitObject(physics, ph3dp, isUI);

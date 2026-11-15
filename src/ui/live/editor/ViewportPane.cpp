@@ -1064,6 +1064,8 @@ bool ViewportPane::SetupOverlay(LiveRenderContext* const ctx, ImDrawList* const 
    if (!GetViewProjLH(view, proj) || m_imageRect.Width() <= 0.f || m_imageRect.Height() <= 0.f)
       return false;
    ctx->SetPaneProjection(view * proj, ImVec2(m_imageRect.x0, m_imageRect.y0), ImVec2(1.f, 1.f), m_imageRect.Width() * 0.5f, m_imageRect.Height() * 0.5f);
+   // The UI colliders are kept in the playfield space (the UI quadtree is a single quadtree): re-express them in the view's space
+   ctx->SetColliderSpaceTransform(Matrix3D::MatrixInverse(ViewSpaceTransform()));
    if (drawList != nullptr)
       drawList->PushClipRect(ImVec2(m_imageRect.x0, m_imageRect.y0), ImVec2(m_imageRect.x1, m_imageRect.y1), true);
    return true;
@@ -1941,6 +1943,10 @@ void ViewportPane::RayCastParts(const ImVec2& mousePos, vector<HitTestResult>& v
    Vertex3Ds v3d, v3d2;
    if (!PickRay(mousePos, v3d, v3d2))
       return;
+   // The UI quadtree is a single quadtree in the playfield space: re-express the pick ray there
+   const Matrix3D toPlayfield = ViewSpaceTransform();
+   v3d = toPlayfield * v3d;
+   v3d2 = toPlayfield * v3d2;
 
    // FIXME This is not really great as:
    // - picking depends on what was visible/enabled when quadtree was built (lazily at first pick), and also uses the physics quadtree for some parts
@@ -1973,6 +1979,8 @@ void ViewportPane::HitTestMarkers(const ImVec2& mousePos, vector<std::pair<float
    // Depth along the pick ray, in the same [0,1] parameter space as the collider hit times
    const auto rayParam
       = [&nearPt, &dir, dirLenSq](const Vertex3Ds& p) { return (dirLenSq > 1e-10f) ? ((p.x - nearPt.x) * dir.x + (p.y - nearPt.y) * dir.y + (p.z - nearPt.z) * dir.z) / dirLenSq : 0.5f; };
+   // The UI colliders are kept in the playfield space (the UI quadtree is a single quadtree): re-express their bounds in the view's space
+   const Matrix3D colliderToView = Matrix3D::MatrixInverse(ViewSpaceTransform());
    for (const auto& uiPart : m_editor.m_editables)
    {
       IEditable* const editable = uiPart->GetEditable();
@@ -2008,7 +2016,7 @@ void ViewportPane::HitTestMarkers(const ImVec2& mousePos, vector<std::pair<float
          float objT = FLT_MAX;
          for (int i = 0; i < 8; ++i)
          {
-            const Vertex3Ds c((i & 1) ? bb.right : bb.left, (i & 2) ? bb.bottom : bb.top, (i & 4) ? bb.zhigh : bb.zlow);
+            const Vertex3Ds c = colliderToView * Vertex3Ds((i & 1) ? bb.right : bb.left, (i & 2) ? bb.bottom : bb.top, (i & 4) ? bb.zhigh : bb.zlow);
             const ImVec2 p = ctx.Project(c);
             if (p.x == FLT_MAX)
             {
@@ -2902,7 +2910,11 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
          {
             const Vertex2D pos = UnprojectToPlane(ImGui::GetMousePos(), m_editor.m_pointDragZ);
-            const Vertex2D delta(pos.x - m_editor.m_pointDragPos.x, pos.y - m_editor.m_pointDragPos.y);
+            // The unprojected points are in the space the pane's view renders in: re-express the drag
+            // delta in the edited part's reference space (as a direction, the translation does not apply)
+            const Matrix3D viewToPart = Matrix3D::MatrixInverse(PartSpaceToView(m_editor.m_pointEditPart->GetEditable()));
+            const Vertex3Ds d3 = viewToPart.MultiplyVectorNoTranslate(Vertex3Ds(pos.x - m_editor.m_pointDragPos.x, pos.y - m_editor.m_pointDragPos.y, 0.f));
+            const Vertex2D delta(d3.x, d3.y);
             if (m_editor.m_pointDragPending)
             {
                const ImVec2 dragDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
