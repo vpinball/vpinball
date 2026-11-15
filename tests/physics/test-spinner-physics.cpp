@@ -171,6 +171,45 @@ TEST_CASE("Spinner: ball contact drives the plate")
    }
 }
 
+// A passing ball pushes the plate ahead, and the plate keeps spinning forward once the ball has left (instead of following
+// the ball back down and spinning backwards). Under 10.8 the spin left is the axis kick of HitSpinner::Collide (ball
+// speed / half the axle height, damped), so that the Spin events stay the 10.8 ones.
+TEST_CASE("Spinner: a passing ball leaves the plate spinning forward")
+{
+   for (const PhysicProfile profile : { PhysicProfile::V10_8, PhysicProfile::V10_9 })
+      for (const float v : { 5.f, 20.f, 50.f })
+      {
+         CAPTURE(profile);
+         CAPTURE(v);
+         PhysicsTestHarness harness;
+         harness.SetGravity(0.f, 0.f);
+         harness.GetTable()->m_physicProfile = profile;
+         Spinner* const spinner = AddTestSpinner(harness);
+         Ball* const ball = harness.AddBall(500.f, 1100.f, 0.f, 0.f, -v, 0.f);
+         harness.Start();
+
+         REQUIRE(harness.AdvanceUntil([&] { return ball->m_hitBall.m_d.m_pos.y < 900.f; }, 5000)); // well past the plate
+         float prev = SpinnerAngleDeg(spinner), total = 0.f;
+         for (int i = 0; i < 20; ++i)
+         {
+            harness.AdvanceMs(1);
+            float d = SpinnerAngleDeg(spinner) - prev;
+            d -= 360.f * floorf(d / 360.f + 0.5f); // the angle loops at 360
+            total += d;
+            prev = SpinnerAngleDeg(spinner);
+         }
+         const float rate = total / 20.f; // deg/ms
+         const float kick = RADTOANG(v / (60.f * 0.5f) * 0.999f) * 0.1f; // axis kick, rad/10ms -> deg/ms
+         CHECK(rate > 0.f); // forward: the direction the ball pushed the plate
+         if (v < 20.f)
+            continue; // a slow ball takes long to clear the plate, the spin has been damped meanwhile
+         if (profile == PhysicProfile::V10_8)
+            CHECK(rate == doctest::Approx(kick).epsilon(0.05));
+         else
+            CHECK(rate > 0.8f * kick);
+      }
+}
+
 TEST_CASE("Spinner: plate respects its angle limits")
 {
    PhysicsTestHarness harness;

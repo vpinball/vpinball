@@ -45,34 +45,31 @@ public:
    Vertex2D GetCenter() const override { return Vertex2D(0.f, 0.f); }
    void Translate(const Vertex2D &offset) override { }
 
-   // IHitable: contributes the pending objects to the engine (physics colliders only,
-   // they are not registered for UI picking). The part owns them once added.
+   // IHitable: contributes all the objects to the engine (physics colliders only, not registered for
+   // UI picking). The shim keeps owning them, so that a live add (the engine releases the part, then
+   // sets it up again) contributes the objects added before as well.
    void PhysicSetup(PhysicsEngine *physics, const bool isUI) override
    {
       if (isUI)
          return;
-      for (; m_added < m_objects.size(); ++m_added)
+      for (const std::unique_ptr<HitObject> &obj : m_objects)
       {
-         HitObject *const obj = m_objects[m_added].release();
          obj->m_editable = this;
-         AddHitObject(physics, obj, false);
+         obj->SetPhysics(physics);
+         obj->CalcHitBBox();
+         TrackHitObject(obj.get(), false);
       }
    }
    void PhysicRelease(PhysicsEngine *physics, const bool isUI) override
    {
-      if (isUI)
-         return;
-      ReleaseHitObjects(isUI); // Deletes the contributed objects
-      // Drop the slots of contributed objects, keeping the ones added but not set up yet
-      m_objects.erase(m_objects.begin(), m_objects.begin() + m_added);
-      m_added = 0;
+      if (!isUI)
+         UntrackHitObjects(false); // Owned by m_objects
    }
 
    void Add(std::unique_ptr<HitObject> hitObject) { m_objects.push_back(std::move(hitObject)); }
 
 private:
    vector<std::unique_ptr<HitObject>> m_objects;
-   size_t m_added = 0; // objects already contributed to the engine (PhysicSetup is re-entrant for live adds)
 };
 
 

@@ -517,7 +517,9 @@ void GateMoverObject::TrackAxisCrossings()
       float s;
       if (FindIndexOf(m_physics->GetBalls(), pball) < 0 || pball->m_d.m_lockedInKicker || !IsInCrossingRegion(pball->m_d, s))
          continue;
-      if (m_ballS[i] * s < 0.f) // axis-plane crossing since the last step
+      // Axis-plane crossing since the last step (a position on the plane counts as the -m_normal side, so a step landing exactly on it is not missed).
+      // One-way gates only count crossings in their open direction (+m_normal to -m_normal) like the legacy collider: a ball rolling back out from under the lifted wire/plate fires no Hit
+      if ((m_ballS[i] > 0.f) != (s > 0.f) && (m_pgate->m_d.m_twoWay || m_ballS[i] > 0.f))
          m_pHitGate->FireHitEvent(pball);
       m_balls[w] = pball;
       m_ballS[w] = s;
@@ -556,10 +558,14 @@ float HitGate::HitTest(const BallS& ball, const float dtime, CollisionEvent& col
       float appliedAngle;
       bool blocked;
       Vertex3Ds normal;
+      // Blocked contacts (wire/plate swung into the ball, e.g. falling back onto a following ball) are no rigid hits:
+      // the mover stops the light wire/plate on the ball, which keeps its course
       if (m_gateMover.m_lamina.IsInsideZone(ball) && m_gateMover.m_lamina.EvalContact(ball, curApplied, appliedAngle, blocked, normal))
       {
-         const float evalAngle = blocked ? curApplied : m_gateMover.ClampAppliedAngle(appliedAngle);
-         if ((!blocked && evalAngle == appliedAngle) || !m_gateMover.m_lamina.Overlaps(ball, evalAngle, coll.m_hitnormal))
+         if (blocked)
+            return -1.0f;
+         const float evalAngle = m_gateMover.ClampAppliedAngle(appliedAngle);
+         if (evalAngle == appliedAngle || !m_gateMover.m_lamina.Overlaps(ball, evalAngle, coll.m_hitnormal))
             return -1.0f;
          return 0.0f;
       }
@@ -569,8 +575,8 @@ float HitGate::HitTest(const BallS& ball, const float dtime, CollisionEvent& col
       const float t = m_gateMover.m_lamina.HitTestContact(ball, dtime, curApplied, s, h, u);
       if (t < 0.f || !m_gateMover.m_lamina.SolveContact(s, h, u, ball.m_radius, curApplied, appliedAngle, blocked, normal))
          return -1.0f;
-      if (!blocked && m_gateMover.ClampAppliedAngle(appliedAngle) == appliedAngle)
-         return -1.0f; // the wire/plate can follow: the mover will drag it next step
+      if (blocked || m_gateMover.ClampAppliedAngle(appliedAngle) == appliedAngle)
+         return -1.0f; // the wire/plate can follow (or is stopped by the ball): the mover handles it next step
       coll.m_hitnormal = normal;
       return t;
    }
@@ -691,73 +697,94 @@ void HitGate::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* dra
 void GateMoverObject::UpdateDisplacements(const float dtime)
 {
    const bool profile109 = GetPhysicProfile() == PhysicProfile::V10_9;
-   // Track the balls near the gate and drag the wire/plate to the angle matching
-   // the contact. The drag only moves the rendered wire/plate and runs under all
-   // profiles; the events and the blocking segment are part of the 10.9 physics
-   // and stay profile-gated.
+   // The balls push the wire/plate (visual only under 10.8, whose ball physics stay the legacy axis segments).
+   // The wire/plate is light compared to the ball, so the contact is a one-sided constraint: a ball pushes it ahead but never
+   // pulls it, it keeps its swing once the ball moves away, and a ball in its way stops it instead of being bounced. The
+   // regular swing below (limits, EOS/BOS events, gravity, integration) then runs as for a free swing.
+   // V10_9: the wire/plate takes the speed of the pushing ball.
+   // V10_8: the push is capped at the axis kick of HitGate::Collide and only speeds the wire/plate up in its current
+   // direction, except near its rest position where a ball inside it holds it on its stop. The swing, hence the limit
+   // events, stay close to 10.8; only, the wire/plate no longer clips through a slow ball (it lifts as far as the ball
+   // needs to pass under it) nor through a ball resting against it
    if (!m_forcedMove && m_pHitGate->m_enabled && dtime > 0.f)
    {
       if (profile109)
          TrackAxisCrossings();
-      float target = m_angle;
-      float maxDrag = 0.f;
-      bool contact = false;
-      const float curApplied = m_pgate->m_d.m_twoWay ? m_angle : -m_angle;
-      for (HitBall* const pball : m_physics->GetBalls())
-      {
-         if (pball->m_d.m_lockedInKicker || !m_lamina.IsInsideZone(pball->m_d))
-            continue;
-         float appliedAngle;
-         bool ballBlocked;
-         Vertex3Ds normal;
-         if (!m_lamina.EvalContact(pball->m_d, curApplied, appliedAngle, ballBlocked, normal))
-            continue;
-         contact = true;
-         // A blocked contact (at a limit or pressing the wire/plate through) holds
-         // it at its current angle; a followed one drags it to the contact angle
-         const float clamped = ballBlocked ? curApplied : ClampAppliedAngle(appliedAngle);
-         const bool atLimit = ballBlocked || clamped != appliedAngle;
-         const float t = m_pgate->m_d.m_twoWay ? clamped : -clamped;
-         if (fabsf(t - m_angle) > maxDrag)
+      const bool twoWay = m_pgate->m_d.m_twoWay;
+      const float sign = twoWay ? 1.f : -1.f; // applied angle (the rendered one) = sign * m_angle
+      if (twoWay || !m_hitDirection) // the 10.8 one-way bounce-back swings the other way: left to the legacy swing
+         for (HitBall* const pball : m_physics->GetBalls())
          {
-            maxDrag = fabsf(t - m_angle);
-            target = t;
-            if (profile109 && atLimit && !m_atLimit)
-               m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG((t - m_angle) / dtime)));
-            m_atLimit = atLimit;
+            if (pball->m_d.m_lockedInKicker || !m_lamina.IsInsideZone(pball->m_d))
+               continue;
+            const float curApplied = sign * m_angle;
+            float appliedAngle;
+            bool blocked;
+            Vertex3Ds normal;
+            if (!m_lamina.EvalContact(pball->m_d, curApplied, appliedAngle, blocked, normal))
+               continue;
+            // Rotating the wire/plate by +1 (applied) moves its contact point by lever along the contact normal
+            // (from the wire/plate toward the ball): it reaches into the ball when it moves along the normal faster than the ball
+            const float s = (pball->m_d.m_pos.x - m_lamina.m_center.x) * m_lamina.m_normal.x + (pball->m_d.m_pos.y - m_lamina.m_center.y) * m_lamina.m_normal.y;
+            const float h = pball->m_d.m_pos.z - m_lamina.m_pivotZ;
+            const float ca = cosf(curApplied), sa = sinf(curApplied);
+            const float contactAlong = clamp(s * sa - h * ca, m_lamina.m_alongMin, m_lamina.m_alongMax);
+            const float ns = normal.x * m_lamina.m_normal.x + normal.y * m_lamina.m_normal.y;
+            const float lever = contactAlong * (ca * ns + sa * normal.z);
+            if (fabsf(lever) < 1e-3f)
+               continue; // contact on the pivot or at grazing incidence: cannot push
+            const float minLever = 0.25f * m_lamina.m_alongMax;   // bounds the swing a contact close to the pivot gives
+            const float effLever = lever >= 0.f ? max(lever, minLever) : min(lever, -minLever);
+            const float wApplied = sign * m_anglespeed;
+            const float ballSpeed = pball->m_d.m_vel.Dot(normal); // ball speed away from the wire/plate
+            Vertex3Ds n;
+            const bool penetrating = m_lamina.Overlaps(pball->m_d, curApplied, n); // inside the ball, not only touching it
+            // V10_8: a ball only stops the wire/plate close to its rest position (holding it on its stop); higher up the
+            // wire/plate keeps its legacy free swing, through the ball, so that its limit events stay the 10.8 ones
+            const float restApplied = twoWay ? copysignf(m_angleMin, curApplied) : -m_angleMin;
+            const bool holds = profile109 || (penetrating && fabsf(curApplied - restApplied) < (float)(20.0 * M_PI / 180.0));
+            if (wApplied * lever > ballSpeed) // reaches into the ball: takes the ball's speed
+            {
+               float wPushed = ballSpeed / effLever;
+               // Pushed against a limit: the wire/plate cannot follow (two-way gates then bounce the ball in HitTest,
+               // one-way gates block it with their segment)
+               if ((wPushed > 0.f && ClampAppliedAngle(curApplied + 1e-3f) <= curApplied) || (wPushed < 0.f && ClampAppliedAngle(curApplied - 1e-3f) >= curApplied))
+                  wPushed = 0.f;
+               bool apply = true;
+               if (!profile109)
+               {
+                  // V10_8: no faster than the axis kick, and only slowed down or reversed when the ball holds it
+                  const float hAxis = m_pgate->m_d.m_height * 0.5f;
+                  const float vs = pball->m_d.m_vel.x * m_lamina.m_normal.x + pball->m_d.m_vel.y * m_lamina.m_normal.y;
+                  const float kick = fabsf(hAxis) > 1.0f ? fabsf(vs / hAxis) : fabsf(vs);
+                  wPushed = clamp(wPushed, -kick, kick);
+                  apply = holds || wApplied == 0.f || (wPushed * wApplied > 0.f && fabsf(wPushed) > fabsf(wApplied));
+               }
+               if (apply)
+                  m_anglespeed = sign * wPushed;
+            }
+            // A wire/plate inside the ball is moved out to the contact angle closest to its current one, in the direction
+            // leaving the ball at the contact (never over the ball: a ball pressing it on its stop leaves it there) and,
+            // unless the ball holds it (V10_8), along its motion. A blocked contact (swung through) is left to the push.
+            if (penetrating && !blocked)
+            {
+               const float d = ClampAppliedAngle(appliedAngle) - curApplied;
+               if (d * lever < 0.f && (holds || m_anglespeed == 0.f || d * sign * m_anglespeed > 0.f))
+                  m_angle += sign * d;
+            }
          }
-         else if (!atLimit)
-            m_atLimit = false;
-      }
-      // The one-way blocking segment stands for the wire/plate on its stop: it
-      // only stands while the wire/plate has fallen back to its rest position.
-      // A lifted wire/plate (pushed open, followed through or still swinging
-      // back) never blocks: a ball stopped under it can always roll back out.
-      if (m_pHitGate->m_pblockseg)
-         m_pHitGate->m_pblockseg->m_enabled = m_pgate->m_d.m_collidable && m_angle <= m_angleMin + 1e-4f;
-      if (contact)
-      {
-         // Drag the wire/plate toward the contact angle at a bounded rate:
-         // tracking a fast ball can need ~1 rad/ms, but an unbounded residual
-         // speed would be released into the free-swing path when the contact
-         // ends (gate stuck open or rattling against its limits)
-         const float maxRate = 20.f; // rad per 10ms
-         const float prevAngle = m_angle;
-         m_angle += clamp(target - m_angle, -maxRate * dtime, maxRate * dtime);
-         m_anglespeed = (m_angle - prevAngle) / dtime;
-         return;
-      }
-      m_atLimit = false;
    }
    else
    {
-      // No ball tracking (script-driven move or collider disabled): the blocking
-      // segment simply follows the wire's rest position
-      if (m_pHitGate->m_pblockseg)
-         m_pHitGate->m_pblockseg->m_enabled = m_pgate->m_d.m_collidable && m_angle <= m_angleMin + 1e-4f;
       m_balls.clear();
       m_ballS.clear();
    }
+   // The one-way blocking segment stands for the wire/plate on its stop: it
+   // only stands while the wire/plate has fallen back to its rest position.
+   // A lifted wire/plate (pushed open, followed through or still swinging
+   // back) never blocks: a ball stopped under it can always roll back out
+   if (m_pHitGate->m_pblockseg)
+      m_pHitGate->m_pblockseg->m_enabled = m_pgate->m_d.m_collidable && m_angle <= m_angleMin + 1e-4f;
    if (m_pgate->m_d.m_twoWay)
    {
       if (fabsf(m_angle) > m_angleMax)
@@ -766,7 +793,9 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
             m_angle = -m_angleMax;
          else
             m_angle = m_angleMax;
-         m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed))); // send EOS event
+         if (!m_atLimit) // once per stay at the limit (a ball holding the wire/plate against it pushes it there every step)
+            m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed))); // send EOS event
+         m_atLimit = true;
          if (!m_forcedMove)
          {
             m_anglespeed = -m_anglespeed;
@@ -796,7 +825,9 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
       if (direction * m_angle > m_angleMax)
       {
          m_angle = direction * m_angleMax;
-         m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed))); // send EOS event
+         if (!m_atLimit) // once per stay at the limit (see above)
+            m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed))); // send EOS event
+         m_atLimit = true;
          if (!m_forcedMove)
          {
             m_anglespeed = -m_anglespeed;
@@ -818,6 +849,8 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
             m_anglespeed = 0.0f;
       }
    }
+   if (fabsf(m_angle) < m_angleMax)
+      m_atLimit = false;
    if(m_anglespeed == 0.0f)
       m_forcedMove = false;
 
@@ -974,47 +1007,66 @@ void HitSpinner::Collide(const CollisionEvent& coll)
 
 void SpinnerMoverObject::UpdateDisplacements(const float dtime)
 {
-   // Drive the rendered plate from the ball contact (visual only, all profiles):
-   // while a ball touches the plate, steer the rotation toward the angle matching
-   // the contact so the plate follows the ball instead of only getting a kick
-   // from the axis segments (which keep handling the ball physics unchanged)
+   // The ball pushes the plate (visual only, all profiles: the axis segments keep handling the ball physics). The plate is
+   // light compared to the ball, so the contact is a one-sided constraint: the ball pushes the plate ahead but never pulls
+   // it back, and once the ball moves away the plate keeps the spin it was given (and the axis kick of HitSpinner::Collide):
+   // it keeps turning forward instead of following the ball.
+   // V10_9: a plate moving into a ball is stopped by it (e.g. a ball resting under it).
+   // V10_8: the push is capped at the axis kick and only speeds the plate up in its current direction, so the spin a ball
+   // leaves, hence the Spin events, stay close to 10.8 (a plate spinning into a ball passes through it, as before)
    if (dtime > 0.f && m_pHitSpinner->m_enabled)
    {
-      const float curApplied = -m_angle; // the plate renders RotateX(-m_angle)
-      float delta = 0.f;
-      bool contact = false;
+      const bool profile109 = GetPhysicProfile() == PhysicProfile::V10_9;
       for (HitBall* const pball : m_physics->GetBalls())
       {
          if (pball->m_d.m_lockedInKicker || !m_lamina.IsInsideZone(pball->m_d))
             continue;
+         const float curApplied = -m_angle; // the plate renders RotateX(-m_angle)
          float appliedAngle;
          bool blocked;
          Vertex3Ds normal;
          if (!m_lamina.EvalContact(pball->m_d, curApplied, appliedAngle, blocked, normal))
             continue;
-         contact = true;
-         float d = appliedAngle - curApplied;
-         d -= (float)(2.0 * M_PI) * floorf(d / (float)(2.0 * M_PI) + 0.5f); // nearest revolution to the current angle
-         if (fabsf(d) > fabsf(delta))
+         // Rotating the plate by +1 (applied) moves its contact point by lever along the contact normal (from the plate
+         // toward the ball): it reaches into the ball when it moves along the normal faster than the ball
+         const float s = (pball->m_d.m_pos.x - m_lamina.m_center.x) * m_lamina.m_normal.x + (pball->m_d.m_pos.y - m_lamina.m_center.y) * m_lamina.m_normal.y;
+         const float h = pball->m_d.m_pos.z - m_lamina.m_pivotZ;
+         const float ca = cosf(curApplied), sa = sinf(curApplied);
+         const float contactAlong = clamp(s * sa - h * ca, m_lamina.m_alongMin, m_lamina.m_alongMax);
+         const float ns = normal.x * m_lamina.m_normal.x + normal.y * m_lamina.m_normal.y;
+         const float lever = contactAlong * (ca * ns + sa * normal.z);
+         if (fabsf(lever) < 1e-3f)
+            continue; // contact on the pivot or at grazing incidence: cannot push
+         const float minLever = 0.25f * m_lamina.m_alongMax; // bounds the spin a contact close to the pivot gives
+         const float effLever = lever >= 0.f ? max(lever, minLever) : min(lever, -minLever);
+         const float wApplied = -m_anglespeed;
+         const float ballSpeed = pball->m_d.m_vel.Dot(normal); // ball speed away from the plate
+         if (wApplied * lever > ballSpeed) // the plate reaches into the ball: it takes the ball's speed
          {
-            delta = d;
-            // The angular speed this ball can leave to the plate once the
-            // contact ends: same massless kinematic model as the axis kick in
-            // Collide (ball speed through the swing plane at the axis height),
-            // so a slow ball only leaves a slow spin
-            const float h = m_pspinner->m_d.m_height * 0.5f;
-            const float vs = pball->m_d.m_vel.x * m_lamina.m_normal.x + pball->m_d.m_vel.y * m_lamina.m_normal.y;
-            m_releaseSpeed = fabsf(h) > 1.0f ? fabsf(vs / h) : fabsf(vs);
+            float wPushed = ballSpeed / effLever;
+            if (!profile109)
+            {
+               // V10_8: never slowed down or reversed, and no faster than the axis kick of HitSpinner::Collide (the plate
+               // may lag the ball, but the spin left to it, hence the Spin events, stays the 10.8 one)
+               const float hAxis = m_pspinner->m_d.m_height * 0.5f;
+               const float vs = pball->m_d.m_vel.x * m_lamina.m_normal.x + pball->m_d.m_vel.y * m_lamina.m_normal.y;
+               const float kick = (fabsf(hAxis) > 1.0f ? fabsf(vs / hAxis) : fabsf(vs)) * m_damping;
+               wPushed = clamp(wPushed, -kick, kick);
+            }
+            if (profile109 || wApplied == 0.f || (wPushed * wApplied > 0.f && fabsf(wPushed) > fabsf(wApplied)))
+               m_anglespeed = -wPushed;
+         }
+         // A plate inside the ball is moved out to the contact angle closest to its current one, in the direction leaving
+         // the ball at the contact (never over the ball) and, for V10_8, along the plate's motion
+         Vertex3Ds n;
+         if (!blocked && m_lamina.Overlaps(pball->m_d, curApplied, n))
+         {
+            float d = appliedAngle - curApplied;
+            d -= (float)(2.0 * M_PI) * floorf(d / (float)(2.0 * M_PI) + 0.5f);
+            if (d * lever < 0.f && (profile109 || m_anglespeed == 0.f || d * m_anglespeed < 0.f)) // applied angle is -m_angle
+               m_angle -= d;
          }
       }
-      if (contact)
-         m_anglespeed = clamp(-delta / dtime, -20.f, 20.f); // applied angle is -m_angle; bounded rate like the gate drag (rad per 10ms)
-      else if (m_hadContact)
-         // The contact just ended: the steering rate is artificial (it can be
-         // large when the contact angle whips near the pivot), keep only the
-         // spin the ball could actually transfer
-         m_anglespeed = clamp(m_anglespeed, -m_releaseSpeed, m_releaseSpeed);
-      m_hadContact = contact;
    }
    if (m_pspinner->m_d.m_angleMin != m_pspinner->m_d.m_angleMax) // blocked spinner, limited motion spinner
    {

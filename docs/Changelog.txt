@@ -287,13 +287,17 @@ FIXES:
     limits (shifted by a non-zero rest angle, one or both sides depending on the gate being one-way or two-way), and each
     ball inside it is tracked to solve the wire/plate angle matching the contact. The ball is only stopped when the wire
     cannot follow (closed side of a one-way gate, or pushed against an angle limit), giving more accurate pass-through and
-    bounce behavior. Hit events keep their previous behavior (one per axis plane crossing)
+    bounce behavior; a wire/plate swinging back into a following ball is stopped by it instead of bouncing it. Hit events
+    keep their previous behavior (one per axis plane crossing, open direction only for one-way gates)
 
-- the gate wire/plate is now animated from the ball contact under all physics profiles (the ball pushes the wire/plate
-  as it passes, instead of the wire/plate lagging the axis hit), without changing ball behavior under the 10.8 profile
+- the gate wire/plate is now pushed by the ball contact under all physics profiles (the ball pushes the wire/plate
+  as it passes, instead of the wire/plate lagging the axis hit and clipping through the ball), without changing ball
+  behavior under the 10.8 profile. Under the 10.8 profile the free swing, hence the limit events, stay close to 10.8
 
-- the spinner plate is now animated from the ball contact under all physics profiles (the plate follows the ball as it
-  passes and rests on a stopped ball instead of clipping through it), without changing ball behavior
+- the spinner plate is now pushed by the ball contact under all physics profiles (the ball pushes the plate ahead as it
+  passes, the plate keeps spinning forward once the ball has left, and rests on a stopped ball instead of clipping through
+  it), without changing ball behavior. Under the 10.8 profile the spin a passing ball leaves to the plate, hence the Spin
+  events, match the 10.8 one
   . ramp side walls are now the exact sloped quads instead of rectangles subdivided along the slope whose height window
     was swapped on the direction keeping the ball on the ramp, leaving dead zones near segment ends where the ball
     escaped through the wall on steep sections (and phantom hits for balls rolling below raised parts)

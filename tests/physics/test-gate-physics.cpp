@@ -9,6 +9,7 @@
 #include "parts/pintable.h"
 #include "physics/PhysicsEngine.h"
 #include "physics/collide.h"
+#include "physics/collideex.h"
 #include "physics/hitball.h"
 #include "physics/physconst.h"
 
@@ -52,6 +53,27 @@ static LineSeg *FindBlockSeg(PhysicsTestHarness &harness, const Gate *gate)
       if (LineSeg *const seg = dynamic_cast<LineSeg *>(hobj); seg && seg->m_editable == gate)
          return seg;
    return nullptr;
+}
+
+// Counts the Hit events of the gate's collider (installed as its event sink in place of the gate)
+class GateHitCounter final : public IFireEvents
+{
+public:
+   void FireGroupEvent(const int dispid) override
+   {
+      if (dispid == DISPID_HitEvents_Hit)
+         ++m_hits;
+   }
+   IDispatch *GetIDispatch() override { return nullptr; }
+   const IDispatch *GetIDispatch() const override { return nullptr; }
+   int m_hits = 0;
+};
+
+static void CountGateHits(const Gate *gate, GateHitCounter &counter)
+{
+   for (HitObject *const hobj : const_cast<Gate *>(gate)->GetHitObjects(false))
+      if (HitGate *const hg = dynamic_cast<HitGate *>(hobj); hg)
+         hg->m_obj = &counter;
 }
 
 static float MaxAngleDuring(PhysicsTestHarness &harness, const Gate *gate, const uint32_t ms)
@@ -234,6 +256,39 @@ TEST_CASE("Gate: one-way gate (10.9)")
    }
 }
 
+TEST_CASE("Gate: one-way gate Hit events (10.9)")
+{
+   SUBCASE("a ball passing through fires one Hit")
+   {
+      PhysicsTestHarness harness;
+      harness.SetGravity(0.f, 0.f);
+      Gate *const gate = AddTestGate(harness, false);
+      Ball *const ball = harness.AddBall(500.f, 1300.f, 0.f, 0.f, -30.f, 0.f);
+      harness.Start();
+      GateHitCounter counter;
+      CountGateHits(gate, counter);
+
+      CHECK(harness.AdvanceUntil([&] { return ball->m_hitBall.m_d.m_pos.y < 800.f; }, 500));
+      CHECK(counter.m_hits == 1);
+   }
+
+   SUBCASE("a ball rolling back out from under the lifted wire does not fire a second Hit")
+   {
+      PhysicsTestHarness harness;
+      harness.SetGravity(0.f, 0.f);
+      Gate *const gate = AddTestGate(harness, false);
+      Ball *const ball = harness.AddBall(500.f, 1300.f, 0.f, 0.f, -30.f, 0.f);
+      harness.Start();
+      GateHitCounter counter;
+      CountGateHits(gate, counter);
+
+      CHECK(harness.AdvanceUntil([&] { return ball->m_hitBall.m_d.m_pos.y < 990.f; }, 500)); // just past the axis, under the wire
+      ball->m_hitBall.m_d.m_vel = Vertex3Ds(0.f, 30.f, 0.f); // rolls back out
+      CHECK(harness.AdvanceUntil([&] { return ball->m_hitBall.m_d.m_pos.y > 1100.f; }, 500));
+      CHECK(counter.m_hits == 1); // the open-direction crossing only, like the legacy collider
+   }
+}
+
 TEST_CASE("Gate: two-way gate (10.9)")
 {
    SUBCASE("ball passes both ways and the wire swings in the travel direction")
@@ -352,5 +407,60 @@ TEST_CASE("Gate: legacy rigid segments (10.8)")
          harness.AdvanceMs(500);
          CHECK((ball->m_hitBall.m_d.m_pos.y - 1000.f) * dir > 200.f);
       }
+   }
+}
+
+// Under 10.8 the ball pushes the wire/plate (no more clipping through the ball) while its swing, hence its limit events,
+// stays close to the legacy one. Legacy reference (push disabled): a slow ball lifts a one-way wire to 59 deg (now 74,
+// as far as the ball needs to pass under it), a ball at 15 VPU/10ms swings a two-way wire to its max angle 9 times in
+// 1.2 s (now 9 as well)
+TEST_CASE("Gate: the ball push keeps the legacy swing (10.8)")
+{
+   SUBCASE("a slow ball does not swing a one-way wire open")
+   {
+      PhysicsTestHarness harness;
+      harness.SetGravity(0.f, 0.f);
+      harness.GetTable()->m_physicProfile = PhysicProfile::V10_8;
+      Gate *const gate = AddTestGate(harness, false);
+      harness.AddBall(500.f, 1150.f, 0.f, 0.f, -3.f, 0.f);
+      harness.Start();
+
+      const float peak = MaxAngleDuring(harness, gate, 1500);
+      CHECK(peak > 60.f); // lifted as needed for the ball to pass under the wire
+      CHECK(peak < 80.f); // but not swung open to its 90 deg limit
+   }
+
+   SUBCASE("a two-way wire keeps swinging freely to its limits")
+   {
+      PhysicsTestHarness harness;
+      harness.SetGravity(0.f, 0.f);
+      harness.GetTable()->m_physicProfile = PhysicProfile::V10_8;
+      Gate *const gate = AddTestGate(harness, true);
+      harness.AddBall(500.f, 1150.f, 0.f, 0.f, -15.f, 0.f);
+      harness.Start();
+
+      int atMax = 0;
+      bool wasAtMax = false;
+      for (uint32_t i = 0; i < 1200; ++i)
+      {
+         harness.AdvanceMs(1);
+         const bool isAtMax = fabsf(GateAngleDeg(gate)) > 89.9f;
+         if (isAtMax && !wasAtMax)
+            ++atMax;
+         wasAtMax = isAtMax;
+      }
+      CHECK(atMax >= 7);
+   }
+
+   SUBCASE("a ball resting against the closed side holds the wire on its stop")
+   {
+      PhysicsTestHarness harness;
+      harness.SetGravity(0.f, 0.f);
+      harness.GetTable()->m_physicProfile = PhysicProfile::V10_8;
+      Gate *const gate = AddTestGate(harness, false);
+      harness.AddBall(500.f, 974.f, 0.f, 0.f, 0.f, 0.f); // against the legacy blocking segment, inside the hanging wire
+      harness.Start();
+
+      CHECK(MaxAngleDuring(harness, gate, 500) < 5.f);
    }
 }

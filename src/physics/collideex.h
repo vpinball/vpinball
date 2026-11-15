@@ -189,11 +189,9 @@ public:
    bool m_visible;
 
    // The swinging plate as a lamina centered on its axis (see SwingLamina):
-   // drives the ball-tracking plate animation under all profiles while the
-   // axis segments keep handling the ball physics
+   // the ball contact pushes the plate under all profiles while the axis
+   // segments keep handling the ball physics
    SwingLamina m_lamina;
-   bool m_hadContact = false; // a ball touched the plate during the last substep
-   float m_releaseSpeed = 0.f; // angular speed the contacting ball could transfer to the plate
 };
 
 class HitSpinner final : public HitObject
@@ -261,7 +259,7 @@ public:
    float m_axisHalfSpan = 0.f; // legacy axis segment extent along the axis (crossing Hit events, 10.9)
    vector<HitBall*> m_balls; // balls inside the crossing region (10.9 only)
    vector<float> m_ballS; // their last seen s position along m_normal
-   bool m_atLimit = false; // the dragged wire/plate reached a limit (EOS fired once)
+   bool m_atLimit = false; // the wire/plate stays at its max angle (EOS fired once per stay)
 };
 
 class HitGate final : public HitObject
