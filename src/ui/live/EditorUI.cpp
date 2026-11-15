@@ -2502,11 +2502,12 @@ void EditorUI::DeleteSelection()
       DeleteSelectedPoints();
       return;
    }
-   // Balls are runtime objects, parts without a part group are live objects or root groups: they can not be deleted (and stay selected)
+   // Balls are runtime objects and parts without a part group are live objects: they can not be deleted
+   // (and stay selected). Root part groups are group-less by definition but they can be deleted.
    vector<IEditable *> partsToDelete;
    for (const auto &part : m_multiSel)
-      if (IEditable *const edit = part->GetEditable();
-         !edit->IsUILocked() && edit->GetItemType() != eItemBall && edit->GetPartGroup() != nullptr && std::ranges::find(partsToDelete, edit) == partsToDelete.end())
+      if (IEditable *const edit = part->GetEditable(); !edit->IsUILocked() && edit->GetItemType() != eItemBall && (edit->GetPartGroup() != nullptr || edit->GetItemType() == eItemPartGroup)
+         && std::ranges::find(partsToDelete, edit) == partsToDelete.end())
          partsToDelete.push_back(edit);
    // Delete group content, nested groups included (partsToDelete grows while iterating)
    for (size_t i = 0; i < partsToDelete.size(); i++)
