@@ -106,14 +106,15 @@ void SpinnerUIPart::UpdatePropertyPane(PropertyPane& props)
          m_part, "Rotation"s, //
          [](const Spinner* spinner) { return spinner->m_d.m_rotation; }, //
          [](Spinner* spinner, float v) { spinner->m_d.m_rotation = v; }, PropertyPane::Unit::Degree, 1);
+      // Spinner angle limits are stored in degrees
       props.InputFloat<Spinner>(
          m_part, "Angle Max"s, //
-         [](const Spinner* spinner) { return RADTOANG(spinner->m_d.m_angleMax); }, //
-         [](Spinner* spinner, float v) { spinner->m_d.m_angleMax = ANGTORAD(v); }, PropertyPane::Unit::Degree, 1);
+         [](const Spinner* spinner) { return spinner->m_d.m_angleMax; }, //
+         [](Spinner* spinner, float v) { spinner->m_d.m_angleMax = v; }, PropertyPane::Unit::Degree, 1);
       props.InputFloat<Spinner>(
          m_part, "Angle Min"s, //
-         [](const Spinner* spinner) { return RADTOANG(spinner->m_d.m_angleMin); }, //
-         [](Spinner* spinner, float v) { spinner->m_d.m_angleMin = ANGTORAD(v); }, PropertyPane::Unit::Degree, 1);
+         [](const Spinner* spinner) { return spinner->m_d.m_angleMin; }, //
+         [](Spinner* spinner, float v) { spinner->m_d.m_angleMin = v; }, PropertyPane::Unit::Degree, 1);
       props.EndSection();
    }
 
