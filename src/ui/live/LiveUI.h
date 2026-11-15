@@ -30,6 +30,7 @@ public:
    void Notify(MsgSeverity severity, const string &title, const string &message) override;
    bool Confirm(const string &title, const string &message, bool fallback) override;
 
+   void PrepareScene(); // Called to set the scene display state of the view being recorded (editor panes)
    void Render3D(); // Called to contribute to 3D Scene
    void RenderUI(); // Called to render UI overlay
 

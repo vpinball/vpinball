@@ -2080,6 +2080,11 @@ void RenderView::Render()
 
    r->m_render_mask = Renderer::DEFAULT;
 
+   // A view recording for an editor pane gets the parts' display state of its pane's mode before the
+   // scene is recorded (editor views the UI visibility, render previews the play startup state)
+   if (m_renderOverlay3D)
+      g_pplayer->m_liveUI->PrepareScene();
+
    RenderStatics();
 
    // While static parts are being accumulated, the static pass renders probes with static parts only: re-render them for the dynamic pass

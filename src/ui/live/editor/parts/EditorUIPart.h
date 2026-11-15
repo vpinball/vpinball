@@ -257,10 +257,13 @@ public:
          RenderOverlay(ctx);
       }
 
-      // Enable the main renderer rendering
+      // Enable the main renderer rendering: a render preview shows the parts with the visibility the
+      // game will have at play startup (the authored value, the layer visibility masks being applied
+      // by the view's record), the other views with the editor's UI visibility
       const bool extraHidden = IsExtraHidden();
+      const bool viewVisible = isUIVisible || ctx.GetViewMode() == ViewMode::PreviewCam;
       for (size_t i = 0; i < m_visibilityFields.size(); i++)
-         m_part->m_d.*(m_visibilityFields[i].field) = isUIVisible && m_visibilityFields[i].visible && !extraHidden;
+         m_part->m_d.*(m_visibilityFields[i].field) = viewVisible && m_visibilityFields[i].visible && !extraHidden;
 
       // An editor-forced part stays authored-hidden, so the scene record skips it in every view (the
       // preview camera included): record it into this pane's view instead, transiently forcing the
