@@ -1687,6 +1687,32 @@ void ViewportPane::RenderStatusOverlay()
    ImGui::End();
 }
 
+void ViewportPane::RenderSceneParts(LiveRenderContext& ctx)
+{
+   const bool backdrop = m_viewType == ViewMode::DesktopBackdrop;
+   for (const auto& uiPart : m_editor.m_editables)
+   {
+      // A render preview updates the display state of every part, the previewed game mode deciding
+      // which of them render (e.g. desktop mode also shows the backdrop parts); the other views
+      // only cover the parts of their own domain
+      if (m_viewType != ViewMode::PreviewCam && uiPart->GetEditable()->m_desktopBackdrop != backdrop)
+         continue;
+      uiPart->Render(ctx);
+   }
+}
+
+void ViewportPane::PrepareScene()
+{
+   if (m_view == nullptr)
+      return;
+   // Update the parts' display state for this pane's view before it records the scene: a render
+   // preview shows them with the state the game will have at play startup (their authored
+   // visibility, the layer visibility masks being applied by the view's record), the other views
+   // with the editor's UI visibility
+   LiveRenderContext ctx(m_editor.m_player, nullptr, m_viewType, m_shadeMode, (m_editor.m_table->m_liveBaseTable != nullptr) && m_editor.m_player->IsPlaying());
+   RenderSceneParts(ctx);
+}
+
 void ViewportPane::Render3D()
 {
    if (m_view == nullptr)
@@ -1802,12 +1828,7 @@ void ViewportPane::Render3D()
       m_view->SetSpaceReference(PartGroupData::SpaceReference::SR_PLAYFIELD, true);
    }
 
-   for (const auto& uiPart : m_editor.m_editables)
-   {
-      if (uiPart->GetEditable()->m_desktopBackdrop != backdrop)
-         continue;
-      uiPart->Render(ctx);
-   }
+   RenderSceneParts(ctx);
    // Selection overlay: the parts' 3D-rendered selection wireframes must be recorded into this
    // pane's view (drawn with its MVP), suspended while a save is running (the part renders would
    // write into the parts' data being serialized on the worker thread)

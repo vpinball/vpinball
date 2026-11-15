@@ -673,6 +673,27 @@ bool EditorUI::CanFrameSelection() const
    return GetSelectionBounds(bounds);
 }
 
+void EditorUI::PrepareScene()
+{
+   // While a table save is running on the file operation worker thread, the table parts must not be
+   // touched: the UI part renders write the editor visibility overrides into the parts' data (m_d),
+   // racing with the serialization and saving the display state instead of the authored visibility
+   // restored by RestorePartsVisibility when the save was started
+   if (IsSaveInProgress())
+      return;
+
+   UpdateEditableList();
+
+   // The view being recorded may belong to a viewport pane: the pane sets the parts' display state
+   // matching its own view mode before the scene is recorded
+   for (const auto &[id, view] : m_areaViews)
+      if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->GetView() == m_renderer->GetActiveView())
+      {
+         vp->PrepareScene();
+         break;
+      }
+}
+
 void EditorUI::Render3D()
 {
    // While a table save is running on the file operation worker thread, the table parts must not be

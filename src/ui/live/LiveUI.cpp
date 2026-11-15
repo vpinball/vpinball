@@ -450,6 +450,12 @@ void LiveUI::NewFrame()
    ImGui::NewFrame();
 }
 
+void LiveUI::PrepareScene()
+{
+   if (m_editorUI.IsOpened())
+      m_editorUI.PrepareScene();
+}
+
 void LiveUI::Render3D()
 {
    if (m_editorUI.IsOpened())

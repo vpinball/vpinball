@@ -82,6 +82,7 @@ public:
    void Open();
    bool IsOpened() const { return m_isOpened; }
    bool WasOpened() const { return m_wasOpened; } // Opened at least once during the player's lifetime
+   void PrepareScene(); // Sets the parts' display state for the view being recorded (its pane's view mode decides the visibility applied)
    void Render3D();
    void RenderUI();
    void Close();
