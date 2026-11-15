@@ -406,8 +406,9 @@ void PUPPinDisplay::SetGetGame(const string& value)
 string PUPPinDisplay::GetGetRoot() const
 {
    // The return path is either the default one when not playing or the one actually being played (which may be a per table or a global folder)
+   // Both end with a separator, as PinUP Player's (C:\PinUPSystem\PUPVideos\): scripts append the pack folder to it, like GetRoot & "pack\file.txt"
    if (m_pupManager.GetPath().empty())
-      return PluginStrings::PathToUTF8(m_pupManager.GetRootPath());
+      return m_pupManager.GetRootPath().empty() ? std::string() : PluginStrings::PathToUTF8(m_pupManager.GetRootPath() / ""sv);
    else
       return PluginStrings::PathToUTF8(m_pupManager.GetPath().parent_path() / ""sv);
 }
