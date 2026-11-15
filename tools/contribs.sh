@@ -7,6 +7,27 @@
 
 TOKEN="${GITHUB_TOKEN:-$(gh auth token 2>/dev/null)}"
 
+if [ -z "${TOKEN}" ]; then
+    echo "error: set GITHUB_TOKEN or run 'gh auth login'" >&2
+    exit 1
+fi
+
+ALIASES=(
+    "Andre Michi=andremichi"
+    "rockfordroeNG=RockfordRoe"
+)
+
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "${TMP_DIR}"' EXIT
+
+apply_aliases() {
+    local args=()
+    for alias in "${ALIASES[@]}"; do
+        args+=(-e "s/^${alias%%=*}\$/${alias#*=}/")
+    done
+    sed "${args[@]}"
+}
+
 generate_commit_report() {
     REPO="$1"
     BRANCH="$2"
@@ -16,28 +37,32 @@ generate_commit_report() {
     echo "BRANCH: ${BRANCH}"
 
     page=1
-    : > tmp-contribs-all.txt
+    : > "${TMP_DIR}/all.txt"
 
     while : ; do
         url="https://api.github.com/repos/${REPO}/commits?sha=${BRANCH}&per_page=100&page=${page}"
-        curl -s -H "Authorization: Bearer ${TOKEN}" "${url}" --output tmp-contribs-page.json
+        status=$(curl -s -w '%{http_code}' -H "Authorization: Bearer ${TOKEN}" "${url}" --output "${TMP_DIR}/page.json")
 
-        count=$(jq 'if type == "array" then length else 0 end' tmp-contribs-page.json)
+        if [ "${status}" != "200" ]; then
+            echo "error: ${REPO} page ${page} returned HTTP ${status}: $(jq -r '.message? // empty' "${TMP_DIR}/page.json" 2>/dev/null)" >&2
+            exit 1
+        fi
+
+        count=$(jq 'length' "${TMP_DIR}/page.json")
         if [ "${count}" = "0" ]; then
             break
         fi
 
-        jq -r '.[] | (.author.login // .commit.author.name)' tmp-contribs-page.json >> tmp-contribs-all.txt
+        jq -r '.[] | (.author.login // .commit.author.name)' "${TMP_DIR}/page.json" >> "${TMP_DIR}/all.txt"
 
         ((page++))
     done
 
-    grep -v -e '\[bot\]$' -e '^No Author$' tmp-contribs-all.txt \
-        | sort | uniq -c | sort -rn \
+    grep -v -e '\[bot\]$' -e '^No Author$' "${TMP_DIR}/all.txt" \
+        | apply_aliases \
+        | sort | uniq -c | sort -k1,1rn -k2 -f \
         | sed 's/^ *[0-9]* //' \
         | paste -sd ',' - | sed 's/,/, /g'
-
-    rm -f tmp-contribs-all.txt tmp-contribs-page.json
 
     echo
 }

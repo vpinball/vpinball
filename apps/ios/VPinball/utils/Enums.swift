@@ -177,23 +177,23 @@ enum Credit {
     var authors: String? {
         switch self {
         case .vpinball:
-            return "toxieainc, vbousquet, fuzzelhjb, jsm174, francisdb, c-f-h, bcd, cupidsf, djrobx, gitfool, brandrew2, mjrgh, koadic76, superhac, shagendo, Nicals, CraftedCart, horseyhorsey, kara2010, snail_gary, cwick, Le-Syl21, Matthias Buecher, baxelrod-bdai, claytgreene, YellowLabrador, mkalkbrenner, JockeJarre, markmon, ScaryG, WildCoder, freezy, nkissebe, omigeot, dekay, Pyrrvs, Wylted1, Chickenzilla, RandyDavis2000, latsao, ntleverenz, WizardsHat, garybrowndev, mcragun, hughfitzgerald, dynajoe, herrMirto, evilwraith, nicolaspr56, colas-sebastien, Herschel, rockfordroeNG, Yuki, KutsuyaYuki, teamsuperpanda, joni999, surtarso, andremichi, jermatic1, LeHaine, kaicherry, Billiam, droscoe, CapitaineSheridan, ravarcade, RockfordRoe, cschmidtpxc, manofwar32, poiuyterry"
+            return "toxieainc, vbousquet, fuzzelhjb, jsm174, francisdb, c-f-h, bcd, cupidsf, gitfool, djrobx, brandrew2, mjrgh, koadic76, Le-Syl21, superhac, shagendo, CraftedCart, horseyhorsey, Nicals, kara2010, snail_gary, cwick, Matthias Buecher, baxelrod-bdai, claytgreene, YellowLabrador, dcbenji, JockeJarre, markmon, mkalkbrenner, SPD13, BRoadifer, freezy, nkissebe, ScaryG, WildCoder, andremichi, Chickenzilla, dekay, hughfitzgerald, jayadelson, latsao, ntleverenz, omigeot, Pyrrvs, RandyDavis2000, RockfordRoe, WizardsHat, Wylted1, Billiam, CapitaineSheridan, colas-sebastien, cschmidtpxc, droscoe, dynajoe, evilwraith, garybrowndev, hamidzr, Herschel, jermatic1, joni999, kaicherry, KutsuyaYuki, LeHaine, manofwar32, mcragun, nicolaspr56, poiuyterry, qinghao1, ravarcade, surtarso, teamsuperpanda, Yuki"
         case .pinmame:
-            return "toxieainc, volkenborn, Steve Ellenoff, bcd, Tom Haukap, wpcmame, Matthias Buecher, vbousquet, jsm174, gerwout, mkalkbrenner, droscoe, djrobx, tomlogic, Thomas Behrens, bontango, mjrgh, Oliver Kaegi, whaslbeck, syllebra, JockeJarre, evilwraith, gitfool, francisdb, gstellenberg, Randall Perlow, Le-Syl21, freezy, Netsplits, jayadelson, bhitney, gnulnulf, Samasaur1, Disservin, mattwalsh, Mark Sunnucks, kara2010, coryaltheide, Herschel, noflip95, diego-link-eggy, Pavel Sereda, uid68989"
+            return "toxieainc, volkenborn, Steve Ellenoff, bcd, Tom Haukap, wpcmame, Matthias Buecher, vbousquet, gerwout, jsm174, mkalkbrenner, Le-Syl21, droscoe, djrobx, tomlogic, Thomas Behrens, bontango, mjrgh, Oliver Kaegi, whaslbeck, syllebra, JockeJarre, evilwraith, gitfool, BRoadifer, francisdb, gstellenberg, Randall Perlow, freezy, jayadelson, Netsplits, bhitney, gnulnulf, Disservin, Mark Sunnucks, mattwalsh, qinghao1, Samasaur1, coryaltheide, diego-link-eggy, Herschel, joni999, kara2010, noflip95, Pavel Sereda, uid68989"
         case .libaltsound:
-            return "jsm174, toxieainc, Le-Syl21, gitfool, francisdb"
+            return "jsm174, toxieainc, Le-Syl21, freezy, francisdb, gitfool"
         case .libdmdutil:
-            return "mkalkbrenner, jsm174, toxieainc, djrobx, PastorL69, Al Linke, bartdesign, francisdb"
+            return "mkalkbrenner, jsm174, toxieainc, Al Linke, bartdesign, djrobx, francisdb, PastorL69"
         case .libzedmd:
-            return "mkalkbrenner, jsm174, zesinger, PastorL69, Cpasjuste, bartdesign"
+            return "mkalkbrenner, jsm174, zesinger, PastorL69, bartdesign, Cpasjuste"
         case .libserum:
-            return "zesinger, mkalkbrenner, pinballpower, jsm174, vbousquet, toxieainc"
+            return "zesinger, mkalkbrenner, pinballpower, jsm174, toxieainc, vbousquet"
         case .libdof:
-            return "jsm174, dynajoe, christiancoleman, dejaloomer, patsoffice, superhac, dekay"
+            return "jsm174, dynajoe, philipellisis, christiancoleman, dejaloomer, dekay, kbvandergriffjr, patsoffice, superhac"
         case .libvni:
             return "jsm174, mkalkbrenner, djrobx"
         case .libwinevbs:
-            return "jsm174, francisdb, gitfool"
+            return "jsm174, toxieainc, francisdb, gitfool"
         case .artwork:
             return "smillard316 (Table placeholder), adam.co (App icon enhancements), twostraws (Shimmer metal shader)"
         default:
