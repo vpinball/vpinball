@@ -90,21 +90,27 @@ void LiveRenderContext::DrawHitObjects(IEditable *editable) const
       // Skip parts whose colliders project fully off-screen: the drawing cost scales with the
       // part's collider count (curve parts can have hundreds of segment colliders)
       FRect3D bounds;
+      bounds.Clear();
       for (const HitObject *const pho : hitObjects)
          bounds.Extend(pho->m_hitBBox);
       ImVec2 pMin(FLT_MAX, FLT_MAX), pMax(-FLT_MAX, -FLT_MAX);
+      bool behindCamera = false;
       for (int i = 0; i < 8; i++)
       {
          const ImVec2 p = Project(Vertex3Ds((i & 1) ? bounds.right : bounds.left, (i & 2) ? bounds.bottom : bounds.top, (i & 4) ? bounds.zhigh : bounds.zlow));
          if (p.x == FLT_MAX)
-            continue;
+         {
+            behindCamera = true;
+            break;
+         }
          pMin.x = min(pMin.x, p.x);
          pMin.y = min(pMin.y, p.y);
          pMax.x = max(pMax.x, p.x);
          pMax.y = max(pMax.y, p.y);
       }
+      // Not culled when partly behind the camera: the projected front corners do not bound what is on screen
       const ImVec2 cMin = m_drawlist->GetClipRectMin(), cMax = m_drawlist->GetClipRectMax();
-      if (pMax.x < cMin.x || pMin.x > cMax.x || pMax.y < cMin.y || pMin.y > cMax.y)
+      if (!behindCamera && (pMax.x < cMin.x || pMin.x > cMax.x || pMax.y < cMin.y || pMin.y > cMax.y))
          return;
       auto project = [this](Vertex3Ds v)
       {
