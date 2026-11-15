@@ -77,6 +77,8 @@ private:
    // Tree node with a line chevron instead of ImGui's filled triangle; while m_setAllOpen >= 0 every node is forced open/closed (expand/collapse all)
    // icon: the label's leading icon glyph, drawn ink-centered on the row (its glyph ink overshoots the line box); iconBadge: a grey chip behind it
    bool ChevronTreeNode(const char *label, ImGuiTreeNodeFlags flags = 0, const char *icon = nullptr, bool iconBadge = false);
+   // Blender-style right click menu of a part row: type header, New/Copy/Paste, Delete, group content selection, Select/Deselect
+   void RenderPartContextMenu(const std::shared_ptr<EditorUIPart> &part);
    // In place rename of a part: starts on a double click on its name or on F2 over the panel, commits on Enter, cancels on Escape/click away
    void RequestRename(const std::shared_ptr<EditorUIPart> &part);
    bool RenderRenameInput(IEditable *editable); // The name input field of the part being renamed (returns false once the edit is over)
