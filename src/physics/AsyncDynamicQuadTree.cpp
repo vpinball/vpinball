@@ -10,6 +10,7 @@
 #include "utils/denormals.h"
 
 #include <algorithm>
+#include <unordered_set>
 
 
 AsyncDynamicQuadTree::AsyncDynamicQuadTree(PhysicsEngine* const physics, PinTable* const table, bool isUI)
@@ -70,43 +71,56 @@ bool AsyncDynamicQuadTree::IsStatic(IEditable* editable) const
    return (dynEdIt == m_dynamicEditables.end()) || (*dynEdIt)->pendingStaticInclusion;
 }
 
-void AsyncDynamicQuadTree::SetDynamic(IEditable* editable)
+void AsyncDynamicQuadTree::SetDynamic(IEditable* editable) { SetDynamic({ editable }, false); }
+
+void AsyncDynamicQuadTree::SetDynamic(const vector<IEditable*>& editables, const bool reuseColliders)
 {
-   assert(editable->GetIHitable() != nullptr);
-   assert(editable->GetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
-   assert(IsStatic(editable));
-   //PLOGD << "Setting item " << editable->GetName() << " as dynamic.";
-
-   const auto dynEdIt = std::ranges::find_if(m_dynamicEditables, [editable](const std::unique_ptr<DynamicEditable>& dynEd) { return dynEd->editable == editable; });
-   if (dynEdIt != m_dynamicEditables.end())
+   // Parts already dynamic only need their pending merge back into the static quadtree cancelled
+   vector<IEditable*> toMove;
+   toMove.reserve(editables.size());
+   for (IEditable* const editable : editables)
    {
-      (*dynEdIt)->pendingStaticInclusion = false;
+      assert(editable->GetIHitable() != nullptr);
+      assert(editable->GetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
+      const auto dynEdIt = std::ranges::find_if(m_dynamicEditables, [editable](const std::unique_ptr<DynamicEditable>& dynEd) { return dynEd->editable == editable; });
+      if (dynEdIt != m_dynamicEditables.end())
+         (*dynEdIt)->pendingStaticInclusion = false;
+      else
+         toMove.push_back(editable);
    }
-   else
+   if (toMove.empty())
+      return;
+   //PLOGD << "Setting " << toMove.size() << " items as dynamic.";
+
+   // Purge any pending update first as it may be processing these parts' hit objects (they must not
+   // be referenced by the quadtree being asynchronously rebuilt once their slots are removed)
+   while (m_quadTreeUpdateInProgress)
    {
-      // Purge any pending update first as it may be processing this part's hit objects (PhysicRelease
-      // below deletes them, so they must not be referenced by the quadtree being asynchronously rebuilt)
-      while (m_quadTreeUpdateInProgress)
-      {
-         m_quadtreeUpdateReady.acquire();
-         m_quadtreeUpdateReady.release();
-         UpdateAsync();
-      }
+      m_quadtreeUpdateReady.acquire();
+      m_quadtreeUpdateReady.release();
+      UpdateAsync();
+   }
 
-      // Remove the part's hit objects from the static quadtree (they stay valid until PhysicRelease deletes them)
-      vector<HitObject*>& vho = m_quadTree->BeginReset(); // FIXME somewhat hacky way to get a non const access to the ho vector
-      for (size_t i = 0, n = vho.size(); i < n; i++)
+   // Remove the parts' hit objects from the static quadtree in a single pass over its hit object list
+   const std::unordered_set<IEditable*> moving(toMove.begin(), toMove.end());
+   vector<HitObject*>& vho = m_quadTree->BeginReset(); // FIXME somewhat hacky way to get a non const access to the ho vector
+   for (size_t i = 0, n = vho.size(); i < n; i++)
+   {
+      if (vho[i] != nullptr && moving.contains(vho[i]->m_editable))
       {
-         if (vho[i] != nullptr && vho[i]->m_editable == editable)
-         {
-            m_nullSlots.push_back(i);
-            vho[i] = nullptr;
-         }
+         m_nullSlots.push_back(i);
+         vho[i] = nullptr;
       }
-      editable->GetIHitable()->PhysicRelease(m_physics, m_isUI); // Deletes the editable's static hit objects
+   }
 
-      // Add to dynamic part list
-      m_dynamicEditables.emplace_back(std::make_unique<DynamicEditable>(editable, m_physics, m_isUI));
+   // Add to dynamic part list. With reuseColliders, the parts keep their existing hit objects (they were
+   // not modified); otherwise they are released and rebuilt by the DynamicEditable (which is also how
+   // collider changes are applied to a modified static part, see Update)
+   for (IEditable* const editable : toMove)
+   {
+      if (!reuseColliders)
+         editable->GetIHitable()->PhysicRelease(m_physics, m_isUI); // Deletes the editable's static hit objects
+      m_dynamicEditables.emplace_back(std::make_unique<DynamicEditable>(editable, m_physics, m_isUI, !reuseColliders));
    }
 }
 
@@ -220,8 +234,8 @@ void AsyncDynamicQuadTree::Update(IEditable* editable)
    if (!editable->GetIHitable()->PhysicUpdate(m_physics, m_isUI))
    {
       // update was not performed: release and reallocate colliders
-      *dynEdIt = nullptr; 
-      *dynEdIt = std::make_unique<DynamicEditable>(editable, m_physics, m_isUI);
+      *dynEdIt = nullptr;
+      *dynEdIt = std::make_unique<DynamicEditable>(editable, m_physics, m_isUI, true);
    }
 }
 
@@ -393,12 +407,13 @@ void AsyncDynamicQuadTree::DynamicEditable::HitTestXRay(const HitBall* const pba
 }
 
 
-AsyncDynamicQuadTree::DynamicEditable::DynamicEditable(IEditable* edit, PhysicsEngine* physics, bool isUI)
-   : editable(edit) 
+AsyncDynamicQuadTree::DynamicEditable::DynamicEditable(IEditable* edit, PhysicsEngine* physics, bool isUI, bool setupColliders)
+   : editable(edit)
    , m_physics(physics)
    , m_isUI(isUI)
 {
-   editable->GetIHitable()->PhysicSetup(physics, isUI);
+   if (setupColliders)
+      editable->GetIHitable()->PhysicSetup(physics, isUI);
 }
 
 AsyncDynamicQuadTree::DynamicEditable::~DynamicEditable()

@@ -1092,24 +1092,28 @@ void EditorUI::RenderUI()
    // derived from selection changes. Newly selected parts are made dynamic before the deselected ones go static: SetStatic
    // starts an asynchronous quadtree rebuild that SetDynamic would have to wait for (it deletes the part's static hit objects)
    std::erase_if(m_dynamicParts, [this](IEditable *edit) { return FindIndexOf(m_table->GetParts(), edit) == -1; });
-   vector<IEditable *> deselected;
-   for (IEditable *const edit : m_dynamicParts)
-      if (!IsEditableSelected(edit))
-         deselected.push_back(edit);
-   std::erase_if(m_dynamicParts, [this](IEditable *edit) { return !IsEditableSelected(edit); });
+   // The switch is batched in a single SetDynamic pass reusing the parts' unmodified colliders
+   vector<IEditable *> newDynamics;
    for (const auto &part : m_multiSel)
    {
       IEditable *const edit = part->GetEditable();
-      if (edit->GetIHitable() == nullptr || edit->GetItemType() == eItemBall)
-         continue;
-      if (m_player->m_physics->IsStatic(edit))
-         m_player->m_physics->SetDynamic(edit);
+      if (edit->GetIHitable() != nullptr && edit->GetItemType() != eItemBall && m_player->m_physics->IsStatic(edit))
+         newDynamics.push_back(edit);
+   }
+   if (!newDynamics.empty())
+      m_player->m_physics->SetDynamic(newDynamics, true);
+   for (IEditable *const edit : newDynamics)
       if (FindIndexOf(m_dynamicParts, edit) == -1)
          m_dynamicParts.push_back(edit);
-   }
-   for (IEditable *const edit : deselected)
-      if (!m_player->m_physics->IsStatic(edit))
+   // Lookup set: a linear IsEditableSelected scan per dynamic part would be quadratic on large selections
+   ankerl::unordered_dense::set<const IEditable *> selectedParts;
+   selectedParts.reserve(m_multiSel.size());
+   for (const auto &part : m_multiSel)
+      selectedParts.insert(part->GetEditable());
+   for (IEditable *const edit : m_dynamicParts)
+      if (!selectedParts.contains(edit) && !m_player->m_physics->IsStatic(edit))
          m_player->m_physics->SetStatic(edit);
+   std::erase_if(m_dynamicParts, [&selectedParts](IEditable *edit) { return !selectedParts.contains(edit); });
 }
 
 void EditorUI::PushUndo(IEditable *part, unsigned int undoId, const string &label)
