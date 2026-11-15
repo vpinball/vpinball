@@ -100,6 +100,15 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
       m_bg.volume = volume;
       m_bg.active = true;
       pPlaylist->MarkPlayed();
+      // A looping media never ends, so the background would never come back: a background of a higher priority replaces it. Packs rely
+      // on it: the intro loop of Austin Powers (D0, Loop, priority 1) gives way to the game background when the game starts (W54, SetBG,
+      // priority 2), Darkest Dungeon ends its side mode loops (Loop, 12-13) with its 'Reset BG' (SetBG, 52) and has no stop for them
+      if (mainPlaying && m_queue.front().loop && priority > currentPriority)
+      {
+         LOGD(std::format("BG REPLACES LOOP: screen={}, current={}, new={}", m_pScreen->GetScreenNum(), currentPriority, priority));
+         Stop();
+         return true;
+      }
       if (bgPlaying)
          m_player.SetVolume(volume);
       else if (!mainPlaying)
