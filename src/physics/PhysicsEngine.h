@@ -22,8 +22,10 @@ public:
    void SetGravity(float slopeDeg, float strength);
    const Vertex3Ds& GetGravity() const { return m_gravity; } // Gravity expressed in VP units. Earth gravity 9.81 m.s^-2 is approximately 1.81751 VPU.VPT^-2 (see physconst.h)
 
-   // Only supported for UI for the time being
+   // Only supported for UI for the time being. With reuseColliders, the parts' existing colliders are
+   // kept instead of being released/rebuilt (valid when the parts were not modified, e.g. selection changes)
    void SetDynamic(IEditable *editable) { GetUIQuadTree()->SetDynamic(editable); }
+   void SetDynamic(const vector<IEditable *> &editables, bool reuseColliders) { GetUIQuadTree()->SetDynamic(editables, reuseColliders); }
    void SetStatic(IEditable *editable) { GetUIQuadTree()->SetStatic(editable); }
    bool IsStatic(IEditable *editable) { return GetUIQuadTree()->IsStatic(editable); }
 

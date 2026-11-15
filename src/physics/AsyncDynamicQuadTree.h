@@ -35,6 +35,9 @@ public:
 
    bool IsStatic(IEditable* editable) const;
    void SetDynamic(IEditable* editable);
+   // Batch switch to dynamic. With reuseColliders, the parts' existing hit objects are kept instead of
+   // being released/rebuilt (valid when the parts were not modified, e.g. selection changes)
+   void SetDynamic(const vector<IEditable*>& editables, bool reuseColliders);
    void Update(IEditable* editable);
    void SetStatic(IEditable* editable);
    void AddEditable(IEditable* editable); // Add the hit objects of a new editable to the static quadtree
@@ -58,7 +61,7 @@ private:
    class DynamicEditable
    {
    public:
-      DynamicEditable(IEditable* editable, PhysicsEngine* physics, bool isUI);
+      DynamicEditable(IEditable* editable, PhysicsEngine* physics, bool isUI, bool setupColliders);
       ~DynamicEditable();
 
       IEditable* editable;

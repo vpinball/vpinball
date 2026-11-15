@@ -642,19 +642,24 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
    };
    // Part row: type icon, selectable with ctrl/shift multi selection (double click frames the part), drag source, drop target and eye toggle
    std::shared_ptr<EditorUIPart> rangeTarget; // Shift+click: applied once all the rows are known
-   const auto renderPartLeaf = [this, &editor, &partDragSource, &partDropTarget, &rangeTarget](
+   // Lookup set for the per row selected tests: a linear scan of the multi selection per row is quadratic on large selections
+   ankerl::unordered_dense::set<const EditorUIPart *> selectedParts;
+   selectedParts.reserve(editor.m_multiSel.size());
+   for (const auto &part : editor.m_multiSel)
+      selectedParts.insert(part.get());
+   const auto isPartSelected = [&selectedParts](const std::shared_ptr<EditorUIPart> &part) { return part != nullptr && selectedParts.contains(part.get()); };
+   const auto renderPartLeaf = [this, &editor, &partDragSource, &partDropTarget, &rangeTarget, &isPartSelected](
                                   const std::shared_ptr<EditorUIPart> &edit, int &itemCounter, const std::shared_ptr<EditorUIPart> &revealPart, float eyeX, float indentX)
    {
       IEditable *const editable = edit->GetEditable();
       m_listedParts.push_back(edit);
-      const bool inactiveSel = editor.IsPartSelected(edit) && edit != editor.m_selection.GetPart();
-      PushRowColors(editor.IsPartSelected(edit), inactiveSel);
-      const bool clicked
-         = ImGui::Selectable(("##Outliner"s + std::to_string(itemCounter++)).c_str(), editor.IsPartSelected(edit), ImGuiSelectableFlags_AllowOverlap | ImGuiSelectableFlags_AllowDoubleClick);
+      const bool rowSelected = isPartSelected(edit);
+      const bool inactiveSel = rowSelected && edit != editor.m_selection.GetPart();
+      PushRowColors(rowSelected, inactiveSel);
+      const bool clicked = ImGui::Selectable(("##Outliner"s + std::to_string(itemCounter++)).c_str(), rowSelected, ImGuiSelectableFlags_AllowOverlap | ImGuiSelectableFlags_AllowDoubleClick);
       ImGui::PopStyleColor(3);
       {
          // The highlight spans the whole row: the part left of the selectable (the tree indentation) gets the same color
-         const bool rowSelected = editor.IsPartSelected(edit);
          const bool rowHovered = ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlappedByItem);
          if (rowSelected || rowHovered)
          {
@@ -835,8 +840,8 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
                   if ((revealPart && revealPart->GetEditable()->IsChild(group)) || (openMatches && m_visibleGroups.contains(group)))
                      ImGui::SetNextItemOpen(true);
                   const bool isNewPartTarget = (group == newPartTarget);
-                  const bool inactiveSel = editor.IsPartSelected(edit) && edit != editor.m_selection.GetPart();
-                  PushRowColors(editor.IsPartSelected(edit), inactiveSel);
+                  const bool inactiveSel = isPartSelected(edit) && edit != editor.m_selection.GetPart();
+                  PushRowColors(isPartSelected(edit), inactiveSel);
                   // Folder icon and count are outside the ID (after ###) so that the node keeps its open state when they change
                   const auto countIt = m_groupCounts.find(group);
                   const string &groupName = edit->GetEditable()->GetName();
@@ -852,8 +857,8 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
                   const bool groupHidden = !group->IsUIVisible(false);
                   if (groupHidden)
                      ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::V(EditorTheme::TextFaint));
-                  opened = ChevronTreeNode(groupLabel.c_str(),
-                     ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanFullWidth | (editor.IsPartSelected(edit) ? ImGuiTreeNodeFlags_Selected : 0), icon, isNewPartTarget);
+                  opened = ChevronTreeNode(groupLabel.c_str(), ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanFullWidth | (isPartSelected(edit) ? ImGuiTreeNodeFlags_Selected : 0),
+                     icon, isNewPartTarget);
                   if (groupHidden)
                      ImGui::PopStyleColor();
                   ImGui::PopStyleColor(3);
