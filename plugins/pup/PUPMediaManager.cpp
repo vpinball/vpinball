@@ -60,14 +60,15 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
    const bool mainPlaying = !m_queue.empty();
    const int currentPriority = mainPlaying ? m_queue.front().priority : 0;
 
-   if (!isBg && priority == 999)
+   if (priority == 999)
    {
       if (mainPlaying)
          Stop();
       return false;
    }
 
-   if (!isBg && mainPlaying && priority < currentPriority && action != PlayAction::QueueAlways)
+   // A SetBG of a lower priority than the playing media is dropped like any other play, the background is not changed
+   if (mainPlaying && priority < currentPriority && action != PlayAction::QueueAlways)
    {
       LOGD(std::format("Dropping lower priority: screen={}, current={}, new={}, file={}", m_pScreen->GetScreenNum(), currentPriority, priority, PluginStrings::PathToUTF8(szPlayFile)));
       return false;
@@ -94,16 +95,19 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
 
    if (isBg)
    {
-      const bool bgPlaying = !mainPlaying && m_bg.active && m_bg.szPath == szPath && m_player.IsPlaying();
-      LOGD(std::format("BG CONFIG: screen={}, file={}, alreadyPlaying={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(szPath.filename()), bgPlaying));
+      const bool sameFile = mainPlaying ? m_queue.front().szPath == szPath : (m_bg.active && m_bg.szPath == szPath && m_player.IsPlaying());
+      LOGD(std::format("BG CONFIG: screen={}, pri={}, current={}, file={}, alreadyPlaying={}", m_pScreen->GetScreenNum(), priority, currentPriority, PluginStrings::PathToUTF8(szPath.filename()), sameFile));
       m_bg.szPath = szPath;
       m_bg.volume = volume;
       m_bg.active = true;
       pPlaylist->MarkPlayed();
-      if (bgPlaying)
+      if (sameFile)
+      {
          m_player.SetVolume(volume);
-      else if (!mainPlaying)
-         PlayBackground();
+         return true;
+      }
+      m_queue.clear();
+      PlayBackground();
       return true;
    }
 
