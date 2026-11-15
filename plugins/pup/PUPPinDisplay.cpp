@@ -230,10 +230,13 @@ void PUPPinDisplay::SetSN(int Value)
 
 void PUPPinDisplay::B2SData(const string& tIndex, int Value)
 {
-   const string tmp = tIndex.substr(1);
+   // tIndex is a type character followed by a number ("D12", "W3", ...)
    int result;
-   auto ec = std::from_chars(tmp.c_str(), tmp.c_str() + tmp.length(), result).ec;
-   assert(ec == std::errc{});
+   if (tIndex.length() < 2 || std::from_chars(tIndex.c_str() + 1, tIndex.c_str() + tIndex.length(), result).ec != std::errc {})
+   {
+      LOGE(std::format("B2SData: invalid index '{}'", tIndex));
+      return;
+   }
 
    m_pupManager.QueueDOFEvent(tIndex[0], result, Value);
 }
