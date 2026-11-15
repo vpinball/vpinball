@@ -95,12 +95,6 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
 
    if (isBg)
    {
-      // Like PinUP Player, a SetBG that passed the priority checks sets the background and replaces the current media at once, looping
-      // or not, unless it is already playing. On a busy screen or above priority 0, it first plays once at its own priority, so lower
-      // plays are dropped meanwhile, then the background is replayed from its slot and the screen goes back to priority 0. It does not
-      // hold its priority while it loops: Darkest Dungeon resets its backglass with a SetBG at 52 (D900, a 4 s clip) at game start and
-      // after each mode, then shows its dungeon backgrounds with SetBG at 42 and has nothing at 52 or above, nor a stop, on that screen.
-      // On an idle screen at priority 0 or below (e.g. the screens.pup default background), it plays directly as the background.
       const bool sameFile = mainPlaying ? m_queue.front().szPath == szPath : (m_bg.active && m_bg.szPath == szPath && m_player.IsPlaying());
       LOGD(std::format("BG CONFIG: screen={}, pri={}, current={}, file={}, alreadyPlaying={}", m_pScreen->GetScreenNum(), priority, currentPriority, PluginStrings::PathToUTF8(szPath.filename()), sameFile));
       m_bg.szPath = szPath;
@@ -112,15 +106,8 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
          m_player.SetVolume(volume);
          return true;
       }
-      if (!mainPlaying && priority <= 0)
-      {
-         PlayBackground();
-         return true;
-      }
-      if (mainPlaying)
-         m_queue.pop_front();
-      m_queue.push_front({ szPath, volume, priority, length > 0 ? SDL_GetTicks() + static_cast<uint64_t>(length) * 1000 : 0, false });
-      StartCurrent();
+      m_queue.clear();
+      PlayBackground();
       return true;
    }
 
