@@ -3115,7 +3115,10 @@ void EditorUI::AddPointOnNearestSegment()
       ViewportPane *const vp = GetTargetViewport();
       if (vp == nullptr)
          return;
-      pos = vp->UnprojectToPlane(ImGui::GetMousePos(), z);
+      // The pane unprojects in the reference space its view currently renders in: re-express in the edited part's space
+      const Vertex2D p = vp->UnprojectToPlane(ImGui::GetMousePos(), z);
+      const Vertex3Ds a = Matrix3D::MatrixInverse(vp->PartSpaceToView(m_pointEditPart->GetEditable())) * Vertex3Ds(p.x, p.y, z);
+      pos = Vertex2D(a.x, a.y);
    }
    m_undo.BeginUndo();
    m_undo.MarkForUndo(m_pointEditPart->GetEditable());

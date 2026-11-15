@@ -61,6 +61,13 @@ bool IEditable::IsChild(const PartGroup* group) const
    return parent == group;
 }
 
+Matrix3D IEditable::GetUISpaceTransform() const
+{
+   if (m_desktopBackdrop || m_partGroup == nullptr || m_partGroup->GetReferenceSpace() == PartGroupData::SpaceReference::SR_PLAYFIELD)
+      return Matrix3D::MatrixIdentity();
+   return m_ptable->GetDefaultPlayfieldToCabMatrix();
+}
+
 bool IEditable::IsUIVisible(const bool applyPartGroupVisibility) const
 {
    return m_uiVisible && (!applyPartGroupVisibility || GetPartGroup() == nullptr || GetPartGroup()->IsUIVisible(true));

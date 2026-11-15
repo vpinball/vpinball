@@ -258,8 +258,12 @@ void Flipper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    // one circle inside the other has no tangent faces (NaN normals/inertia): lengthen just enough (i.e. for broken tables only)
    if (fabsf(baseRadius - endRadius) >= m_d.m_FlipperRadius)
       m_d.m_FlipperRadius = fabsf(baseRadius - endRadius) + 0.05f;
-   HitFlipper *const phf = new HitFlipper(m_d.m_Center, baseRadius, endRadius, max(m_d.m_FlipperRadius, 0.01f), ANGTORAD(m_d.m_StartAngle),
-      ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this, physics->GetPhysicProfile());
+   // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
+   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+   const Vertex3Ds c0 = uiSpace * Vertex3Ds(m_d.m_Center.x, m_d.m_Center.y, height);
+   const Vertex3Ds c1 = uiSpace * Vertex3Ds(m_d.m_Center.x, m_d.m_Center.y, height + m_d.m_height);
+   HitFlipper *const phf = new HitFlipper(
+      Vertex2D(c0.x, c0.y), baseRadius, endRadius, max(m_d.m_FlipperRadius, 0.01f), ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), c0.z, c1.z, this, physics->GetPhysicProfile());
    phf->m_flipperMover.m_enabled = m_d.m_enabled;
    AddHitObject(physics, phf, isUI);
    if (!isUI)

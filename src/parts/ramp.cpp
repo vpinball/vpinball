@@ -444,6 +444,9 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    int cvertex;
    const Vertex2D *const rgvLocal = GetRampVertex(cvertex, &rgheight1, nullptr, nullptr, nullptr, HIT_SHAPE_DETAIL_LEVEL, true);
 
+   // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
+   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+
    // Add line segments for right ramp wall.
    if (wallheightright > 0.f)
    {
@@ -520,7 +523,8 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
          {
             // left ramp floor triangle, CCW order
-            const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv2->x, pv2->y, rgheight1[i]), Vertex3Ds(pv1->x, pv1->y, rgheight1[i]), Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]) };
+            const Vertex3Ds rgv3D[3]
+               = { uiSpace * Vertex3Ds(pv2->x, pv2->y, rgheight1[i]), uiSpace * Vertex3Ds(pv1->x, pv1->y, rgheight1[i]), uiSpace * Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]) };
 
             // add joint for left edge
             AddJoint(physics, rgv3D[0], rgv3D[2], isUI);
@@ -544,7 +548,8 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
          {
             // right ramp floor triangle, CCW order
-            const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]), Vertex3Ds(pv1->x, pv1->y, rgheight1[i]), Vertex3Ds(pv4->x, pv4->y, rgheight1[i + 1]) };
+            const Vertex3Ds rgv3D[3]
+               = { uiSpace * Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]), uiSpace * Vertex3Ds(pv1->x, pv1->y, rgheight1[i]), uiSpace * Vertex3Ds(pv4->x, pv4->y, rgheight1[i + 1]) };
 
             // add joint for right edge
             AddJoint(physics, rgv3D[1], rgv3D[2], isUI);
@@ -568,8 +573,8 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       if (cvertex >= 2)
       {
          // add joint for final edge of ramp
-         const Vertex3Ds v1(pv4->x, pv4->y, rgheight1[cvertex - 1]);
-         const Vertex3Ds v2(pv3->x, pv3->y, rgheight1[cvertex - 1]);
+         const Vertex3Ds v1 = uiSpace * Vertex3Ds(pv4->x, pv4->y, rgheight1[cvertex - 1]);
+         const Vertex3Ds v2 = uiSpace * Vertex3Ds(pv3->x, pv3->y, rgheight1[cvertex - 1]);
          AddJoint(physics, v1, v2, isUI);
       }
    }
@@ -589,7 +594,7 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
       {
          // left ramp triangle, order CW
-         const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv1.x, pv1.y, rgheight1[i]), Vertex3Ds(pv2.x, pv2.y, rgheight1[i]), Vertex3Ds(pv3.x, pv3.y, rgheight1[i + 1]) };
+         const Vertex3Ds rgv3D[3] = { uiSpace * Vertex3Ds(pv1.x, pv1.y, rgheight1[i]), uiSpace * Vertex3Ds(pv2.x, pv2.y, rgheight1[i]), uiSpace * Vertex3Ds(pv3.x, pv3.y, rgheight1[i + 1]) };
 
          HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D, physics->GetPhysicProfile());
          if (ph3dpoly->IsDegenerate())
@@ -603,7 +608,8 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       }
       {
          // right ramp triangle, order CW
-         const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv3.x, pv3.y, rgheight1[i + 1]), Vertex3Ds(pv4.x, pv4.y, rgheight1[i + 1]), Vertex3Ds(pv1.x, pv1.y, rgheight1[i]) };
+         const Vertex3Ds rgv3D[3]
+            = { uiSpace * Vertex3Ds(pv3.x, pv3.y, rgheight1[i + 1]), uiSpace * Vertex3Ds(pv4.x, pv4.y, rgheight1[i + 1]), uiSpace * Vertex3Ds(pv1.x, pv1.y, rgheight1[i]) };
 
          HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D, physics->GetPhysicProfile());
          if (ph3dpoly->IsDegenerate())
@@ -649,7 +655,10 @@ void Ramp::AddJoint(PhysicsEngine* physics, const Vertex3Ds& v1, const Vertex3Ds
 
 void Ramp::AddJoint2D(PhysicsEngine* physics, const Vertex2D& p, const float zlow, const float zhigh, const bool isUI)
 {
-   SetupHitObject(physics, new HitLineZ(this, p, zlow, zhigh), isUI);
+   // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
+   const Vertex3Ds low = (isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity()) * Vertex3Ds(p.x, p.y, zlow);
+   const Vertex3Ds high = (isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity()) * Vertex3Ds(p.x, p.y, zhigh);
+   SetupHitObject(physics, new HitLineZ(this, Vertex2D(low.x, low.y), low.z, high.z), isUI);
 }
 
 void Ramp::AddWallLineSeg(PhysicsEngine* physics, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight, const bool isUI)
@@ -665,7 +674,12 @@ void Ramp::AddWallLineSeg(PhysicsEngine* physics, const Vertex2D &pv1, const Ver
    }
    else
    {
-      LineSeg * const plineseg = new LineSeg(this, pv1, pv2, height1, height2+wallheight);
+      // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
+      const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+      const Vertex3Ds p1 = uiSpace * Vertex3Ds(pv1.x, pv1.y, height1);
+      const Vertex3Ds p2 = uiSpace * Vertex3Ds(pv2.x, pv2.y, height1);
+      const Vertex3Ds pTop = uiSpace * Vertex3Ds(pv1.x, pv1.y, height2 + wallheight);
+      LineSeg *const plineseg = new LineSeg(this, Vertex2D(p1.x, p1.y), Vertex2D(p2.x, p2.y), p1.z, pTop.z);
 
       SetupHitObject(physics, plineseg, isUI);
 
@@ -682,10 +696,12 @@ void Ramp::AddWallLineSeg(PhysicsEngine* physics, const Vertex2D &pv1, const Ver
 Vertex3Ds Ramp::AddWallQuad(PhysicsEngine *physics, const Vertex2D &pv1, const float height1, const Vertex2D &pv2, const float height2, const float wallheight, const Vertex3Ds &prevNormal,
    const bool addStartJoint, const bool addEndJoint, const bool isUI)
 {
-   const Vertex3Ds quad[4] = { Vertex3Ds(pv1.x, pv1.y, height1), // bottom edge at pv1
-      Vertex3Ds(pv2.x, pv2.y, height2), // bottom edge at pv2
-      Vertex3Ds(pv2.x, pv2.y, height2 + wallheight), // top edge at pv2
-      Vertex3Ds(pv1.x, pv1.y, height1 + wallheight) }; // top edge at pv1
+   // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
+   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+   const Vertex3Ds quad[4] = { uiSpace * Vertex3Ds(pv1.x, pv1.y, height1), // bottom edge at pv1
+      uiSpace * Vertex3Ds(pv2.x, pv2.y, height2), // bottom edge at pv2
+      uiSpace * Vertex3Ds(pv2.x, pv2.y, height2 + wallheight), // top edge at pv2
+      uiSpace * Vertex3Ds(pv1.x, pv1.y, height1 + wallheight) }; // top edge at pv1
 
    // HitTriangle is single-sided: emit the quad twice, once per winding
    static const unsigned int quadTris[4][3] = { { 0, 1, 2 }, { 0, 2, 3 }, { 0, 2, 1 }, { 0, 3, 2 } };

@@ -101,7 +101,11 @@ void Kicker::PhysicSetup(PhysicsEngine* physics, const bool isUI)
                                                          : 1.f);
    if (isUI)
    {
-      HitCircle *const phitcircle = new HitCircle(this, m_d.m_vCenter, radius, height, height + m_d.m_hit_height); // height of kicker hit cylinder
+      // The UI quadtree is a single quadtree in the playfield space: the UI collider bakes the part's reference space transform
+      const Matrix3D uiSpace = GetUISpaceTransform();
+      const Vertex3Ds c0 = uiSpace * Vertex3Ds(m_d.m_vCenter.x, m_d.m_vCenter.y, height);
+      const Vertex3Ds c1 = uiSpace * Vertex3Ds(m_d.m_vCenter.x, m_d.m_vCenter.y, height + m_d.m_hit_height);
+      HitCircle *const phitcircle = new HitCircle(this, Vertex2D(c0.x, c0.y), radius, c0.z, c1.z); // height of kicker hit cylinder
       phitcircle->m_ObjType = eKicker;
       phitcircle->m_obj = (IFireEvents *)this;
       AddHitObject(physics, phitcircle, isUI);

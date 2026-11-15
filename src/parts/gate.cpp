@@ -204,11 +204,13 @@ void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       const Vertex2D normal(-tangent.y, tangent.x);
       const float halfLength = m_d.m_length * 0.55f; // extend a bit over the axis ends to include the brackets
       const float halfWidth = m_d.m_length * 0.1f;
+      // The UI quadtree is a single quadtree in the playfield space: the UI collider bakes the part's reference space transform
+      const Matrix3D uiSpace = GetUISpaceTransform();
       Vertex3Ds *const rgv3D = new Vertex3Ds[4]; // CCW winding for upward facing normal
       for (int i = 0; i < 4; i++)
       {
          const Vertex2D p = m_d.m_vCenter + tangent * ((i >= 2) ? halfLength : -halfLength) + normal * ((i == 1 || i == 2) ? halfWidth : -halfWidth);
-         rgv3D[i] = Vertex3Ds(p.x, p.y, height + m_d.m_height);
+         rgv3D[i] = uiSpace * Vertex3Ds(p.x, p.y, height + m_d.m_height);
       }
       Hit3DPoly *const ph3dpoly = new Hit3DPoly(this, rgv3D, 4);
       ph3dpoly->m_ObjType = eGate;

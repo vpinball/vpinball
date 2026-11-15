@@ -146,9 +146,13 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       return;
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
+   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
    if (m_d.m_shape == TriggerStar || m_d.m_shape == TriggerButton)
    {
-      TriggerHitCircle* hitcircle = new TriggerHitCircle(this, m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_hit_height);
+      const Vertex3Ds c0 = uiSpace * Vertex3Ds(m_d.m_vCenter.x, m_d.m_vCenter.y, height);
+      const Vertex3Ds c1 = uiSpace * Vertex3Ds(m_d.m_vCenter.x, m_d.m_vCenter.y, height + m_d.m_hit_height);
+      TriggerHitCircle *hitcircle = new TriggerHitCircle(this, Vertex2D(c0.x, c0.y), m_d.m_radius, c0.z, c1.z);
       hitcircle->m_enabled = isUI ? true : m_d.m_enabled;
       hitcircle->m_ObjType = eTrigger;
       hitcircle->m_obj = (IFireEvents *)this;
@@ -174,9 +178,12 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          const RenderVertex &pv1 = vvertex[(i < count - 1) ? (i + 1) : 0];
          const RenderVertex &pv2 = vvertex[(i < count - 2) ? (i + 2) : (i + 2 - count)];
 
-         LineSeg *const plineseg = isUI ? 
-              new LineSeg(this, pv1, pv2, height, height + max(m_d.m_hit_height - 8.0f, 0.f)) //adjust for same hit height as circular
-            : new TriggerLineSeg(this, pv1, pv2, height, height + max(m_d.m_hit_height - 8.0f, 0.f));
+         const float segTop = height + max(m_d.m_hit_height - 8.0f, 0.f);
+         const Vertex3Ds p1 = uiSpace * Vertex3Ds(pv1.x, pv1.y, height);
+         const Vertex3Ds p2 = uiSpace * Vertex3Ds(pv2.x, pv2.y, height);
+         const Vertex3Ds p1Top = uiSpace * Vertex3Ds(pv1.x, pv1.y, segTop);
+         LineSeg *const plineseg = isUI ? new LineSeg(this, Vertex2D(p1.x, p1.y), Vertex2D(p2.x, p2.y), p1.z, p1Top.z) //adjust for same hit height as circular
+                                        : new TriggerLineSeg(this, Vertex2D(p1.x, p1.y), Vertex2D(p2.x, p2.y), p1.z, p1Top.z);
          plineseg->m_ObjType = eTrigger;
          plineseg->m_obj = (IFireEvents *)this;
          AddHitObject(physics, plineseg, isUI);
@@ -184,11 +191,7 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
       Vertex3Ds *const rgv3D = new Vertex3Ds[count];
       for (int i = 0; i < count; i++)
-      {
-         rgv3D[i].x = vvertex[i].x;
-         rgv3D[i].y = vvertex[i].y;
-         rgv3D[i].z = height + (float)(PHYS_SKIN * 2.0);
-      }
+         rgv3D[i] = uiSpace * Vertex3Ds(vvertex[i].x, vvertex[i].y, height + (float)(PHYS_SKIN * 2.0));
       Hit3DPoly *const ph3dpoly = new Hit3DPoly(this, rgv3D, count);
       ph3dpoly->m_ObjType = eTrigger;
       ph3dpoly->m_obj = (IFireEvents *)this;

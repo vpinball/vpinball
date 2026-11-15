@@ -227,9 +227,11 @@ void Decal::PhysicSetup(PhysicsEngine *physics, const bool isUI)
       Vertex2D quad[4];
       GetEditorQuad(quad);
       const float height = m_desktopBackdrop ? 0.f : (m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) + 0.2f);
+      // The UI quadtree is a single quadtree in the playfield space: the UI collider bakes the part's reference space transform
+      const Matrix3D uiSpace = GetUISpaceTransform();
       Vertex3Ds *const rgv3d = new Vertex3Ds[4];
       for (int i = 0; i < 4; i++)
-         rgv3d[i] = Vertex3Ds(quad[3 - i].x, quad[3 - i].y, height); // Reversed winding so that the quad faces up and can be picked from the top-down editor views
+         rgv3d[i] = uiSpace * Vertex3Ds(quad[3 - i].x, quad[3 - i].y, height); // Reversed winding so that the quad faces up and can be picked from the top-down editor views
       AddHitObject(physics, new Hit3DPoly(this, rgv3d, 4), isUI);
    }
 }
