@@ -1089,11 +1089,13 @@ void EditorUI::RenderUI()
 
    // Selected parts are kept dynamic in the UI quadtree so that they can be edited interactively. The selection also changes outside
    // of this pass (automation, undo, table switches) and parts get re-added as static (undelete), so the state is synced rather than
-   // derived from selection changes
+   // derived from selection changes. Newly selected parts are made dynamic before the deselected ones go static: SetStatic
+   // starts an asynchronous quadtree rebuild that SetDynamic would have to wait for (it deletes the part's static hit objects)
    std::erase_if(m_dynamicParts, [this](IEditable *edit) { return FindIndexOf(m_table->GetParts(), edit) == -1; });
+   vector<IEditable *> deselected;
    for (IEditable *const edit : m_dynamicParts)
-      if (!IsEditableSelected(edit) && !m_player->m_physics->IsStatic(edit))
-         m_player->m_physics->SetStatic(edit);
+      if (!IsEditableSelected(edit))
+         deselected.push_back(edit);
    std::erase_if(m_dynamicParts, [this](IEditable *edit) { return !IsEditableSelected(edit); });
    for (const auto &part : m_multiSel)
    {
@@ -1105,6 +1107,9 @@ void EditorUI::RenderUI()
       if (FindIndexOf(m_dynamicParts, edit) == -1)
          m_dynamicParts.push_back(edit);
    }
+   for (IEditable *const edit : deselected)
+      if (!m_player->m_physics->IsStatic(edit))
+         m_player->m_physics->SetStatic(edit);
 }
 
 void EditorUI::PushUndo(IEditable *part, unsigned int undoId, const string &label)
