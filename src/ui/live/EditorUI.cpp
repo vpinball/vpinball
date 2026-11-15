@@ -1367,6 +1367,11 @@ PartGroupData::SpaceReference EditorUI::GetPartSpace(const IEditable *editable)
    return group != nullptr ? group->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
 }
 
+Matrix3D EditorUI::PartSpaceTransform(const IEditable *editable) const
+{
+   return GetPartSpace(editable) == PartGroupData::SpaceReference::SR_PLAYFIELD ? Matrix3D::MatrixIdentity() : m_table->GetDefaultPlayfieldToCabMatrix();
+}
+
 std::optional<PartGroupData::SpaceReference> EditorUI::GetSelectionSpace() const
 {
    // The selection defines a reference space only when all of its parts share the same one, and it
@@ -2772,45 +2777,56 @@ bool EditorUI::GetSelectionBounds(FRect3D &bounds) const
    bounds.Clear();
    if (m_pointEditPart)
    {
-      // In center edit mode, the bounds are the part's center point
+      // Bounds of the selected points (or of the center point), converted from the edited part's
+      // space (backdrop parts live on their own 2D plane: their coordinates are view coordinates)
+      const Matrix3D toPlayfield = m_pointEditPart->GetEditable()->m_desktopBackdrop ? Matrix3D::MatrixIdentity() : PartSpaceTransform(m_pointEditPart->GetEditable());
+      const auto extendPoint = [&bounds, &toPlayfield](const float x, const float y, const float z)
+      {
+         const Vertex3Ds v = toPlayfield * Vertex3Ds(x, y, z);
+         bounds.Extend(FRect3D(v.x, v.x, v.y, v.y, v.z, v.z));
+      };
       if (m_pointEditCenter)
       {
+         // In center edit mode, the bounds are the part's center point
          if (m_centerSelected)
          {
             const Vertex3Ds center = m_pointEditPart->GetEditCenter();
-            bounds.Extend(FRect3D(center.x, center.x, center.y, center.y, center.z, center.z));
+            extendPoint(center.x, center.y, center.z);
          }
       }
       else
          // In drag point edit mode, the bounds are the ones of the selected points
          for (const DragPoint *point : m_pointSel)
-         {
-            const float z = m_pointEditPart->GetDragPointZ(point);
-            bounds.Extend(FRect3D(point->GetX(), point->GetX(), point->GetY(), point->GetY(), z, z));
-         }
+            extendPoint(point->GetX(), point->GetY(), m_pointEditPart->GetDragPointZ(point));
    }
    else
    {
-      const auto extendWithPart = [this, &bounds](const std::shared_ptr<EditorUIPart> &part)
-      {
-         IEditable *const editable = part->GetEditable();
-         if (editable->GetIHitable() != nullptr)
-            for (const HitObject *const hitObject : m_player->m_physics->GetUIHitObjects(editable))
-               bounds.Extend(hitObject->m_hitBBox);
-         // Also include the part's position to cover parts without hit objects
-         Matrix3D transform;
-         if (part->GetTransform(transform) != EditorUIPart::TM_None)
-         {
-            const Vertex3Ds pos = transform.GetOrthoNormalPos();
-            bounds.Extend(FRect3D(pos.x, pos.x, pos.y, pos.y, pos.z, pos.z));
-         }
-      };
       for (const auto &part : m_multiSel)
-         extendWithPart(part);
+         ExtendBoundsWithPart(bounds, part);
       if (m_multiSel.empty() && m_selection.GetPart())
-         extendWithPart(m_selection.GetPart());
+         ExtendBoundsWithPart(bounds, m_selection.GetPart());
    }
    return bounds.left <= bounds.right;
+}
+
+void EditorUI::ExtendBoundsWithPart(FRect3D &bounds, const std::shared_ptr<EditorUIPart> &part) const
+{
+   IEditable *const editable = part->GetEditable();
+   // The hit bounds are already expressed in the playfield space the camera works in: the parts bake
+   // their reference space transform into their UI colliders (the renderer applies the same transform
+   // to the view instead, see RenderView::SetSpaceReference)
+   if (editable->GetIHitable() != nullptr)
+      for (const HitObject *const hitObject : m_player->m_physics->GetUIHitObjects(editable))
+         bounds.Extend(hitObject->m_hitBBox);
+   // Also include the part's position to cover parts without hit objects, converted from its reference
+   // space (desktop backdrop parts live on their own 2D plane: their coordinates are view coordinates)
+   const Matrix3D toPlayfield = editable->m_desktopBackdrop ? Matrix3D::MatrixIdentity() : PartSpaceTransform(editable);
+   Matrix3D transform;
+   if (part->GetTransform(transform) != EditorUIPart::TM_None)
+   {
+      const Vertex3Ds pos = toPlayfield * transform.GetOrthoNormalPos();
+      bounds.Extend(FRect3D(pos.x, pos.x, pos.y, pos.y, pos.z, pos.z));
+   }
 }
 
 // Decompose a transform into the position/scale/rotation components used by the parts' SetTransform
