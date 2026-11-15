@@ -29,21 +29,18 @@ cabinet lockbar width will perfectly match the one of the emulated pinball cabin
 
 VPX handles these differences by performing a few scaling and positioning which are applied depending on the category of each part. 
 This is done by placing parts in different layers, and selecting in the layer properties a space reference:
-- The **playfield** space corresponds to the playfield parts. It is placed at the playfield level, inclined according to the default table inclination, and scaled to match user settings.
+- The **playfield** space corresponds to the playfield parts, including the cabinet which moves with it. It is placed at the playfield level, inclined according to the table inclination, and scaled to match user settings.
   The playfield level is defined as the user defined lockbar height (defined in the real world) minus the distance between the glass and the playfield (bottom glass height).
   The scale is defined by the relative difference between the user defined lockbar width and the emulated table lockbar width, computed from the playfield width.
 - The **room** space corresponds to the room parts. These parts are rendered as is, using headset roomscale acquisition, without any transformation.
-- The **cabinet** space corresponds to the cabinet parts, excluding the feet and playfield. It is aligned and scaled with the playfield, but not inclined.
-  Playfield alignement is done using the lockbar height value that the table author defines in the table property. This value corresponds to the
-  distance between the ground and the top of the lockbar of the cabinet model.
-- The **cabinet feet** space corresponds to the cabinet feet. It mostly matches the cabinet positioning but with 3D model ground aligned to real world ground, and applying a vertical strech to align to the playfield level as defined in the cabinet space.
+- The **cabinet feet** space corresponds to the cabinet feet. It is an upright space on the real world ground with its origin below the playfield origin (it follows the cabinet's placement), with the cabinet scaling applied on X/Y, plus a vertical stretch of the leg span.
   This allows the feet of the cabinet to always match the room ground (not dropping below or floating above) while the upper part of the feet match the cabinet position.
 
 To sum it up:
 - the cabinet, playfield and feets are ***scaled*** according to the user defined ***lockbar width*** against the table's lockbar width, computed from the playfield width,
 - the cabinet, playfield and feets are ***positioned*** so that the cabinet 3D model's ***lockbar height*** matches the real world user defined lockbar height,
 - the feet are stretched in order to satisfy the 2 previous points, while still always touching ground,
-- the playfield is inclined by the default inclination defined by the table author,
+- the playfield and the cabinet it carries are inclined by the inclination defined by the table author,
 - the room is kept untransformed and displayed at real world scale.
 
 An example is provided in the default table which contains the setup and elements for a standard WPC sized cabinet.

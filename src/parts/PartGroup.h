@@ -28,13 +28,12 @@ public:
    unsigned int m_playerModeVisibilityMask = PMVM_ALL;
    enum class SpaceReference : int
    {
-      SR_PLAYFIELD, // Relative to cabinet with playfield inclination and local coordinate system applied (usual local playfield coordinate system tailored for table design)
-      SR_CABINET, // Relative to cabinet feet, with height adjustment (with height adjustment for lockbar to match cabinet lockbar height after scaling)
-      SR_CABINET_FEET, // Relative to room, scaled to fit cabinet size (without any height adjustment, for cabinet feet to touch ground)
-      SR_ROOM, // Base space, aligned to (offsetted) real world, without any scaling (to match real world room in AR/VR)
-      SR_INHERIT, // Inherit space reference from parent (note that root defaults to Playfield reference space)
+      Inherit = 0, // Inherit space reference from parent (note that root defaults to Playfield reference space)
+      Playfield = 1, // Relative to the room with scaling, height adjustment and playfield inclination applied (table design coordinate system, including the cabinet which moves with it)
+      Room = 2, // Base space, aligned to (offsetted) real world, without any scaling (to match real world room in AR/VR)
+      CabinetFeet = 3, // Upright space with the feet on the room ground below the playfield origin and the legs stretched to the cabinet's leg attach point (when locked to ground)
    };
-   SpaceReference m_spaceReference = SpaceReference::SR_PLAYFIELD;
+   SpaceReference m_spaceReference = SpaceReference::Inherit;
 };
 
 class PartGroup :

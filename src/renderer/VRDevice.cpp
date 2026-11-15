@@ -1184,7 +1184,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          //                        (sceneScale * sceneBasis * viewOffsetInVPU * medianViewInVPU) * (inv(medianViewInVPU) * VPUToWorldScale * view[eye] * projection[eye])
          // - Orthonormal shading: (sceneBasis * viewOffsetInVPU * medianViewInVPU) * (inv(sceneBasis * viewOffsetInVPU * medianViewInVPU) * sceneScale * sceneBasis * viewOffsetInVPU * VPUToWorldScale * view[eye] * projection[eye])
          // - Therefore, we define:
-         //   . pfWorld = sceneBasis * viewOffsetInVPU (= m_spaces[SR_PLAYFIELD].m_toWorld)
+         //   . pfWorld = sceneBasis * viewOffsetInVPU (= m_spaces[Playfield].m_toWorld)
          //   . m_pfMatView = pfWorld * medianViewInVPU
          //   . m_pfMatProj[eye] = inv(m_pfMatView) * sceneScale * pfWorld * VPUToWorldScale * view[eye] * projection[eye]
          // TODO Note that this is not the way it should be done: shading should use each eye view matrix, leading to slightly different shading per eye
@@ -1274,11 +1274,12 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             m_worldDirty = true;
          }
 
-         // Prepare the view/projection matrices for the 4 space references we use:
+         // Prepare the view/projection matrices for the 3 space references we use:
          // - Room is the VR room, offseted and rotated to the table orientation (rotation around vertical axis)
-         // - Cabinet feet is the same as the room with cabinet scaling applied (to match lockbar width)
-         // - Cabinet is the same as the cabinet feet but also applying depth offset (to match lockbar height)
-         // - Playfield is the main space reference where the simulation happens (only one to support physics), relative to the cabinet, with inclination and table coordinate system
+         // - Cabinet feet is an upright space on the room ground with its origin below the playfield origin,
+         //   the cabinet scaling applied on X/Y (to match lockbar width) and the legs stretched in Z to the leg attach point
+         // - Playfield is the main space reference where the simulation happens (only one to support physics):
+         //   the whole anchored assembly (cabinet included) with scaling, height adjustment, inclination and table coordinate system
 
          // playfield is inclined at a fixed slope that should be defined with the table (it corresponds to the cabinet design),
          // then player adjust the play angle by adjusting the feet casters, so the whole cab rotates.
@@ -1293,9 +1294,6 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             geometry.playfieldDepth = table->m_bottom - table->m_top;
             geometry.groundToLockbarHeight = table->m_groundToLockbarHeight;
             geometry.glassBottomHeight = table->m_glassBottomHeight;
-            geometry.angleTiltMin = table->m_angletiltMin;
-            geometry.angleTiltMax = table->m_angletiltMax;
-            geometry.difficulty = table->m_difficulty;
 
             VRSpaceSetup setup;
             setup.roomOffset = m_roomOffset;
@@ -1311,10 +1309,9 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
 
             const VRSpaces spaces = ComputeVRSpaces(setup, geometry);
             m_cabinetScale = spaces.cabinetScale;
-            m_spaces[static_cast<int>(PartGroupData::SpaceReference::SR_PLAYFIELD)].m_toWorld = spaces.playfield;
-            m_spaces[static_cast<int>(PartGroupData::SpaceReference::SR_CABINET)].m_toWorld = spaces.cabinet;
-            m_spaces[static_cast<int>(PartGroupData::SpaceReference::SR_CABINET_FEET)].m_toWorld = spaces.cabinetFeet;
-            m_spaces[static_cast<int>(PartGroupData::SpaceReference::SR_ROOM)].m_toWorld = spaces.room;
+            m_spaces[static_cast<int>(PartGroupData::SpaceReference::Playfield)].m_toWorld = spaces.playfield;
+            m_spaces[static_cast<int>(PartGroupData::SpaceReference::CabinetFeet)].m_toWorld = spaces.cabinetFeet;
+            m_spaces[static_cast<int>(PartGroupData::SpaceReference::Room)].m_toWorld = spaces.room;
          }
 
          // As we only have one view matrix for shading, each eye view is integrated in the projection matrix, by reverting the 'shading' view matrix then
@@ -1335,10 +1332,9 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             // View is per eye, must be orthonormal (so every scale must be compensated)
             const Matrix3D viewInvSceneScale = view * invSceneScale;
             using enum PartGroupData::SpaceReference;
-            m_spaces[static_cast<int>(SR_PLAYFIELD)].m_view[eye] = m_spaces[static_cast<int>(SR_PLAYFIELD)].m_toWorld * viewInvSceneScale;
-            m_spaces[static_cast<int>(SR_CABINET)].m_view[eye] = m_spaces[static_cast<int>(SR_CABINET)].m_toWorld * viewInvSceneScale;
-            m_spaces[static_cast<int>(SR_CABINET_FEET)].m_view[eye] = m_spaces[static_cast<int>(SR_CABINET_FEET)].m_toWorld * viewInvSceneScale;
-            m_spaces[static_cast<int>(SR_ROOM)].m_view[eye] = m_spaces[static_cast<int>(SR_ROOM)].m_toWorld * view;
+            m_spaces[static_cast<int>(Playfield)].m_view[eye] = m_spaces[static_cast<int>(Playfield)].m_toWorld * viewInvSceneScale;
+            m_spaces[static_cast<int>(CabinetFeet)].m_view[eye] = m_spaces[static_cast<int>(CabinetFeet)].m_toWorld * viewInvSceneScale;
+            m_spaces[static_cast<int>(Room)].m_view[eye] = m_spaces[static_cast<int>(Room)].m_toWorld * view;
 
             m_roomProj[eye] = vpuScale * m_nextProj[eye];
             m_sceneProj[eye] = sceneScale * m_roomProj[eye];
@@ -1351,9 +1347,9 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          if (headPoseValid && g_pplayer->m_audioPlayer)
          {
             // m_view maps table space to view space: its inverse maps the camera pose to table space
-            const Matrix3D headPose = Matrix3D::MatrixInverse(m_spaces[static_cast<int>(PartGroupData::SpaceReference::SR_PLAYFIELD)].m_view[0]);
+            const Matrix3D headPose = Matrix3D::MatrixInverse(m_spaces[static_cast<int>(PartGroupData::SpaceReference::Playfield)].m_view[0]);
             const Matrix3D rightEyePose
-               = m_viewConfigurationViews.size() > 1 ? Matrix3D::MatrixInverse(m_spaces[static_cast<int>(PartGroupData::SpaceReference::SR_PLAYFIELD)].m_view[1]) : headPose;
+               = m_viewConfigurationViews.size() > 1 ? Matrix3D::MatrixInverse(m_spaces[static_cast<int>(PartGroupData::SpaceReference::Playfield)].m_view[1]) : headPose;
             const float posX = 0.5f * (headPose.m[3][0] + rightEyePose.m[3][0]);
             const float posY = 0.5f * (headPose.m[3][1] + rightEyePose.m[3][1]);
             const float posZ = 0.5f * (headPose.m[3][2] + rightEyePose.m[3][2]);
@@ -1557,13 +1553,13 @@ void VRDevice::UpdateVRPosition(PartGroupData::SpaceReference spaceRef, ModelVie
    using enum PartGroupData::SpaceReference;
 
    const int spaceIdx = static_cast<int>(spaceRef);
-   if (spaceIdx < static_cast<int>(SR_PLAYFIELD) || spaceIdx > static_cast<int>(SR_ROOM))
+   if (spaceIdx < static_cast<int>(Playfield) || spaceIdx > static_cast<int>(CabinetFeet))
    {
       assert(false);
       return;
    }
    const Viewpoint& viewpoint = m_spaces[spaceIdx];
-   const Matrix3D* proj = spaceRef == SR_ROOM ? m_roomProj : m_sceneProj;
+   const Matrix3D* proj = spaceRef == Room ? m_roomProj : m_sceneProj;
    for (unsigned int eye = 0; eye < 2; eye++)
    {
       mvp.SetView(eye, viewpoint.m_view[eye]);

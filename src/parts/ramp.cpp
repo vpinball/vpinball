@@ -394,7 +394,7 @@ float Ramp::GetSurfaceHeight(float x, float y) const
 
 void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    float wallheightright, wallheightleft;

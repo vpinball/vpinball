@@ -88,10 +88,10 @@ void PartGroupUIPart::UpdatePropertyPane(PropertyPane& props)
 
       props.Separator("Space Reference"s);
       props.Combo<PartGroup>(
-         m_part, "Space Reference"s, vector<string> { "Playfield"s, "Cabinet"s, "Cabinet Feet"s, "Room"s, "Inherit"s }, //
+         m_part, "Space Reference"s, vector<string> { "Inherit"s, "Playfield"s, "Room"s, "Cabinet Feet"s }, //
          [](const PartGroup* partGroup) { return static_cast<int>(partGroup->m_d.m_spaceReference); }, //
          [](PartGroup* partGroup, int v) { g_pplayer->m_liveUI->m_editorUI.m_layerSpaceChangeOp.Request(partGroup, static_cast<PartGroupData::SpaceReference>(v)); },
-         "Space in which this group's transform is expressed (playfield, cabinet, room, or inherited from the parent group)");
+         "Space in which this group's transform is expressed (playfield, cabinet feet, room, or inherited from the parent group)");
       props.EndSection();
    }
 

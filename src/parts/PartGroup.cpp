@@ -79,11 +79,11 @@ unsigned int PartGroup::GetPlayerModeVisibilityMask() const
 
 PartGroupData::SpaceReference PartGroup::GetReferenceSpace() const
 {
-   if (m_d.m_spaceReference != PartGroupData::SpaceReference::SR_INHERIT)
+   if (m_d.m_spaceReference != PartGroupData::SpaceReference::Inherit)
       return m_d.m_spaceReference;
    if (GetPartGroup() != nullptr)
       return GetPartGroup()->GetReferenceSpace();
-   return PartGroupData::SpaceReference::SR_PLAYFIELD;
+   return PartGroupData::SpaceReference::Playfield;
 }
 
 #pragma endregion

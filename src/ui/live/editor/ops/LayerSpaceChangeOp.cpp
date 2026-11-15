@@ -16,7 +16,7 @@ namespace VPX::EditorUI
 
 namespace
 {
-   const char *const spaceNames[] = { "Playfield", "Cabinet", "Cabinet Feet", "Room", "Inherit" };
+   const char *const spaceNames[] = { "Inherit", "Playfield", "Room", "Cabinet Feet" };
 
    // Decompose a transform into the position/scale/rotation components used by the parts'
    // SetTransform, as EditorUI::SetSelectionTransform does but keeping mirroring: a mirrored
@@ -68,10 +68,10 @@ namespace
    }
 
    // Same space transforms as the editor renderer (see RenderView::SetSpaceReference): the playfield
-   // is the reference space, all the other spaces share the default playfield to cabinet transform
+   // is the reference space, all the other spaces share the default room to playfield transform
    Matrix3D SpaceTransform(const PinTable *table, const PartGroupData::SpaceReference space)
    {
-      return space == PartGroupData::SpaceReference::SR_PLAYFIELD ? Matrix3D::MatrixIdentity() : table->GetDefaultPlayfieldToCabMatrix();
+      return space == PartGroupData::SpaceReference::Playfield ? Matrix3D::MatrixIdentity() : table->GetDefaultRoomToPlayfieldMatrix();
    }
 }
 
@@ -89,7 +89,7 @@ vector<IEditable *> LayerSpaceChangeOp::SpaceChildren(const PartGroup *group)
             children.push_back(part);
             break;
          }
-         if (parent->m_d.m_spaceReference != PartGroupData::SpaceReference::SR_INHERIT)
+         if (parent->m_d.m_spaceReference != PartGroupData::SpaceReference::Inherit)
             break;
       }
    return children;
@@ -187,12 +187,11 @@ void LayerSpaceChangeOp::Apply(const Change &change)
 
 void LayerSpaceChangeOp::Request(PartGroup *const group, const PartGroupData::SpaceReference space)
 {
-   // Resolve the requested space (SR_INHERIT resolves against the parent chain): when the resolved
+   // Resolve the requested space (Inherit resolves against the parent chain): when the resolved
    // space does not change, the children are unaffected and only the reference field is written
    const PartGroupData::SpaceReference oldSpace = group->GetReferenceSpace();
-   const PartGroupData::SpaceReference newSpace = space == PartGroupData::SpaceReference::SR_INHERIT
-      ? (group->GetPartGroup() != nullptr ? group->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD)
-      : space;
+   const PartGroupData::SpaceReference newSpace
+      = space == PartGroupData::SpaceReference::Inherit ? (group->GetPartGroup() != nullptr ? group->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::Playfield) : space;
    if (newSpace == oldSpace)
    {
       group->m_d.m_spaceReference = space;
@@ -242,7 +241,7 @@ bool LayerSpaceChangeOp::RequestMove(const vector<IEditable *> &moved, PartGroup
    Change change;
    change.target = target;
    change.moved = moved;
-   change.newSpace = target != nullptr ? target->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
+   change.newSpace = target != nullptr ? target->GetReferenceSpace() : PartGroupData::SpaceReference::Playfield;
 
    PinTable *const table = target != nullptr ? target->GetPTable() : moved.front()->GetPTable();
    const Matrix3D toNew = Matrix3D::MatrixInverse(SpaceTransform(table, change.newSpace));
@@ -267,13 +266,13 @@ bool LayerSpaceChangeOp::RequestMove(const vector<IEditable *> &moved, PartGroup
    {
       // The space a transform is expressed in is the resolved space of the part's parent group
       const PartGroup *const parent = editable->GetPartGroup();
-      const PartGroupData::SpaceReference from = parent != nullptr ? parent->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
+      const PartGroupData::SpaceReference from = parent != nullptr ? parent->GetReferenceSpace() : PartGroupData::SpaceReference::Playfield;
       if (from == change.newSpace)
          continue;
       queue(editable, from);
       // The children of a space-inheriting group follow its space (an explicit one keeps its own);
       // moved parts re-express themselves through their own entry
-      if (editable->GetItemType() == eItemPartGroup && static_cast<const PartGroup *>(editable)->m_d.m_spaceReference == PartGroupData::SpaceReference::SR_INHERIT)
+      if (editable->GetItemType() == eItemPartGroup && static_cast<const PartGroup *>(editable)->m_d.m_spaceReference == PartGroupData::SpaceReference::Inherit)
          for (IEditable *const child : SpaceChildren(static_cast<PartGroup *>(editable)))
             if (std::ranges::find(moved, child) == moved.end())
                queue(child, from);

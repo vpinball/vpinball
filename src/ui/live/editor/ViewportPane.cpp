@@ -874,7 +874,7 @@ void ViewportPane::FrameSelection()
 void ViewportPane::FrameAll()
 {
    // Camera framing the whole table (Blender's View All, Home): the playfield bounds extended with the
-   // visible parts living outside of it in a non playfield reference space (cabinet, room, ...). Playfield
+   // visible parts living outside of it in a non playfield reference space (cabinet feet, room, ...). Playfield
    // parts outside of the table rectangle (display reels, helpers, ...) are left out like before
    const PinTable* const table = m_editor.m_table;
    const bool backdrop = m_viewType == ViewMode::DesktopBackdrop;
@@ -882,7 +882,7 @@ void ViewportPane::FrameAll()
    bounds.Clear();
    for (const auto& part : m_editor.m_editables)
       if (part->GetEditable()->m_desktopBackdrop == backdrop && part->GetEditable()->IsUIVisible(true)
-         && (backdrop || EditorUI::GetPartSpace(part->GetEditable()) != PartGroupData::SpaceReference::SR_PLAYFIELD))
+         && (backdrop || EditorUI::GetPartSpace(part->GetEditable()) != PartGroupData::SpaceReference::Playfield))
          m_editor.ExtendBoundsWithPart(bounds, part);
    if (!backdrop)
       bounds.Extend(FRect3D(0.f, table->m_right, 0.f, table->m_bottom, 0.f, table->m_glassTopHeight));
@@ -1075,15 +1075,15 @@ Matrix3D ViewportPane::ViewSpaceTransform() const
 {
    // The view's space reference is the one of the last part recorded into it; all the non playfield
    // spaces share the same transform (see RenderView::SetSpaceReference)
-   return m_view != nullptr && m_view->m_mvpSpaceReference != PartGroupData::SpaceReference::SR_PLAYFIELD ? m_editor.m_table->GetDefaultPlayfieldToCabMatrix() : Matrix3D::MatrixIdentity();
+   return m_view != nullptr && m_view->m_mvpSpaceReference != PartGroupData::SpaceReference::Playfield ? m_editor.m_table->GetDefaultRoomToPlayfieldMatrix() : Matrix3D::MatrixIdentity();
 }
 
 Matrix3D ViewportPane::PartSpaceToView(const IEditable* const editable) const
 {
    // Part space -> playfield -> the view's current reference space (the inverse mapping)
    Matrix3D transform = editable != nullptr ? m_editor.PartSpaceTransform(editable) : Matrix3D::MatrixIdentity();
-   if (m_view != nullptr && m_view->m_mvpSpaceReference != PartGroupData::SpaceReference::SR_PLAYFIELD)
-      transform = transform * Matrix3D::MatrixInverse(m_editor.m_table->GetDefaultPlayfieldToCabMatrix());
+   if (m_view != nullptr && m_view->m_mvpSpaceReference != PartGroupData::SpaceReference::Playfield)
+      transform = transform * Matrix3D::MatrixInverse(m_editor.m_table->GetDefaultRoomToPlayfieldMatrix());
    return transform;
 }
 
@@ -1614,8 +1614,8 @@ void ViewportPane::RenderStatusOverlay()
       // Reference space shared by the selection (undefined when it mixes spaces or holds backdrop parts)
       if (const std::optional<PartGroupData::SpaceReference> space = m_editor.GetSelectionSpace(); space.has_value())
       {
-         const char* const spaceNames[] = { "Playfield", "Cabinet", "Cabinet Feet", "Room" };
-         const int spaceIndex = clamp(static_cast<int>(*space), 0, 3);
+         const char* const spaceNames[] = { "Inherit", "Playfield", "Room", "Cabinet Feet" };
+         const int spaceIndex = clamp(static_cast<int>(*space), 1, 3);
          ImGui::Text("Space: %s", spaceNames[spaceIndex]);
       }
    }
@@ -1739,7 +1739,7 @@ void ViewportPane::Render3D()
    // Reference space axes: the origin axes (and playfield/glass bounds) of the space shared by the
    // selection. When the selection does not define a single space (empty, mixed or holding backdrop
    // parts), the playfield space is drawn, plus the room one when a visible part actually uses it
-   // (in live edit the cabinet & cabinet feet spaces coincide with the room one, as they only
+   // (in live edit the cabinet feet space coincides with the room one, as they only
    // differ by the user space settings which are not applied there)
    PartGroupData::SpaceReference spaces[2];
    int spaceCount = 0;
@@ -1749,12 +1749,12 @@ void ViewportPane::Render3D()
          spaces[spaceCount++] = *space;
       else
       {
-         spaces[spaceCount++] = PartGroupData::SpaceReference::SR_PLAYFIELD;
+         spaces[spaceCount++] = PartGroupData::SpaceReference::Playfield;
          // The room axes are only relevant when a visible part actually uses a non playfield space
          for (IEditable* const part : m_editor.m_table->GetParts())
-            if (!part->m_desktopBackdrop && part->IsUIVisible(true) && EditorUI::GetPartSpace(part) != PartGroupData::SpaceReference::SR_PLAYFIELD)
+            if (!part->m_desktopBackdrop && part->IsUIVisible(true) && EditorUI::GetPartSpace(part) != PartGroupData::SpaceReference::Playfield)
             {
-               spaces[spaceCount++] = PartGroupData::SpaceReference::SR_ROOM;
+               spaces[spaceCount++] = PartGroupData::SpaceReference::Room;
                break;
             }
       }
@@ -1795,7 +1795,7 @@ void ViewportPane::Render3D()
          // them (the same "Top Orthographic" test as the status overlay's camera info line)
          int segments[7];
          int segmentCount;
-         if (space == PartGroupData::SpaceReference::SR_PLAYFIELD)
+         if (space == PartGroupData::SpaceReference::Playfield)
          {
             const bool fromAbove = !m_perspectiveCam && m_predefinedView == PredefinedView::Top;
             segmentCount = fromAbove ? 3 : 5;
@@ -1825,7 +1825,7 @@ void ViewportPane::Render3D()
       for (size_t i = cmdBase; i < rd->GetCurrentPass()->m_commands.size(); i++)
          rd->GetCurrentPass()->m_commands[i]->SetTransparent(true);
       rd->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
-      m_view->SetSpaceReference(PartGroupData::SpaceReference::SR_PLAYFIELD, true);
+      m_view->SetSpaceReference(PartGroupData::SpaceReference::Playfield, true);
    }
 
    RenderSceneParts(ctx);
@@ -1852,16 +1852,16 @@ void ViewportPane::Render3D()
 const ViewportPane::SpaceAxes* ViewportPane::EnsureSpaceAxesMesh(const PartGroupData::SpaceReference space)
 {
    PinTable* const table = m_editor.m_table;
-   // One mesh per space variant (playfield bounds vs infinite room axes): the cabinet & cabinet feet
-   // spaces share the room mesh, just like they share its transform (see RenderView::SetSpaceReference)
-   SpaceAxes& axes = m_spaceAxes[space == PartGroupData::SpaceReference::SR_PLAYFIELD ? 0 : 1];
+   // One mesh per space variant (playfield bounds vs infinite room axes): the cabinet feet
+   // space shares the room mesh, just like they share its transform (see RenderView::SetSpaceReference)
+   SpaceAxes& axes = m_spaceAxes[space == PartGroupData::SpaceReference::Playfield ? 0 : 1];
    // The mesh is made of 7 segments (index ranges in ranges): the playfield outline, the
    // X/Y/Z axes, the glass box, and the negative halves of the X/Y axes. The playfield space gets the
    // outline, the X/Y axes bounded to it, the glass box and the Z axis; the other spaces get 'infinite'
    // X/Y axes split at the origin so the negative side can be dimmed. The glass box and Z axis are drawn
    // or not depending on the camera (see Render3D), they do not take part in the rebuild decision.
    float bounds[6] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
-   if (space == PartGroupData::SpaceReference::SR_PLAYFIELD)
+   if (space == PartGroupData::SpaceReference::Playfield)
    {
       bounds[0] = table->m_left;
       bounds[1] = table->m_top;
@@ -1896,7 +1896,7 @@ const ViewportPane::SpaceAxes* ViewportPane::EnsureSpaceAxesMesh(const PartGroup
       axes.ranges[seg * 2] = start;
       axes.ranges[seg * 2 + 1] = (uint32_t)indices.size() - start;
    };
-   if (space == PartGroupData::SpaceReference::SR_PLAYFIELD)
+   if (space == PartGroupData::SpaceReference::Playfield)
    {
       const float l = bounds[0], t = bounds[1], r = bounds[2], b = bounds[3], gb = bounds[4], gt = bounds[5];
       axes.center = Vertex3Ds((l + r) * 0.5f, (t + b) * 0.5f, 0.f);

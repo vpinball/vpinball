@@ -274,7 +274,7 @@ TEST_CASE("PinTable part")
 
       // A level table keeps the legacy translation-only transform (ground below the playfield)
       table->m_angletiltMin = table->m_angletiltMax = 0.f;
-      const Matrix3D flat = table->GetDefaultPlayfieldToCabMatrix();
+      const Matrix3D flat = table->GetDefaultRoomToPlayfieldMatrix();
       const Vertex3Ds flatOrigin = flat * Vertex3Ds(0.f, 0.f, 0.f);
       CHECK(flatOrigin.x == doctest::Approx(0.f).epsilon(1e-5));
       CHECK(flatOrigin.y == doctest::Approx(0.f).epsilon(1e-5));
@@ -283,7 +283,7 @@ TEST_CASE("PinTable part")
 
       table->m_angletiltMin = table->m_angletiltMax = 6.f;
       const float slope = ANGTORAD(table->GetPlayfieldSlope());
-      const Matrix3D toPf = table->GetDefaultPlayfieldToCabMatrix();
+      const Matrix3D toPf = table->GetDefaultRoomToPlayfieldMatrix();
       const Matrix3D toRoom = Matrix3D::MatrixInverse(toPf);
 
       // The lockbar line is the pivot: the playfield front edge sits at its authored height

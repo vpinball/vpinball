@@ -16,9 +16,6 @@ struct VRTableGeometry
    float playfieldDepth = 0.f;
    float groundToLockbarHeight = 0.f; // Height of the cabinet model's lockbar from its feet
    float glassBottomHeight = 0.f; // Height of the playfield bottom (below the glass) from the feet
-   float angleTiltMin = 0.f;
-   float angleTiltMax = 0.f;
-   float difficulty = 0.f; // 0..1, selects the authored base slope between angleTiltMin and angleTiltMax
 };
 
 // User-adjustable VR setup. Distances in cm, angles in degrees.
@@ -43,12 +40,11 @@ struct VRSpaceSetup
    float liveSlope = 0.f; // Effective playfield slope (authored slope possibly adjusted by the user)
 };
 
-// Space to world transforms for the 4 VR space references (see PartGroupData::SpaceReference)
+// Space to world transforms for the 3 VR space references (see PartGroupData::SpaceReference)
 struct VRSpaces
 {
-   Matrix3D playfield; // Simulation space, follows the cabinet with playfield slope applied
-   Matrix3D cabinet; // Cabinet, scaled/positioned so its lockbar matches the target width & height
-   Matrix3D cabinetFeet; // Cabinet feet, scaled with the cabinet and touching the (corrected) ground
+   Matrix3D playfield; // Simulation space: the whole anchored assembly incl. cabinet, with playfield slope applied
+   Matrix3D cabinetFeet; // Upright space on the room ground with its origin below the playfield origin: cabinet scaling on X/Y, legs stretched in Z to the leg attach point
    Matrix3D room; // Real world room, unscaled
    float cabinetScale = 1.f;
    float targetLockbarHeight = 0.f; // Effective lockbar height above the (corrected) ground, in cm

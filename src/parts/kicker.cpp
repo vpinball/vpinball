@@ -93,7 +93,7 @@ void Kicker::WriteRegDefaults()
 
 void Kicker::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::SR_PLAYFIELD)
+   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
