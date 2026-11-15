@@ -25,47 +25,43 @@ VRSpaces ComputeVRSpaces(const VRSpaceSetup& setup, const VRTableGeometry& table
    // When not overriding the lockbar width, the cabinet is rendered at its native size
    const float tableWidth = VPUTOCM(table.playfieldWidth) + 2.25f * 2.54f;
    out.cabinetScale = setup.overrideLockbarWidth ? clamp(setup.customLockbarWidth / tableWidth, 0.1f, 2.0f) : 1.f;
-   const Matrix3D sceneScale = Matrix3D::MatrixScale(out.cabinetScale);
-
-   // Move table (in VPU coordinates), adjust coord from RH to LH system
-   const Matrix3D coords = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
-   const Matrix3D rotz = Matrix3D::MatrixRotateZ(ANGTORAD(setup.roomYaw));
-   const Matrix3D rotx2 = Matrix3D::MatrixRotateX(ANGTORAD(-90.f));
-   const Matrix3D viewOrientation = rotz * rotx2;
 
    // The users define in their settings the real world height where they want the top of the lockbar to be.
    // The real world playfield height is then computed by removing the glass distance at the playfield bottom (typically 2 to 3").
    // The table offset allows to slightly adjust this height on a per table basis.
    // In the end Playfield height = tableOffset.z (user adjustment) + lockbar height (target) - glass distance * scale
    // When not overriding the lockbar height, the cabinet stands at its native (scaled) height
-   const float scaledGlassHeight = out.cabinetScale * VPUTOCM(table.glassBottomHeight);
    const float lockbarHeight = setup.overrideLockbarHeight ? setup.customLockbarHeight : out.cabinetScale * VPUTOCM(table.groundToLockbarHeight);
    out.targetLockbarHeight = lockbarHeight;
+
+   // Adjust coord from RH to LH system, and use the playfield bottom center as the pivot
+   const Matrix3D coords = Matrix3D::MatrixScale(1.f, -1.f, 1.f) // RH to LH system
+      * Matrix3D::MatrixTranslate(-table.playfieldWidth * 0.5f, table.playfieldDepth, 0.f); //
+
+   // Apply the table offset and the room positioning correction inside the room frame, as rigid
+   // translations the whole anchored assembly (room and cabinet included) shifts with. They are
+   // expressed in the table oriented frame (x: lateral, y: front/back, z: up), the view orientation
+   // mapping them to world axes (y: up) as it aligns the room to the view.
+   const Matrix3D adjustRoom = //
+      Matrix3D::MatrixTranslate(0.f, CMTOVPU(setup.tableOffset.y + kVRLockbarToPlayfield), CMTOVPU(setup.tableOffset.z)) // Table authoring adjustment (and fixed lockbar distance)
+      * Matrix3D::MatrixTranslate(-CMTOVPU(setup.roomOffset.x), CMTOVPU(setup.roomOffset.y), CMTOVPU(setup.roomOffset.z)) // Headset error correction
+      * Matrix3D::MatrixRotateZ(ANGTORAD(setup.roomYaw)) //
+      * Matrix3D::MatrixRotateX(ANGTORAD(-90.f)); //
 
    // The table defines the height of the lockbar of its cabinet model, as well as the playfield base inclination.
    // This allows to fit the cabinet & playfield models to the real world space.
    // If user adjust the inclination, then the cab is rotated as it would in real life (still missing the legs stretching a bit using caster adjustments)
-
    // Seated play tilt rotates the whole cabinet (feet and playfield included) around the lockbar axis to face the player, the room staying upright
-   const float viewSlope = setup.liveSlope + setup.seatedTilt;
-   const Matrix3D playfieldSlope = Matrix3D::MatrixRotateX(ANGTORAD(viewSlope));
-   const Matrix3D tableCoords = Matrix3D::MatrixTranslate(-out.cabinetScale * table.playfieldWidth * 0.5f, +out.cabinetScale * table.playfieldDepth, 0.f);
-   const Matrix3D playfieldPos = Matrix3D::MatrixTranslate(0.f, CMTOVPU(setup.tableOffset.y + kVRLockbarToPlayfield), CMTOVPU(setup.tableOffset.z + lockbarHeight - scaledGlassHeight));
-   out.playfield = sceneScale * coords * tableCoords * playfieldSlope * playfieldPos * viewOrientation;
+   // Note that the cabinet is authored with the playfield so tilted against it when authoring
+   out.playfield = coords
+      * Matrix3D::MatrixTranslate(0.f, 0.f, -table.glassBottomHeight) // Apply glass gap perpendicular to the playfield
+      * Matrix3D::MatrixScale(out.cabinetScale) // Adjust cabinet size to the target real world cabinet
+      * Matrix3D::MatrixRotateX(ANGTORAD(setup.liveSlope + setup.seatedTilt)) // Tilt to playfield slope (and eventual seated play)
+      * Matrix3D::MatrixTranslate(0.f, 0.f, CMTOVPU(lockbarHeight)) // finally apply target lockbar height in the room frame
+      * adjustRoom;
 
-   // Room does not apply the cabinet scaling nor any inclination, as it is the real world room
-   // For the ease of positioning, align the room to the table view setting, except for z which must stay on ground
-   out.room = coords * Matrix3D::MatrixTranslate(-table.playfieldWidth * 0.5f, table.playfieldDepth + CMTOVPU(setup.tableOffset.y + kVRLockbarToPlayfield), CMTOVPU(setup.tableOffset.z))
-      * viewOrientation;
-
-   // Apply the room positioning correction as a rigid world translation on top of all the spaces:
-   // the whole anchored assembly (room and cabinet included) shifts together. The offset is
-   // expressed in the table oriented frame (x: lateral, y: front/back, z: up) and mapped to world
-   // axes (y: up) by the view orientation.
-   const Vertex3Ds worldOffset = viewOrientation * Vertex3Ds(-CMTOVPU(setup.roomOffset.x), CMTOVPU(setup.roomOffset.y), CMTOVPU(setup.roomOffset.z));
-   const Matrix3D roomShift = Matrix3D::MatrixTranslate(worldOffset.x, worldOffset.y, worldOffset.z);
-   out.playfield = out.playfield * roomShift;
-   out.room = out.room * roomShift;
+   // Room does not apply the cabinet scaling nor any inclination, as it is the real world room, just the offsets & coords adjustments
+   out.room = coords * adjustRoom;
 
    return out;
 }
