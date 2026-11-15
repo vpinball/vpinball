@@ -3137,7 +3137,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       else if (ImGui::IsKeyPressed(ImGuiKey_A) && io.KeyShift && !io.KeyCtrl && !io.KeyAlt)
       {
          // Add a drag point on the curve segment nearest to the mouse position
-         if (m_editor.m_pointEditPart && !m_editor.m_pointEditCenter && !io.WantCaptureMouse)
+         if (m_editor.m_pointEditPart && !m_editor.m_pointEditCenter && m_hovered) // Over the scene (WantCaptureMouse is always set over the pane window)
             m_editor.AddPointOnNearestSegment();
          else if (!m_editor.m_pointEditPart && !m_editor.IsInspectMode() && !m_editor.m_table->IsLocked())
          {

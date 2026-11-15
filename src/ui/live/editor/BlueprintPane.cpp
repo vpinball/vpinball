@@ -1084,7 +1084,7 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
       }
       else if (ImGui::IsKeyPressed(ImGuiKey_A) && io.KeyShift && !io.KeyCtrl && !io.KeyAlt)
       {
-         if (editor.m_pointEditPart && !editor.m_pointEditCenter && !io.WantCaptureMouse)
+         if (editor.m_pointEditPart && !editor.m_pointEditCenter && m_hovered) // Over the canvas (WantCaptureMouse is always set over the pane window)
             editor.AddPointOnNearestSegment();
          else if (!editor.m_pointEditPart && !editor.IsInspectMode() && !editor.m_table->IsLocked())
             editor.RequestAddPartPopup(ImGui::GetMousePos());
