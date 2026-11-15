@@ -208,7 +208,7 @@ private:
       std::shared_ptr<IMG_Animation> m_pAnimation;
       vector<int> m_accumulatedDelays;
    };
-   RenderState UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath);
+   RenderState UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath, int filterMode, float angle, bool rotating);
    RenderState UpdateLabelTexture(int outWidth, int outHeight, PUPFont* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offsetPixels);
    void ClearAnimationInternal();
    float EffectiveSize() const;

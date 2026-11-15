@@ -1106,9 +1106,9 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       m_dirty = false;
       if (!m_szPath.empty())
       {
-         m_pendingTextureUpdate = std::async(std::launch::async, [this]() {
-            std::lock_guard lock(m_mutex);
-            return UpdateImageTexture(m_type, m_szPath);
+         const bool rotating = (m_renderAngle != 0.f) || (m_animation && m_animation->IsWiggle());
+         m_pendingTextureUpdate = std::async(std::launch::async, [this, type = m_type, path = m_szPath, filterMode = m_filterMode, angle = m_renderAngle, rotating]() {
+            return UpdateImageTexture(type, path, filterMode, angle, rotating);
          });
       }
       else if (m_pFont)
@@ -1332,7 +1332,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    }
 }
 
-PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath)
+PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const std::filesystem::path& szPath, int filterMode, float angle, bool rotating)
 {
    SetThreadName("PUPLabel.Upd." + m_szName);
 
@@ -1341,8 +1341,6 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
    // Handle Image 'labels'
    if (type == PUP_LABEL_TYPE_IMAGE)
    {
-      // Treat an active wiggle as rotating so the cached source survives the angle crossing 0.
-      const bool rotating = (m_renderAngle != 0.f) || (m_animation && m_animation->IsWiggle());
       if (!rotating)
       {
          // No rotation: texture directly without keeping a cached source.
@@ -1360,8 +1358,8 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
          if (image) {
             rs.m_sourceWidth = image->w;
             rs.m_sourceHeight = image->h;
-            if (m_filterMode > 0)
-               ApplyFilter(image, m_filterMode);
+            if (filterMode > 0)
+               ApplyFilter(image, filterMode);
             rs.m_pPendingSurface = image;
          }
          else
@@ -1387,9 +1385,9 @@ PUPLabel::RenderState PUPLabel::UpdateImageTexture(PUP_LABEL_TYPE type, const st
          if (m_pSourceImage) {
             SDL_Surface* work = SDL_ConvertSurface(m_pSourceImage, SDL_PIXELFORMAT_RGBA32);
             if (work) {
-               if (m_filterMode > 0)
-                  ApplyFilter(work, m_filterMode);
-               SDL_Surface* rotated = RotateSurface(work, m_renderAngle);
+               if (filterMode > 0)
+                  ApplyFilter(work, filterMode);
+               SDL_Surface* rotated = RotateSurface(work, angle);
                if (rotated) {
                   SDL_DestroySurface(work);
                   work = rotated;
