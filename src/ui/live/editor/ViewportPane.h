@@ -99,6 +99,11 @@ public:
    void HitTestMarkers(const ImVec2& mousePos, vector<std::pair<float, std::shared_ptr<EditorUIPart>>>& hits)
       const; // Pick the parts the collider ray cast cannot hit (collider-less parts, edge-on flat colliders) by screen space, sorted by depth along the pick ray
    Vertex2D UnprojectToPlane(const ImVec2& mousePos, float z) const; // Display px -> table plane point at the given Z
+   // Reference spaces of the overlays & picking: the pane's view keeps the space reference of the
+   // last part recorded into it (see RenderView::SetSpaceReference), so coordinates expressed in a
+   // part's own reference space must be re-expressed to project at their true position
+   Matrix3D ViewSpaceTransform() const; // The pane view's current reference space -> playfield space
+   Matrix3D PartSpaceToView(const IEditable* editable) const; // A part's reference space -> the view's space
    DragPoint* HitTestDragPoint(const ImVec2& mousePos) const; // Drag point of the edited curve under the mouse
    bool HitTestEditCenter(const ImVec2& mousePos) const; // Is the mouse on the edited part's center point
    bool SetupOverlay(LiveRenderContext* ctx, ImDrawList* drawList) const; // Pane projection + image clip rect, false when it cannot project
@@ -189,6 +194,7 @@ public:
       unsigned axisMask = 0x7; // Axes the op currently applies to (bit 0/1/2 = X/Y/Z); restricted to the context axes
       bool constrained = false; // Whether an axis (or plane, with two bits set) constraint is active
       Matrix3D startTransform; // Selection transform snapshot at op start (its position is the pivot)
+      Matrix3D toView = Matrix3D::MatrixIdentity(); // The op's selection space -> the view's reference space
       Vertex3Ds pivot; // Table-space pivot point
       ImVec2 startMouse; // Display px of the mouse at activation
       Vertex3Ds grabStartPoint; // Mouse ray / pivot view-plane intersection at activation (free grab)
