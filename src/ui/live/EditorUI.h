@@ -148,6 +148,7 @@ private:
    void InvertSelection(); // Edit > Invert Selection (Ctrl+I)
    void TogglePartSelection(const std::shared_ptr<EditorUIPart> &part);
    void SelectPartsInGroup(const PartGroup *group);
+   void DeselectPartsInGroup(const PartGroup *group); // Remove the group's content (recursive) from the multi selection
    // Move all selected parts/groups to the given group (nullptr = root, part groups only), re-expressing
    // their transforms when the target's reference space differs (see LayerSpaceChangeOp::RequestMove).
    // Returns false when the move waits for the user's confirmation of lossy space conversions.
@@ -295,6 +296,7 @@ private:
 
    // Add/Remove parts
    void DeleteSelection();
+   void DeleteParts(const vector<IEditable *> &parts); // Delete the given parts (the selection may hold parts it does not cover)
    bool CanDuplicate() const;
    void DuplicateSelection(); // Duplicate the selected parts at their position and grab them (Shift+D)
    ItemTypeEnum m_addPartType = eItemInvalid; // Part type pending placement (eItemInvalid when not in add part mode)
@@ -319,7 +321,7 @@ private:
    std::shared_ptr<Sampler> PartIcon(const IEditable *editable); // Icon of a part: its type icon, the reference image icon
    ankerl::unordered_dense::map<int, std::shared_ptr<Sampler>> m_partTypeIcons; // The lazily loaded icons, keyed by ItemTypeEnum
    void CreatePart(ItemTypeEnum type, const Vertex2D &pos);
-   PartGroup *CreatePartGroup(); // Create a new root-level part group (outliner / layer dialog 'New Group')
+   PartGroup *CreatePartGroup(PartGroup *parent = nullptr); // Create a new part group (outliner / layer dialog 'New Group'); root level when no parent is given
    void CreateCollection(bool fromSelection); // Create a collection, optionally populated with the selected parts
    PartGroup *GetPartGroupForNewPart();
    vector<PartGroup *> m_partGroupUseHistory; // Recently used insertion target part groups, most recent first
@@ -425,7 +427,8 @@ private:
 
    // Clipboard (copy/paste of parts through the OS clipboard, and of drag point coordinates in point edit mode)
    void CopySelection();
-   void PasteSelection(const ImVec2 *pos); // Paste the clipboard at the given screen position (original coordinates when nullptr)
+   void PasteSelection(const ImVec2 *pos,
+      PartGroup *into = nullptr); // Paste the clipboard at the given screen position (original coordinates when nullptr), into the given group (selection group when nullptr)
 
    // Rendering
    enum class PhysicOverlay

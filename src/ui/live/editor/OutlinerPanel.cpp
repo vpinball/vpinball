@@ -12,6 +12,7 @@
 #include "parts/Sound.h"
 #include "PropertiesPanel.h"
 #include "renderer/Texture.h"
+#include "ui/EditorClipboard.h"
 #include "ui/live/EditorUI.h"
 #include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
@@ -380,6 +381,68 @@ void OutlinerPanel::RequestRename(const std::shared_ptr<EditorUIPart> &part)
    m_renameText = editable->GetName();
    m_renameFocus = true;
    m_revealPart = part; // Make sure the row is visible when the rename field appears
+}
+
+void OutlinerPanel::RenderPartContextMenu(const std::shared_ptr<EditorUIPart> &part)
+{
+   EditorUI &editor = m_editor;
+   // Menu rows are only the text line height, and the icon glyphs slightly overshoot it: give the
+   // rows the extra room the icon ink needs (the same spacing the menu bar gives its popups)
+   const ImVec4 iconInk = TextInkBounds(ICON_LC_SAVE);
+   ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, ImGui::GetStyle().ItemSpacing.y + ImMax(0.f, iconInk.w - iconInk.y - ImGui::GetFontSize()) + 2.f * editor.m_liveUI.GetDPI());
+   if (!ImGui::BeginPopupContextItem())
+   {
+      ImGui::PopStyleVar();
+      return;
+   }
+   IEditable *const editable = part->GetEditable();
+   // The menu applies to the clicked part, or to the whole selection when the part is selected
+   const bool inSelection = editor.IsPartSelected(part);
+   const TypeInfo *const info = FindTypeInfo(editable->GetItemType());
+   const bool isGroup = editable->GetItemType() == eItemPartGroup;
+   const string header = string(isGroup ? ICON_LC_FOLDER : ICON_LC_TAG) + ' ' + (info != nullptr ? info->name : "Part");
+   ImGui::MenuItem(header.c_str(), nullptr, false, false); // Blender-style type header
+   ImGui::Separator();
+   const bool canEdit = editor.m_table->m_liveBaseTable == nullptr && !editor.m_table->IsLocked();
+   if (isGroup && ImGui::MenuItem(ICON_LC_PLUS " New", nullptr, false, canEdit))
+      editor.CreatePartGroup(static_cast<PartGroup *>(editable));
+   if (ImGui::MenuItem(ICON_LC_COPY " Copy"))
+   {
+      vector<IEditable *> parts;
+      if (inSelection)
+         for (const auto &selected : editor.m_multiSel)
+            parts.push_back(selected->GetEditable());
+      else
+         parts.push_back(editable);
+      editor.RestorePartsVisibility(); // Copy the authored visibility, not the editor display state
+      VPX::EditorClipboard::CopyParts(parts);
+   }
+   if (ImGui::MenuItem(ICON_LC_CLIPBOARD_PASTE " Paste", nullptr, false, canEdit && VPX::EditorClipboard::HasParts()))
+      editor.PasteSelection(nullptr, isGroup ? static_cast<PartGroup *>(editable) : editable->GetPartGroup());
+   ImGui::Separator();
+   if (ImGui::MenuItem(ICON_LC_TRASH_2 " Delete", nullptr, false, canEdit))
+   {
+      if (inSelection)
+         editor.DeleteSelection();
+      else
+         editor.DeleteParts({ editable });
+   }
+   ImGui::Separator();
+   if (isGroup)
+   {
+      PartGroup *const group = static_cast<PartGroup *>(editable);
+      if (ImGui::MenuItem(ICON_LC_MOUSE_POINTER_2 " Select Objects"))
+         editor.SelectPartsInGroup(group);
+      if (ImGui::MenuItem(ICON_LC_X " Deselect Objects"))
+         editor.DeselectPartsInGroup(group);
+      ImGui::Separator();
+   }
+   if (ImGui::MenuItem(ICON_LC_MOUSE_POINTER_2 " Select"))
+      editor.SetSelection(Selection(part));
+   if (ImGui::MenuItem(ICON_LC_X " Deselect", nullptr, false, editor.IsPartSelected(part)))
+      editor.TogglePartSelection(part);
+   ImGui::EndPopup();
+   ImGui::PopStyleVar();
 }
 
 bool OutlinerPanel::RenderRenameInput(IEditable *editable)
@@ -771,6 +834,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
       }
       partDragSource(edit);
       partDropTarget(editable->GetPartGroup(), false); // Dropping on a part moves to its group (same as the Win32 layer dialog)
+      RenderPartContextMenu(edit);
       if (edit == revealPart && !ImGui::IsItemVisible())
          ImGui::SetScrollHereY();
       if (editor.m_table->m_liveBaseTable == nullptr)
@@ -957,17 +1021,7 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
                         m_dragHoverGroup = 0;
                      }
                   }
-                  if (ImGui::BeginPopupContextItem())
-                  {
-                     if (ImGui::MenuItem("Select"))
-                        editor.SetSelection(Selection(edit));
-                     if (ImGui::MenuItem("Select Contents"))
-                        editor.SelectPartsInGroup(group);
-                     ImGui::Separator();
-                     if (ImGui::MenuItem("Add Reference Image...", nullptr, false, editor.m_referenceImageOp.CanAdd()))
-                        editor.m_referenceImageOp.OpenAddDialog();
-                     ImGui::EndPopup();
-                  }
+                  RenderPartContextMenu(edit);
                   {
                      // Part count (dim, right aligned before the eye column); the disc behind the icon marks the group new and imported parts are added to
                      ImGui::SameLine(eyeX - style.ItemSpacing.x - ImGui::CalcTextSize(countText.c_str()).x);

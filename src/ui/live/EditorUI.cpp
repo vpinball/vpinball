@@ -1320,6 +1320,16 @@ void EditorUI::SelectPartsInGroup(const PartGroup *group)
    OutlinerPanel::m_anchor.reset();
 }
 
+void EditorUI::DeselectPartsInGroup(const PartGroup *group)
+{
+   // Remove the parts contained in the given group (and in its sub groups, recursively) from the selection
+   std::erase_if(
+      m_multiSel, [group](const std::shared_ptr<EditorUIPart> &uiPart) { return uiPart->GetEditable()->GetItemType() != eItemPartGroup && uiPart->GetEditable()->IsChild(group); });
+   if (m_selection.GetType() == Selection::S_EDITABLE && !IsPartSelected(m_selection.GetPart()))
+      m_selection = m_multiSel.empty() ? Selection() : Selection(m_multiSel.back());
+   OutlinerPanel::m_anchor.reset();
+}
+
 bool EditorUI::CanMovePartToGroup(const IEditable *editable, const PartGroup *group)
 {
    // A part can not be moved to itself, and a group can not be moved to itself or one of its descendants
@@ -2284,10 +2294,9 @@ void EditorUI::CreatePart(const ItemTypeEnum type, const Vertex2D &pos)
    }
 }
 
-PartGroup *EditorUI::CreatePartGroup()
+PartGroup *EditorUI::CreatePartGroup(PartGroup *parent)
 {
-   // Same initialization sequence as CreatePart; a new group is created at the root level (the
-   // user can drag it into another group in the outliner to nest it)
+   // Same initialization sequence as CreatePart
    IEditable *const pie = EditableRegistry::CreateAndInit(eItemPartGroup, m_table, 0.f, 0.f);
    if (pie == nullptr)
       return nullptr;
@@ -2295,7 +2304,7 @@ PartGroup *EditorUI::CreatePartGroup()
       m_table->GetUniqueName(eItemPartGroup, scriptable->m_name);
    pie->m_desktopBackdrop = IsBackdropEditMode();
    m_table->AddPart(pie);
-   pie->SetPartGroup(nullptr);
+   pie->SetPartGroup(parent);
 
    m_undo.BeginUndo();
    m_undo.MarkForCreate(pie);
@@ -2397,7 +2406,7 @@ void EditorUI::CopySelection()
    VPX::EditorClipboard::CopyParts(parts);
 }
 
-void EditorUI::PasteSelection(const ImVec2 *const pos)
+void EditorUI::PasteSelection(const ImVec2 *const pos, PartGroup *const into)
 {
    if (m_table->IsLocked() || IsInspectMode())
       return;
@@ -2433,7 +2442,7 @@ void EditorUI::PasteSelection(const ImVec2 *const pos)
    if (parts.empty())
       return;
    const bool backdrop = IsBackdropEditMode();
-   PartGroup *const partGroup = GetPartGroupForNewPart();
+   PartGroup *const partGroup = into != nullptr ? into : GetPartGroupForNewPart();
    vector<IEditable *> pasted;
    Vertex2D pasteMin(FLT_MAX, FLT_MAX), pasteMax(-FLT_MAX, -FLT_MAX);
    m_undo.BeginUndo();
@@ -2560,13 +2569,23 @@ void EditorUI::DeleteSelection()
       DeleteSelectedPoints();
       return;
    }
+   vector<IEditable *> parts;
+   parts.reserve(m_multiSel.size());
+   for (const auto &part : m_multiSel)
+      parts.push_back(part->GetEditable());
+   DeleteParts(parts);
+}
+
+void EditorUI::DeleteParts(const vector<IEditable *> &parts)
+{
+   if (m_table->IsLocked() || IsInspectMode())
+      return;
    // Balls are runtime objects and parts without a part group are live objects: they can not be deleted
    // (and stay selected). Root part groups are group-less by definition but they can be deleted.
    vector<IEditable *> partsToDelete;
    int locked = 0;
-   for (const auto &part : m_multiSel)
+   for (IEditable *const edit : parts)
    {
-      IEditable *const edit = part->GetEditable();
       if (edit->IsUILocked())
          ++locked;
       else if (edit->GetItemType() != eItemBall && (edit->GetPartGroup() != nullptr || edit->GetItemType() == eItemPartGroup)
