@@ -138,18 +138,6 @@ void VRSettingsPage::BuildPage()
          [this]() { return m_player->m_vrDevice->GetCustomLockbarHeight(); }, //
          [this](float, float v) { m_player->m_vrDevice->SetCustomLockbarHeight(v); }));
 
-   // Locking feet to ground only makes sense when the cabinet is fit to the real world setup
-   if (m_player->m_vrDevice->IsOverridingLockbarWidth() || m_player->m_vrDevice->IsOverridingLockbarHeight())
-      addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
-         Settings::m_propPlayerVR_LockFeetToGround, //
-         [this]() { return m_player->m_vrDevice->IsLockFeetToGround(); }, //
-         [this](bool v)
-         {
-            if (v && m_player->m_vrDevice->GetSeatedTilt() != 0.f)
-               m_notifId = m_player->m_liveUI->PushNotification("Seated play tilt was reset to 0 when enabling Lock Feet to Ground"s, 5000, m_notifId);
-            m_player->m_vrDevice->SetLockFeetToGround(v);
-         }));
-
    auto& playerXItem = AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_ScreenPlayerX, 1.f, "%4.1f cm"s, //
       [this]() { return g_settingsService.GetActiveSettings().GetPlayer_ScreenPlayerX(); }, //
@@ -177,12 +165,7 @@ void VRSettingsPage::BuildPage()
    addGlobalOnlyItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayerVR_SeatedTilt, 1.f, "%4.1f deg"s, //
       [this]() { return m_player->m_vrDevice->GetSeatedTilt(); }, //
-      [this](float, float v)
-      {
-         if (v != 0.f && m_player->m_vrDevice->IsLockFeetToGround())
-            m_notifId = m_player->m_liveUI->PushNotification("Lock Feet to Ground was disabled as it is not compatible with seated play tilt"s, 5000, m_notifId);
-         m_player->m_vrDevice->SetSeatedTilt(v);
-      }));
+      [this](float, float v) { m_player->m_vrDevice->SetSeatedTilt(v); }));
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Spatial Audio"s));
 

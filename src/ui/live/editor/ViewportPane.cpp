@@ -874,7 +874,7 @@ void ViewportPane::FrameSelection()
 void ViewportPane::FrameAll()
 {
    // Camera framing the whole table (Blender's View All, Home): the playfield bounds extended with the
-   // visible parts living outside of it in a non playfield reference space (cabinet feet, room, ...). Playfield
+   // visible parts living outside of it in a non playfield reference space (room, ...). Playfield
    // parts outside of the table rectangle (display reels, helpers, ...) are left out like before
    const PinTable* const table = m_editor.m_table;
    const bool backdrop = m_viewType == ViewMode::DesktopBackdrop;
@@ -1614,8 +1614,8 @@ void ViewportPane::RenderStatusOverlay()
       // Reference space shared by the selection (undefined when it mixes spaces or holds backdrop parts)
       if (const std::optional<PartGroupData::SpaceReference> space = m_editor.GetSelectionSpace(); space.has_value())
       {
-         const char* const spaceNames[] = { "Inherit", "Playfield", "Room", "Cabinet Feet" };
-         const int spaceIndex = clamp(static_cast<int>(*space), 1, 3);
+         const char* const spaceNames[] = { "Inherit", "Playfield", "Room" };
+         const int spaceIndex = clamp(static_cast<int>(*space), 1, 2);
          ImGui::Text("Space: %s", spaceNames[spaceIndex]);
       }
    }
@@ -1739,8 +1739,6 @@ void ViewportPane::Render3D()
    // Reference space axes: the origin axes (and playfield/glass bounds) of the space shared by the
    // selection. When the selection does not define a single space (empty, mixed or holding backdrop
    // parts), the playfield space is drawn, plus the room one when a visible part actually uses it
-   // (in live edit the cabinet feet space coincides with the room one, as they only
-   // differ by the user space settings which are not applied there)
    PartGroupData::SpaceReference spaces[2];
    int spaceCount = 0;
    if (m_viewType == ViewMode::EditorCam && m_showSpaceAxes)
@@ -1852,8 +1850,8 @@ void ViewportPane::Render3D()
 const ViewportPane::SpaceAxes* ViewportPane::EnsureSpaceAxesMesh(const PartGroupData::SpaceReference space)
 {
    PinTable* const table = m_editor.m_table;
-   // One mesh per space variant (playfield bounds vs infinite room axes): the cabinet feet
-   // space shares the room mesh, just like they share its transform (see RenderView::SetSpaceReference)
+   // One mesh per space variant (playfield bounds vs infinite room axes): all the non playfield
+   // spaces share the room mesh, just like they share its transform (see RenderView::SetSpaceReference)
    SpaceAxes& axes = m_spaceAxes[space == PartGroupData::SpaceReference::Playfield ? 0 : 1];
    // The mesh is made of 7 segments (index ranges in ranges): the playfield outline, the
    // X/Y/Z axes, the glass box, and the negative halves of the X/Y axes. The playfield space gets the

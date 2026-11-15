@@ -253,7 +253,7 @@ PropFloatDyn(PlayerVR, TableOffsetY, "Table Y Offset"s,
 PropFloatDyn(
    PlayerVR, TableOffsetZ, "Table Z Offset"s, "Per table VR view Z offset to account for undefined or imprecise glass height definition"s, -100.f, 100.f, 0.f);
 PropFloat(PlayerVR, SeatedTilt, "Seated Play Tilt"s,
-   "Tilt the cabinet toward the player for seated or reclined play (only changes the view, physics are unchanged). When non zero, 'Lock Feet to Ground' is forced off"s,
+   "Tilt the cabinet toward the player for seated or reclined play (only changes the view, physics are unchanged)"s,
    -90.f, 90.f, 0.f);
 PropBool(
    PlayerVR, UsePassthroughColor, "Color Keyed Passthrough"s, "Replace VR background by full black to allow color keyed passthrough (for example using Virtual Desktop, setting passthrough to sharp full black)"s, false);
@@ -275,7 +275,6 @@ PropBool(PlayerVR, OverrideLockbarWidth, "Custom Lockbar Width"s,
    "Scale the virtual cabinet so that its lockbar matches the user defined lockbar width. If disabled, the cabinet is rendered at its native (table defined) size."s, true);
 PropBool(PlayerVR, OverrideLockbarHeight, "Custom Lockbar Height"s,
    "Position the virtual cabinet so that its lockbar matches the user defined lockbar height. If disabled, the cabinet stands at its native (table defined) height."s, true);
-PropBool(PlayerVR, LockFeetToGround, "Lock Feet to Ground"s, "Lock cabinet feet to ground. This usually feels more natural (avoid floating cabinet) but may be deactivated for example for playing mini flipper seated at a desk."s, true);
 
 // Physics override profiles
 PropFloatUnbounded(Player, FlipperPhysicsMass0, "FlipperPhysicsMass0"s, ""s, 1.f);

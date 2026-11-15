@@ -184,20 +184,10 @@ public:
    void SetControllerCabZOffset(float offset) { m_controllerCabZOffset = offset; }
    float GetControllerCabWidthOffset() const { return m_controllerCabWidthOffset; }
    void SetControllerCabWidthOffset(float offset) { m_controllerCabWidthOffset = offset; }
-   bool IsLockFeetToGround() const { return m_lockFeetToGround; }
-   void SetLockFeetToGround(bool lock)
-   {
-      m_lockFeetToGround = lock;
-      if (lock)
-         m_seatedTilt = 0.f;
-      m_worldDirty = true;
-   }
    float GetSeatedTilt() const { return m_seatedTilt; }
    void SetSeatedTilt(float tilt)
    {
       m_seatedTilt = tilt;
-      if (tilt != 0.f)
-         m_lockFeetToGround = false;
       m_worldDirty = true;
    }
 
@@ -249,7 +239,6 @@ private:
    float m_controllerCabZOffset = 0.0f; // Z offset applied when using controller view centering in cm
    float m_controllerCabWidthOffset = 0.0f; // Width offset added to the measured controller distance when using controller view centering in cm
    bool m_lockbarWidthMeasured = false; // The lockbar width was measured from the controllers this session (then persisted on exit)
-   bool m_lockFeetToGround = true;
    float m_seatedTilt = 0.0f; // Cabinet tilt toward the player for seated/reclined play, in degrees
    float m_roomYaw = 0.0f;
    Vertex3Ds m_roomOffset { 0.f, 0.f, 0.f }; // Room positioning correction in cm, to account for imprecise headset tracking calibration
@@ -264,7 +253,7 @@ private:
       Matrix3D m_toWorld; // Matrix to transform from this viewpoint to world coordinates
       Matrix3D m_view[2];
    };
-   Viewpoint m_spaces[4]; // Indexed by PartGroupData::SpaceReference (Playfield..CabinetFeet, Inherit slot unused)
+   Viewpoint m_spaces[3]; // Indexed by PartGroupData::SpaceReference (Playfield..Room, Inherit slot unused)
    Matrix3D m_roomProj[2];
    Matrix3D m_sceneProj[2];
 

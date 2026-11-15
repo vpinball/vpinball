@@ -16,7 +16,7 @@ namespace VPX::EditorUI
 
 namespace
 {
-   const char *const spaceNames[] = { "Inherit", "Playfield", "Room", "Cabinet Feet" };
+   const char *const spaceNames[] = { "Inherit", "Playfield", "Room" };
 
    // Decompose a transform into the position/scale/rotation components used by the parts'
    // SetTransform, as EditorUI::SetSelectionTransform does but keeping mirroring: a mirrored
