@@ -623,7 +623,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
          else if (key == "fname")
          {
-            string szFont = value.as_str();
+            string szFont = value.as<string>();
             PUPFont* newFont = m_pManager->GetFont(szFont);
             if (!newFont)
                LOGE("Label font not found: name=" + m_szName + ", font=" + szFont);
