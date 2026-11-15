@@ -804,7 +804,7 @@ public:
    float m_groundToLockbarHeight = CMTOVPU(91.f); // Height of lockbar from ground (corresponding to cab model for VR)
    Matrix3D GetDefaultRoomToPlayfieldMatrix() const
    {
-      // Default transform from the room/feet reference spaces to the playfield space, built
+      // Default transform from the room reference space to the playfield space, built
       // from the table authored data only: the playfield surface sits at the authored lockbar
       // height minus the glass distance above the ground, and is inclined by the authored slope
       // around its front (lockbar) edge. User space adjustments (cabinet scaling, room placement,

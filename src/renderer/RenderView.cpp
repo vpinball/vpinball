@@ -652,7 +652,6 @@ void RenderView::SetSpaceReference(PartGroupData::SpaceReference spaceReference,
    {
       switch (spaceReference)
       {
-      case PartGroupData::SpaceReference::CabinetFeet:
       case PartGroupData::SpaceReference::Room:
          for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
             m_mvp.SetView(eye, g_pplayer->m_ptable->GetDefaultRoomToPlayfieldMatrix() * m_playfieldView[eye]);

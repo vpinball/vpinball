@@ -23,7 +23,7 @@ struct VRSpaceSetup
 {
    // Room positioning: corrects imprecise headset room positioning (tracking origin, floor height,
    // or desired standing spot). Global, persisted between sessions.
-   Vertex3Ds roomOffset { 0.f, 0.f, 0.f }; // Shifts the whole anchored assembly (feet stay on the corrected ground)
+   Vertex3Ds roomOffset { 0.f, 0.f, 0.f }; // Shifts the whole anchored assembly (cabinet and room together)
    float roomYaw = 0.f;
 
    // Per-table offsets, compensating imprecise cabinet geometry definitions
@@ -35,16 +35,14 @@ struct VRSpaceSetup
    float customLockbarWidth = 57.f;
    float customLockbarHeight = 85.f;
 
-   bool lockFeetToGround = true;
    float seatedTilt = 0.f; // Cabinet tilt toward the player for seated play
    float liveSlope = 0.f; // Effective playfield slope (authored slope possibly adjusted by the user)
 };
 
-// Space to world transforms for the 3 VR space references (see PartGroupData::SpaceReference)
+// Space to world transforms for the 2 VR space references (see PartGroupData::SpaceReference)
 struct VRSpaces
 {
    Matrix3D playfield; // Simulation space: the whole anchored assembly incl. cabinet, with playfield slope applied
-   Matrix3D cabinetFeet; // Upright space on the room ground with its origin below the playfield origin: cabinet scaling on X/Y, legs stretched in Z to the leg attach point
    Matrix3D room; // Real world room, unscaled
    float cabinetScale = 1.f;
    float targetLockbarHeight = 0.f; // Effective lockbar height above the (corrected) ground, in cm

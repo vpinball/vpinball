@@ -31,7 +31,6 @@ public:
       Inherit = 0, // Inherit space reference from parent (note that root defaults to Playfield reference space)
       Playfield = 1, // Relative to the room with scaling, height adjustment and playfield inclination applied (table design coordinate system, including the cabinet which moves with it)
       Room = 2, // Base space, aligned to (offsetted) real world, without any scaling (to match real world room in AR/VR)
-      CabinetFeet = 3, // Upright space with the feet on the room ground below the playfield origin and the legs stretched to the cabinet's leg attach point (when locked to ground)
    };
    SpaceReference m_spaceReference = SpaceReference::Inherit;
 };

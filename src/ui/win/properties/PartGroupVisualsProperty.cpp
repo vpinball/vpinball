@@ -20,7 +20,6 @@ BOOL PartGroupVisualsProperty::OnInitDialog()
    m_referenceSpace.AddString("Inherit");
    m_referenceSpace.AddString("Playfield");
    m_referenceSpace.AddString("Room");
-   m_referenceSpace.AddString("Cabinet Feet");
    m_referenceSpace.SetRedraw(true);
    AttachItem(IDC_MASK_DESKTOP, m_visibilityDesktop);
    AttachItem(IDC_MASK_FSS, m_visibilityFSS);

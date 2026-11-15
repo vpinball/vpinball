@@ -153,8 +153,6 @@ FEATURES:
   . a space reference, to ease virtual/mixed reality support:
     - 'playfield' is the default space reference, and is the only one where parts contribute to physics simulation, it corresponds to the usual playfield.
     - 'room' is tied to the real world room, it is not scaled or inclined like playfield, and should be used for the VR room.
-    - 'cabinet' is tied to the real world cabinet, it is not inclined like playfield but it is scaled and height offseted to match the real world cabinet.
-    - 'cabinet feet' is tied to the real world cabinet feet, unlike 'cabinet' it is not height offseted, allowing to keep the cabinet's feet on the real room ground.
 
 - flashers have been improved:
   . these now feature advanced options for rendering DMD, segments and video displays. The rendering mode between these can be selected in the part properties,

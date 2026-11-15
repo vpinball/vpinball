@@ -456,9 +456,9 @@ void ViewportSidebar::RenderItemTab()
    // Reference space shared by the selection (same info as the status overlay)
    if (const std::optional<PartGroupData::SpaceReference> space = editor.GetSelectionSpace(); space.has_value())
    {
-      const char* const spaceNames[] = { "Inherit", "Playfield", "Room", "Cabinet Feet" };
+      const char* const spaceNames[] = { "Inherit", "Playfield", "Room" };
       ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::V(EditorTheme::TextDim));
-      ImGui::Text("Space: %s", spaceNames[clamp(static_cast<int>(*space), 1, 3)]);
+      ImGui::Text("Space: %s", spaceNames[clamp(static_cast<int>(*space), 1, 2)]);
       ImGui::PopStyleColor();
    }
 }

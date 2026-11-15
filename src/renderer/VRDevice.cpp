@@ -144,7 +144,6 @@ VRDevice::VRDevice(const Settings& settings)
    m_controllerCabZOffset = appSettings.GetPlayerVR_ControllerCabZOffset();
    m_controllerCabWidthOffset = appSettings.GetPlayerVR_ControllerCabWidthOffset();
    m_seatedTilt = appSettings.GetPlayerVR_SeatedTilt();
-   m_lockFeetToGround = appSettings.GetPlayerVR_LockFeetToGround() && m_seatedTilt == 0.f;
 
    // Fill out an XrApplicationInfo structure detailing the names and OpenXR version.
    // The application/engine name and version are user-defined. These may help IHVs or runtimes.
@@ -1274,12 +1273,10 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             m_worldDirty = true;
          }
 
-         // Prepare the view/projection matrices for the 3 space references we use:
+         // Prepare the view/projection matrices for the 2 space references we use:
          // - Room is the VR room, offseted and rotated to the table orientation (rotation around vertical axis)
-         // - Cabinet feet is an upright space on the room ground with its origin below the playfield origin,
-         //   the cabinet scaling applied on X/Y (to match lockbar width) and the legs stretched in Z to the leg attach point
          // - Playfield is the main space reference where the simulation happens (only one to support physics):
-         //   the whole anchored assembly (cabinet included) with scaling, height adjustment, inclination and table coordinate system
+         //   the whole anchored assembly (cabinet and feet included) with scaling, height adjustment, inclination and table coordinate system
 
          // playfield is inclined at a fixed slope that should be defined with the table (it corresponds to the cabinet design),
          // then player adjust the play angle by adjusting the feet casters, so the whole cab rotates.
@@ -1303,14 +1300,12 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             setup.overrideLockbarHeight = m_overrideLockbarHeight;
             setup.customLockbarWidth = m_customLockbarWidth;
             setup.customLockbarHeight = m_customLockbarHeight;
-            setup.lockFeetToGround = m_lockFeetToGround;
             setup.seatedTilt = m_seatedTilt;
             setup.liveSlope = liveSlope;
 
             const VRSpaces spaces = ComputeVRSpaces(setup, geometry);
             m_cabinetScale = spaces.cabinetScale;
             m_spaces[static_cast<int>(PartGroupData::SpaceReference::Playfield)].m_toWorld = spaces.playfield;
-            m_spaces[static_cast<int>(PartGroupData::SpaceReference::CabinetFeet)].m_toWorld = spaces.cabinetFeet;
             m_spaces[static_cast<int>(PartGroupData::SpaceReference::Room)].m_toWorld = spaces.room;
          }
 
@@ -1333,7 +1328,6 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             const Matrix3D viewInvSceneScale = view * invSceneScale;
             using enum PartGroupData::SpaceReference;
             m_spaces[static_cast<int>(Playfield)].m_view[eye] = m_spaces[static_cast<int>(Playfield)].m_toWorld * viewInvSceneScale;
-            m_spaces[static_cast<int>(CabinetFeet)].m_view[eye] = m_spaces[static_cast<int>(CabinetFeet)].m_toWorld * viewInvSceneScale;
             m_spaces[static_cast<int>(Room)].m_view[eye] = m_spaces[static_cast<int>(Room)].m_toWorld * view;
 
             m_roomProj[eye] = vpuScale * m_nextProj[eye];
@@ -1553,7 +1547,7 @@ void VRDevice::UpdateVRPosition(PartGroupData::SpaceReference spaceRef, ModelVie
    using enum PartGroupData::SpaceReference;
 
    const int spaceIdx = static_cast<int>(spaceRef);
-   if (spaceIdx < static_cast<int>(Playfield) || spaceIdx > static_cast<int>(CabinetFeet))
+   if (spaceIdx < static_cast<int>(Playfield) || spaceIdx > static_cast<int>(Room))
    {
       assert(false);
       return;
