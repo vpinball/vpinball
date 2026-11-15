@@ -30,6 +30,7 @@ void PUPMediaManager::SetGameTime(double gameTime)
       {
          m_pScreen->OnMediaEnd();
          ApplyDuckPrefix(m_queue.empty() ? m_bg.szPath : m_queue.front().szPath);
+         m_pScreen->OnMediaStart();
       }
    }
 }
@@ -160,6 +161,7 @@ void PUPMediaManager::StartCurrent()
    m_loopCount = m_player.GetLoopCount();
    m_currentAlpha = (m_fadeStep < 255) ? m_fadeStep : 255;
    ApplyDuckPrefix(head.szPath);
+   m_pScreen->OnMediaStart();
 }
 
 void PUPMediaManager::ApplyDuckPrefix(const std::filesystem::path& path)
@@ -189,6 +191,7 @@ void PUPMediaManager::PlayBackground()
       m_player.SetLoop(true);
       m_loopCount = m_player.GetLoopCount();
       ApplyDuckPrefix(m_bg.szPath);
+      m_pScreen->OnMediaStart();
    }
 }
 

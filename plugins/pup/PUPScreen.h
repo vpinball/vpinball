@@ -58,6 +58,14 @@ public:
    bool m_hudVisible = true; // FN 3: the whole label overlay shown or hidden
    bool m_hideDuringPlay = false; // FN 34: labels hidden and label commands ignored until the current media ends
    bool m_padTextAlways = false;
+   bool m_raiseOnPlay = true;
+   bool m_raiseLabelsOnPlay = true;
+   bool m_labelsTopmost = true;
+   bool HasLabelLayer() const { return m_labelLayer; }
+   void OnMediaStart();
+   void OnLoaded();
+   void BringToFront();
+   void KeepAtBack();
    // Action queued by LabelShowPage, applied when the main media ends.
    enum class HudReturn
    {
@@ -145,6 +153,8 @@ private:
    Mode m_mode;
    bool m_topmost = false;
    bool m_hidden = false;
+   bool m_labelLayer = false;
+   bool m_keepBack = false;
    bool m_transparent;
    float m_mainVolume = 1.f;
    int m_volumeMultiplier;

@@ -92,8 +92,9 @@ public:
    bool AddScreen(std::shared_ptr<PUPScreen> pScreen);
    bool AddScreen(int screenNum);
    std::shared_ptr<PUPScreen> GetScreen(int screenNum, bool logMissing = false) const;
-   void SendScreenToBack(const PUPScreen* screen);
-   void SendScreenToFront(const PUPScreen* screen);
+   enum class Layer { Window, Labels };
+   void RaiseLayer(PUPScreen* screen, Layer layer);
+   void LowerLayer(PUPScreen* screen, Layer layer);
    bool AddFont(std::unique_ptr<PUPFont> pFont, const string& szFilename);
    PUPFont* GetFont(const string& szFont);
 
@@ -129,6 +130,13 @@ private:
    ControllerDef m_controller {};
    string m_controllerGameId;
    vector<std::shared_ptr<PUPScreen>> m_screenOrder;
+   struct ZLayer
+   {
+      PUPScreen* screen;
+      Layer layer;
+   };
+   vector<ZLayer> m_zOrder;
+   bool m_loadingScreens = false;
    ankerl::unordered_dense::map<int, std::shared_ptr<PUPScreen>> m_screenMap;
    PUPSoundBank m_sounds { this };
    vector<std::unique_ptr<PUPFont>> m_fonts;
