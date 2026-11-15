@@ -94,7 +94,9 @@ bool ZipUtils::Zip(const std::filesystem::path& sourcePath, const std::filesyste
       else if (entry.is_regular_file(ec))
          success = mz_zip_writer_add_file(&archive, name.c_str(), PathToUTF8(entry.path()).c_str(), nullptr, 0, MZ_DEFAULT_LEVEL);
       if (!success)
+      {
          PLOGE << "Failed to add to zip: " << name << ", error=" << mz_zip_get_error_string(mz_zip_get_last_error(&archive));
+      }
 
       currentEntry++;
       if (success && callback)
