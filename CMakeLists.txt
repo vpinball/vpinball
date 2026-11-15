@@ -134,6 +134,7 @@ if(USE_SYSTEM_LIBS)
    # reverse of this list: libwinevbs/atl must shadow wine for atlbase.h/atlcom.h.
    include_directories(BEFORE
       "${SYSTEM_LIBS_INCLUDE_DIR}"
+      "${SYSTEM_LIBS_INCLUDE_DIR}/opus"
       "${SYSTEM_LIBS_INCLUDE_DIR}/libwinevbs/wine"
       "${SYSTEM_LIBS_INCLUDE_DIR}/libwinevbs/atl")
    link_directories(BEFORE "${SYSTEM_LIBS_LIB_DIR}")
