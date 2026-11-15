@@ -4308,7 +4308,12 @@ Vertex2D EditorUI::TablePosAt(const ImVec2 &pos) const
          if (const auto *const bp = dynamic_cast<BlueprintPane *>(it->second.get()); bp != nullptr)
             return bp->Unproject(pos);
          if (const auto *const vp = dynamic_cast<ViewportPane *>(it->second.get()); vp != nullptr)
-            return vp->UnprojectToPlane(pos, 0.f);
+         {
+            // The pane unprojects in the reference space its view currently renders in: re-express in the playfield space
+            const Vertex2D p = vp->UnprojectToPlane(pos, 0.f);
+            const Vertex3Ds pf = vp->ViewSpaceTransform() * Vertex3Ds(p.x, p.y, 0.f);
+            return Vertex2D(pf.x, pf.y);
+         }
       }
    }
    return Vertex2D(0.f, 0.f);

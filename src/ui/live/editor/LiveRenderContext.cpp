@@ -41,7 +41,7 @@ ImVec2 LiveRenderContext::Project(const Vertex3Ds &v) const
 {
    const float rClipWidth = m_hasPaneMvp ? m_projHalfW : (float)m_player->m_playfieldWnd->GetWidth() * 0.5f;
    const float rClipHeight = m_hasPaneMvp ? m_projHalfH : (float)m_player->m_playfieldWnd->GetHeight() * 0.5f;
-   const Matrix3D mvp = m_hasPaneMvp ? m_paneMvp : m_player->m_renderer->GetMVP().GetModelViewProj(0);
+   const Matrix3D mvp = m_spaceTransform * (m_hasPaneMvp ? m_paneMvp : m_player->m_renderer->GetMVP().GetModelViewProj(0));
    const float xp = mvp._11 * v.x + mvp._21 * v.y + mvp._31 * v.z + mvp._41;
    const float yp = mvp._12 * v.x + mvp._22 * v.y + mvp._32 * v.z + mvp._42;
    //const float zp = mvp._13 * v.x + mvp._23 * v.y + mvp._33 * v.z + mvp._43;
