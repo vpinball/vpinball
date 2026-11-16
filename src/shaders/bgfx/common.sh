@@ -151,7 +151,6 @@ float atan2_approx(const float y, const float x)
 	                  + (0.211868/*C3*/ * r * r - 0.987305/*C1*/) * ((x < 0.) ? -r : r);
 	return (y < 0.) ? -angle : angle;
 }
-#endif
 
 float atan2_approx_div2PI(const float y, const float x)
 {
@@ -169,7 +168,6 @@ float atan2_approx_div2PI(const float y, const float x)
 	return (y < 0.) ? -angle : angle;
 }
 
-#if 0
 float asin_approx(const float v)
 {
     const float x = abs(v);
@@ -178,7 +176,6 @@ float asin_approx(const float v)
     const float res = (-0.155972/*C1*/ * x + 1.56467/*C0*/) * sqrt(1. - x);
     return (v >= 0.) ? (0.5*PI) - res : -(0.5*PI) + res;
 }
-#endif
 
 float asin_approx_divPI(const float v)
 {
@@ -190,12 +187,15 @@ float asin_approx_divPI(const float v)
     const float res = ((-0.155972/PI)/*C1*/ * x + (1.56467/PI)/*C0*/) * sqrt(1. - x);
     return (v >= 0.) ? 0.5 - res : -0.5 + res;
 }
+#endif
 
 vec2 ray_to_equirectangular_uv(const vec3 ray)
 {
-   return vec2( // remap to 2D envmap coords
-		0.5 + atan2_approx_div2PI(ray.y, ray.x),
-		acos_approx_divPI(ray.z));
+   // Remap to 2D envmap coords. Native atan2/acos: polynomial approximations precise and continuous enough are hardly cheaper.
+   // The longitude is undefined at the poles (atan2(0, 0) is NaN or undefined depending on the backend), and a normalized
+   // ray may slightly exceed 1 in z (acos would be NaN)
+   const float u = (abs(ray.x) + abs(ray.y) > FLT_MIN_VALUE) ? atan2(ray.y, ray.x) * (0.5 / PI) : 0.;
+   return vec2(0.5 + u, acos(clamp(ray.z, -1., 1.)) * (1. / PI));
 }
 
 #if 0
