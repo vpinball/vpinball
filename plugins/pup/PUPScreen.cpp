@@ -746,6 +746,24 @@ void PUPScreen::JukeboxSkip(int direction)
    m_pMediaPlayerManager->JukeboxSkip(direction);
 }
 
+void PUPScreen::SetSafeLoop()
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   m_pMediaPlayerManager->SetSafeLoop();
+}
+
+void PUPScreen::Seek(int ms)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   m_pMediaPlayerManager->Seek(ms);
+}
+
+void PUPScreen::Jump(int direction, int percent)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   m_pMediaPlayerManager->Jump(direction, percent);
+}
+
 void PUPScreen::SetLength(int seconds)
 {
    assert(std::this_thread::get_id() == m_apiThread);

@@ -408,6 +408,30 @@ bool PUPMediaManager::JukeboxSkip(int direction, bool ended)
    return true;
 }
 
+void PUPMediaManager::SetSafeLoop()
+{
+   if (!m_queue.empty() || IsBackgroundPlaying())
+      m_player.SetSafeLoop();
+}
+
+void PUPMediaManager::Seek(int ms)
+{
+   if (m_player.IsPlaying() && ms < m_player.GetDuration() * 1000.0)
+      m_player.Seek(ms / 1000.0);
+}
+
+void PUPMediaManager::Jump(int direction, int percent)
+{
+   if ((m_queue.empty() && !IsBackgroundPlaying()) || !m_player.IsPlaying())
+      return;
+   const double length = m_player.GetDuration();
+   const double step = std::round(percent / 100.0 * length * 1000.0) / 1000.0;
+   if (direction == 1)
+      m_player.Seek(std::min(m_player.GetPosition() + step, length - 2.0));
+   else if (direction == 2)
+      m_player.Seek(std::max(m_player.GetPosition() - step, 2.0));
+}
+
 bool PUPMediaManager::IsMainPlaying() { return !m_queue.empty() && m_player.IsPlaying(); }
 
 bool PUPMediaManager::IsBackgroundPlaying() { return m_bg.active && !m_bg.szPath.empty() && m_queue.empty() && m_player.IsPlaying(); }

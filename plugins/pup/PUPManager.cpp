@@ -1277,9 +1277,13 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
             // Labels are hidden and LabelSet/LabelShowPage ignored until the current media ends.
             pScreen->SetHideDuringPlay(true);
             break;
+         case 35:
+            // { "mt":301, "SN": XX, "FN":35, "FT":1, "FP":10 } jump FP percent of the media length, FT 1 forward, FT 2 backward
+            pScreen->Jump(json["FT"s].as<int>(0), json["FP"s].as<int>(0));
+            break;
          case 41:
             // 'set safeloop mode on current playing media.  Good for background videos that refresh often?  { "mt":301, "SN": XX, "FN":41 }
-            NOT_IMPLEMENTED(std::format("Safe loop mode not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+            pScreen->SetSafeLoop();
             break;
          case 42:
          {
@@ -1305,7 +1309,7 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
             break;
          case 51:
             // set media play position in ms { "mt":301, "SN": XX, "FN":51, "SP": 3431} - SP position in ms
-            NOT_IMPLEMENTED(std::format("Set precise media position is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+            pScreen->Seek(json["SP"s].as<int>(0));
             break;
          case 52:
             // pDMDSetTextQuality(AALevel)  '0 to 4 aa.  4 is sloooooower.  default 1,  perhaps use 2-3 if small desktop view.  only affect text quality.  can set per label too with 'qual' settings.
