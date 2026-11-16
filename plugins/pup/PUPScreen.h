@@ -103,6 +103,8 @@ public:
 
    void AddTrigger(PUPTrigger* pTrigger);
    const ankerl::unordered_dense::map<string, vector<PUPTrigger*>>& GetTriggers() const { return m_triggerMap; }
+   // Expires when the screen (and the triggers it owns) is destroyed: for callbacks that outlive the call that queued them
+   std::weak_ptr<void> GetLifetime() const { return m_lifetime; }
 
    void LabelInit();
    void AddLabel(PUPLabel* pLabel);
@@ -176,6 +178,7 @@ private:
    ankerl::unordered_dense::map<string, PUPLabel*> m_labelMap;
    ankerl::unordered_dense::map<string, PUPPlaylist*> m_playlistMap;
    ankerl::unordered_dense::map<string, vector<PUPTrigger*>> m_triggerMap;
+   const std::shared_ptr<void> m_lifetime = std::make_shared<int>(0);
    PUPImage m_background;    // PuPFrames playlist - underlay behind video
    PUPImage m_staticImage;   // Static PNG/JPG from Default function - renders on video layer, bypasses FFmpeg
    std::unique_ptr<PUPMediaManager> m_pMediaPlayerManager;

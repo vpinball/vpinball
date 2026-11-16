@@ -268,7 +268,7 @@ void PUPTrigger::Invoke() {
       if (!m_delayPending) {
          m_delayPending = true;
          const double delay = (m_restSeconds > -99) ? -m_restSeconds : -m_restSeconds / 1000.0;
-         m_pScreen->GetManager()->RunLater(delay, [this]() { m_delayPending = false; Fire(false); });
+         m_pScreen->GetManager()->RunLater(delay, [alive = m_pScreen->GetLifetime(), this]() { if (alive.expired()) return; m_delayPending = false; Fire(false); });
       }
       return;
    }

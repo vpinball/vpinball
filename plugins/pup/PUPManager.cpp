@@ -1075,7 +1075,18 @@ void PUPManager::QueueDOFEvent(char c, int id, int value)
             for (const auto& trigger : triggers)
             {
                // Dispatch trigger action on main thread
-               m_msgApi->RunOnMainThread(m_endpointId, 0.001, [](void* userData) { static_cast<PUPTrigger*>(userData)->Invoke(); }, trigger);
+               // The trigger belongs to its screen, which a later AddScreen for the same number replaces
+               struct Pending
+               {
+                  std::weak_ptr<void> screen;
+                  PUPTrigger* trigger;
+               };
+               m_msgApi->RunOnMainThread(m_endpointId, 0.001, [](void* userData)
+               {
+                  std::unique_ptr<Pending> p(static_cast<Pending*>(userData));
+                  if (!p->screen.expired())
+                     p->trigger->Invoke();
+               }, new Pending { screen->GetLifetime(), trigger });
             }
             // Deviation from PinUP Player, which never clears them: D values are events (B2SData is never reset), so a
             // "D9=1,W5=1" trigger must not refire on a later W5=1. Segment display states (also D) are only resent on change
