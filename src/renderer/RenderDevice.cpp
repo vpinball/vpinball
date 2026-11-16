@@ -1313,15 +1313,20 @@ void RenderDevice::CaptureDX9Screenshot()
    auto tex = BaseTexture::Create(desc.Width, desc.Height, BaseTexture::SRGBA);
    if (tex)
    {
+      // Row by row: the locked surface rows may be padded (lockedRect.Pitch >= width * 4), the texture rows are not
       uint8_t* const __restrict bits = static_cast<uint8_t*>(tex->data());
-      const uint8_t* const __restrict pixels = static_cast<uint8_t*>(lockedRect.pBits);
-      copy_bgra_rgba<true>((unsigned int*)(tex->data()), (const unsigned int*)lockedRect.pBits, desc.Width * desc.Height); // Backbuffer is BGRA
-      //memcpy(bits, pixels, lockedRect.Pitch * desc.Height);
+      const uint8_t* const __restrict pixels = static_cast<const uint8_t*>(lockedRect.pBits);
+      const size_t texPitch = tex->pitch();
       for (unsigned int i = 0; i < desc.Height; ++i)
+      {
+         uint8_t* const row = bits + i * texPitch;
+         copy_bgra_rgba<true>(reinterpret_cast<unsigned int*>(row), reinterpret_cast<const unsigned int*>(pixels + (size_t)i * lockedRect.Pitch), desc.Width); // Backbuffer is BGRA
          for (unsigned int j = 0; j < desc.Width; ++j)
-            bits[i * lockedRect.Pitch + j * 4 + 3] = 0xFF; // Make the image opaque
+            row[j * 4 + 3] = 0xFF; // Make the image opaque
+      }
       success = tex->Save(screenshotFilename);
    }
+   pSurface->UnlockRect();
    pSurface->Release();
    pBackBuffer->Release();
    m_screenshotCallback(success);
@@ -2047,6 +2052,10 @@ RenderDevice::RenderDevice(
 
 RenderDevice::~RenderDevice()
 {
+   // Wait for the asynchronous vertical blank waits (at most a frame), which write to this device
+   while (m_pendingVSyncWaits > 0)
+      std::this_thread::yield();
+
    #if defined(ENABLE_BGFX)
       // Suspend rendering before deleting anything that could be used
       m_renderDeviceAlive = false;
@@ -2436,11 +2445,20 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
          m_pD3DDeviceEx->WaitForVBlank(0);
       #endif
 #endif
-      m_vsyncCount++;
       m_presentTimestampReference = usec();
+      m_vsyncCount++; // Last: signals the vertical blank (and its timestamp) to the logic thread
    };
    if (asynchronous)
-      std::thread(lambda).detach(); // Reuse thread ? (we always at most one running at a time)
+   {
+      // The thread writes to this device after the vertical blank: it is counted so that the destructor waits for it (a thread
+      // still blocked in DwmFlush when play ends would otherwise write into the freed device)
+      m_pendingVSyncWaits++;
+      std::thread([this, lambda]()
+         {
+            lambda();
+            m_pendingVSyncWaits--; // Last access to this device
+         }).detach(); // Reuse thread ? (we always at most one running at a time)
+   }
    else
       lambda();
 }

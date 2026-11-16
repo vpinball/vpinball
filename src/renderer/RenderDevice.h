@@ -203,7 +203,8 @@ public:
 
    bool UseLowPrecision() const { return m_useLowPrecision; }
 
-   unsigned int m_vsyncCount = 0;
+   std::atomic<unsigned int> m_vsyncCount = 0; // Written by the asynchronous WaitForVSync thread, polled by the logic thread
+   std::atomic<int> m_pendingVSyncWaits = 0; // Asynchronous WaitForVSync threads still running (they write to this device: the destructor waits for them)
 
    vector<std::shared_ptr<SharedIndexBuffer>> m_pendingSharedIndexBuffers;
    vector<std::shared_ptr<SharedVertexBuffer>> m_pendingSharedVertexBuffers;
@@ -295,7 +296,7 @@ private:
    #endif
    #endif
 
-   uint64_t m_presentTimestampReference = 0;
+   std::atomic<uint64_t> m_presentTimestampReference = 0; // Also written by the asynchronous WaitForVSync thread
 
 #if defined(ENABLE_BGFX)
 public:
