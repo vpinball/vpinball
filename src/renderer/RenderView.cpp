@@ -347,7 +347,7 @@ int RenderView::GetDisplayHeight() const
 float RenderView::GetDisplayAspectRatio() const { return (float)((double)GetDisplayWidth() / (double)GetDisplayHeight()); }
 
 // Setup the tables camera / rotation / scale (see InitLayout in Renderer.cpp for the layout modes description)
-void RenderView::InitLayout(const float xpixoff, const float ypixoff)
+void RenderView::InitLayout()
 {
    // The VR headset view's camera is driven by the head pose (its MVP is never laid out): only its
    // desktop display mirror, which shows a cabinet view of the scene, lays out a camera in VR mode
@@ -367,7 +367,7 @@ void RenderView::InitLayout(const float xpixoff, const float ypixoff)
    int outW = 0, outH = 0;
    GetOutputAreaSize(outW, outH);
    const float aspect = outW > 0 && outH > 0 ? static_cast<float>(outW) / static_cast<float>(outH) : GetDisplayAspectRatio();
-   viewSetup.ComputeMVP(r->m_table, aspect, stereo, m_mvp, vec3(r->m_cam.x, r->m_cam.y, r->m_cam.z), r->m_inc, xpixoff / (float)GetDisplayWidth(), ypixoff / (float)GetDisplayHeight());
+   viewSetup.ComputeMVP(r->m_table, aspect, stereo, m_mvp, vec3(r->m_cam.x, r->m_cam.y, r->m_cam.z), r->m_inc);
    for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
       m_isStaticPrepassDirty |= !(m_mvp.GetView(eye) == m_initialMVP.GetView(eye)) || !(m_mvp.GetProj(eye) == m_initialMVP.GetProj(eye));
    m_initialMVP = m_mvp;
@@ -376,8 +376,9 @@ void RenderView::InitLayout(const float xpixoff, const float ypixoff)
 void RenderView::ApplyViewJitter(const float xpixoff, const float ypixoff)
 {
    assert(m_renderer->m_stereo3D != STEREO_VR);
-   // Apply the same clip space offset as InitLayout (see ViewSetup::ComputeMVP projTrans), but on the current MVP, preserving
-   // the (eventually reflected) view matrix since the offset is a post projection translation which does not interact with it
+   // Apply a clip space offset (same convention as the projTrans pixel offset in ViewSetup::ComputeMVP) on the current
+   // MVP, preserving the (eventually reflected) view matrix since the offset is a post projection translation which does
+   // not interact with it
    const Matrix3D offset = Matrix3D::MatrixTranslate(xpixoff / (float)GetDisplayWidth(), ypixoff / (float)GetDisplayHeight(), 0.f);
    for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
       m_mvp.SetProj(eye, m_mvp.GetProj(eye) * offset);
