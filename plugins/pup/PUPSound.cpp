@@ -6,6 +6,7 @@
 
 #include <SDL3/SDL_audio.h>
 
+#include <algorithm>
 #include <cmath>
 
 namespace PUP {
@@ -60,8 +61,16 @@ void PUPSoundBank::Load(const std::filesystem::path& packPath)
       SDL_free(dstData);
       m_samples[name] = sample;
 
-      if (name.size() == 13 && name.starts_with("ballroll") && isdigit(static_cast<unsigned char>(name[8])))
-         m_ballRoll[name[8] - '0'].sample = sample;
+      if (name.starts_with("ballroll") && name.size() > 12)
+      {
+         const string digits = name.substr(8, name.size() - 12);
+         if (std::ranges::all_of(digits, [](char c) { return isdigit(static_cast<unsigned char>(c)) != 0; }))
+         {
+            const int slot = string_to_int(digits, 0);
+            if (slot < 29)
+               m_ballRoll[slot].sample = sample;
+         }
+      }
    }
    LOGI(std::format("Sound bank loaded: folder={}, sounds={}", PluginStrings::PathToUTF8(folder), m_samples.size()));
 }
@@ -75,9 +84,10 @@ void PUPSoundBank::Unload()
       slot = BallRoll {};
    }
    m_samples.clear();
+   m_lastStream.clear();
 }
 
-bool PUPSoundBank::Queue(uint32_t streamId, const Sample& sample, int volume, int x)
+bool PUPSoundBank::Queue(uint32_t streamId, const Sample& sample, int volume, int x, float rate)
 {
    const LibAV::LibAV& libAv = LibAV::LibAV::GetInstance();
    const float gain = std::clamp(static_cast<float>(volume) / 100.f, 0.f, 2.f);
@@ -104,7 +114,7 @@ bool PUPSoundBank::Queue(uint32_t streamId, const Sample& sample, int volume, in
    msg->streamId.resId = streamId;
    msg->channelFormat = CTLPI_AUDIO_FORMAT_CHANNEL_STEREO;
    msg->sampleFormat = CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT;
-   msg->sampleRate = sample.sampleRate;
+   msg->sampleRate = static_cast<int>(std::lround(static_cast<float>(sample.sampleRate) * rate));
    msg->bufferSize = static_cast<unsigned int>(bufferSize);
    msg->buffer = reinterpret_cast<uint8_t*>(buffer);
    msg->volume = gain;
@@ -117,47 +127,76 @@ void PUPSoundBank::LoopBallRoll(int slot, uint64_t generation)
    BallRoll& roll = m_ballRoll[slot];
    if (!roll.playing || roll.generation != generation || !roll.sample)
       return;
-   Queue(roll.streamId, *roll.sample, roll.volume, roll.x);
-   const double duration = static_cast<double>(roll.sample->frames) / static_cast<double>(roll.sample->sampleRate);
+   Queue(roll.streamId, *roll.sample, roll.volume, roll.x, roll.rate);
+   const double duration = static_cast<double>(roll.sample->frames) / (static_cast<double>(roll.sample->sampleRate) * roll.rate);
    m_pManager->RunLater(duration, [this, slot, generation]() { LoopBallRoll(slot, generation); });
+}
+
+void PUPSoundBank::PlayBallRoll(int slot, int x, int vol, double speed, bool pinup20)
+{
+   BallRoll& roll = m_ballRoll[slot];
+   roll.volume = vol;
+   roll.x = x;
+   if (pinup20)
+      roll.rate = static_cast<float>((std::abs(speed) / 100.0 * 0.75 + 0.25) * 44100.0 / roll.sample->sampleRate);
+   if (speed == 0.0)
+   {
+      if (roll.playing)
+      {
+         StopAudioStream(roll.streamId);
+         roll.playing = false;
+         roll.generation++;
+      }
+   }
+   else if (!roll.playing)
+   {
+      roll.playing = true;
+      roll.generation++;
+      roll.streamId = m_nextStreamId++;
+      LoopBallRoll(slot, roll.generation);
+   }
 }
 
 void PUPSoundBank::Play(const string& name, int x, int y, int z, int vol, const string& special)
 {
    const string key = lowerCase(name);
+   const bool pinup20 = m_pManager->GetEngine() == PUPManager::Engine::PinUP20;
 
-   if (key.size() >= 9 && key.starts_with("ballroll") && isdigit(static_cast<unsigned char>(key[8])) && m_ballRoll[key[8] - '0'].sample)
+   if (pinup20)
    {
-      BallRoll& roll = m_ballRoll[key[8] - '0'];
-      roll.volume = vol;
-      roll.x = x;
-      const int speed = string_to_int(special, 0);
-      if (speed == 0)
+      if (std::abs(x) > 19)
+         x /= 10;
+      vol = std::clamp(vol * m_pManager->GetSSFVolume() / 100, 0, 100);
+      if (key.starts_with("ballroll"))
       {
-         if (roll.playing)
-         {
-            StopAudioStream(roll.streamId);
-            roll.playing = false;
-            roll.generation++;
-         }
+         string digits = key.substr(8);
+         if (digits.ends_with(".wav"))
+            digits.resize(digits.size() - 4);
+         const int slot = string_to_int(digits, 0);
+         if (slot >= 0 && slot < 30 && m_ballRoll[slot].sample)
+            PlayBallRoll(slot, x, vol, std::atof(special.c_str()), true);
+         return;
       }
-      else if (!roll.playing)
-      {
-         roll.playing = true;
-         roll.generation++;
-         roll.streamId = m_nextStreamId++;
-         LoopBallRoll(key[8] - '0', roll.generation);
-      }
+   }
+   else if (key.size() >= 9 && key.starts_with("ballroll") && isdigit(static_cast<unsigned char>(key[8])) && m_ballRoll[key[8] - '0'].sample)
+   {
+      PlayBallRoll(key[8] - '0', x, vol, string_to_int(special, 0), false);
       return;
    }
 
    auto it = m_samples.find(key);
    if (it == m_samples.end())
       return;
+   if (pinup20)
+   {
+      if (const auto last = m_lastStream.find(key); last != m_lastStream.end())
+         StopAudioStream(last->second);
+   }
    const std::shared_ptr<Sample> sample = it->second;
    const uint32_t streamId = m_nextStreamId++;
    if (!Queue(streamId, *sample, vol, x))
       return;
+   m_lastStream[key] = streamId;
    const double duration = static_cast<double>(sample->frames) / static_cast<double>(sample->sampleRate);
    m_pManager->RunLater(duration + 0.25, [streamId]() { StopAudioStream(streamId); });
 }

@@ -38,15 +38,18 @@ private:
       bool playing = false;
       int volume = 100;
       int x = 0;
+      float rate = 1.f;
       uint64_t generation = 0;
    };
 
-   bool Queue(uint32_t streamId, const Sample& sample, int volume, int x);
+   bool Queue(uint32_t streamId, const Sample& sample, int volume, int x, float rate = 1.f);
+   void PlayBallRoll(int slot, int x, int vol, double speed, bool pinup20);
    void LoopBallRoll(int slot, uint64_t generation);
 
    PUPManager* const m_pManager;
    ankerl::unordered_dense::map<string, std::shared_ptr<Sample>> m_samples;
-   BallRoll m_ballRoll[10];
+   BallRoll m_ballRoll[30];
+   ankerl::unordered_dense::map<string, uint32_t> m_lastStream;
    uint32_t m_nextStreamId = 0x40000000;
 };
 

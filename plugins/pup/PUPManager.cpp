@@ -435,6 +435,7 @@ void PUPManager::Unload()
    m_zOrder.clear();
    m_screenOrder.clear();
    m_engine = Engine::PinUP15;
+   m_ssfVolume = 100;
    m_fadeOutCounter = 255;
    m_labelShadowType = 0;
    m_labelShadowColor = 0x808080;
@@ -1363,6 +1364,11 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
             // { "mt":301, "SN": XX, "FN":56, "FH":x, "FS":<0..255> } same as FN 55, FH is read but unused (2.0 engine)
             if (m_engine == Engine::PinUP20 && json["FS"s].exists() && json["FS"s].as<int>() >= 0)
                pScreen->SetFadeStep(json["FS"s].as<int>());
+            break;
+         case 62:
+            // { "mt":301, "SN": XX, "FN":62, "SF":100 } sound effect volume percent (2.0 engine)
+            if (m_engine == Engine::PinUP20)
+               m_ssfVolume = json["SF"s].as<int>(100);
             break;
          case 58:
             // { "mt":301, "SN": XX, "FN":58, "YS":1.2 } label size factor for labels sized afterwards (2.0 engine)
