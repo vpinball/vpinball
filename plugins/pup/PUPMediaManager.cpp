@@ -172,7 +172,7 @@ void PUPMediaManager::StartCurrent()
    LOGD(std::format("MAIN PLAY: screen={}, vol={}, pri={}, file={}", m_pScreen->GetScreenNum(), head.volume, head.priority, PluginStrings::PathToUTF8(head.szPath.filename())));
    m_player.Play(head.szPath, m_pScreen->StartMediaVolume(head.volume), head.resumeAt, StillDuration(m_pScreen, head.szPath));
    m_queue.front().resumeAt = 0.0;
-   m_player.SetLoop(head.loop);
+   m_player.SetLoop(head.loop, m_pScreen->GetManager()->GetEngine() == PUPManager::Engine::PinUP20 ? 0.9 : 0.0);
    m_loopCount = m_player.GetLoopCount();
    m_currentAlpha = (m_fadeStep < 255) ? m_fadeStep : 255;
    ApplyDuckPrefix(head.szPath);
