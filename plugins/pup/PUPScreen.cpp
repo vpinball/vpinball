@@ -258,8 +258,11 @@ void PUPScreen::Unduck()
       ApplyVolume(orig);
 }
 
-void PUPScreen::OnMediaStart()
+void PUPScreen::OnMediaStart(const std::filesystem::path& path)
 {
+   if (m_labelLayer && PluginStrings::PathToUTF8(path).find('@') != string::npos)
+      SetHideDuringPlay(true);
+
    if (m_mode == Mode::Off || m_mode == Mode::MusicOnly)
       return;
    if (m_raiseOnPlay)
@@ -301,16 +304,20 @@ void PUPScreen::KeepAtBack()
       m_pManager->LowerLayer(this, PUPManager::Layer::Labels);
 }
 
+void PUPScreen::SetHideDuringPlay(bool hide)
+{
+   const bool shown = m_hideDuringPlay && !hide;
+   m_hideDuringPlay = hide;
+   m_hudVisible = !hide;
+   if (shown && m_labelLayer && m_raiseLabelsOnPlay)
+      m_pManager->RaiseLayer(this, PUPManager::Layer::Labels);
+}
+
 void PUPScreen::OnMediaEnd()
 {
    assert(std::this_thread::get_id() == m_apiThread);
    if (m_hideDuringPlay)
-   {
-      m_hideDuringPlay = false;
-      m_hudVisible = true;
-      if (m_labelLayer && m_raiseLabelsOnPlay)
-         m_pManager->RaiseLayer(this, PUPManager::Layer::Labels);
-   }
+      SetHideDuringPlay(false);
    // Resolve whatever LabelShowPage queued when a splash page started.
    const HudReturn action = m_hudReturn;
    m_hudReturn = HudReturn::None;
@@ -610,7 +617,7 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
             m_staticImage.Load(imagePath);
             m_imageExpiry = (length > 0) ? (SDL_GetTicks() + static_cast<uint64_t>(length) * 1000) : 0;
          }
-         OnMediaStart();
+         OnMediaStart({});
          break;
       }
       if (m_mode == Mode::Off)
