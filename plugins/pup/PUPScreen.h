@@ -139,6 +139,9 @@ public:
    bool IsJukebox() const;
    void SetJukebox(bool jukebox);
    void JukeboxSkip(int direction);
+   void SetSafeLoop();
+   void Seek(int ms);
+   void Jump(int direction, int percent);
 
    bool IsBackgroundPlaying() const;
    bool IsMainPlaying() const;

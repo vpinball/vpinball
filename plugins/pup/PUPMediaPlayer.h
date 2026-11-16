@@ -25,6 +25,9 @@ public:
    void Stop();
    void SetVolume(float volume);
    void SetLoop(bool loop);
+   void SetSafeLoop();
+   void Seek(double position);
+   double GetDuration() const { return m_duration.load(); }
    void Render(VPXRenderContext2D* const ctx, const SDL_Rect& destRect, float alpha = 1.f);
 
    void SetName(const string& name);
@@ -80,6 +83,9 @@ private:
    bool m_audioPtsBaseValid = false;
    double m_audioPtsBase = 0.0;
    std::atomic<double> m_position = 0.0;
+   std::atomic<double> m_duration = 0.0;
+   std::atomic<double> m_seekRequest = -1.0;
+   bool m_safeLoop = false;
 
    // Slots of unordered decoded frames
    struct FrameInfo

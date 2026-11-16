@@ -40,6 +40,9 @@ public:
    bool IsJukebox() const { return m_jukebox; }
    void SetJukebox(bool jukebox) { m_jukebox = jukebox; }
    bool JukeboxSkip(int direction, bool ended = false);
+   void SetSafeLoop();
+   void Seek(int ms);
+   void Jump(int direction, int percent);
 
    void SetBounds(const SDL_Rect& rect);
    void SetMask(const std::filesystem::path& path);

@@ -225,6 +225,9 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume, d
          m_audioPtsBaseValid = false;
          m_audioPtsBase = 0.0;
          m_position = startPosition;
+         m_duration = (pFormatContext->duration != AV_NOPTS_VALUE) ? static_cast<double>(pFormatContext->duration) / AV_TIME_BASE : 0.0;
+         m_seekRequest = -1.0;
+         m_safeLoop = false;
          m_audioStream = audioStream;
          m_pAudioContext = pAudioContext;
          m_firstRenderPending = pVideoContext != nullptr;
@@ -363,6 +366,25 @@ void PUPMediaPlayer::SetLoop(bool loop)
          LOGD("Setting loop: loop=" + std::to_string(loop));
          m_loop = loop;
       }
+   });
+}
+
+void PUPMediaPlayer::SetSafeLoop()
+{
+   m_commandQueue.enqueue([this]()
+   {
+      std::lock_guard lock(m_mutex);
+      m_safeLoop = true;
+   });
+}
+
+void PUPMediaPlayer::Seek(double position)
+{
+   m_commandQueue.enqueue([this, position]()
+   {
+      std::lock_guard lock(m_mutex);
+      if (m_running)
+         m_seekRequest = std::max(position, 0.0);
    });
 }
 
@@ -520,6 +542,8 @@ void PUPMediaPlayer::Run()
    {
       // Interact with main thread
       bool loop;
+      bool safeLoop;
+      double seek;
       {
          std::unique_lock<std::mutex> lock(m_mutex);
          #ifdef _DEBUG
@@ -539,10 +563,52 @@ void PUPMediaPlayer::Run()
             continue;
          }
          loop = m_loop;
+         safeLoop = m_safeLoop;
+         seek = m_seekRequest.exchange(-1.0);
+      }
+
+      if (seek >= 0.0)
+      {
+         if (m_libAv._av_seek_frame(m_pFormatContext, -1, static_cast<int64_t>(seek * AV_TIME_BASE), AVSEEK_FLAG_BACKWARD) < 0)
+            LOGE("Unable to seek: " + PluginStrings::PathToUTF8(m_filename.filename()));
+         if (m_pVideoContext)
+            m_libAv._avcodec_flush_buffers(m_pVideoContext);
+         if (m_pAudioContext)
+            m_libAv._avcodec_flush_buffers(m_pAudioContext);
+         m_playIndex++;
+         StopAudioStream(m_audioStreamId);
+         std::lock_guard lock(m_mutex);
+         m_startTimestamp = m_syncOnGameTime ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0);
+         m_videoPtsBaseValid = false;
+         m_videoPtsBase = 0.0;
+         m_audioPtsBaseValid = false;
+         m_audioPtsBase = 0.0;
+         m_lastDecodedPts = 0.0;
+         m_position = seek;
+         for (auto& frame : m_frames)
+            frame.valid = false;
+         continue;
       }
 
       // Read next frame from source
-      const int rfRet = m_libAv._av_read_frame(m_pFormatContext, pPacket);
+      int rfRet = m_libAv._av_read_frame(m_pFormatContext, pPacket);
+      double safeLoopEnd = 0.0;
+      if (rfRet >= 0 && safeLoop && loop && m_duration > 1.0)
+      {
+         const int clockStream = (m_videoStream >= 0) ? m_videoStream : m_audioStream;
+         if (pPacket->stream_index == clockStream && pPacket->pts != AV_NOPTS_VALUE)
+         {
+            const AVStream* stream = m_pFormatContext->streams[clockStream];
+            const double pts = static_cast<double>(pPacket->pts) * stream->time_base.num / stream->time_base.den;
+            const double start = (stream->start_time != AV_NOPTS_VALUE) ? static_cast<double>(stream->start_time) * stream->time_base.num / stream->time_base.den : 0.0;
+            if (pts - start >= m_duration - 1.0)
+            {
+               m_libAv._av_packet_unref(pPacket);
+               rfRet = AVERROR_EOF;
+               safeLoopEnd = pts;
+            }
+         }
+      }
       if (rfRet == AVERROR_EOF)
       {
          // Drain both decoders so the last buffered frames are not dropped at the loop point or at the natural end
@@ -590,9 +656,10 @@ void PUPMediaPlayer::Run()
             m_libAv._avcodec_flush_buffers(m_pAudioContext);
          }
          m_playIndex++;
-         m_loopCount++;
-         double duration = 0.0;
-         if (m_videoStream >= 0)
+         if (safeLoopEnd == 0.0)
+            m_loopCount++;
+         double duration = safeLoopEnd;
+         if (duration == 0.0 && m_videoStream >= 0)
          {
             const AVStream* vs = m_pFormatContext->streams[m_videoStream];
             if (vs->duration > 0)
