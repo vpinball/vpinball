@@ -363,6 +363,14 @@ void PUPScreen::OnMediaEnd()
 void PUPScreen::AddChild(std::shared_ptr<PUPScreen> pScreen)
 {
    assert(std::this_thread::get_id() == m_apiThread);
+   for (const PUPScreen* ancestor = this; ancestor; ancestor = ancestor->m_pParent)
+   {
+      if (ancestor == pScreen.get())
+      {
+         LOGE(std::format("Screen {} is not positioned on screen {}: screen {} is already positioned on it", pScreen->GetScreenNum(), GetScreenNum(), GetScreenNum()));
+         return;
+      }
+   }
    m_children.push_back(pScreen);
    pScreen->m_pParent = this;
 }
