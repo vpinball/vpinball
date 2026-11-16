@@ -43,6 +43,7 @@ PUPScreen::PUPScreen(PUPManager* manager, PUPScreen::Mode mode, int screenNum, c
    , m_apiThread(std::this_thread::get_id())
 {
    m_raiseOnPlay = (mode != Mode::ForceBack);
+   m_customImageMode = (manager->GetEngine() == PUPManager::Engine::PinUP20);
    m_pMediaPlayerManager = std::make_unique<PUPMediaManager>(this);
 
    for (const PUPPlaylist* pPlaylist : playlists) {
@@ -721,7 +722,8 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
       // In custom image mode, PNGs/JPGs bypass FFmpeg — loaded as static image on the video layer.
       // Persists until replaced by a new image or video play. Otherwise they play as media.
       const string ext = extension_from_path(PluginStrings::PathToUTF8(szPlayFile.empty() ? pPlaylist->PeekNextPlayFile() : szPlayFile));
-      if (m_customImageMode && (ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "bmp"))
+      const bool stillImage = (ext == "png" || ext == "jpg" || ext == "jpeg" || (ext == "bmp" && m_pManager->GetEngine() == PUPManager::Engine::PinUP15));
+      if (m_customImageMode && stillImage)
       {
          const std::filesystem::path imagePath = pPlaylist->GetPlayFilePath(szPlayFile);
          if (imagePath.empty())
