@@ -189,6 +189,8 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<State
    case B2SRomIDType::Mech: groupId = PMPI_GROUP_MECH; break;
    default: return []() { /* No ROM source */ };
    }
+   // Backglass files number the GI strings from 1, as the B2S server reads them (VPinMAME's index + 1), PinMAME from 0
+   const int mappingId = romIdType == B2SRomIDType::GIString ? romId - 1 : romId;
    for (const StateSrcId& src : items)
    {
       if (src.id.resId != groupId)
@@ -196,7 +198,7 @@ std::function<void()> B2SRenderer::ResolveRomPropUpdater(const std::vector<State
       for (unsigned int i = 0; i < src.nStates; i++)
       {
          const auto& def = src.stateDefs[i];
-         if (def.mappingId == romId && def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState)
+         if (def.mappingId == mappingId && def.dataFormat == CTLPI_STATE_FORMAT_FLOAT && def.GetState)
          {
             return [this, value, def, romInverted, romValue]()
             {
