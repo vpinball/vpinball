@@ -18,13 +18,14 @@ public:
 
    void SetGameTime(double gameTime);
 
-   bool Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length);
+   bool Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, int volume, int priority, PlayAction action, int length);
    void Pause();
    void Resume();
    void SetAsBackGround(bool isBackground);
    void SetLoop(bool isLoop);
    void SetLengthFromNow(int seconds);
    void SetVolume(float volume);
+   void SetCurrentItemVolume(int volume);
    void Stop();
    void StopBackground();
    void Stop(int priority);
@@ -50,7 +51,7 @@ private:
    struct PlayItem
    {
       std::filesystem::path szPath;
-      float volume = 1.f;
+      int volume = 100; // the item's own level; the screen scales it when the item starts
       int priority = 0;
       uint64_t endTicks = 0;
       bool loop = false;
@@ -64,7 +65,7 @@ private:
    struct BackgroundConfig
    {
       std::filesystem::path szPath;
-      float volume = 1.0f;
+      int volume = 100;
       bool active = false;
    };
    BackgroundConfig m_bg;

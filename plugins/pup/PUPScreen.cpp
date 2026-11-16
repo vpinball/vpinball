@@ -181,6 +181,25 @@ void PUPScreen::ApplyVolume(int volume)
    m_pMediaPlayerManager->SetVolume(EffectiveVolume(volume));
 }
 
+// An item (main, queued, background, or a loop pass of either) starts playing: its own level becomes the
+// screen's live level, which is what a duck fades from and restores to. A duck or fade that was running
+// belonged to the previous item. Returns the volume to hand to the player.
+float PUPScreen::StartMediaVolume(int volume)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   m_fadeVolume = -1;
+   m_duckOrigVolume = -1;
+   m_currentVolume = volume;
+   return EffectiveVolume(volume);
+}
+
+// The level of the item that is playing was changed by a new request for the same file
+void PUPScreen::SetMediaVolume(int volume)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   ApplyVolume(volume);
+}
+
 void PUPScreen::SetMainVolume(float volume)
 {
    assert(std::this_thread::get_id() == m_apiThread);
@@ -205,7 +224,9 @@ void PUPScreen::SetVolumeCurrent(int volume)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    m_fadeVolume = -1;
-   ApplyVolume(std::clamp(volume, 1, PUP_VOLUME_MAX));
+   const int clamped = std::clamp(volume, 1, PUP_VOLUME_MAX);
+   m_pMediaPlayerManager->SetCurrentItemVolume(clamped);
+   ApplyVolume(clamped);
 }
 
 void PUPScreen::StartVolumeFade(int from, int to, int step)
@@ -622,11 +643,8 @@ void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlay
       }
       if (m_mode == Mode::Off)
          return;
-      if (const int vol = ResolveVolume(volume, pPlaylist); m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, EffectiveVolume(vol), priority, action, length))
-      {
+      if (m_pMediaPlayerManager->Play(pPlaylist, szPlayFile, ResolveVolume(volume, pPlaylist), priority, action, length))
          m_staticImage.Clear();
-         m_currentVolume = vol;
-      }
       break;
    }
 
