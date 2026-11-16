@@ -24,7 +24,7 @@ public:
    void Pause(bool pause);
    void Stop();
    void SetVolume(float volume);
-   void SetLoop(bool loop);
+   void SetLoop(bool loop, double minLoopDuration = 0.0);
    void SetSafeLoop();
    void Seek(double position);
    double GetDuration() const { return m_duration.load(); }

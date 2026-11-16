@@ -356,11 +356,17 @@ void PUPMediaPlayer::StopBlocking()
    StopAudioStream(m_audioStreamId);
 }
 
-void PUPMediaPlayer::SetLoop(bool loop)
+void PUPMediaPlayer::SetLoop(bool loop, double minLoopDuration)
 {
-   m_commandQueue.enqueue([this, loop]()
+   m_commandQueue.enqueue([this, loop, minLoopDuration]() mutable
    {
       std::lock_guard lock(m_mutex);
+      if (loop && minLoopDuration > 0.0)
+      {
+         const double duration = (m_pFormatContext && m_pFormatContext->duration != AV_NOPTS_VALUE) ? static_cast<double>(m_pFormatContext->duration) / AV_TIME_BASE : 0.0;
+         if (duration < minLoopDuration)
+            loop = false;
+      }
       if (m_loop != loop)
       {
          LOGD("Setting loop: loop=" + std::to_string(loop));
