@@ -53,6 +53,9 @@ public:
    bool IsHidden() const { return m_hidden; }
    void SetHidden(bool hidden) { m_hidden = hidden; }
 
+   float m_labelYScale = 0.f; // FN 58: label size factor set by the script, 0 = from the screen's shape
+   float GetLabelYScale(const SDL_Rect& rect) const;
+
    float m_screenAlpha = 1.0f;
    float m_overlayAlpha = 1.0f;
    bool m_hudVisible = true; // FN 3: the whole label overlay shown or hidden

@@ -586,6 +586,22 @@ void PUPScreen::SetBounds(int x, int y, int w, int h)
       pChildren->SetBounds(x, y, w, h);
 }
 
+// PinUP Player sizes label text as a percentage of the screen height multiplied by a factor that brings the
+// screen back to a 16:9 shape: (width / 1.7777) / height, taken as 1 between 0.95 and 1.05, at most 1.5, and 1
+// on a portrait screen. A 4:1 DMD screen has a factor of 1.5: without it every label is two thirds of its size.
+// A script may set the factor itself (function 58).
+float PUPScreen::GetLabelYScale(const SDL_Rect& rect) const
+{
+   if (m_labelYScale > 0.1f)
+      return m_labelYScale;
+   if (rect.w <= 0 || rect.h <= 0 || rect.w < rect.h)
+      return 1.f;
+   const float yScale = (static_cast<float>(rect.w) / 1.7777f) / static_cast<float>(rect.h);
+   if (yScale > 0.95f && yScale < 1.05f)
+      return 1.f;
+   return std::min(yScale, 1.5f);
+}
+
 void PUPScreen::SetCustomPos(const string& szCustomPos)
 {
    assert(std::this_thread::get_id() == m_apiThread);
