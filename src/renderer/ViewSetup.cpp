@@ -329,7 +329,7 @@ float ViewSetup::GetRealToVirtualScale(const PinTable* const table) const
       return 1.f;
 }
 
-void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, const bool stereo, ModelViewProj& mvp, const vec3& cam, const float cam_inc, const float xpixoff, const float ypixoff) const
+void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, const bool stereo, ModelViewProj& mvp, const vec3& cam, const float cam_inc) const
 {
    const float FOV = (mFOV < 1.0f) ? 1.0f : mFOV; // Can't have a real zero FOV, but this will look almost the same
    const bool isLegacy = mMode == VLM_LEGACY;
@@ -419,17 +419,14 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    mvp.SetModel(matWorld);
 
    Matrix3D scale, coords, lookat, layback, matView;
-   #ifdef ENABLE_DX9
-      // Shift by half a pixel
-      const float inv_backBufferWidth = g_pplayer && g_pplayer->m_renderer ? 1.0f / static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetWidth()) : 0.f;
-      const float inv_backBufferHeight = g_pplayer && g_pplayer->m_renderer ? 1.0f / static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetHeight()) : 0.f;
-      const Matrix3D projTrans = Matrix3D::MatrixTranslate(
-         xpixoff - inv_backBufferWidth,
-         ypixoff + inv_backBufferHeight,
-         0.f); // in-pixel offset for manual oversampling
-   #else
-      const Matrix3D projTrans = Matrix3D::MatrixTranslate(xpixoff, ypixoff, 0.f); // in-pixel offset for manual oversampling
-   #endif
+#ifdef ENABLE_DX9
+   // Shift by half a pixel
+   const float inv_backBufferWidth = g_pplayer && g_pplayer->m_renderer ? 1.0f / static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetWidth()) : 0.f;
+   const float inv_backBufferHeight = g_pplayer && g_pplayer->m_renderer ? 1.0f / static_cast<float>(g_pplayer->m_renderer->m_renderDevice->GetOutputBackBuffer()->GetHeight()) : 0.f;
+   const Matrix3D projTrans = Matrix3D::MatrixTranslate(-inv_backBufferWidth, inv_backBufferHeight, 0.f);
+#else
+   const Matrix3D projTrans = Matrix3D::MatrixIdentity();
+#endif
    const Matrix3D rotz = Matrix3D::MatrixRotateZ(rotation); // Viewport rotation
 
    vector<Vertex3Ds> bounds, legacy_bounds;

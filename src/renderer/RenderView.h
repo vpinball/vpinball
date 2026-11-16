@@ -99,7 +99,7 @@ public:
    bool m_customViewProj = false; // The camera is driven through SetViewProj (editor panes): InitLayout keeps it instead of the default view setup
    Vertex2D m_screenOffset = Vertex2D(0.f, 0.f); // Screen shake effect during nudge
    const ModelViewProj& GetMVP() const { return m_mvp; }
-   void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f); // Reset both the base and the current MVP to the default view setup, with an optional pixel offset for AA
+   void InitLayout(); // Reset both the base and the current MVP to the default view setup
    void SetFlip(ModelViewProj::FlipMode flipMode); // Flip the rendered image horizontally and/or vertically (e.g. for rear projection setups), applied to base MVP
    void SetViewProj(const Matrix3D& view, const Matrix3D& proj); // Override the MVP, applied to the base MVP
    void SetReflection(const Matrix3D& reflectionMatrix); // Set a reflection matrix to be applied to the view matrix, used for mirror reflections, applied to current MVP, NOT the base MVP
