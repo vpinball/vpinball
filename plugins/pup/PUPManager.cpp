@@ -1130,7 +1130,7 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
             // show label page { "mt":301, "SN": XX, "FN":27, "PN":1, "HS":3, "EX":"" }
          {
             const int seconds = json["HS"s].as<int>(0);
-            pScreen->SetPage(json["PN"s].as<int>(0), seconds >= 501 ? seconds : seconds * 1000, json["EX"s].as_str());
+            pScreen->SetPage(json["PN"s].as<int>(0), seconds >= 501 ? seconds : seconds * 1000, json["EX"s].as<string>());
             break;
          }
          case 28:
@@ -1203,7 +1203,7 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
          case 15:
             // set screen custompos { 'mt':301, 'SN':15,'FN':15,'CP':'parent_screen,x,y,w,h'} CP = CustomPos String, coordinates relative in %
             LOGD(std::format("Set screen custompos requested: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
-            pScreen->SetCustomPos(json["CP"s].as_str());
+            pScreen->SetCustomPos(json["CP"s].as<string>());
             break;
          case 16:
             // start executable
@@ -1335,7 +1335,7 @@ void PUPManager::SendMsg(const string& szMsg)
             break;
          case 402:
             // PuPSound { "mt":402, "SN":XX, "ns":"name.wav", "sX":0, "sY":0, "sZ":0, "vol":100, "sp":"" }
-            PlaySound(json["ns"s].as_str(), json["sX"s].as<int>(0), json["sY"s].as<int>(0), json["sZ"s].as<int>(0), json["vol"s].as<int>(100), json["sp"s].as_str());
+            PlaySound(json["ns"s].as<string>(), json["sX"s].as<int>(0), json["sY"s].as<int>(0), json["sZ"s].as<int>(0), json["vol"s].as<int>(100), json["sp"s].as<string>());
             break;
          case 400:
          case 401:
