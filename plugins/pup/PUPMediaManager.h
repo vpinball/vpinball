@@ -25,6 +25,7 @@ public:
    void SetLoop(bool isLoop);
    void SetLengthFromNow(int seconds);
    void SetVolume(float volume);
+   void SetCurrentItemVolume(int volume);
    void Stop();
    void StopBackground();
    void Stop(int priority);

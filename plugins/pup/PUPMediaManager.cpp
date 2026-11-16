@@ -250,6 +250,14 @@ void PUPMediaManager::SetVolume(float volume)
    m_player.SetVolume(volume);
 }
 
+void PUPMediaManager::SetCurrentItemVolume(int volume)
+{
+   if (!m_queue.empty())
+      m_queue.front().volume = volume;
+   else if (IsBackgroundPlaying())
+      m_bg.volume = volume;
+}
+
 // See pDMDStopBackLoop - stops main, starts background if configured
 void PUPMediaManager::Stop()
 {

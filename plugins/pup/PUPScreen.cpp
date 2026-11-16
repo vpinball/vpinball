@@ -224,7 +224,9 @@ void PUPScreen::SetVolumeCurrent(int volume)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    m_fadeVolume = -1;
-   ApplyVolume(std::clamp(volume, 1, PUP_VOLUME_MAX));
+   const int clamped = std::clamp(volume, 1, PUP_VOLUME_MAX);
+   m_pMediaPlayerManager->SetCurrentItemVolume(clamped);
+   ApplyVolume(clamped);
 }
 
 void PUPScreen::StartVolumeFade(int from, int to, int step)
