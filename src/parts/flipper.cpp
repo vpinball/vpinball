@@ -241,7 +241,7 @@ void Flipper::UpdatePhysicsSettings()
 
 void Flipper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
+   if (!isUI && GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    UpdatePhysicsSettings();
@@ -259,7 +259,7 @@ void Flipper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    if (fabsf(baseRadius - endRadius) >= m_d.m_FlipperRadius)
       m_d.m_FlipperRadius = fabsf(baseRadius - endRadius) + 0.05f;
    // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
-   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+   const Matrix3D uiSpace = isUI ? m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform : Matrix3D::MatrixIdentity();
    const Vertex3Ds c0 = uiSpace * Vertex3Ds(m_d.m_Center.x, m_d.m_Center.y, height);
    const Vertex3Ds c1 = uiSpace * Vertex3Ds(m_d.m_Center.x, m_d.m_Center.y, height + m_d.m_height);
    HitFlipper *const phf = new HitFlipper(

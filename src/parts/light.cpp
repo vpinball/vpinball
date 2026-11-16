@@ -141,7 +141,7 @@ void Light::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       const float height = m_desktopBackdrop ? 0.f : m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
       // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
-      const Matrix3D uiSpace = GetUISpaceTransform();
+      const Matrix3D uiSpace = m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform;
 
       switch (m_d.m_shape)
       {

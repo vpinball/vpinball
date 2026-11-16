@@ -394,7 +394,7 @@ float Ramp::GetSurfaceHeight(float x, float y) const
 
 void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
+   if (!isUI && GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    float wallheightright, wallheightleft;
@@ -445,7 +445,7 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    const Vertex2D *const rgvLocal = GetRampVertex(cvertex, &rgheight1, nullptr, nullptr, nullptr, HIT_SHAPE_DETAIL_LEVEL, true);
 
    // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
-   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+   const Matrix3D uiSpace = isUI ? m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform : Matrix3D::MatrixIdentity();
 
    // Add line segments for right ramp wall.
    if (wallheightright > 0.f)
@@ -656,8 +656,8 @@ void Ramp::AddJoint(PhysicsEngine* physics, const Vertex3Ds& v1, const Vertex3Ds
 void Ramp::AddJoint2D(PhysicsEngine* physics, const Vertex2D& p, const float zlow, const float zhigh, const bool isUI)
 {
    // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
-   const Vertex3Ds low = (isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity()) * Vertex3Ds(p.x, p.y, zlow);
-   const Vertex3Ds high = (isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity()) * Vertex3Ds(p.x, p.y, zhigh);
+   const Vertex3Ds low = (isUI ? m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform : Matrix3D::MatrixIdentity()) * Vertex3Ds(p.x, p.y, zlow);
+   const Vertex3Ds high = (isUI ? m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform : Matrix3D::MatrixIdentity()) * Vertex3Ds(p.x, p.y, zhigh);
    SetupHitObject(physics, new HitLineZ(this, Vertex2D(low.x, low.y), low.z, high.z), isUI);
 }
 
@@ -675,7 +675,7 @@ void Ramp::AddWallLineSeg(PhysicsEngine* physics, const Vertex2D &pv1, const Ver
    else
    {
       // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
-      const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+      const Matrix3D uiSpace = isUI ? m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform : Matrix3D::MatrixIdentity();
       const Vertex3Ds p1 = uiSpace * Vertex3Ds(pv1.x, pv1.y, height1);
       const Vertex3Ds p2 = uiSpace * Vertex3Ds(pv2.x, pv2.y, height1);
       const Vertex3Ds pTop = uiSpace * Vertex3Ds(pv1.x, pv1.y, height2 + wallheight);
@@ -697,7 +697,7 @@ Vertex3Ds Ramp::AddWallQuad(PhysicsEngine *physics, const Vertex2D &pv1, const f
    const bool addStartJoint, const bool addEndJoint, const bool isUI)
 {
    // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
-   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+   const Matrix3D uiSpace = isUI ? m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform : Matrix3D::MatrixIdentity();
    const Vertex3Ds quad[4] = { uiSpace * Vertex3Ds(pv1.x, pv1.y, height1), // bottom edge at pv1
       uiSpace * Vertex3Ds(pv2.x, pv2.y, height2), // bottom edge at pv2
       uiSpace * Vertex3Ds(pv2.x, pv2.y, height2 + wallheight), // top edge at pv2

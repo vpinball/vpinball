@@ -185,7 +185,7 @@ void Textbox::PhysicSetup(PhysicsEngine *physics, const bool isUI)
       const float x1 = min(m_d.m_v1.x, m_d.m_v2.x), x2 = max(m_d.m_v1.x, m_d.m_v2.x);
       const float y1 = min(m_d.m_v1.y, m_d.m_v2.y), y2 = max(m_d.m_v1.y, m_d.m_v2.y);
       // The UI quadtree is a single quadtree in the playfield space: the UI collider bakes the part's reference space transform
-      const Matrix3D uiSpace = GetUISpaceTransform();
+      const Matrix3D uiSpace = m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform;
       Vertex3Ds *const rgv3d = new Vertex3Ds[4];
       rgv3d[0] = uiSpace * Vertex3Ds(x1, y1, 0.f); // Winding so that the quad faces up and can be picked from the top-down editor views
       rgv3d[1] = uiSpace * Vertex3Ds(x1, y2, 0.f);

@@ -178,7 +178,7 @@ bool Primitive::PhysicUpdate(class PhysicsEngine *physics, const bool isUI)
 
 void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
+   if (!isUI && GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    m_useAsPlayfield = IsPlayfield();
@@ -403,8 +403,8 @@ void Primitive::TransformVertices()
    m_normals.resize(m_mesh.NumVertices());
 
    Matrix3D fullMatrix = m_fullMatrix;
-   if (GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
-      fullMatrix = fullMatrix * m_ptable->GetDefaultRoomToPlayfieldMatrix();
+   if (GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
+      fullMatrix = fullMatrix * m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform;
 
    for (size_t i = 0; i < m_mesh.NumVertices(); i++)
    {

@@ -11,7 +11,6 @@
 #include "parts/Material.h"
 #include "parts/surface.h"
 #include "renderer/Texture.h"
-#include "renderer/VRSpaces.h"
 
 #include "doctest.h"
 
@@ -275,7 +274,7 @@ TEST_CASE("PinTable part")
 
       // A level table keeps the legacy translation-only transform (ground below the playfield)
       table->m_angletiltMin = table->m_angletiltMax = 0.f;
-      const Matrix3D flat = table->GetDefaultRoomToPlayfieldMatrix();
+      const Matrix3D flat = table->GetSceneLayout().GetSpaceToPlayfieldTransform(VPX::SpaceReference::Room).m_transform;
       const Vertex3Ds flatOrigin = flat * Vertex3Ds(0.f, 0.f, 0.f);
       CHECK(flatOrigin.x == doctest::Approx(0.f).epsilon(1e-5));
       CHECK(flatOrigin.y == doctest::Approx(0.f).epsilon(1e-5));
@@ -284,7 +283,7 @@ TEST_CASE("PinTable part")
 
       table->m_angletiltMin = table->m_angletiltMax = 6.f;
       const float slope = ANGTORAD(table->GetPlayfieldSlope());
-      const Matrix3D toPf = table->GetDefaultRoomToPlayfieldMatrix();
+      const Matrix3D toPf = table->GetSceneLayout().GetSpaceToPlayfieldTransform(VPX::SpaceReference::Room).m_transform;
       const Matrix3D toRoom = Matrix3D::MatrixInverse(toPf);
 
       // The lockbar line is the pivot: it stays at the authored lockbar height above the ground, the glass
@@ -319,7 +318,7 @@ TEST_CASE("PinTable part")
       table->Release();
    }
 
-   SUBCASE("default room to playfield transform matches the VR spaces without user adjustments")
+   SUBCASE("scene layout room to playfield transform matches the space transforms")
    {
       PinTable* const table = CreateTestTable();
       table->m_bottom = 2000.f;
@@ -327,20 +326,12 @@ TEST_CASE("PinTable part")
       table->m_groundToLockbarHeight = 900.f;
       table->m_angletiltMin = table->m_angletiltMax = 6.f;
 
-      VRTableGeometry geometry;
-      geometry.playfieldWidth = table->m_right - table->m_left;
-      geometry.playfieldDepth = table->m_bottom - table->m_top;
-      geometry.groundToLockbarHeight = table->m_groundToLockbarHeight;
-      geometry.glassBottomHeight = table->m_glassBottomHeight;
-      VRSpaceSetup setup;
-      setup.overrideLockbarWidth = false;
-      setup.overrideLockbarHeight = false;
-      setup.liveSlope = table->GetPlayfieldSlope();
-      const VRSpaces spaces = ComputeVRSpaces(setup, geometry);
+      const SceneLayout& layout = table->GetSceneLayout();
 
-      // Room -> world -> playfield
-      const Matrix3D vrRoomToPf = spaces.room * Matrix3D::MatrixInverse(spaces.playfield);
-      const Matrix3D toPf = table->GetDefaultRoomToPlayfieldMatrix();
+      // Room -> scene root -> playfield
+      const Matrix3D vrRoomToPf
+         = layout.GetSpaceTransform(VPX::SpaceReference::Room).m_transform * Matrix3D::MatrixInverse(layout.GetSpaceTransform(VPX::SpaceReference::Playfield).m_transform);
+      const Matrix3D toPf = layout.GetSpaceToPlayfieldTransform(VPX::SpaceReference::Room).m_transform;
       for (const Vertex3Ds& p : { Vertex3Ds(0.f, 0.f, 0.f), Vertex3Ds(100.f, table->m_bottom, table->m_groundToLockbarHeight), Vertex3Ds(-300.f, 500.f, 1200.f) })
       {
          const Vertex3Ds a = vrRoomToPf * p;

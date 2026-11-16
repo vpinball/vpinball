@@ -224,13 +224,13 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    m_hitEvent = false;
 
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
+   if (!isUI && GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    TransformVertices();
 
    // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
-   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+   const Matrix3D uiSpace = isUI ? m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform : Matrix3D::MatrixIdentity();
 
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetFlatSimple || m_d.m_targetType == DropTargetSimple)
    {

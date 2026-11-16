@@ -165,7 +165,7 @@ void Surface::WriteRegDefaults()
 
 void Surface::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
+   if (!isUI && GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    vector<RenderVertex> vvertex;
@@ -184,7 +184,7 @@ void Surface::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    const float top = m_d.m_heighttop;
 
    // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
-   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+   const Matrix3D uiSpace = isUI ? m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform : Matrix3D::MatrixIdentity();
 
    for (int i = 0; i < count; ++i)
    {
@@ -266,7 +266,7 @@ void Surface::AddLine(PhysicsEngine *physics, const RenderVertex &pv1, const Ren
    const float top = m_d.m_heighttop;
 
    // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
-   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+   const Matrix3D uiSpace = isUI ? m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform : Matrix3D::MatrixIdentity();
 
    const auto addLineSeg = [&](const RenderVertex &pa, const RenderVertex &pb, const bool slingMesh) -> LineSegSlingshot *
    {

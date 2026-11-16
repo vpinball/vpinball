@@ -172,7 +172,7 @@ bool Ball::PhysicUpdate(class PhysicsEngine *physics, const bool isUI)
 
 void Ball::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
+   if (!isUI && GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    if (isUI)

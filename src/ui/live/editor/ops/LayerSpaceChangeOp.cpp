@@ -67,12 +67,6 @@ namespace
       return true;
    }
 
-   // Same space transforms as the editor renderer (see RenderView::SetSpaceReference): the playfield
-   // is the reference space, all the other spaces share the default room to playfield transform
-   Matrix3D SpaceTransform(const PinTable *table, const PartGroupData::SpaceReference space)
-   {
-      return space == PartGroupData::SpaceReference::Playfield ? Matrix3D::MatrixIdentity() : table->GetDefaultRoomToPlayfieldMatrix();
-   }
 }
 
 // Descendants of the given group whose stored coordinates are expressed in the group's resolved
@@ -156,12 +150,13 @@ void LayerSpaceChangeOp::Apply(const Change &change)
    }
 
    // Re-expression of the transforms stored in a space different from the destination's
-   const Matrix3D toNew = Matrix3D::MatrixInverse(SpaceTransform(table, change.newSpace));
+   const SceneLayout &sceneLayout = table->GetSceneLayout();
+   const Matrix3D toNew = Matrix3D::MatrixInverse(sceneLayout.GetSpaceToPlayfieldTransform(change.newSpace).m_transform);
    const auto convert = [&](const Conversion &conversion)
    {
       IEditable *const editable = conversion.editable;
       mark(editable);
-      const Matrix3D delta = SpaceTransform(table, conversion.fromSpace) * toNew;
+      const Matrix3D delta = sceneLayout.GetSpaceToPlayfieldTransform(conversion.fromSpace).m_transform * toNew;
       if (editable->GetItemType() == eItemPartGroup)
       {
          PartGroup *const sub = static_cast<PartGroup *>(editable);
@@ -198,7 +193,8 @@ void LayerSpaceChangeOp::Request(PartGroup *const group, const PartGroupData::Sp
       return;
    }
 
-   const Matrix3D delta = SpaceTransform(group->GetPTable(), oldSpace) * Matrix3D::MatrixInverse(SpaceTransform(group->GetPTable(), newSpace));
+   const SceneLayout &sceneLayout = group->GetPTable()->GetSceneLayout();
+   const Matrix3D delta = sceneLayout.GetSpaceToPlayfieldTransform(oldSpace).m_transform * Matrix3D::MatrixInverse(sceneLayout.GetSpaceToPlayfieldTransform(newSpace).m_transform);
    Change change;
    change.group = group;
    change.space = space;
@@ -244,7 +240,8 @@ bool LayerSpaceChangeOp::RequestMove(const vector<IEditable *> &moved, PartGroup
    change.newSpace = target != nullptr ? target->GetReferenceSpace() : PartGroupData::SpaceReference::Playfield;
 
    PinTable *const table = target != nullptr ? target->GetPTable() : moved.front()->GetPTable();
-   const Matrix3D toNew = Matrix3D::MatrixInverse(SpaceTransform(table, change.newSpace));
+   const SceneLayout &sceneLayout = table->GetSceneLayout();
+   const Matrix3D toNew = Matrix3D::MatrixInverse(sceneLayout.GetSpaceToPlayfieldTransform(change.newSpace).m_transform);
    vector<std::shared_ptr<EditorUIPart>> tempParts; // Keeps the UI parts of the dry run alive
    vector<IEditable *> converted; // Already queued for conversion (a moved part also lists its inheriting children)
    const auto queue = [&](IEditable *const editable, const PartGroupData::SpaceReference from)
@@ -258,7 +255,7 @@ bool LayerSpaceChangeOp::RequestMove(const vector<IEditable *> &moved, PartGroup
          if (const std::shared_ptr<EditorUIPart> &uiPart = FindUIPart(editable))
          {
             tempParts.push_back(uiPart);
-            const Matrix3D delta = SpaceTransform(table, from) * toNew;
+            const Matrix3D delta = sceneLayout.GetSpaceToPlayfieldTransform(from).m_transform * toNew;
             (TransformForSpace(*uiPart, delta, false) ? change.parts : change.approximated).push_back({ editable, from });
          }
    };

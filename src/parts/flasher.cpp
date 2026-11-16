@@ -126,7 +126,7 @@ void Flasher::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-center.x, -center.y, 0.f)
          * (((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ)) * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY))) * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX)))
             * Matrix3D::MatrixTranslate(center.x, center.y, height))
-         * GetUISpaceTransform();
+         * m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform;
 
       for (int i = 0; i < cvertex; i++)
       {
