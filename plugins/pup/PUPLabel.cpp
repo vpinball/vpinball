@@ -233,10 +233,10 @@ void PUPLabel::SetCaption(const string& szCaption)
    if (szCaption == "`u`")
       return;
 
-   // FN 46 pad mode: PinUP turns '~' into two spaces instead of a line break and
+   // FN 46 pad mode: PinUP turns '~' into a line break with a space on each side and
    // wraps text captions in a space on each side.
    const bool padText = m_pScreen && m_pScreen->m_padTextAlways;
-   string szText = padText ? string_replace_all(szCaption, "~"s, "  "s) : szCaption;
+   string szText = padText ? string_replace_all(szCaption, "~"s, " \n "s) : szCaption;
    if (!padText)
       std::ranges::replace(szText.begin(), szText.end(), '~', '\n');
    szText = string_replace_all(szText, "\\r"s, '\n');
