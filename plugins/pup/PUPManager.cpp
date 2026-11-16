@@ -1356,7 +1356,12 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
             //       PuPlayer.SendMSG "{...""FN"":55,""FS"":255}"
             //   Sub pTransitionFadeON(PupID)   ' re-enable transition fade
             //       PuPlayer.SendMSG "{...""FN"":55,""FS"":10}"
-            if (json["FS"s].exists())
+            if (m_engine == Engine::PinUP20 && json["FS"s].exists() && json["FS"s].as<int>() >= 0)
+               pScreen->SetFadeStep(json["FS"s].as<int>());
+            break;
+         case 56:
+            // { "mt":301, "SN": XX, "FN":56, "FH":x, "FS":<0..255> } same as FN 55, FH is read but unused (2.0 engine)
+            if (m_engine == Engine::PinUP20 && json["FS"s].exists() && json["FS"s].as<int>() >= 0)
                pScreen->SetFadeStep(json["FS"s].as<int>());
             break;
          case 58:
