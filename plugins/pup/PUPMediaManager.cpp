@@ -8,8 +8,10 @@
 
 namespace PUP {
 
-static double StillDuration(const std::filesystem::path& path)
+static double StillDuration(const PUPScreen* screen, const std::filesystem::path& path)
 {
+   if (screen->GetManager()->GetEngine() == PUPManager::Engine::PinUP20)
+      return 0.0;
    const string ext = extension_from_path(PluginStrings::PathToUTF8(path));
    return (ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "bmp") ? 10.0 : 0.0;
 }
@@ -168,7 +170,7 @@ void PUPMediaManager::StartCurrent()
       return;
    const PlayItem& head = m_queue.front();
    LOGD(std::format("MAIN PLAY: screen={}, vol={}, pri={}, file={}", m_pScreen->GetScreenNum(), head.volume, head.priority, PluginStrings::PathToUTF8(head.szPath.filename())));
-   m_player.Play(head.szPath, m_pScreen->StartMediaVolume(head.volume), head.resumeAt, StillDuration(head.szPath));
+   m_player.Play(head.szPath, m_pScreen->StartMediaVolume(head.volume), head.resumeAt, StillDuration(m_pScreen, head.szPath));
    m_queue.front().resumeAt = 0.0;
    m_player.SetLoop(head.loop);
    m_loopCount = m_player.GetLoopCount();
@@ -199,7 +201,7 @@ bool PUPMediaManager::PlayBackground()
    {
       LOGD(std::format("BG PLAY: screen={}, file={}", m_pScreen->GetScreenNum(), PluginStrings::PathToUTF8(m_bg.szPath.filename())));
       m_bgEndTicks = 0;
-      m_player.Play(m_bg.szPath, m_pScreen->StartMediaVolume(m_bg.volume), m_bgResumeAt, StillDuration(m_bg.szPath));
+      m_player.Play(m_bg.szPath, m_pScreen->StartMediaVolume(m_bg.volume), m_bgResumeAt, StillDuration(m_pScreen, m_bg.szPath));
       m_bgResumeAt = 0.0;
       m_player.SetLoop(true);
       m_loopCount = m_player.GetLoopCount();
