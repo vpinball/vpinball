@@ -55,7 +55,7 @@ public:
    bool GetDoDispose() const { return m_doDispose; }
    bool IsAnimating() const { return m_animation != nullptr; }
    void ClearAnimation();
-   void SetScreen(PUPScreen* pScreen) { m_pScreen = pScreen; }
+   void SetScreen(PUPScreen* pScreen);
    string ToString() const;
 
 private:
@@ -97,6 +97,8 @@ private:
    float m_autoFitWidth = 0;
    float m_autoFitHeight = 0;
    PUPScreen* m_pScreen = nullptr;
+   float m_yScaleOverride = 0.f;
+   float m_renderYScale = 1.f;
    int m_anigif = 0; // frame interval in milliseconds, 0 to use the image's own frame delays
    bool m_gifLoop = true;
    int m_gifStart = -1;
@@ -212,6 +214,7 @@ private:
    RenderState UpdateLabelTexture(int outWidth, int outHeight, PUPFont* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offsetPixels);
    void ClearAnimationInternal();
    float EffectiveSize() const;
+   float YScale(const SDL_Rect& rect) const;
    int EffectiveShadowType() const;
    SDL_FPoint GetShadowOffsetPixels(float fontHeight) const;
 

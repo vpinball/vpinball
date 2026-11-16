@@ -1359,6 +1359,11 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
             if (json["FS"s].exists())
                pScreen->SetFadeStep(json["FS"s].as<int>());
             break;
+         case 58:
+            // { "mt":301, "SN": XX, "FN":58, "YS":1.2 } label size factor for labels sized afterwards (2.0 engine)
+            if (m_engine == Engine::PinUP20 && pScreen->HasLabelLayer() && json["YS"s].as<double>(0.0) > 0.1)
+               pScreen->m_labelYScale = static_cast<float>(json["YS"s].as<double>(0.0));
+            break;
          case 57:
             // "Overlay Hide" (OH) toggle for a screen that has text/label overlays.
             // PinUp Player 2.0+ only; older players ignore it.

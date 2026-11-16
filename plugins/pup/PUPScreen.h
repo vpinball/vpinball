@@ -69,6 +69,7 @@ public:
    bool m_stopInsteadOfPause = false;
    int m_paintInterval = 32;
    bool m_safeMode = false;
+   float m_labelYScale = 0.f;
    bool m_raiseOnPlay = true;
    bool m_raiseLabelsOnPlay = true;
    bool m_labelsTopmost = true;
