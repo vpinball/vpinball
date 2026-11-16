@@ -509,6 +509,9 @@ void PUPScreen::LabelInit()
    {
       m_labelLayer = true;
       m_pManager->RaiseLayer(this, PUPManager::Layer::Labels);
+      if (m_pManager->GetEngine() == PUPManager::Engine::PinUP20
+         && (m_hidden || (IsPop() && !m_pMediaPlayerManager->IsMainPlaying() && !m_pMediaPlayerManager->IsBackgroundPlaying())))
+         m_hudVisible = false;
    }
    // PinUP's label canvas always starts with a pBACKGROUND label drawn below the others.
    if (!GetLabel("pBackground"s))
