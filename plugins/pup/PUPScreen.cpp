@@ -729,6 +729,23 @@ void PUPScreen::SetLoop(int state)
    m_pMediaPlayerManager->SetLoop(state != 0);
 }
 
+bool PUPScreen::IsJukebox() const
+{
+   return m_pMediaPlayerManager->IsJukebox();
+}
+
+void PUPScreen::SetJukebox(bool jukebox)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   m_pMediaPlayerManager->SetJukebox(jukebox);
+}
+
+void PUPScreen::JukeboxSkip(int direction)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   m_pMediaPlayerManager->JukeboxSkip(direction);
+}
+
 void PUPScreen::SetLength(int seconds)
 {
    assert(std::this_thread::get_id() == m_apiThread);

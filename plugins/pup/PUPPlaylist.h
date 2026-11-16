@@ -26,11 +26,13 @@ public:
    const string& GetDescription() const { return m_szDescription; }
    bool IsRandomize() const { return m_randomize; }
    int GetRestSeconds() const { return m_restSeconds; }
+   void SetRestSeconds(int seconds) { m_restSeconds = seconds; }
    float GetVolume() const { return m_volume; }
    int GetPriority() const { return m_priority; }
    PUPPlaylist::Function GetFunction() const { return m_function; }
    std::filesystem::path GetPlayFile(const std::filesystem::path& szFilename);
    const std::filesystem::path& GetNextPlayFile();
+   const std::filesystem::path& GetPriorPlayFile();
    const std::filesystem::path& PeekNextPlayFile() const;
    std::filesystem::path GetPlayFilePath(const std::filesystem::path& szFilename);
    bool IsResting() const;

@@ -37,6 +37,10 @@ public:
 
    void SetFadeStep(int step);
 
+   bool IsJukebox() const { return m_jukebox; }
+   void SetJukebox(bool jukebox) { m_jukebox = jukebox; }
+   bool JukeboxSkip(int direction, bool ended = false);
+
    void SetBounds(const SDL_Rect& rect);
    void SetMask(const std::filesystem::path& path);
 
@@ -51,6 +55,7 @@ private:
 
    struct PlayItem
    {
+      PUPPlaylist* pPlaylist = nullptr;
       std::filesystem::path szPath;
       int volume = 100; // the item's own level; the screen scales it when the item starts
       int priority = 0;
@@ -65,6 +70,7 @@ private:
 
    struct BackgroundConfig
    {
+      PUPPlaylist* pPlaylist = nullptr;
       std::filesystem::path szPath;
       int volume = 100;
       bool active = false;
@@ -81,6 +87,7 @@ private:
    unsigned int m_loopCount = 0;
    int m_fadeStep = 255;
    int m_currentAlpha = 255;
+   bool m_jukebox = false;
 };
 
 }

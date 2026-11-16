@@ -32,6 +32,8 @@ void PUPMediaManager::SetGameTime(double gameTime)
    else if (const unsigned int loopCount = m_player.GetLoopCount(); loopCount != m_loopCount)
    {
       m_loopCount = loopCount;
+      if (m_jukebox && JukeboxSkip(2, true))
+         return;
       if (m_player.IsPlaying())
       {
          m_pScreen->OnMediaEnd();
@@ -105,6 +107,7 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
    {
       const bool sameFile = mainPlaying ? m_queue.front().szPath == szPath : (m_bg.active && m_bg.szPath == szPath && m_player.IsPlaying());
       LOGD(std::format("BG CONFIG: screen={}, pri={}, current={}, file={}, alreadyPlaying={}", m_pScreen->GetScreenNum(), priority, currentPriority, PluginStrings::PathToUTF8(szPath.filename()), sameFile));
+      m_bg.pPlaylist = pPlaylist;
       m_bg.szPath = szPath;
       m_bg.volume = volume;
       m_bg.active = true;
@@ -136,7 +139,7 @@ bool PUPMediaManager::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& 
       return false;
    }
 
-   const PlayItem item { szPath, volume, priority, length > 0 ? SDL_GetTicks() + static_cast<uint64_t>(length) * 1000 : 0, action == PlayAction::Loop };
+   const PlayItem item { pPlaylist, szPath, volume, priority, length > 0 ? SDL_GetTicks() + static_cast<uint64_t>(length) * 1000 : 0, action == PlayAction::Loop };
 
    if ((action == PlayAction::QueueSameP || action == PlayAction::QueueAlways) && mainPlaying)
    {
@@ -219,12 +222,14 @@ void PUPMediaManager::SetAsBackGround(bool isBackground)
 {
    if (isBackground && !m_queue.empty())
    {
+      m_bg.pPlaylist = m_queue.front().pPlaylist;
       m_bg.szPath = m_queue.front().szPath;
       m_bg.volume = m_queue.front().volume;
       m_bg.active = true;
    }
    else if (!isBackground)
    {
+      m_bg.pPlaylist = nullptr;
       m_bg.szPath.clear();
       m_bg.active = false;
    }
@@ -355,6 +360,8 @@ void PUPMediaManager::SetMask(const std::filesystem::path& path)
 void PUPMediaManager::OnPlayerEnd()
 {
    LOGD(std::format("ON END: screen={}, queueDepth={}, bgActive={}", m_pScreen->GetScreenNum(), m_queue.size(), m_bg.active));
+   if (m_jukebox && JukeboxSkip(2, true))
+      return;
    m_queue.pop_front();
    const uint64_t now = SDL_GetTicks();
    std::erase_if(m_queue, [now](const PlayItem& item) { return item.endTicks && now >= item.endTicks; });
@@ -365,6 +372,40 @@ void PUPMediaManager::OnPlayerEnd()
       return;
    }
    PlayBackground();
+}
+
+bool PUPMediaManager::JukeboxSkip(int direction, bool ended)
+{
+   PUPPlaylist* const pPlaylist = !m_queue.empty() ? m_queue.front().pPlaylist : (m_bg.active && m_player.IsPlaying() ? m_bg.pPlaylist : nullptr);
+   if (pPlaylist == nullptr || !pPlaylist->HasFiles())
+      return false;
+   pPlaylist->SetRestSeconds(-1);
+   const std::filesystem::path file = (direction == 1) ? pPlaylist->GetPriorPlayFile() : pPlaylist->GetNextPlayFile();
+   LOGD(std::format("JUKEBOX: screen={}, direction={}, file={}", m_pScreen->GetScreenNum(), direction, PluginStrings::PathToUTF8(file)));
+   if (!ended)
+   {
+      m_pScreen->Play(pPlaylist, file, static_cast<float>(m_pScreen->GetDefaultVolume()), 1, PlayAction::Normal, 0);
+      return true;
+   }
+   if (!m_queue.empty())
+   {
+      m_queue.front().szPath.clear();
+      m_queue.front().priority = 0;
+      m_queue.front().loop = false;
+   }
+   m_pScreen->OnMediaEnd();
+   m_pScreen->Play(pPlaylist, file, static_cast<float>(m_pScreen->GetDefaultVolume()), 1, PlayAction::Normal, 0);
+   if (!m_queue.empty() && m_queue.front().szPath.empty())
+   {
+      m_queue.pop_front();
+      if (!m_queue.empty())
+         StartCurrent();
+      else
+         PlayBackground();
+   }
+   else if (m_queue.empty() && m_player.IsPlaying())
+      m_pScreen->OnMediaStart(m_bg.szPath);
+   return true;
 }
 
 bool PUPMediaManager::IsMainPlaying() { return !m_queue.empty() && m_player.IsPlaying(); }
