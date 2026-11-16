@@ -1370,12 +1370,9 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
                pScreen->m_labelYScale = static_cast<float>(json["YS"s].as<double>(0.0));
             break;
          case 57:
-            // "Overlay Hide" (OH) toggle for a screen that has text/label overlays.
-            // PinUp Player 2.0+ only; older players ignore it.
-            // { "mt":301, "SN": XX, "FN":57, "OH":0/1 } - OH 1 = hide overlay, 0 = show
-            // We don't act on it yet, so sending it produces no visible change on screen.
-            // TODO implement overlay hide/show toggling the screen's overlay (HUD) visibility
-            LOGW(std::format("Overlay hide (OH) toggle not implemented, ignoring: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+            // { "mt":301, "SN": XX, "FN":57, "OH":1 } draw the screen's labels into its video (2.0 engine)
+            if (m_engine == Engine::PinUP20 && pScreen->HasLabelLayer() && json["OH"s].as<int>(-1) >= 0)
+               pScreen->m_labelsInVideo = (json["OH"s].as<int>(0) == 1);
             break;
          case 38:
             // { "mt":301, "SN": XX, "FN":38, "SD":1, "SC":8421504 } shadow type and colour of the labels created afterwards
@@ -1585,8 +1582,10 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
          {
             z.screen->Render(renderCtx, 0);
             z.screen->Render(renderCtx, 1);
+            if (z.screen->m_labelsInVideo)
+               z.screen->Render(renderCtx, 3);
          }
-         else
+         else if (!z.screen->m_labelsInVideo)
             z.screen->Render(renderCtx, 3);
       }
    }
