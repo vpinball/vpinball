@@ -287,6 +287,12 @@ bool SwingLamina::SolveContact(const float s, const float h, const float u, cons
    if (rv < 1e-6f)
       return false;
    const float beta = atan2f(h, s);
+   const float invRv = 1.f / rv;
+   const float sinCurApplied = sinf(curApplied);
+   // Roots are written a = beta + x. With cos(beta) = s/rv and sin(beta) = h/rv, the contact position along the lamina
+   // (s*sin(a) - h*cos(a)) is rv*sin(x), its distance to the lamina plane (s*cos(a) + h*sin(a)) is rv*cos(x), and sin(a),
+   // cos(a) follow from the angle addition: only the roots themselves need inverse trigonometric functions.
+
    // The candidate contact angles are ranked by how well they describe the
    // contact: an angle the lamina can reach without sweeping its body through
    // the ball is preferred, and among those an angle where the lamina stays
@@ -295,17 +301,20 @@ bool SwingLamina::SolveContact(const float s, const float h, const float u, cons
    // than none). blocked is set when every rest angle would sweep through the
    // ball: the contact then presses the lamina in place instead of being followed
    int bestKind = 2; // 0 = clear contact, 1 = penetrating contact, 2 = sweep-through
-   float best = FLT_MAX, bestDiff = FLT_MAX;
-   const auto pickBest = [&](const float a, const bool penetrating)
+   float best = FLT_MAX, bestDiff = FLT_MAX, bestSin = 0.f, bestCos = 1.f;
+   const auto pickBest = [&](const float a, const float cosX, const float sinX, const bool penetrating)
    {
-      const float an = remainderf(a, (float)(2.0 * M_PI)); // = atan2f(sinf(a), cosf(a)) 
-      const int kind = SweepsBall(an, curApplied, s, h, ballRadius) ? 2 : (penetrating ? 1 : 0);
+      const float an = remainderf(a, (float)(2.0 * M_PI)); // = atan2f(sinf(a), cosf(a))
+      const float sinA = (h * cosX + s * sinX) * invRv; // sin(beta + x)
+      const int kind = SweepsBall(an, sinA, curApplied, sinCurApplied, s, rv, beta, ballRadius) ? 2 : (penetrating ? 1 : 0);
       const float d = fabsf(remainderf(an - curApplied, (float)(2.0 * M_PI))); // wrapped distance to the current angle // = fabsf(atan2f(sinf(an - curApplied), cosf(an - curApplied)))
       if (kind < bestKind || (kind == bestKind && d < bestDiff))
       {
          bestKind = kind;
          bestDiff = d;
          best = an;
+         bestSin = sinA;
+         bestCos = (s * cosX - h * sinX) * invRv; // cos(beta + x)
       }
    };
    // The lamina is a segment from the pivot along (sin a, -cos a): the ball
@@ -314,15 +323,20 @@ bool SwingLamina::SolveContact(const float s, const float h, const float u, cons
    // the pivot's contact sphere.
    if (rv >= re)
    {
-      const float t = acosf(clamp(re / rv, -1.f, 1.f));
-      const float faceRoots[4] = { beta + t, beta - t, beta + ((float)M_PI - t), beta - ((float)M_PI - t) };
-      for (const float a : faceRoots)
+      // x = +-t or +-(pi - t) with cos(t) = re/rv: the contact is at +-rv*sin(t) = +-sqrt(rv*rv - re*re) along the lamina
+      const float t = acosf(clamp(re * invRv, -1.f, 1.f));
+      const float cosT = re * invRv;
+      const float faceAlong = sqrtf((rv - re) * (rv + re));
+      const float sinT = faceAlong * invRv;
+      const float faceAngles[4] = { t, -t, (float)M_PI - t, -((float)M_PI - t) };
+      const float faceCos[4] = { cosT, cosT, -cosT, -cosT };
+      const float faceSin[4] = { sinT, -sinT, sinT, -sinT };
+      for (int i = 0; i < 4; ++i)
       {
-         const float an = remainderf(a, (float)(2.0 * M_PI)); // = atan2f(sinf(a), cosf(a));
-         const float along = s * sinf(an) - h * cosf(an); // contact position along the lamina, from the pivot
+         const float along = (faceSin[i] >= 0.f) ? faceAlong : -faceAlong; // contact position along the lamina, from the pivot
          if (along < m_alongMin || along > m_alongMax)
             continue;
-         pickBest(a, false);
+         pickBest(beta + faceAngles[i], faceCos[i], faceSin[i], false);
       }
    }
    // The ball can also touch the lamina ends like a wire (the hanging tip of a
@@ -334,25 +348,22 @@ bool SwingLamina::SolveContact(const float s, const float h, const float u, cons
       const float k = (s * s + h * h + e * e - re * re) / (2.f * e);
       if (fabsf(k) > rv)
          continue;
-      const float tr = asinf(clamp(k / rv, -1.f, 1.f));
-      const float rimRoots[2] = { beta + tr, beta + ((float)M_PI - tr) };
-      for (const float a : rimRoots)
-      {
-         const float an = remainderf(a, (float)(2.0 * M_PI)); // = atan2f(sinf(a), cosf(a))
-         const float can = cosf(an);
-         const float san = sinf(an);
-         const float delta = s * can + h * san;
-         const float along = s * san - h * can;
-         const float off = along - clamp(along, m_alongMin, m_alongMax);
-         pickBest(a, delta * delta + off * off < (re - 0.25f) * (re - 0.25f)); // the lamina's body penetrates the ball at this angle
-      }
+      // x = tr or pi - tr with sin(tr) = k/rv: the contact is at k along the lamina, at +-sqrt(rv*rv - k*k) from its plane
+      const float tr = asinf(clamp(k * invRv, -1.f, 1.f));
+      const float sinTr = k * invRv;
+      const float rimDelta = sqrtf(max((rv - fabsf(k)) * (rv + fabsf(k)), 0.f));
+      const float cosTr = rimDelta * invRv;
+      const float off = k - clamp(k, m_alongMin, m_alongMax);
+      const bool penetrating = rimDelta * rimDelta + off * off < (re - 0.25f) * (re - 0.25f); // the lamina's body penetrates the ball at this angle (same at both roots)
+      pickBest(beta + tr, cosTr, sinTr, penetrating);
+      pickBest(beta + ((float)M_PI - tr), -cosTr, sinTr, penetrating);
    }
    if (best == FLT_MAX)
       return false;
    blocked = (bestKind == 2);
    applied = best;
-   const float sb = sinf(best);
-   const float cb = cosf(best);
+   const float sb = bestSin;
+   const float cb = bestCos;
    const float along = s * sb - h * cb;
    const float delta = s * cb + h * sb;
    const float off = along - clamp(along, m_alongMin, m_alongMax); // from the closest point of the lamina toward the ball
@@ -396,7 +407,7 @@ bool SwingLamina::Overlaps(const BallS& ball, const float applied, Vertex3Ds& no
 // through the ball instead of following it. The lamina contains the ball's
 // direction when its angle is beta+90° (ball on the along>0 side) or beta-90°
 // (along<0 side), and only while the ball is within that end's reach.
-bool SwingLamina::SweepsBall(const float applied, const float curApplied, const float s, const float h, const float ballRadius) const
+bool SwingLamina::SweepsBall(const float applied, const float sinApplied, const float curApplied, const float sinCurApplied, const float s, const float rv, const float beta, const float ballRadius) const
 {
    const float d = applied - curApplied;
    if (d == 0.f)
@@ -406,14 +417,12 @@ bool SwingLamina::SweepsBall(const float applied, const float curApplied, const 
       // One-ended lamina (gate wire/plate hanging from its axle): the tip is the
       // leading edge — a rest angle whose tip lands past the ball's center in
       // the swing direction pushes the wire/plate through the ball's side instead of resting on it
-      const float tipS = m_alongMax * sinf(applied);
-      if ((tipS - m_alongMax * sinf(curApplied)) * (s - tipS) > 0.f)
+      const float tipS = m_alongMax * sinApplied;
+      if ((tipS - m_alongMax * sinCurApplied) * (s - tipS) > 0.f)
          return true;
    }
-   const float rv = sqrtf(s * s + h * h);
    if (rv < 1e-6f)
       return false;
-   const float beta = atan2f(h, s);
    const float re = ballRadius + m_halfThick;
    for (const float e : { m_alongMin, m_alongMax })
    {

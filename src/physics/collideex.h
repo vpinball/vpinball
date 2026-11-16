@@ -142,8 +142,10 @@ struct SwingLamina
    // True when the ball overlaps the lamina set at the given applied angle
    bool Overlaps(const BallS& ball, const float applied, Vertex3Ds& normal, const float slack = 0.f) const;
    // True when moving the lamina from curApplied to applied sweeps a lamina end
-   // through the ball's center in the swing plane (s coordinate of the ball)
-   bool SweepsBall(const float applied, const float curApplied, const float s, const float h, const float ballRadius) const;
+   // through the ball's center in the swing plane. The ball is given by its s
+   // coordinate and its polar position around the pivot (rv = |(s, h)|,
+   // beta = atan2(h, s)), both angles with their sine
+   bool SweepsBall(const float applied, const float sinApplied, const float curApplied, const float sinCurApplied, const float s, const float rv, const float beta, const float ballRadius) const;
    // True when the ball touches the lamina at curApplied, giving the applied
    // angle matching the contact (unclamped) and the normal from the lamina
    // toward the ball. blocked is set when reaching that angle would sweep the
