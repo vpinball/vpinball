@@ -260,25 +260,8 @@ void PUPScreen::Unduck()
 
 void PUPScreen::OnMediaStart(const std::filesystem::path& path)
 {
-   // PinUP Player hides the labels while an item with "@" in its name plays (a full screen clip that the score
-   // labels must not cover), and shows them again when it ends or when an item without "@" starts. The labels
-   // are those of this screen, or of the screen it is positioned on when it has none of its own.
-   // path is the file the media player starts; it is empty for a still image, which leaves the labels as they are.
-   if (!path.empty())
-   {
-      const bool at = PluginStrings::PathToUTF8(path.filename()).find('@') != string::npos || PluginStrings::PathToUTF8(path.parent_path().filename()).find('@') != string::npos;
-      EndHideDuringPlay();
-      if (at)
-      {
-         if (m_labels.empty() && m_pParent)
-         {
-            m_pParent->SetHideDuringPlay(true);
-            m_parentHiddenDuringPlay = true;
-         }
-         else
-            SetHideDuringPlay(true);
-      }
-   }
+   if (m_labelLayer && PluginStrings::PathToUTF8(path).find('@') != string::npos)
+      SetHideDuringPlay(true);
 
    if (m_mode == Mode::Off || m_mode == Mode::MusicOnly)
       return;
@@ -330,22 +313,11 @@ void PUPScreen::SetHideDuringPlay(bool hide)
       m_pManager->RaiseLayer(this, PUPManager::Layer::Labels);
 }
 
-void PUPScreen::EndHideDuringPlay()
-{
-   if (m_parentHiddenDuringPlay)
-   {
-      m_parentHiddenDuringPlay = false;
-      if (m_pParent && m_pParent->m_hideDuringPlay)
-         m_pParent->SetHideDuringPlay(false);
-   }
-   if (m_hideDuringPlay)
-      SetHideDuringPlay(false);
-}
-
 void PUPScreen::OnMediaEnd()
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   EndHideDuringPlay();
+   if (m_hideDuringPlay)
+      SetHideDuringPlay(false);
    // Resolve whatever LabelShowPage queued when a splash page started.
    const HudReturn action = m_hudReturn;
    m_hudReturn = HudReturn::None;

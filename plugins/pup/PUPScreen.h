@@ -58,7 +58,6 @@ public:
    bool m_hudVisible = true; // FN 3: the whole label overlay shown or hidden
    bool m_hideDuringPlay = false; // FN 34, or a media file with "@" in its name: labels hidden and label commands ignored until the current media ends
    void SetHideDuringPlay(bool hide);
-   void EndHideDuringPlay();
    bool m_padTextAlways = false;
    bool m_raiseOnPlay = true;
    bool m_raiseLabelsOnPlay = true;
@@ -161,7 +160,6 @@ private:
    float m_mainVolume = 1.f;
    int m_volumeMultiplier;
    int m_defaultVolume = 100;
-   bool m_parentHiddenDuringPlay = false; // the "@" item of this screen hid the labels of its parent
    int m_currentVolume = 100;
    bool m_duckMaster = false;
    int m_duckOrigVolume = -1;
