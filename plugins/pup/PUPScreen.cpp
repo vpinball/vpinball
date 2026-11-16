@@ -363,9 +363,6 @@ void PUPScreen::OnMediaEnd()
 void PUPScreen::AddChild(std::shared_ptr<PUPScreen> pScreen)
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   // Two screens positioned on each other (directly or through others) would make the screen tree a cycle,
-   // which the parent walks and the recursive SetBounds never leave. The screen that would close the loop
-   // keeps its place in the tree.
    for (const PUPScreen* ancestor = this; ancestor; ancestor = ancestor->m_pParent)
    {
       if (ancestor == pScreen.get())
