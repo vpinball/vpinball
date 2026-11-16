@@ -286,10 +286,14 @@ void PUPScreen::OnMediaStart(const std::filesystem::path& path)
 
    if (m_mode == Mode::Off || m_mode == Mode::MusicOnly)
       return;
+   m_hidden = false;
    if (m_raiseOnPlay)
       m_pManager->RaiseLayer(this, PUPManager::Layer::Window);
    if (m_labelLayer && m_raiseLabelsOnPlay && !m_hideDuringPlay)
+   {
+      m_hudVisible = true;
       m_pManager->RaiseLayer(this, PUPManager::Layer::Labels);
+   }
    if (m_keepBack)
    {
       m_pManager->LowerLayer(this, PUPManager::Layer::Window);

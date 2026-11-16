@@ -1123,6 +1123,8 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
          case 1:
             // show screen { "mt":301, "SN": XX, "FN":1 }
             pScreen->SetHidden(false);
+            if (pScreen->HasLabelLayer())
+               pScreen->m_hudVisible = true;
             pScreen->BringToFront();
             break;
          case 18:
