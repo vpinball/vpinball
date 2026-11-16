@@ -902,7 +902,7 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
    // when their media ends with no background to return to, until the next media start or FN 1.
    if (m_mode == Mode::Off || m_mode == Mode::MusicOnly || m_hidden)
       return;
-   if (m_windowHidden && pass != 3)
+   if (m_windowHidden && (pass != 3 || m_labelsInVideo))
       return;
 
    switch (pass)
