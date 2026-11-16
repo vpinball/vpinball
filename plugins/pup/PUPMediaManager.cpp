@@ -231,8 +231,9 @@ void PUPMediaManager::SetAsBackGround(bool isBackground)
 
 void PUPMediaManager::SetLoop(bool isLoop)
 {
-   if (!m_queue.empty())
-      m_queue.front().loop = isLoop;
+   if (m_queue.empty())
+      return;
+   m_queue.front().loop = isLoop;
    m_player.SetLoop(isLoop);
 }
 
