@@ -231,8 +231,6 @@ void PUPMediaManager::SetAsBackGround(bool isBackground)
 
 void PUPMediaManager::SetLoop(bool isLoop)
 {
-   // With nothing in the queue the player holds the background, which always loops: clearing its loop
-   // flag would let it run out, and nothing restarts it.
    if (m_queue.empty())
       return;
    m_queue.front().loop = isLoop;
