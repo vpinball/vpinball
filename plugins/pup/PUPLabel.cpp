@@ -387,6 +387,8 @@ int PUPLabel::EffectiveShadowType() const
 {
    if (m_shadowType < 0)
       return 2;
+   if (m_pManager->GetEngine() == PUPManager::Engine::PinUP20)
+      return m_shadowType >= 5 ? 0 : m_shadowType;
    return std::min(m_shadowType, 2);
 }
 
@@ -604,7 +606,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
       std::lock_guard lock(m_mutex);
       static constexpr std::string_view keyOrder[] = { "size", "fonth", "xpos", "ypos", "width", "height", "autow", "autoh", "zoom", "xoffset", "yoffset", "anistart", "anigif",
          "animate", "fname", "color", "xalign", "yalign", "pagenum", "quality", "rotate", "alpha", "xoffpix", "yoffpix", "qual", "bold", "italic", "underline", "normal",
-         "shadowcolor", "shadowtype", "shadowstate", "outline", "gradcolor", "gradstate", "grayscale", "filter", "dodefault", "maxlen", "transcolor", "gifstart", "gifend",
+         "shadowcolor", "shadowtype", "shadowstate", "outline", "shadowq", "gradcolor", "gradstate", "grayscale", "filter", "dodefault", "maxlen", "transcolor", "gifstart", "gifend",
          "gifloop", "anidispose", "anihide", "aniendhide", "rescale", "ztop", "zback", "forceshow", "forcehide", "stopani", "showstats", "v2", "dispose" };
       RSJobject& properties = json.as_object();
       vector<std::pair<string, RSJresource*>> ordered;
@@ -794,7 +796,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
                m_dirty = true;
             }
          }
-         else if (key == "shadowtype")
+         else if (key == "shadowtype" || (key == "shadowq" && m_pManager->GetEngine() == PUPManager::Engine::PinUP20))
          {
             // shadowtype sets the rendering mode directly: 0=none, 1=drop shadow, 2=border
             const int newShadowType = value.as<int>();
@@ -1320,6 +1322,8 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       const SDL_FPoint shadowOffset = GetShadowOffsetPixels(fontHeight);
       dest.x += static_cast<float>(static_cast<int>(shadowOffset.x)) * -2.f;
    }
+   dest.x += m_renderState.m_stampOriginX;
+   dest.y += m_renderState.m_stampOriginY;
 
    bool visible = true;
    if (m_animation)
@@ -1650,38 +1654,90 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outWidth, int outHeight, 
       return rs;
    }
 
-   SDL_Surface* pMergedSurface = SDL_CreateSurface(pTextSurface->w + absxoff, pTextSurface->h + absyoff, SDL_PIXELFORMAT_RGBA32);
-   if (!pMergedSurface)
+   SDL_Surface* pMergedSurface = nullptr;
+   if ((shadowstate == 3 || shadowstate == 4) && (xoffset != 0 || yoffset != 0))
    {
-      LOGE("Unable to render text: label=" + m_szName + ", error=" + SDL_GetError());
-      SDL_DestroySurface(pTextSurface);
-      return rs;
-   }
-
-   if (shadowstate && (xoffset != 0 || yoffset != 0))
-   {
-      // See pDMDLabelSetShadow - drop shadow: render shadow text at offset, foreground at origin
-      const SDL_Color shadowColor = { GetRValue(shadowcolor), GetGValue(shadowcolor), GetBValue(shadowcolor), 255 };
-      SDL_Surface* pShadowSurface = TTF_RenderText_Blended_Wrapped(pTTFFont, text.c_str(), text.length(), shadowColor, 0);
-      if (pShadowSurface)
+      vector<SDL_Point> stamps;
+      if (shadowstate == 3)
       {
-         SDL_Rect shadowRect = { (xoffset < 0) ? 0 : xoffset, (yoffset < 0) ? 0 : yoffset, pShadowSurface->w, pShadowSurface->h };
-         SDL_BlitSurface(pShadowSurface, nullptr, pMergedSurface, &shadowRect);
-
-         SDL_Rect textRect = { (xoffset < 0) ? -xoffset : 0, (yoffset < 0) ? -yoffset : 0, pTextSurface->w, pTextSurface->h };
-         SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, &textRect);
-         SDL_DestroySurface(pShadowSurface);
+         static constexpr int neighbours[][2] = { { -1, -1 }, { 0, -1 }, { 1, -1 }, { -1, 0 }, { 1, 0 }, { -1, 1 }, { 0, 1 }, { 1, 1 }, { 2, 0 }, { -2, 0 }, { 0, 2 }, { 0, -2 } };
+         for (const auto& n : neighbours)
+            stamps.push_back({ xoffset + n[0] * xoffset, yoffset + n[1] * yoffset });
       }
       else
       {
-         LOGE("Failed to render shadow: label=" + m_szName + ", error=" + SDL_GetError());
-         SDL_Rect textRect = { (xoffset < 0) ? -xoffset : 0, (yoffset < 0) ? -yoffset : 0, pTextSurface->w, pTextSurface->h };
-         SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, &textRect);
+         for (int k = 0; k < 16; k++)
+         {
+            const double a = k * M_PI / 8.0;
+            stamps.push_back({ xoffset + static_cast<int>(std::lround(cos(a) * xoffset)), yoffset + static_cast<int>(std::lround(sin(a) * yoffset)) });
+         }
       }
+      stamps.push_back({ xoffset, yoffset });
+      int minX = xoffset, minY = yoffset, maxX = xoffset, maxY = yoffset;
+      for (const SDL_Point& p : stamps)
+      {
+         minX = std::min(minX, p.x);
+         minY = std::min(minY, p.y);
+         maxX = std::max(maxX, p.x);
+         maxY = std::max(maxY, p.y);
+      }
+      pMergedSurface = SDL_CreateSurface(pTextSurface->w + maxX - minX, pTextSurface->h + maxY - minY, SDL_PIXELFORMAT_RGBA32);
+      if (!pMergedSurface)
+      {
+         LOGE("Unable to render text: label=" + m_szName + ", error=" + SDL_GetError());
+         SDL_DestroySurface(pTextSurface);
+         return rs;
+      }
+      const SDL_Color shadowColor = { GetRValue(shadowcolor), GetGValue(shadowcolor), GetBValue(shadowcolor), 255 };
+      if (SDL_Surface* pShadowSurface = TTF_RenderText_Blended_Wrapped(pTTFFont, text.c_str(), text.length(), shadowColor, 0); pShadowSurface)
+      {
+         for (const SDL_Point& p : stamps)
+         {
+            SDL_Rect stampRect = { p.x - minX, p.y - minY, pShadowSurface->w, pShadowSurface->h };
+            SDL_BlitSurface(pShadowSurface, nullptr, pMergedSurface, &stampRect);
+         }
+         SDL_DestroySurface(pShadowSurface);
+      }
+      SDL_Rect textRect = { xoffset - minX, yoffset - minY, pTextSurface->w, pTextSurface->h };
+      SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, &textRect);
+      rs.m_stampOriginX = static_cast<float>(minX);
+      rs.m_stampOriginY = static_cast<float>(minY);
    }
    else
    {
-      SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, nullptr);
+      pMergedSurface = SDL_CreateSurface(pTextSurface->w + absxoff, pTextSurface->h + absyoff, SDL_PIXELFORMAT_RGBA32);
+      if (!pMergedSurface)
+      {
+         LOGE("Unable to render text: label=" + m_szName + ", error=" + SDL_GetError());
+         SDL_DestroySurface(pTextSurface);
+         return rs;
+      }
+
+      if (shadowstate && (xoffset != 0 || yoffset != 0))
+      {
+         // See pDMDLabelSetShadow - drop shadow: render shadow text at offset, foreground at origin
+         const SDL_Color shadowColor = { GetRValue(shadowcolor), GetGValue(shadowcolor), GetBValue(shadowcolor), 255 };
+         SDL_Surface* pShadowSurface = TTF_RenderText_Blended_Wrapped(pTTFFont, text.c_str(), text.length(), shadowColor, 0);
+         if (pShadowSurface)
+         {
+            SDL_Rect shadowRect = { (xoffset < 0) ? 0 : xoffset, (yoffset < 0) ? 0 : yoffset, pShadowSurface->w, pShadowSurface->h };
+            SDL_BlitSurface(pShadowSurface, nullptr, pMergedSurface, &shadowRect);
+
+            SDL_Rect textRect = { (xoffset < 0) ? -xoffset : 0, (yoffset < 0) ? -yoffset : 0, pTextSurface->w, pTextSurface->h };
+            SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, &textRect);
+            SDL_DestroySurface(pShadowSurface);
+         }
+         else
+         {
+            LOGE("Failed to render shadow: label=" + m_szName + ", error=" + SDL_GetError());
+            SDL_Rect textRect = { (xoffset < 0) ? -xoffset : 0, (yoffset < 0) ? -yoffset : 0, pTextSurface->w, pTextSurface->h };
+            SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, &textRect);
+         }
+      }
+      else
+      {
+         SDL_BlitSurface(pTextSurface, nullptr, pMergedSurface, nullptr);
+      }
    }
    SDL_DestroySurface(pTextSurface);
 
