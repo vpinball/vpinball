@@ -408,7 +408,7 @@ float Rubber::GetSurfaceHeight(float x, float y) const
 
 void Rubber::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
+   if (!isUI && GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
@@ -418,7 +418,7 @@ void Rubber::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    UpdateRubber(false, m_d.m_hitHeight);
 
    // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
-   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+   const Matrix3D uiSpace = isUI ? m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform : Matrix3D::MatrixIdentity();
 
    // add collision triangles and edges
    for (size_t i = 0; i < m_ringIndices.size(); i += 3)

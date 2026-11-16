@@ -882,7 +882,7 @@ void ViewportPane::FrameAll()
    bounds.Clear();
    for (const auto& part : m_editor.m_editables)
       if (part->GetEditable()->m_desktopBackdrop == backdrop && part->GetEditable()->IsUIVisible(true)
-         && (backdrop || EditorUI::GetPartSpace(part->GetEditable()) != PartGroupData::SpaceReference::Playfield))
+         && (backdrop || part->GetEditable()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield))
          m_editor.ExtendBoundsWithPart(bounds, part);
    if (!backdrop)
       bounds.Extend(FRect3D(0.f, table->m_right, 0.f, table->m_bottom, 0.f, table->m_glassTopHeight));
@@ -1073,18 +1073,14 @@ bool ViewportPane::SetupOverlay(LiveRenderContext* const ctx, ImDrawList* const 
 
 Matrix3D ViewportPane::ViewSpaceTransform() const
 {
-   // The view's space reference is the one of the last part recorded into it; all the non playfield
-   // spaces share the same transform (see RenderView::SetSpaceReference)
-   return m_view != nullptr && m_view->m_mvpSpaceReference != PartGroupData::SpaceReference::Playfield ? m_editor.m_table->GetDefaultRoomToPlayfieldMatrix() : Matrix3D::MatrixIdentity();
+   // The view's space reference is the one of the last part recorded into it (see RenderView::SetSpaceReference)
+   return m_view != nullptr ? m_editor.m_table->GetSceneLayout().GetSpaceToPlayfieldTransform(m_view->m_mvpSpaceReference).m_transform : Matrix3D::MatrixIdentity();
 }
 
 Matrix3D ViewportPane::PartSpaceToView(const IEditable* const editable) const
 {
    // Part space -> playfield -> the view's current reference space (the inverse mapping)
-   Matrix3D transform = editable != nullptr ? m_editor.PartSpaceTransform(editable) : Matrix3D::MatrixIdentity();
-   if (m_view != nullptr && m_view->m_mvpSpaceReference != PartGroupData::SpaceReference::Playfield)
-      transform = transform * Matrix3D::MatrixInverse(m_editor.m_table->GetDefaultRoomToPlayfieldMatrix());
-   return transform;
+   return (editable != nullptr ? m_editor.PartSpaceTransform(editable) : Matrix3D::MatrixIdentity()) * Matrix3D::MatrixInverse(ViewSpaceTransform());
 }
 
 void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
@@ -1750,7 +1746,7 @@ void ViewportPane::Render3D()
          spaces[spaceCount++] = PartGroupData::SpaceReference::Playfield;
          // The room axes are only relevant when a visible part actually uses a non playfield space
          for (IEditable* const part : m_editor.m_table->GetParts())
-            if (!part->m_desktopBackdrop && part->IsUIVisible(true) && EditorUI::GetPartSpace(part) != PartGroupData::SpaceReference::Playfield)
+            if (!part->m_desktopBackdrop && part->IsUIVisible(true) && part->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
             {
                spaces[spaceCount++] = PartGroupData::SpaceReference::Room;
                break;

@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "VRDevice.h"
-#include "VRSpaces.h"
 
 #include "audio/AudioPlayer.h"
 #include "core/VPApp.h"
@@ -1176,17 +1175,13 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
       }
       if (rendered)
       {
-         // The steps that leads to the matrix stack implemented below are the followings, with first matrix being view, 
-         // second being projection, i.e. notation is (view) * (projection):
-         // - What would be right: (sceneScale * sceneBasis * VPUToWorldScale * viewOffset * view[eye]) * (projection[eye])
-         // - Single view matrix:  (sceneScale * sceneBasis * VPUToWorldScale * viewOffset * medianView) * (inv(medianView) * view[eye] * projection[eye])
-         //                        (sceneScale * sceneBasis * viewOffsetInVPU * medianViewInVPU) * (inv(medianViewInVPU) * VPUToWorldScale * view[eye] * projection[eye])
-         // - Orthonormal shading: (sceneBasis * viewOffsetInVPU * medianViewInVPU) * (inv(sceneBasis * viewOffsetInVPU * medianViewInVPU) * sceneScale * sceneBasis * viewOffsetInVPU * VPUToWorldScale * view[eye] * projection[eye])
-         // - Therefore, we define:
-         //   . pfWorld = sceneBasis * viewOffsetInVPU (= m_spaces[Playfield].m_toWorld)
-         //   . m_pfMatView = pfWorld * medianViewInVPU
-         //   . m_pfMatProj[eye] = inv(m_pfMatView) * sceneScale * pfWorld * VPUToWorldScale * view[eye] * projection[eye]
-         // TODO Note that this is not the way it should be done: shading should use each eye view matrix, leading to slightly different shading per eye
+         // Each reference space's view/projection pair is composed in RenderView::SetupSpaceViews
+         // from this frame's head pose and the scene layout's space transforms (see SceneLayout):
+         // the space transform is folded into the view with its uniform scale compensated into the
+         // projection so that the view stays orthonormal for shading:
+         //   view = spaceToScene * eyeView * inv(spaceScale), proj = spaceScale * eyeProj
+         // We only keep here the camera part: the per-eye head pose (in VPU) and the base projection
+         // (which converts VPU view space to meters before projecting).
          constexpr float vpuToWorldScale = static_cast<float>(0.0254 * 1.0625 / 50.); // VPU to meters
          constexpr float zNear = 0.1f; // 10cm in front of player
          const float zFar = max(5.f, m_sceneSize * vpuToWorldScale); // This could be fairly optimized for better accuracy (as well as use an optimized depth buffer for rendering)
@@ -1226,8 +1221,8 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
                   m_lockbarWidthMeasured = true;
                }
 
-               // Compute the effective lockbar scale here rather than relying on m_cabinetScale,
-               // which is only updated when the space transforms are recomputed later in the frame
+               // Compute the effective lockbar scale here rather than relying on the scene layout's
+               // cabinet scale, which is only updated when the layout is recomputed later in the frame
                const float tableWidth = VPUTOCM(table->m_right - table->m_left) + 2.25f * 2.54f;
                const float cabinetScale = m_overrideLockbarWidth ? clamp(m_customLockbarWidth / tableWidth, 0.1f, 2.0f) : 1.f;
                const float c = cosf(lockbarAngle);
@@ -1280,19 +1275,19 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
 
          // playfield is inclined at a fixed slope that should be defined with the table (it corresponds to the cabinet design),
          // then player adjust the play angle by adjusting the feet casters, so the whole cab rotates.
-         const PinTable* const table = g_pplayer->m_ptable;
+         PinTable* const table = g_pplayer->m_ptable;
          if (const float liveSlope = table->GetPlayfieldSlope(); m_worldDirty || m_slope != liveSlope)
          {
             m_worldDirty = false;
             m_slope = liveSlope;
 
-            VRTableGeometry geometry;
+            SceneLayout::TableGeometry geometry;
             geometry.playfieldWidth = table->m_right - table->m_left;
             geometry.playfieldDepth = table->m_bottom - table->m_top;
             geometry.groundToLockbarHeight = table->m_groundToLockbarHeight;
             geometry.glassBottomHeight = table->m_glassBottomHeight;
 
-            VRSpaceSetup setup;
+            SceneLayout::Setup setup;
             setup.roomOffset = m_roomOffset;
             setup.roomYaw = m_roomYaw;
             setup.tableOffset = m_tableOffset;
@@ -1303,35 +1298,22 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             setup.seatedTilt = m_seatedTilt;
             setup.liveSlope = liveSlope;
 
-            const VRSpaces spaces = ComputeVRSpaces(setup, geometry);
-            m_cabinetScale = spaces.cabinetScale;
-            m_spaces[static_cast<int>(PartGroupData::SpaceReference::Playfield)].m_toWorld = spaces.playfield;
-            m_spaces[static_cast<int>(PartGroupData::SpaceReference::Room)].m_toWorld = spaces.room;
+            table->GetSceneLayout().Update(geometry, setup);
          }
 
-         // As we only have one view matrix for shading, each eye view is integrated in the projection matrix, by reverting the 'shading' view matrix then
-         // applying the eye view matrix, we also apply scale in the projection matrix as it would break shading otherwise (it needs an orthonormal view matrix)
+         // The per-eye head pose is expressed in VPU (the units the scene layout transforms use),
+         // the base projection is fed VPU coordinates so it converts them to meters before projecting
 
          const Matrix3D vpuScale = Matrix3D::MatrixScale(vpuToWorldScale);
          const Matrix3D invVpuScale = Matrix3D::MatrixScale(1.f / vpuToWorldScale);
-         const Matrix3D sceneScale = Matrix3D::MatrixScale(m_cabinetScale);
-         const Matrix3D invSceneScale = Matrix3D::MatrixScale(1.f / m_cabinetScale);
 
          for (unsigned int eye = 0; eye < 2; eye++)
          {
             Matrix3D view;
             XrPosef_ToMatrix3D(&view, &views[eye].pose);
-            view = vpuScale * view * invVpuScale;
+            m_eyeView[eye] = vpuScale * view * invVpuScale;
             m_nextProj[eye].SetPerspectiveFovRH(views[eye].fov.angleLeft, views[eye].fov.angleRight, views[eye].fov.angleDown, views[eye].fov.angleUp, zNear, zFar);
-
-            // View is per eye, must be orthonormal (so every scale must be compensated)
-            const Matrix3D viewInvSceneScale = view * invSceneScale;
-            using enum PartGroupData::SpaceReference;
-            m_spaces[static_cast<int>(Playfield)].m_view[eye] = m_spaces[static_cast<int>(Playfield)].m_toWorld * viewInvSceneScale;
-            m_spaces[static_cast<int>(Room)].m_view[eye] = m_spaces[static_cast<int>(Room)].m_toWorld * view;
-
-            m_roomProj[eye] = vpuScale * m_nextProj[eye];
-            m_sceneProj[eye] = sceneScale * m_roomProj[eye];
+            m_eyeProj[eye] = vpuScale * m_nextProj[eye];
          }
 
          // Feed the head tracked pose to the spatial audio listener (in table space, VPU),
@@ -1340,10 +1322,11 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             == (XR_VIEW_STATE_POSITION_VALID_BIT | XR_VIEW_STATE_ORIENTATION_VALID_BIT);
          if (headPoseValid && g_pplayer->m_audioPlayer)
          {
-            // m_view maps table space to view space: its inverse maps the camera pose to table space
-            const Matrix3D headPose = Matrix3D::MatrixInverse(m_spaces[static_cast<int>(PartGroupData::SpaceReference::Playfield)].m_view[0]);
-            const Matrix3D rightEyePose
-               = m_viewConfigurationViews.size() > 1 ? Matrix3D::MatrixInverse(m_spaces[static_cast<int>(PartGroupData::SpaceReference::Playfield)].m_view[1]) : headPose;
+            // The playfield view maps table space to view space: its inverse maps the camera pose to table space
+            float projScale;
+            const SceneLayout::SpaceTransform& playfieldSpace = table->GetSceneLayout().GetSpaceTransform(VPX::SpaceReference::Playfield);
+            const Matrix3D headPose = Matrix3D::MatrixInverse(SceneLayout::ComposeView(playfieldSpace, m_eyeView[0], projScale));
+            const Matrix3D rightEyePose = m_viewConfigurationViews.size() > 1 ? Matrix3D::MatrixInverse(SceneLayout::ComposeView(playfieldSpace, m_eyeView[1], projScale)) : headPose;
             const float posX = 0.5f * (headPose.m[3][0] + rightEyePose.m[3][0]);
             const float posY = 0.5f * (headPose.m[3][1] + rightEyePose.m[3][1]);
             const float posZ = 0.5f * (headPose.m[3][2] + rightEyePose.m[3][2]);
@@ -1542,24 +1525,6 @@ void VRDevice::OffsetRoom(float dx, float dy, float dz)
    m_worldDirty = true;
 }
 
-void VRDevice::UpdateVRPosition(PartGroupData::SpaceReference spaceRef, ModelViewProj& mvp)
-{
-   using enum PartGroupData::SpaceReference;
-
-   const int spaceIdx = static_cast<int>(spaceRef);
-   if (spaceIdx < static_cast<int>(Playfield) || spaceIdx > static_cast<int>(Room))
-   {
-      assert(false);
-      return;
-   }
-   const Viewpoint& viewpoint = m_spaces[spaceIdx];
-   const Matrix3D* proj = spaceRef == Room ? m_roomProj : m_sceneProj;
-   for (unsigned int eye = 0; eye < 2; eye++)
-   {
-      mvp.SetView(eye, viewpoint.m_view[eye]);
-      mvp.SetProj(eye, proj[eye]);
-   }
-}
 
 void VRDevice::RecenterRoom()
 {

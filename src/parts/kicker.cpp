@@ -93,7 +93,7 @@ void Kicker::WriteRegDefaults()
 
 void Kicker::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
+   if (!isUI && GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
@@ -102,7 +102,7 @@ void Kicker::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    if (isUI)
    {
       // The UI quadtree is a single quadtree in the playfield space: the UI collider bakes the part's reference space transform
-      const Matrix3D uiSpace = GetUISpaceTransform();
+      const Matrix3D uiSpace = m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform;
       const Vertex3Ds c0 = uiSpace * Vertex3Ds(m_d.m_vCenter.x, m_d.m_vCenter.y, height);
       const Vertex3Ds c1 = uiSpace * Vertex3Ds(m_d.m_vCenter.x, m_d.m_vCenter.y, height + m_d.m_hit_height);
       HitCircle *const phitcircle = new HitCircle(this, Vertex2D(c0.x, c0.y), radius, c0.z, c1.z); // height of kicker hit cylinder

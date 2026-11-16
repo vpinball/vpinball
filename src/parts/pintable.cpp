@@ -586,6 +586,8 @@ PinTable* PinTable::CopyForPlay() const
    dst->m_screenShot = src->m_screenShot;
    dst->m_glassBottomHeight = src->m_glassBottomHeight;
    dst->m_glassTopHeight = src->m_glassTopHeight;
+   dst->m_sceneLayout = src->m_sceneLayout;
+   dst->m_sceneLayout.SetTable(dst); // The layout keeps its setup but must point at the copy
    dst->m_playfieldMaterial = src->m_playfieldMaterial;
    dst->m_colorbackdrop = src->m_colorbackdrop;
    dst->m_difficulty = src->m_difficulty;

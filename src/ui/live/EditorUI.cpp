@@ -1390,18 +1390,7 @@ bool EditorUI::MoveSelectionToPartGroup(PartGroup *group)
 
 bool EditorUI::IsPartInSelectionDomain(const IEditable *editable) const { return editable->m_desktopBackdrop == SelectionDomain(); }
 
-PartGroupData::SpaceReference EditorUI::GetPartSpace(const IEditable *editable)
-{
-   if (editable->GetItemType() == eItemPartGroup)
-      return static_cast<const PartGroup *>(editable)->GetReferenceSpace();
-   const PartGroup *const group = editable->GetPartGroup();
-   return group != nullptr ? group->GetReferenceSpace() : PartGroupData::SpaceReference::Playfield;
-}
-
-Matrix3D EditorUI::PartSpaceTransform(const IEditable *editable) const
-{
-   return GetPartSpace(editable) == PartGroupData::SpaceReference::Playfield ? Matrix3D::MatrixIdentity() : m_table->GetDefaultRoomToPlayfieldMatrix();
-}
+Matrix3D EditorUI::PartSpaceTransform(const IEditable *editable) const { return m_table->GetSceneLayout().GetSpaceToPlayfieldTransform(editable->GetReferenceSpace()).m_transform; }
 
 std::optional<PartGroupData::SpaceReference> EditorUI::GetSelectionSpace() const
 {
@@ -1413,7 +1402,7 @@ std::optional<PartGroupData::SpaceReference> EditorUI::GetSelectionSpace() const
       IEditable *const editable = part->GetEditable();
       if (editable == nullptr || editable->m_desktopBackdrop)
          return std::nullopt;
-      const PartGroupData::SpaceReference partSpace = GetPartSpace(editable);
+      const PartGroupData::SpaceReference partSpace = editable->GetReferenceSpace();
       if (space.has_value() && *space != partSpace)
          return std::nullopt;
       space = partSpace;

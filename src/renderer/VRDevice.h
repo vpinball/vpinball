@@ -135,7 +135,6 @@
 #include <atomic>
 
 #include "math/matrix.h"
-#include "parts/PartGroup.h"
 
 class MeshBuffer;
 
@@ -213,7 +212,10 @@ public:
    }
    void SaveVRSettings(Settings& settings) const;
 
-   void UpdateVRPosition(PartGroupData::SpaceReference spaceRef, ModelViewProj& mvp);
+   // Per-eye camera state of the latest located head pose: the reference spaces fold their scene
+   // layout transform into it when composing each space's view (see SceneLayout::ComposeView)
+   const Matrix3D& GetEyeView(unsigned int eye) const { return m_eyeView[eye]; }
+   const Matrix3D& GetEyeProj(unsigned int eye) const { return m_eyeProj[eye]; }
 
    float GetPredictedDisplayTimestamp() const { return m_predictedDisplayTimestamp; }
 
@@ -230,7 +232,6 @@ private:
    unsigned int m_eyeWidth = 1080;
    unsigned int m_eyeHeight = 1020;
 
-   float m_cabinetScale = 1.0f;
    bool m_overrideLockbarWidth = true; // Scale virtual cabinet so that its lockbar matches the user defined lockbar width
    float m_customLockbarWidth = 57.0f; // User defined width of the (real world cabinet) lockbar in cm
    bool m_overrideLockbarHeight = true; // Position virtual cabinet so that its lockbar matches the user defined lockbar height
@@ -248,14 +249,8 @@ private:
    float m_predictedDisplayTimestamp = 0.f;
 
    bool m_worldDirty = true;
-   struct Viewpoint
-   {
-      Matrix3D m_toWorld; // Matrix to transform from this viewpoint to world coordinates
-      Matrix3D m_view[2];
-   };
-   Viewpoint m_spaces[3]; // Indexed by PartGroupData::SpaceReference (Playfield..Room, Inherit slot unused)
-   Matrix3D m_roomProj[2];
-   Matrix3D m_sceneProj[2];
+   Matrix3D m_eyeView[2]; // Per-eye head pose in VPU (from the latest located views)
+   Matrix3D m_eyeProj[2]; // Per-eye base projection, converting VPU view space to meters before projecting
 
    bool m_showUILayer = false;
 

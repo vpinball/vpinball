@@ -3,6 +3,7 @@
 #pragma once
 
 #include "core/resourceid.h"
+#include "core/SceneLayout.h"
 #include "utils/fileio.h"
 
 // These are used to identify parts for file I/O and must not be changed/reordered
@@ -275,10 +276,13 @@ public:
 
    void SetPartGroup(class PartGroup *partGroup);
    class PartGroup* GetPartGroup() const { return m_partGroup; }
+   // The reference space the part's contents are expressed in: the resolved space of its parent group
+   // (playfield for ungrouped parts and the 2D desktop backdrop plane), overridden by PartGroup to
+   // return the group's own resolved space (the space its children are expressed in).
    // The UI quadtree is a single quadtree with all the hit objects expressed in the playfield space: parts in a non
-   // playfield reference space must bake this transform into the coordinates of their UI hit objects (identity for
-   // the playfield space and the 2D desktop backdrop plane)
-   class Matrix3D GetUISpaceTransform() const;
+   // playfield reference space must bake their space to playfield transform into the coordinates of their UI hit
+   // objects (see PinTable::m_sceneLayout)
+   virtual VPX::SpaceReference GetReferenceSpace() const;
    string GetPathString(const bool isDirOnly) const;
    bool IsChild(const PartGroup* group) const;
 

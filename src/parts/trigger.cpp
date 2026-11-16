@@ -142,12 +142,12 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    m_hitEvent = false;
 
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
+   if (!isUI && GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    // The UI quadtree is a single quadtree in the playfield space: UI colliders bake the part's reference space transform
-   const Matrix3D uiSpace = isUI ? GetUISpaceTransform() : Matrix3D::MatrixIdentity();
+   const Matrix3D uiSpace = isUI ? m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform : Matrix3D::MatrixIdentity();
    if (m_d.m_shape == TriggerStar || m_d.m_shape == TriggerButton)
    {
       const Vertex3Ds c0 = uiSpace * Vertex3Ds(m_d.m_vCenter.x, m_d.m_vCenter.y, height);

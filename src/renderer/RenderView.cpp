@@ -30,6 +30,12 @@ RenderView::RenderView(Renderer* renderer, Kind kind)
    , m_mvp(renderer->m_renderDevice->m_nEyes)
    , m_initialMVP(renderer->m_renderDevice->m_nEyes)
 {
+   for (auto& space : m_spaceView)
+      for (auto& view : space)
+         view = Matrix3D::MatrixIdentity();
+   for (auto& space : m_spaceProj)
+      for (auto& proj : space)
+         proj = Matrix3D::MatrixIdentity();
 }
 
 RenderView::~RenderView()
@@ -343,9 +349,10 @@ float RenderView::GetDisplayAspectRatio() const { return (float)((double)GetDisp
 // Setup the tables camera / rotation / scale (see InitLayout in Renderer.cpp for the layout modes description)
 void RenderView::InitLayout(const float xpixoff, const float ypixoff)
 {
-   // TODO We should not call this function when in VR mode in the first place
+   // The VR headset view's camera is driven by the head pose (its MVP is never laid out): only its
+   // desktop display mirror, which shows a cabinet view of the scene, lays out a camera in VR mode
    Renderer* const r = m_renderer;
-   if (r->m_stereo3D == STEREO_VR)
+   if (r->m_stereo3D == STEREO_VR && !IsMirror())
       return;
    TRACE_FUNCTION();
    // The layout follows the view's own mode when one is forced (editor preview panes), else the table's mode
@@ -638,42 +645,74 @@ void RenderView::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool 
 #endif
 }
 
-void RenderView::SetSpaceReference(PartGroupData::SpaceReference spaceReference, bool force)
+// Define the view/projection pair of each reference space for a render, from the table's scene layout:
+// each space folds its layout transform into the render's camera (the playfield camera, or the latest
+// located head pose in VR) while keeping the view orthonormal (the space's uniform scale is compensated
+// into the projection, see SceneLayout::ComposeView). Computing them once here keeps them stable across
+// all the space switches of the render (the layout may lazily recompute between renders).
+void RenderView::SetupSpaceViews()
 {
-   Renderer* const r = m_renderer;
-   if (!force && m_mvpSpaceReference == spaceReference)
-      return;
-
+   const SceneLayout& sceneLayout = g_pplayer->m_ptable->GetSceneLayout();
 #if defined(ENABLE_XR)
-   if (r->m_stereo3D == STEREO_VR && !IsMirror())
-      g_pplayer->m_vrDevice->UpdateVRPosition(spaceReference, m_mvp);
+   if (m_renderer->m_stereo3D == STEREO_VR && !IsMirror())
+   {
+      // VR headset: the camera is the latest located head pose
+      VRDevice* const vrDevice = g_pplayer->m_vrDevice;
+      for (int space = 0; space < 3; space++)
+      {
+         const SceneLayout::SpaceTransform& spaceTransform = sceneLayout.GetSpaceTransform(static_cast<VPX::SpaceReference>(space));
+         for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+         {
+            float projScale;
+            m_spaceView[space][eye] = SceneLayout::ComposeView(spaceTransform, vrDevice->GetEyeView(eye), projScale);
+            m_spaceProj[space][eye] = Matrix3D::MatrixScale(projScale) * vrDevice->GetEyeProj(eye);
+         }
+      }
+   }
    else
 #endif
    {
-      switch (spaceReference)
+      // Desktop / editor / VR desktop display: the camera is the laid out playfield view
+      // (the mirror's "cabinet" view is also laid out in InitLayout, see Render)
+      m_mvp = m_initialMVP;
+      for (int space = 0; space < 3; space++)
       {
-      case PartGroupData::SpaceReference::Room:
+         const SceneLayout::SpaceTransform& spaceTransform = sceneLayout.GetSpaceToPlayfieldTransform(static_cast<VPX::SpaceReference>(space));
          for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
-            m_mvp.SetView(eye, g_pplayer->m_ptable->GetDefaultRoomToPlayfieldMatrix() * m_playfieldView[eye]);
-         break;
-
-      case PartGroupData::SpaceReference::Playfield:
-      default:
-         for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
-            m_mvp.SetView(eye, m_playfieldView[eye]);
-         break;
+         {
+            float projScale;
+            m_spaceView[space][eye] = SceneLayout::ComposeView(spaceTransform, m_mvp.GetView(eye), projScale);
+            m_spaceProj[space][eye] = Matrix3D::MatrixScale(projScale) * m_mvp.GetProj(eye);
+         }
       }
    }
 
-   // Apply nudge to cabinet parts (as we don't nudge the room) but only when not using static prepass (which uses a simple screen shifting)
-   if (spaceReference != PartGroupData::SpaceReference::Room && !IsUsingStaticPrepass() && r->m_visualNudgeStrength > 0.f)
+   // Apply nudge to the cabinet spaces (as we don't nudge the room) but only when not using static
+   // prepass (which applies nudge as a screen shift instead, see below in Render)
+   if (!IsUsingStaticPrepass() && m_renderer->m_visualNudgeStrength > 0.f)
    {
       if (const auto nudge = g_pplayer->m_pininput.m_nudgeHandler->GetCabinetOffset(); nudge.x != 0.f || nudge.y != 0.f)
       {
-         const Matrix3D nudgeMat = Matrix3D::MatrixTranslate(r->m_visualNudgeStrength * MTOVPU(nudge.x), r->m_visualNudgeStrength * MTOVPU(nudge.y), 0.f);
-         for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
-            m_mvp.SetView(eye, nudgeMat * m_mvp.GetBaseView(eye)); // Use base view to not apply the reflection twice (which would cancel it)
+         const Matrix3D nudgeMat = Matrix3D::MatrixTranslate(m_renderer->m_visualNudgeStrength * MTOVPU(nudge.x), m_renderer->m_visualNudgeStrength * MTOVPU(nudge.y), 0.f);
+         for (int space = 0; space < 3; space++)
+            if (space != static_cast<int>(VPX::SpaceReference::Room))
+               for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+                  m_spaceView[space][eye] = nudgeMat * m_spaceView[space][eye];
       }
+   }
+}
+
+void RenderView::SetSpaceReference(PartGroupData::SpaceReference spaceReference, bool force)
+{
+   if (!force && m_mvpSpaceReference == spaceReference)
+      return;
+
+   // Apply the view/projection pair defined for this render (see SetupSpaceViews)
+   const int space = static_cast<int>(spaceReference);
+   for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
+   {
+      m_mvp.SetView(eye, m_spaceView[space][eye]);
+      m_mvp.SetProj(eye, m_spaceProj[space][eye]);
    }
 
    m_mvpSpaceReference = spaceReference;
@@ -1995,8 +2034,7 @@ void RenderView::Render()
       // when stereo is enabled), but it does not need the playfield's MSAA.
       SetupTargets(m_renderWidth, m_renderHeight, primary->GetBackBufferTexture()->m_type, primary->GetBackBufferTexture()->GetColorFormat(),
          IsMirror() ? 1 : primary->GetMSAABackBufferTexture()->GetMSAASamples());
-      if (!IsMirror())
-         InitLayout();
+      InitLayout();
    }
 
    ResizeRenderTargets();
@@ -2007,22 +2045,10 @@ void RenderView::Render()
    // Mirror and offscreen views may restrict rendering to a single layer of the (stereo typed) render targets
    rd->m_singleLayerRendering = m_outputLayer;
 
-   // Setup initial MVP to setup shaders and rendering
-   if (IsMirror())
-   {
-      // The desktop display shows the scene as a "cabinet" view of the playfield (see RenderDesktopScene)
-      r->m_table->GetViewSetup().ComputeMVP(
-         r->m_table, (float)GetBackBufferTexture()->GetWidth() / (float)GetBackBufferTexture()->GetHeight(), false, m_mvp, vec3(r->m_cam.x, r->m_cam.y, r->m_cam.z), r->m_inc);
-      for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
-         m_playfieldView[eye] = m_mvp.GetView(eye);
-   }
-   else if (r->m_stereo3D != STEREO_VR)
-   {
-      m_mvp = m_initialMVP;
-      for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
-         m_playfieldView[eye] = m_mvp.GetView(eye);
-   }
-   // For VR, the headset pose is updated in SetSpaceReference (through VRDevice::UpdateVRPosition)
+   // Define the view/projection pairs of all the reference spaces for this render: for VR they
+   // fold the layout transforms into the headset's latest located pose, else into the playfield
+   // camera just established into m_mvp
+   SetupSpaceViews();
    SetSpaceReference(PartGroupData::SpaceReference::Playfield, true);
 
    // Per view shader state (the shared shaders are used by all views, each setting them before its own passes)

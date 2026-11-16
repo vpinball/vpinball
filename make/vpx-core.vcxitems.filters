@@ -222,6 +222,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/LayeredINIPropertyStore.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/core/SceneLayout.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/core/pinundo.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -487,9 +490,6 @@
       <Filter>renderer</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/renderer/VRDevice.cpp">
-      <Filter>renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/renderer/VRSpaces.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/renderer/Window.cpp">
@@ -1247,6 +1247,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/LayeredINIPropertyStore.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/core/SceneLayout.h">
+      <Filter>core</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/core/stdafx.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -1623,9 +1626,6 @@
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/renderer/VRDevice.h">
-      <Filter>renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/renderer/VRSpaces.h">
       <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/renderer/Window.h">

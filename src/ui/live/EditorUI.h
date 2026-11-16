@@ -169,8 +169,6 @@ private:
       return part == nullptr || part->GetEditable()->m_desktopBackdrop == backdropView;
    }
    bool IsEditablePickable(const IEditable *editable, bool backdropDomain) const; // Pickable in the given domain (3D scene / backdrop) and passing the selection filters
-   static PartGroupData::SpaceReference GetPartSpace(
-      const IEditable *editable); // Reference space a part lives in (its own for groups, its parent group's otherwise, playfield for ungrouped parts)
    std::optional<PartGroupData::SpaceReference> GetSelectionSpace() const; // Reference space shared by all the selected parts (none when empty, backdrop or mixed)
    void SelectAllParts();
    Vertex2D GetMultiSelCenter() const; // Center of the current selection (bounding box center of the part centers, or of the selected points in drag point edit mode)

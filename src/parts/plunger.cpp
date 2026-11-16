@@ -115,7 +115,7 @@ void Plunger::WriteRegDefaults()
 
 void Plunger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
+   if (!isUI && GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    if (isUI)
@@ -127,7 +127,7 @@ void Plunger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       const float yMin = m_d.m_v.y - m_d.m_stroke; // furthest travel of the tip
       const float yMax = m_d.m_v.y + m_d.m_height; // housing behind the plunger
       // The UI quadtree is a single quadtree in the playfield space: the UI collider bakes the part's reference space transform
-      const Matrix3D uiSpace = GetUISpaceTransform();
+      const Matrix3D uiSpace = m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform;
       Vertex3Ds *const rgv3D = new Vertex3Ds[4]; // CCW winding for upward facing normal
       rgv3D[0] = uiSpace * Vertex3Ds(xMin, yMin, height + 2.f * m_d.m_width); // at the top of the rod
       rgv3D[1] = uiSpace * Vertex3Ds(xMin, yMax, height + 2.f * m_d.m_width);

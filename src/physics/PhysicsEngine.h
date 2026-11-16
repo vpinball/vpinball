@@ -177,7 +177,7 @@ private:
 #endif
 
    // The UI quadtree is a single quadtree with all the hit objects expressed in the playfield space: parts in a
-   // non playfield reference space bake their space transform into their UI colliders (see IEditable::GetUISpaceTransform)
+   // non playfield reference space bake their space to playfield transform into their UI colliders (see SceneLayout)
    AsyncDynamicQuadTree *GetUIQuadTree(); // Trigger UI quadtree creation/update
    AsyncDynamicQuadTree* m_UIQuadTtree = nullptr;
 

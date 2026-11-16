@@ -5,6 +5,7 @@
 #pragma once
 
 
+#include "core/SceneLayout.h"
 #include "core/ScriptInterpreter.h"
 #include "physics/physconst.h"
 #include "math/bbox.h"
@@ -802,14 +803,13 @@ public:
    float m_AOScale;
    float m_SSRScale;
    float m_groundToLockbarHeight = CMTOVPU(91.f); // Height of lockbar from ground (corresponding to cab model for VR)
-   Matrix3D GetDefaultRoomToPlayfieldMatrix() const
-   {
-      // Default transform from the room reference space to the playfield space, from the table authored data only (ComputeVRSpaces
-      // without user adjustments, which are only applied in VR): the playfield is inclined by the authored slope around the lockbar
-      // line, at the authored lockbar height above the ground, and lies the glass distance below it, perpendicular to the playfield.
-      return Matrix3D::MatrixTranslate(0.f, -m_bottom, -m_groundToLockbarHeight) * Matrix3D::MatrixRotateX(ANGTORAD(GetPlayfieldSlope()))
-         * Matrix3D::MatrixTranslate(0.f, m_bottom, m_glassBottomHeight);
-   }
+
+   // How the scene is laid out between the playfield and the room (authored cabinet geometry plus
+   // the session's room positioning adjustments): the single definition the renderer folds into the
+   // MVP chain and the parts bake into their UI colliders (see SceneLayout)
+   SceneLayout m_sceneLayout { this };
+   SceneLayout &GetSceneLayout() { return m_sceneLayout; }
+   const SceneLayout &GetSceneLayout() const { return m_sceneLayout; }
 
    float m_playfieldReflectionStrength; // default (implicit) playfield reflection strength (0 to disable playfield reflection)
 

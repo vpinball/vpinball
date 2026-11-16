@@ -97,7 +97,6 @@ public:
    PartGroupData::SpaceReference m_mvpSpaceReference = PartGroupData::SpaceReference::Playfield;
    ModelViewProj m_initialMVP; // Base playfield MVP in desktop mode (unused in VR)
    bool m_customViewProj = false; // The camera is driven through SetViewProj (editor panes): InitLayout keeps it instead of the default view setup
-   Matrix3D m_playfieldView[2]; // Base playfield view matrices of m_initialMVP from which all views are derived in desktop mode, or the cabinet view for the VR desktop display scene render
    Vertex2D m_screenOffset = Vertex2D(0.f, 0.f); // Screen shake effect during nudge
    const ModelViewProj& GetMVP() const { return m_mvp; }
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f); // Reset both the base and the current MVP to the default view setup, with an optional pixel offset for AA
@@ -196,6 +195,7 @@ public:
    void Render();
 
 private:
+   void SetupSpaceViews(); // Define the per reference space view/projection pairs of a render (from the scene layout)
    void RenderStatics(); // Render background, then static parts if IsUsingStaticPrepass
    void RenderDynamics(); // Render static parts if not IsUsingStaticPrepass, then render dynamic parts
    void DrawBackground();
@@ -216,4 +216,9 @@ private:
    RenderTarget* ApplySharpening(RenderTarget* renderedRT, RenderTarget* outputBackBuffer);
    RenderTarget* ApplyUpscaling(RenderTarget* renderedRT, RenderTarget* outputBackBuffer);
    RenderTarget* ApplyStereo(RenderTarget* renderedRT, RenderTarget* outputBackBuffer);
+
+   // Per reference space view/projection pairs defined once for the current render (indexed by
+   // VPX::SpaceReference): all the space switches of a render share the same stable matrices
+   Matrix3D m_spaceView[3][2];
+   Matrix3D m_spaceProj[3][2];
 };

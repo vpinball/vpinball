@@ -142,7 +142,7 @@ void Spinner::SetDefaultPhysics(const bool fromMouseClick)
 
 void Spinner::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI && GetPartGroup() != nullptr && GetPartGroup()->GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
+   if (!isUI && GetReferenceSpace() != PartGroupData::SpaceReference::Playfield)
       return;
 
    if (isUI)
@@ -156,7 +156,7 @@ void Spinner::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       const float halfLength = m_d.m_length * 0.75f; // extend over the axis ends to include the brackets
       const float halfWidth = m_d.m_length * 0.1f;
       // The UI quadtree is a single quadtree in the playfield space: the UI collider bakes the part's reference space transform
-      const Matrix3D uiSpace = GetUISpaceTransform();
+      const Matrix3D uiSpace = m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(GetReferenceSpace()).m_transform;
       Vertex3Ds *const rgv3D = new Vertex3Ds[4]; // CCW winding for upward facing normal
       for (int i = 0; i < 4; i++)
       {
