@@ -18,6 +18,25 @@
 
 namespace PUP {
 
+static PUPManager::Engine ReadEngine(const std::filesystem::path& packPath)
+{
+   const std::filesystem::path iniPath = find_case_insensitive_file_path(packPath / "usePuPDriver.ini");
+   if (iniPath.empty())
+      return PUPManager::Engine::PinUP15;
+   std::ifstream file(iniPath);
+   string line;
+   bool inSection = false;
+   while (std::getline(file, line))
+   {
+      line = trim_string(line);
+      if (line.starts_with('['))
+         inSection = StrCompareNoCase(line, "[PINUP]"s);
+      else if (const size_t eq = line.find('='); inSection && eq != string::npos && StrCompareNoCase(trim_string(line.substr(0, eq)), "Driver"s))
+         return StrCompareNoCase(trim_string(line.substr(eq + 1)), "PinUpDisplayX2.exe"s) ? PUPManager::Engine::PinUP20 : PUPManager::Engine::PinUP15;
+   }
+   return PUPManager::Engine::PinUP15;
+}
+
 MSGPI_FLOAT_VAL_SETTING(pupMainVolume, "MainVol", "Main Volume", "Overall volume", true, 0.f, 1.f, 0.01f, 1.f);
 
 MSGPI_INT_VAL_SETTING(pupBGPadLeft, "BGPadLeft", "Backglass Left Pad", "Left Padding of backglass", true, 0, 4096, 0);
@@ -244,6 +263,9 @@ void PUPManager::LoadConfig(const ControllerDef& controller)
    if (m_szPath.empty())
       return;
 
+   m_engine = ReadEngine(m_szPath);
+   LOGI(std::format("PinUP engine: {}", m_engine == Engine::PinUP20 ? "2.0 (PinUpDisplayX2)"s : "1.5"s));
+
    // Load the authored display list and expose it through the in game UI
    m_overlayDoc.path = m_szPath / "displays.pup";
    // Bind the shared overlay document to the plugin data model (see DMDOverlay/DMDOverlay.h):
@@ -412,6 +434,7 @@ void PUPManager::Unload()
 
    m_zOrder.clear();
    m_screenOrder.clear();
+   m_engine = Engine::PinUP15;
    m_fadeOutCounter = 255;
    m_labelShadowType = 0;
    m_labelShadowColor = 0x808080;
