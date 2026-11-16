@@ -13,10 +13,12 @@
 // matches the target width, and inclined by the effective playfield slope.
 //
 // roomOffset corrects imprecise headset room positioning (tracking origin, floor height, standing
-// spot): it is applied as a single rigid world translation on top of all the spaces, so that the
-// whole anchored assembly (room furniture and cabinet included) shifts together. It is purposely
-// not injected inside the transform chains where it would be affected by the playfield slope and
-// the cabinet scale.
+// spot): it is applied as a rigid translation of the room frame shared by all the spaces (after the
+// playfield slope and the cabinet scale), so that the whole anchored assembly (room furniture and
+// cabinet included) shifts together.
+//
+// Without user adjustments, the room to playfield transform matches PinTable::GetDefaultRoomToPlayfieldMatrix
+// (used by the editor and the desktop rendering of room parts): keep them in sync.
 VRSpaces ComputeVRSpaces(const VRSpaceSetup& setup, const VRTableGeometry& table)
 {
    VRSpaces out;

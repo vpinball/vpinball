@@ -804,13 +804,11 @@ public:
    float m_groundToLockbarHeight = CMTOVPU(91.f); // Height of lockbar from ground (corresponding to cab model for VR)
    Matrix3D GetDefaultRoomToPlayfieldMatrix() const
    {
-      // Default transform from the room reference space to the playfield space, built
-      // from the table authored data only: the playfield surface sits at the authored lockbar
-      // height minus the glass distance above the ground, and is inclined by the authored slope
-      // around its front (lockbar) edge. User space adjustments (cabinet scaling, room placement,
-      // slope override, ...) are only applied in VR (see VRDevice::UpdateVRPosition / ComputeVRSpaces).
-      return Matrix3D::MatrixTranslate(0.f, -m_bottom, -(m_groundToLockbarHeight - m_glassBottomHeight)) * Matrix3D::MatrixRotateX(ANGTORAD(GetPlayfieldSlope()))
-         * Matrix3D::MatrixTranslate(0.f, m_bottom, 0.f);
+      // Default transform from the room reference space to the playfield space, from the table authored data only (ComputeVRSpaces
+      // without user adjustments, which are only applied in VR): the playfield is inclined by the authored slope around the lockbar
+      // line, at the authored lockbar height above the ground, and lies the glass distance below it, perpendicular to the playfield.
+      return Matrix3D::MatrixTranslate(0.f, -m_bottom, -m_groundToLockbarHeight) * Matrix3D::MatrixRotateX(ANGTORAD(GetPlayfieldSlope()))
+         * Matrix3D::MatrixTranslate(0.f, m_bottom, m_glassBottomHeight);
    }
 
    float m_playfieldReflectionStrength; // default (implicit) playfield reflection strength (0 to disable playfield reflection)

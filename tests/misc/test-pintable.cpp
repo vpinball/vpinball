@@ -11,6 +11,7 @@
 #include "parts/Material.h"
 #include "parts/surface.h"
 #include "renderer/Texture.h"
+#include "renderer/VRSpaces.h"
 
 #include "doctest.h"
 
@@ -286,13 +287,16 @@ TEST_CASE("PinTable part")
       const Matrix3D toPf = table->GetDefaultRoomToPlayfieldMatrix();
       const Matrix3D toRoom = Matrix3D::MatrixInverse(toPf);
 
-      // The lockbar line is the pivot: the playfield front edge sits at its authored height
-      // above the ground while the back edge is raised by the slope
-      const Vertex3Ds lockbar = toRoom * Vertex3Ds(0.f, table->m_bottom, 0.f);
+      // The lockbar line is the pivot: it stays at the authored lockbar height above the ground, the glass
+      // distance being perpendicular to the playfield (the front edge sits below it, slightly toward the player)
+      const Vertex3Ds lockbar = toPf * Vertex3Ds(0.f, table->m_bottom, table->m_groundToLockbarHeight);
       CHECK(lockbar.y == doctest::Approx(table->m_bottom).epsilon(1e-5));
-      CHECK(lockbar.z == doctest::Approx(h).epsilon(1e-5));
+      CHECK(lockbar.z == doctest::Approx(table->m_glassBottomHeight).epsilon(1e-5));
+      const Vertex3Ds front = toRoom * Vertex3Ds(0.f, table->m_bottom, 0.f);
+      CHECK(front.y == doctest::Approx(table->m_bottom - table->m_glassBottomHeight * sinf(slope)).epsilon(1e-5));
+      CHECK(front.z == doctest::Approx(table->m_groundToLockbarHeight - table->m_glassBottomHeight * cosf(slope)).epsilon(1e-5));
       const Vertex3Ds back = toRoom * Vertex3Ds(0.f, 0.f, 0.f);
-      CHECK(back.z == doctest::Approx(h + table->m_bottom * sinf(slope)).epsilon(1e-5));
+      CHECK(back.z == doctest::Approx(front.z + table->m_bottom * sinf(slope)).epsilon(1e-5));
 
       // The room axes are inclined by the slope in playfield space: X is shared (pivot axis),
       // the room floor rises toward the front of the table, the up axis leans toward the back
@@ -311,6 +315,40 @@ TEST_CASE("PinTable part")
       CHECK(p.x == doctest::Approx(3.f).epsilon(1e-4));
       CHECK(p.y == doctest::Approx(-7.f).epsilon(1e-4));
       CHECK(p.z == doctest::Approx(11.f).epsilon(1e-4));
+
+      table->Release();
+   }
+
+   SUBCASE("default room to playfield transform matches the VR spaces without user adjustments")
+   {
+      PinTable* const table = CreateTestTable();
+      table->m_bottom = 2000.f;
+      table->m_glassBottomHeight = 60.f;
+      table->m_groundToLockbarHeight = 900.f;
+      table->m_angletiltMin = table->m_angletiltMax = 6.f;
+
+      VRTableGeometry geometry;
+      geometry.playfieldWidth = table->m_right - table->m_left;
+      geometry.playfieldDepth = table->m_bottom - table->m_top;
+      geometry.groundToLockbarHeight = table->m_groundToLockbarHeight;
+      geometry.glassBottomHeight = table->m_glassBottomHeight;
+      VRSpaceSetup setup;
+      setup.overrideLockbarWidth = false;
+      setup.overrideLockbarHeight = false;
+      setup.liveSlope = table->GetPlayfieldSlope();
+      const VRSpaces spaces = ComputeVRSpaces(setup, geometry);
+
+      // Room -> world -> playfield
+      const Matrix3D vrRoomToPf = spaces.room * Matrix3D::MatrixInverse(spaces.playfield);
+      const Matrix3D toPf = table->GetDefaultRoomToPlayfieldMatrix();
+      for (const Vertex3Ds& p : { Vertex3Ds(0.f, 0.f, 0.f), Vertex3Ds(100.f, table->m_bottom, table->m_groundToLockbarHeight), Vertex3Ds(-300.f, 500.f, 1200.f) })
+      {
+         const Vertex3Ds a = vrRoomToPf * p;
+         const Vertex3Ds b = toPf * p;
+         CHECK(a.x == doctest::Approx(b.x).epsilon(1e-3));
+         CHECK(a.y == doctest::Approx(b.y).epsilon(1e-3));
+         CHECK(a.z == doctest::Approx(b.z).epsilon(1e-3));
+      }
 
       table->Release();
    }
