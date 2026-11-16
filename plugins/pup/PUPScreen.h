@@ -136,6 +136,9 @@ public:
    void SetLength(int seconds);
    void SetAsBackGround(int mode);
    void SetFadeStep(int step);
+   bool IsJukebox() const;
+   void SetJukebox(bool jukebox);
+   void JukeboxSkip(int direction);
 
    bool IsBackgroundPlaying() const;
    bool IsMainPlaying() const;

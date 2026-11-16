@@ -1253,12 +1253,14 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
             pScreen->SetVolumeMultiplier(json["VL"s].as<int>(0));
             break;
          case 30:
-            // {'mt':301, 'SN': XX, 'FN':30, 'PM':1 } set (play ?) jukebox mode: jukebox mode will auto advance to next media in playlist and you can use next/prior sub to manuall advance
-            NOT_IMPLEMENTED(std::format("Jukebox mode not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+            // {'mt':301, 'SN': XX, 'FN':30, 'PM':1 } jukebox mode: the end of a media plays the next file of its playlist, it cannot be turned off
+            if (!pScreen->IsJukebox() && json["PM"s].as<int>(0) != 0)
+               pScreen->SetJukebox(true);
             break;
          case 31:
-            // pup jukebox control - {'mt':301, 'SN': XX, 'FN':31, 'PM':1 } - PM 1 = next, PM 2 = previous
-            NOT_IMPLEMENTED(std::format("Jukebox mode not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+            // {'mt':301, 'SN': XX, 'FN':31, 'PM':1 } jukebox skip: PM 1 = previous, PM 2 = next
+            if (pScreen->IsJukebox() && json["PM"s].as<int>(0) > 0)
+               pScreen->JukeboxSkip(json["PM"s].as<int>(0));
             break;
          case 32:
             // "{ ""mt"":301, ""SN"": 1, ""FN"":32, ""FQ"":3 }"   'set no antialias on font render if real
