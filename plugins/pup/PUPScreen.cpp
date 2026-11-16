@@ -365,6 +365,11 @@ void PUPScreen::OnMediaStart(const std::filesystem::path& path)
 {
    if (m_labelLayer && PluginStrings::PathToUTF8(path).find('@') != string::npos)
       SetHideDuringPlay(true);
+   else if (m_labelLayer && m_hideDuringPlay && !path.empty() && m_pManager->GetEngine() == PUPManager::Engine::PinUP20)
+   {
+      m_hideDuringPlay = false;
+      m_hudVisible = true;
+   }
 
    if (m_mode == Mode::Off || m_mode == Mode::MusicOnly)
       return;
