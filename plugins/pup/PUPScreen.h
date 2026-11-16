@@ -59,6 +59,7 @@ public:
    bool m_hideDuringPlay = false; // FN 34, or a media file with "@" in its name: labels hidden and label commands ignored until the current media ends
    void SetHideDuringPlay(bool hide);
    bool m_padTextAlways = false;
+   bool m_customImageMode = false;
    bool m_raiseOnPlay = true;
    bool m_raiseLabelsOnPlay = true;
    bool m_labelsTopmost = true;

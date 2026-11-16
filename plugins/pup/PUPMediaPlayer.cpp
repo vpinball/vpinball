@@ -105,11 +105,11 @@ double PUPMediaPlayer::GetPlayTime() const
    return (m_syncOnGameTime ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0)) - m_startTimestamp;
 }
 
-void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume, double startPosition)
+void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume, double startPosition, double stillDuration)
 {
    m_pendingPlay++;
    m_commandQueue.enqueue(
-      [this, filename, volume, startPosition]()
+      [this, filename, volume, startPosition, stillDuration]()
    {
       LOGD("> Playing filename=" + PluginStrings::PathToUTF8(filename));
 
@@ -213,6 +213,7 @@ void PUPMediaPlayer::Play(const std::filesystem::path& filename, float volume, d
          m_filename = filename;
          m_volume = volume;
          m_loop = false;
+         m_stillDuration = stillDuration;
          m_paused = false;
          m_syncOnGameTime = m_gameTime >= 0.0;
          m_startTimestamp = m_syncOnGameTime ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0);
@@ -563,6 +564,8 @@ void PUPMediaPlayer::Run()
                HandleAudioFrame(pFrame, m_pVideoContext == nullptr);
             }
          }
+         while (m_running && m_stillDuration > 0.0 && (m_paused || GetPlayTime() < m_stillDuration))
+            SDL_Delay(8);
          if (!loop)
          {
             while (m_running && !m_paused && m_pVideoContext && GetPlayTime() < m_lastDecodedPts + 0.05)
@@ -597,7 +600,9 @@ void PUPMediaPlayer::Run()
          }
          {
             std::lock_guard lock(m_mutex);
-            if (duration > 0.0)
+            if (m_stillDuration > 0.0)
+               m_startTimestamp = m_syncOnGameTime ? m_gameTime : (static_cast<double>(SDL_GetTicks()) / 1000.0);
+            else if (duration > 0.0)
             {
                // Keep the timeline continuous across the loop: the tail frames stay valid at
                // negative pts and play out while the next iteration's frames (pts 0..) decode.

@@ -28,6 +28,7 @@ public:
    void SetCurrentItemVolume(int volume);
    void Stop();
    void StopBackground();
+   void Halt();
    void Stop(int priority);
    void Stop(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile);
    void Render(VPXRenderContext2D* const ctx, float alpha = 1.f);
