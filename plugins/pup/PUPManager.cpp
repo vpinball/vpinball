@@ -1210,6 +1210,15 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
             // "{ ""mt"":301, ""SN"": 18, ""FN"":12 }" 'STOPSCREEN
             pScreen->SetMode(PUPScreen::Mode::Off);
             pScreen->Stop();
+            pScreen->m_customImageMode = false;
+            break;
+         case 7:
+            // { "mt":301, "SN": XX, "FN":7, "CP":1 } custom image mode: still images stay up instead of playing as media
+            pScreen->m_customImageMode = (json["CP"s].as<int>(0) == 1);
+            break;
+         case 36:
+            // { "mt":301, "SN": XX, "FN":36 } custom image mode with per-pixel alpha
+            pScreen->m_customImageMode = true;
             break;
          case 15:
             // set screen custompos { 'mt':301, 'SN':15,'FN':15,'CP':'parent_screen,x,y,w,h'} CP = CustomPos String, coordinates relative in %

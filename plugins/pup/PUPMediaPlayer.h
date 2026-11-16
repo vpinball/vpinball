@@ -16,7 +16,7 @@ public:
 
    void SetGameTime(double gameTime);
 
-   void Play(const std::filesystem::path& filename, float volume, double startPosition = 0.0);
+   void Play(const std::filesystem::path& filename, float volume, double startPosition = 0.0, double stillDuration = 0.0);
    double GetPosition() const { return m_position.load(); }
    const std::filesystem::path& GetFilename() const { return m_filename; }
    unsigned int GetLoopCount() const { return m_loopCount.load(); }
@@ -61,6 +61,7 @@ private:
 
    std::filesystem::path m_filename;
    bool m_loop = false;
+   double m_stillDuration = 0.0;
    int m_playIndex = 0;
    std::atomic<unsigned int> m_loopCount = 0;
    float m_volume = 100.f;
