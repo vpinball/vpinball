@@ -359,6 +359,30 @@ void PUPLabel::ClearAnimationInternal()
    }
 }
 
+void PUPLabel::SetScreen(PUPScreen* pScreen)
+{
+   m_pScreen = pScreen;
+   m_yScaleOverride = pScreen ? pScreen->m_labelYScale : 0.f;
+}
+
+float PUPLabel::YScale(const SDL_Rect& rect) const
+{
+   if (!m_pScreen || m_pManager->GetEngine() != PUPManager::Engine::PinUP20)
+      return 1.f;
+   if (m_yScaleOverride > 0.f)
+      return m_yScaleOverride;
+   const float w = static_cast<float>(std::max(rect.w, 10));
+   const float h = static_cast<float>(std::max(rect.h, 10));
+   float yScale = (w / 1.7777777f) / h;
+   if (yScale > 0.95f && yScale < 1.05f)
+      yScale = 1.f;
+   if (yScale > 1.5f)
+      yScale = 1.5f;
+   if (h > w)
+      yScale = 1.f;
+   return yScale;
+}
+
 int PUPLabel::EffectiveShadowType() const
 {
    if (m_shadowType < 0)
@@ -618,6 +642,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
             {
                m_size = newSize;
                m_sizeIsPoints = true;
+               m_yScaleOverride = m_pScreen ? m_pScreen->m_labelYScale : 0.f;
                m_dirty = true;
             }
          }
@@ -649,6 +674,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
             {
                m_size = newSize;
                m_sizeIsPoints = false;
+               m_yScaleOverride = m_pScreen ? m_pScreen->m_labelYScale : 0.f;
                m_dirty = true;
             }
          }
@@ -1098,6 +1124,12 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
       m_dirty = true;
    }
 
+   if (const float yScale = YScale(rect); yScale != m_renderYScale)
+   {
+      m_renderYScale = yScale;
+      m_dirty = true;
+   }
+
    if (m_pendingTextureUpdate.valid())
    {
       if (m_pendingTextureUpdate.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
@@ -1121,10 +1153,10 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
          });
       }
       else if (m_pFont)
-         m_pendingTextureUpdate = std::async(std::launch::async, [this, rect, fontColor]() {
+         m_pendingTextureUpdate = std::async(std::launch::async, [this, rect, fontColor, yScale = m_renderYScale]() {
             std::lock_guard lock(m_mutex);
-            const float fontHeight = (EffectiveSize() / 100.0f) * static_cast<float>(rect.h);
-            return UpdateLabelTexture(rect.w, rect.h, m_pFont, m_szCaption, EffectiveSize(), fontColor, EffectiveShadowType(), m_shadowColor, GetShadowOffsetPixels(fontHeight));
+            const float fontHeight = (EffectiveSize() * yScale / 100.0f) * static_cast<float>(rect.h);
+            return UpdateLabelTexture(rect.w, rect.h, m_pFont, m_szCaption, EffectiveSize() * yScale, fontColor, EffectiveShadowType(), m_shadowColor, GetShadowOffsetPixels(fontHeight));
          });
    }
 
@@ -1284,7 +1316,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
 
    if (EffectiveShadowType() == 2)
    {
-      const float fontHeight = (EffectiveSize() / 100.0f) * static_cast<float>(rect.h);
+      const float fontHeight = (EffectiveSize() * m_renderYScale / 100.0f) * static_cast<float>(rect.h);
       const SDL_FPoint shadowOffset = GetShadowOffsetPixels(fontHeight);
       dest.x += static_cast<float>(static_cast<int>(shadowOffset.x)) * -2.f;
    }
