@@ -68,10 +68,10 @@ vec3 ReinhardToneMap(vec3 color)
 }
 
 #if defined(TARGET_essl)
-	// Offset to the texel center, as sampling on the texel border can be unstable
-	#define texFetch(tex, pos, size) texNoLod(tex, (vec2(pos) + vec2_splat(0.5)) / size)
+	// Offset to the texel center, as sampling on the texel border can be unstable (invSize = 1 / texture size)
+	#define texFetch(tex, pos, invSize) texNoLod(tex, (vec2(pos) + vec2_splat(0.5)) * invSize)
 #else
-	#define texFetch(tex, pos, size) texelFetch(tex, pos, 0)
+	#define texFetch(tex, pos, invSize) texelFetch(tex, pos, 0)
 #endif
 
 
@@ -143,7 +143,7 @@ vec3 ReinhardToneMap(vec3 color)
 	// Setup the function which returns input image color, which CRTS wants linear. displayTex is bound as sRGB so the
 	// sampler has already decoded it, and an InvGamma here would decode twice and render the display far too dark
 	vec3 CrtsFetch(vec2 uv) {
-		return texFetch(displayTex, ivec2(uv * crtSize), crtSize).rgb;
+		return texFetch(displayTex, ivec2(uv * crtSize), vec2_splat(1.0) / crtSize).rgb;
 	}
 	
 	#include "fs_crt_lottes.fs"
@@ -294,6 +294,7 @@ void main()
 		vec2 dotRelativePos = fract(dmdUv) - vec2_splat(0.5);
 		float thr = 0.15 * (abs(dFdx(dmdUv.x)) + abs(dFdx(dmdUv.y))); // Magic formula to adjust antialiasing to actual gradient
 		float minThr = 0.5 - thr, maxThr = dotThreshold + thr;
+		const vec2 invDmdSize = vec2_splat(1.0) / dmdSize;
 		for (int y = -N_SAMPLES; y <= N_SAMPLES; y++)
 		{
 			for (int x = -N_SAMPLES; x <= N_SAMPLES; x++)
@@ -309,11 +310,11 @@ void main()
 					unlitLum += light;
 					if (coloredDMD) // RGB data (maybe sRGB, but this is handled by the hardware sampler)
 					{
-						litLum += light * texFetch(displayTex, dotUv, dmdSize).rgb;
+						litLum += light * texFetch(displayTex, dotUv, invDmdSize).rgb;
 					}
 					else // linear brightness data
 					{
-						litLum += light * texFetch(displayTex, dotUv, dmdSize).rrr;
+						litLum += light * texFetch(displayTex, dotUv, invDmdSize).rrr;
 					}
 				}
 			}

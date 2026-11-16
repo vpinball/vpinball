@@ -84,10 +84,17 @@ void main()
 	}
 
 	// Process interpolated positions from previous (excluded as part of previous frame) to current (excluded as already processed)
+	// The previous projection of an intersection is the current one offset by the projected ball displacement
+	#ifdef STEREO
+		const vec4 prev_proj_ofs = mul(matProj[int(round(v_eye))], vec4(prev_ball_pos - ball_pos, 0.0));
+	#else
+		const vec4 prev_proj_ofs = mul(matProj, vec4(prev_ball_pos - ball_pos, 0.0));
+	#endif
+	const float inv_nsamples = 1.0 / NSAMPLES_F;
 	//float weight_sum = shutter_function(0.);
 	for (int i = 1; i < nSamples; i++)
 	{
-		const float mix_pos = float(i) / NSAMPLES_F;
+		const float mix_pos = float(i) * inv_nsamples;
 		const vec3 sample_ball_pos = mix(prev_ball_pos, ball_pos, mix_pos);
 		const float b = dot(rayDirection,    sample_ball_pos);
 		const float c = dot(sample_ball_pos, sample_ball_pos) - ball_r2;
@@ -102,12 +109,11 @@ void main()
 			const vec3 intersect_ofs = (b - sqrt(det)) * rayDirection - sample_ball_pos; // intersection position relative to sphere center
 			#ifdef STEREO
 				// FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
-				vec4 prev_proj = mul(matProj[int(round(v_eye))], vec4(prev_ball_pos + intersect_ofs, 1.0)); // FIXME should use previous MVP
-				vec4 cur_proj  = mul(matProj[int(round(v_eye))], vec4(ball_pos      + intersect_ofs, 1.0));
+				vec4 cur_proj = mul(matProj[int(round(v_eye))], vec4(ball_pos + intersect_ofs, 1.0));
 			#else
-				vec4 prev_proj = mul(matProj, vec4(prev_ball_pos + intersect_ofs, 1.0)); // FIXME should use previous MVP
-				vec4 cur_proj  = mul(matProj, vec4(ball_pos      + intersect_ofs, 1.0));
+				vec4 cur_proj = mul(matProj, vec4(ball_pos + intersect_ofs, 1.0));
 			#endif
+			vec4 prev_proj = cur_proj + prev_proj_ofs; // FIXME should use previous MVP
 			prev_proj.xy /= prev_proj.w;
 			cur_proj.xy  /= cur_proj.w;
 			#if TEX_V_IS_UP

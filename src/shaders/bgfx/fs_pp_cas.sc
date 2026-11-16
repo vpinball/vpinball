@@ -74,11 +74,9 @@ void main()
 	const vec3 rcpMRGB = rcp(mxRGB);
 	vec3 ampRGB = saturate(min(mnRGB, 2.0 - mxRGB) * rcpMRGB);
 
-	// Shaping amount of sharpening.
-	ampRGB = inversesqrt(ampRGB);
-
+	// Shaping amount of sharpening: w = 1/(rsqrt(amp) * -peak) = sqrt(amp) * (-1/peak)
 	const float peak = -3.0 * Contrast + 8.0;
-	const vec3 wRGB = rcp(ampRGB * -peak);
+	const vec3 wRGB = sqrt(ampRGB) * (-1.0 / peak);
 
 	const vec3 rcpWeightRGB = rcp(4.0 * wRGB + 1.0);
 

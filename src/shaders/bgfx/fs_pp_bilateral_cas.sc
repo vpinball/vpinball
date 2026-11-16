@@ -22,9 +22,10 @@ SAMPLER2DSTEREO(tex_depth,          4); // DepthBuffer
 
 
 
+// Unnormalized gaussian: the 1/(sqrt(2pi)*sigma) factor cancels in the weighted average (final_colour/Z)
 float normpdf(const vec3 v, const float sigma)
 {
-	return exp(dot(v,v)*(-0.5/(sigma*sigma)))*(0.39894228040143/sigma);
+	return exp(dot(v,v)*(-0.5/(sigma*sigma))); // see above: *(0.39894228040143/sigma);
 }
 
 float LI(const vec3 l)

@@ -1132,11 +1132,9 @@ void main()
 	const float3 rcpMRGB = rcp(mxRGB);
 	float3 ampRGB = saturate(min(mnRGB, 2.0 - mxRGB) * rcpMRGB);
 
-	// Shaping amount of sharpening.
-	ampRGB = rsqrt(ampRGB);
-
+	// Shaping amount of sharpening: w = 1/(rsqrt(amp) * -peak) = sqrt(amp) * (-1/peak)
 	const float peak = -3.0 * Contrast + 8.0;
-	const float3 wRGB = rcp(ampRGB * -peak);
+	const float3 wRGB = sqrt(ampRGB) * (-1.0 / peak);
 
 	const float3 rcpWeightRGB = float3(1.0) / (4.0 * wRGB + float3(1.0));
 
@@ -1152,9 +1150,10 @@ void main()
 
 ////ps_main_BilateralSharp_CAS
 
+// Unnormalized gaussian: the 1/(sqrt(2pi)*sigma) factor cancels in the weighted average (final_colour/Z)
 float normpdf(const float3 v, const float sigma)
 {
-	return exp(dot(v,v)*(-0.5/(sigma*sigma)))*(0.39894228040143/sigma);
+	return exp(dot(v,v)*(-0.5/(sigma*sigma))); // see above: *(0.39894228040143/sigma);
 }
 
 float LI(const float3 l)
