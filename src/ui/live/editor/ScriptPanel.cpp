@@ -11,6 +11,7 @@
 #include "ui/live/LiveUI.h"
 
 #include "EditorTheme.h"
+#include "textedit/VbsLex.h"
 #include "textedit/languages/TextEditorVbs.h"
 
 #include <SDL3/SDL_error.h>
@@ -54,6 +55,26 @@ namespace
       return palette;
    }
 
+   // Snapshots of the language's built-in word sets, captured before dynamic script
+   // symbols get merged in (see ReparseModel); first call must precede the first merge
+   const std::unordered_set<std::string> &BaseDeclarations()
+   {
+      static const std::unordered_set<std::string> s = TextEditorVbs::getDefinition()->declarations;
+      return s;
+   }
+   const std::unordered_set<std::string> &BaseIdentifiers()
+   {
+      static const std::unordered_set<std::string> s = TextEditorVbs::getDefinition()->identifiers;
+      return s;
+   }
+
+   std::string LowerWord(const std::string_view s)
+   {
+      std::string r(s);
+      for (char &c : r)
+         c = static_cast<char>(VbsLex::ToLower(c));
+      return r;
+   }
 }
 
 ScriptPanel::ScriptPanel(EditorUI &editor)
@@ -67,6 +88,100 @@ ScriptPanel::ScriptPanel(EditorUI &editor)
    m_te.SetShowCurrentLineHighlightEnabled(true);
    m_te.SetInsertSpacesOnTabs(false);
    m_te.SetFindReplaceEnabled(true);
+
+   // autocomplete: trigger on typing and on '.' for member completion; Ctrl+Space manually
+   m_acConfig.triggerCharacters = ".";
+   m_acConfig.callback = [this](TextEditor::AutoCompleteState &state) { OnAutoComplete(state); };
+   m_acConfig.userData = this;
+   m_te.SetAutoCompleteConfig(&m_acConfig);
+
+   BaseDeclarations(); // pin the base word snapshots before the first dynamic merge
+   BaseIdentifiers();
+}
+
+// Rebuild the script model/API index and push the dynamic identifier sets into the
+// language so script symbols, part names and core.vbs API names get their own color
+void ScriptPanel::ReparseModel()
+{
+   const TextEditor::Language *lang = TextEditorVbs::getDefinition();
+   m_model.Parse(m_editor.m_table->m_script_text);
+   m_api.Refresh(m_editor.m_table, m_editor.m_table->m_script_text);
+
+   TextEditor::Language *mutableLang = const_cast<TextEditor::Language *>(lang);
+   mutableLang->declarations = BaseDeclarations();
+   mutableLang->identifiers = BaseIdentifiers();
+   for (const Symbol &s : m_model.Symbols())
+      (s.kind == SymbolKind::Class ? mutableLang->declarations : mutableLang->identifiers).insert(s.lowerName);
+   for (const Symbol &s : m_api.Globals())
+      mutableLang->identifiers.insert(s.lowerName);
+   m_te.SetLanguage(lang); // re-colorize with the updated sets
+}
+
+// Fills the widget's suggestion list: "x." before the cursor completes x's members
+// (script classes, `Set x = New C` variables, core.vbs classes, table parts), a bare
+// word completes from keywords, builtins, script symbols and API globals
+void ScriptPanel::OnAutoComplete(TextEditor::AutoCompleteState &state)
+{
+   const std::string ctx = m_te.GetContext(state.searchTermStart, [](ImWchar c) { return VbsLex::IsIdentChar(c) || c == '.'; });
+   const size_t lastDot = ctx.rfind('.');
+   const std::string chain = lastDot == std::string::npos ? std::string() : ctx.substr(0, lastDot);
+   const std::string prefix = LowerWord(state.searchTerm);
+
+   std::vector<std::pair<std::string, std::string>> cands;
+   std::unordered_set<std::string> seen;
+   const auto add = [&](std::string suggestion, std::string label)
+   {
+      const std::string key = LowerWord(suggestion);
+      if ((!prefix.empty() && key.compare(0, prefix.size(), prefix) != 0) || !seen.insert(key).second)
+         return;
+      cands.emplace_back(std::move(suggestion), std::move(label));
+   };
+   const auto addSymbol = [&](const Symbol &s)
+   {
+      if (s.name.empty())
+         return;
+      std::string label = s.signature.empty() ? s.name : s.signature;
+      label += "  \xe2\x80\x94 "; // em dash
+      label += SymbolKindName(s.kind);
+      add(s.name, std::move(label));
+   };
+
+   if (!chain.empty())
+   {
+      // member context: resolve the chain's first segment to something with members
+      const std::string first = LowerWord(chain.substr(0, chain.find('.')));
+      if (first == "me")
+         for (const Symbol *s : m_model.TopLevel())
+            addSymbol(*s);
+      else if (!m_api.InterfaceOf(first).empty())
+      {
+         // COM interface members come from vpinball_script_api.inc in a later phase
+      }
+      else
+         for (const Symbol *s : m_api.MembersOf(first, m_model))
+            addSymbol(*s);
+   }
+   else
+   {
+      for (const std::string &kw : TextEditorVbs::getDefinition()->keywords)
+         add(kw, kw + "  \xe2\x80\x94 keyword");
+      for (const std::string &w : BaseIdentifiers())
+         add(w, w + "  \xe2\x80\x94 builtin");
+      for (const Symbol &s : m_model.Symbols())
+         addSymbol(s);
+      for (const Symbol &s : m_api.Globals())
+         if (!s.name.empty())
+            add(s.name, s.name + "  \xe2\x80\x94 " + s.signature);
+   }
+
+   std::sort(cands.begin(), cands.end(), [](const auto &a, const auto &b) { return a.first < b.first; });
+   state.suggestions.reserve(cands.size());
+   state.labels.reserve(cands.size());
+   for (auto &[suggestion, label] : cands)
+   {
+      state.suggestions.push_back(std::move(suggestion));
+      state.labels.push_back(std::move(label));
+   }
 }
 
 ScriptPanel::~ScriptPanel() { StopExternalSession(); }
@@ -328,6 +443,8 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       {
          m_teTable = table;
          m_te.SetText(table->m_script_text);
+         m_modelDirty = true;
+         m_modelDirtyAt = 0.0;
       }
       else if (m_teReload)
       {
@@ -344,6 +461,14 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       m_te.SetShowWhitespacesEnabled(settings.GetEditor_ScriptEditorShowWhitespace());
       m_te.SetReadOnlyEnabled(readOnly);
 
+      // Rebuild the script model shortly after the last edit (drives dynamic coloring
+      // and autocomplete) — cheap enough to keep simple, debounced per keystroke burst
+      if (m_modelDirty && ImGui::GetTime() - m_modelDirtyAt > 0.25)
+      {
+         m_modelDirty = false;
+         ReparseModel();
+      }
+
       // Embedded code editor, applied to the table script on every edit. Esc releases the
       // editor focus, but only after the widget's transient UI (autocomplete popup,
       // find/replace window, secondary cursors) had its chance to consume it.
@@ -359,6 +484,8 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
          {
             table->m_script_text = text;
             table->SetDirtyScript(SaveDirtyState::Dirty);
+            m_modelDirty = true;
+            m_modelDirtyAt = ImGui::GetTime();
          }
       }
       if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows) && ImGui::IsKeyPressed(ImGuiKey_Escape, false) && !transientActive)

@@ -379,6 +379,10 @@ set(VPX_SOURCES
    src/ui/live/editor/parts/RubberUIPart.cpp
    src/ui/live/editor/ScriptPanel.h
    src/ui/live/editor/ScriptPanel.cpp
+   src/ui/live/editor/script/ScriptAnalysis.h
+   src/ui/live/editor/script/ScriptAnalysis.cpp
+   src/ui/live/editor/script/ScriptApi.h
+   src/ui/live/editor/script/ScriptApi.cpp
    src/ui/live/editor/Selection.h
    src/ui/live/editor/ops/SetOriginOp.h
    src/ui/live/editor/ops/SetOriginOp.cpp

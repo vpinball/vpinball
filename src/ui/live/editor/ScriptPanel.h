@@ -8,6 +8,8 @@
 
 #include "EditorAreaView.h"
 #include "textedit/TextEditor.h"
+#include "script/ScriptAnalysis.h"
+#include "script/ScriptApi.h"
 
 class PinTable;
 
@@ -44,6 +46,15 @@ private:
    TextEditor m_te;
    PinTable *m_teTable = nullptr; // Table whose script text is currently loaded in m_te
    bool m_teReload = false; // Script text changed outside the widget: push it on next render
+
+   // Script model + API metadata for dynamic highlighting and autocomplete
+   ScriptModel m_model;
+   ScriptApi m_api;
+   TextEditor::AutoCompleteConfig m_acConfig;
+   double m_modelDirtyAt = 0.0; // ImGui time of the last edit; the model reparses after a short delay
+   bool m_modelDirty = true;
+   void ReparseModel();
+   void OnAutoComplete(TextEditor::AutoCompleteState &state);
 
    string m_extEditorCmd; // External editor command, mirrored to the Editor.ExternalScriptEditor app setting
    bool m_extCmdLoaded = false;
