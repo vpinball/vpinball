@@ -4,6 +4,11 @@
 
 #include <cstdint>
 
+// <wingdi.h> defines RGB as a macro which would collide with B2S::seg::RGB
+#ifdef RGB
+#undef RGB
+#endif
+
 // Minimal geometry types standing in for the SDL ones used by the retired
 // B2SLegacy plugin this code is ported from (SDL_FPoint/FRect, SDL_Rect).
 
