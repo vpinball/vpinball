@@ -70,6 +70,8 @@ public:
    int m_paintInterval = 32;
    bool m_safeMode = false;
    float m_labelYScale = 0.f;
+   int m_labelCanvasW = 0;
+   int m_labelCanvasH = 0;
    bool m_labelsInVideo = false;
    bool m_raiseOnPlay = true;
    bool m_raiseLabelsOnPlay = true;
@@ -111,6 +113,7 @@ public:
    void ReplaceChild(std::shared_ptr<PUPScreen> pChild, std::shared_ptr<PUPScreen> pScreen);
    PUPScreen* GetParent() const { return m_pParent; }
    PUPScreen* GetHost() const;
+   const SDL_Rect& GetRect() const { return m_rect; }
    bool HasChildren() const { return !m_children.empty(); }
 
    void AddTrigger(PUPTrigger* pTrigger);
