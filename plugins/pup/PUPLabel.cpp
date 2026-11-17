@@ -371,8 +371,9 @@ float PUPLabel::YScale(const SDL_Rect& rect) const
       return 1.f;
    if (m_yScaleOverride > 0.f)
       return m_yScaleOverride;
-   const float w = static_cast<float>(std::max(rect.w, 10));
-   const float h = static_cast<float>(std::max(rect.h, 10));
+   const bool canvas = m_pScreen->m_labelCanvasW > 0;
+   const float w = static_cast<float>(std::max(canvas ? m_pScreen->m_labelCanvasW : rect.w, 10));
+   const float h = static_cast<float>(std::max(canvas ? m_pScreen->m_labelCanvasH : rect.h, 10));
    float yScale = (w / 1.7777777f) / h;
    if (yScale > 0.95f && yScale < 1.05f)
       yScale = 1.f;

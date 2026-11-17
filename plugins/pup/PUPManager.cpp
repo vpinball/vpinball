@@ -1346,7 +1346,14 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
          case 53:
             // Experimental frame rescale, FORCE higher frame size to autosize and rescale nicer,  like AA and auto-fit.
             // "{ ""mt"":301, ""SN"": "&PuPID& ", ""FN"": 53, ""XW"": "&fWidth&", ""YH"": "&fHeight&", ""FR"":1 }"
-            NOT_IMPLEMENTED(std::format("Experimental frame rescale is not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+            if (const int xw = json["XW"s].as<int>(0); pScreen->HasLabelLayer() && xw > 10)
+            {
+               pScreen->m_labelCanvasW = std::max(xw, 10);
+               pScreen->m_labelCanvasH = std::max(json["YH"s].as<int>(0), 10);
+               const SDL_Rect& rect = pScreen->GetRect();
+               if (json["FR"s].as<int>(0) != 1 && (std::abs(rect.w - pScreen->m_labelCanvasW) >= 5 || std::abs(rect.h - pScreen->m_labelCanvasH) >= 5))
+                  NOT_IMPLEMENTED(std::format("Unscaled label canvas is drawn scaled: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+            }
             break;
          case 55:
             // Set media transition fade step, read from "FS" field.
