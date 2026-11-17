@@ -180,7 +180,14 @@ public:
 
    std::shared_ptr<MeshBuffer> GetQuadMeshBuffer() const { return m_quadMeshBuffer; }
 
-   void SetClipPlane(const vec4& plane);
+   // Clip plane (keeps dot(plane, pos) >= 0) in the space of the parts rendered next, with the model view projection they are rendered
+   // with (only used by DX9): use RenderView::SetClipPlane, which keeps it in sync with the reference space and reflection of the view
+   void SetClipPlane(const vec4& plane, const Matrix3D& modelViewProj);
+#if defined(ENABLE_DX9)
+   // DX9 clip planes are fixed function device state, expressed in clip space: SetClipPlane only records the plane, each draw
+   // command captures it with its render states and sets it on the device when it is executed (see RenderCommand::Execute)
+   const vec4& GetRecordedClipPlane() const { return m_recordedClipPlane; }
+#endif
 
    // Active (live on GPU) render state
    void ApplyRenderStates();
@@ -264,6 +271,9 @@ private:
    RenderPass* m_nextRenderCommandDependency = nullptr;
 
    RenderState m_current_renderstate, m_renderstate, m_defaultRenderState;
+#if defined(ENABLE_DX9)
+   vec4 m_recordedClipPlane { 0.f, 0.f, 0.f, 0.f }; // Clip space plane of the last SetClipPlane call (see GetRecordedClipPlane)
+#endif
    bool m_logNextFrame = false; // Output a log of next frame to main application log
 
 #if !defined(__STANDALONE__) && !defined(ENABLE_BGFX)

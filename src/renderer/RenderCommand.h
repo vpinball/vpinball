@@ -83,6 +83,9 @@ private:
    Shader* m_shader = nullptr;
    ShaderState* m_shaderState = nullptr;
    RenderState m_renderState;
+#if defined(ENABLE_DX9)
+   vec4 m_clipPlane; // Clip space clip plane, set on the device when the render state enables it (see RenderDevice::GetRecordedClipPlane)
+#endif
    bool m_isTransparent;
 
    // For RC_CLEAR

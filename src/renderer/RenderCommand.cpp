@@ -121,6 +121,10 @@ void RenderCommand::Execute(const int nInstances, const bool log)
    case RC_DRAW_TRANSIENT:
    {
       m_renderState.Apply(m_rd);
+#if defined(ENABLE_DX9)
+      if (m_renderState.GetRenderState(RenderState::CLIPPLANEENABLE) == RenderState::RS_TRUE)
+         CHECKD3D(m_rd->GetCoreDevice()->SetClipPlane(0, &m_clipPlane.x));
+#endif
       m_shaderState->SetInt(ShaderUniform::layer, RenderTarget::GetCurrentRenderLayer() < 0 ? 0 : RenderTarget::GetCurrentRenderLayer());
       m_shader->m_state->CopyTo(false, m_shaderState);
       m_shader->Begin();
@@ -442,6 +446,9 @@ void RenderCommand::SetDrawMesh(
    m_startIndex = startIndex;
    m_indicesCount = indexCount;
    m_rd->CopyRenderStates(true, m_renderState);
+#if defined(ENABLE_DX9)
+   m_clipPlane = m_rd->GetRecordedClipPlane();
+#endif
    m_depth = depth;
    m_isTransparent = isTransparent;
    m_shader = shader;
@@ -463,6 +470,9 @@ void RenderCommand::SetDrawTransientMesh(Shader* shader, std::shared_ptr<UIListG
    m_startIndex = startIndex;
    m_indicesCount = indexCount;
    m_rd->CopyRenderStates(true, m_renderState);
+#if defined(ENABLE_DX9)
+   m_clipPlane = m_rd->GetRecordedClipPlane();
+#endif
    m_depth = depth;
    m_isTransparent = isTransparent;
    m_shader = shader;
@@ -479,6 +489,9 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly
    m_command = Command::RC_DRAW_QUAD_PT;
    memcpy(m_vertices, vertices, 4 * sizeof(Vertex3D_TexelOnly));
    m_rd->CopyRenderStates(true, m_renderState);
+#if defined(ENABLE_DX9)
+   m_clipPlane = m_rd->GetRecordedClipPlane();
+#endif
    m_depth = depth;
    m_isTransparent = isTransparent;
    m_shader = shader;
@@ -494,6 +507,9 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* v
    m_command = Command::RC_DRAW_QUAD_PNT;
    memcpy(m_vertices, vertices, 4 * sizeof(Vertex3D_NoTex2));
    m_rd->CopyRenderStates(true, m_renderState);
+#if defined(ENABLE_DX9)
+   m_clipPlane = m_rd->GetRecordedClipPlane();
+#endif
    m_depth = depth;
    m_isTransparent = isTransparent;
    m_shader = shader;

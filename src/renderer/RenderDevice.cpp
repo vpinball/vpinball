@@ -2879,13 +2879,14 @@ void RenderDevice::CopyRenderAndShaderStates(const bool copyTo, RenderDeviceStat
       m_stereoShader->m_state->CopyTo(copyTo, state.m_stereoShaderState);
 }
 
-void RenderDevice::SetClipPlane(const vec4 &plane)
+void RenderDevice::SetClipPlane(const vec4 &plane, [[maybe_unused]] const Matrix3D &modelViewProj)
 {
 #if defined(__OPENGLES__)
    // FIXME GLES implement (or use BGFX OpenGL ES implementation)
    return;
 #elif defined(ENABLE_BGFX)
-   //m_DMDShader->SetVector(ShaderUniform::clip_plane, &plane); // FIXME
+   if (m_DMDShader->HasUniform(ShaderUniform::clip_plane)) // Used by the world space (in scene) display techniques
+      m_DMDShader->SetVector(ShaderUniform::clip_plane, &plane);
    m_basicShader->SetVector(ShaderUniform::clip_plane, &plane);
    m_lightShader->SetVector(ShaderUniform::clip_plane, &plane);
    m_flasherShader->SetVector(ShaderUniform::clip_plane, &plane);
@@ -2897,15 +2898,19 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
    m_flasherShader->SetVector(ShaderUniform::clip_plane, &plane);
    m_ballShader->SetVector(ShaderUniform::clip_plane, &plane);
 #elif defined(ENABLE_DX9)
-   // FIXME DX9 shouldn't we set the Model matrix to identity first ?
-   Matrix3D mT = g_pplayer->m_renderer->GetMVP().GetModelViewProj(0); // = world * view * proj
+   // DX9 clip planes are expressed in clip space: transform the plane by the inverse transpose of the model view projection (reflection,
+   // jitter and flip included). RenderView::ApplyClipPlane calls this again after each change of these transforms. The model is identity
+   // after a space switch, so parts drawn with an object transform are still clipped in the coordinates of their reference space.
+   Matrix3D mT = modelViewProj; // = world * reflected view * proj
    mT.Invert();
    mT.Transpose();
    const D3DXMATRIX m(mT);
    D3DXPLANE clipSpacePlane;
-   const D3DXPLANE dxplane(-plane.x, -plane.y, -plane.z, -plane.w);
+   const D3DXPLANE dxplane(plane.x, plane.y, plane.z, plane.w);
    D3DXPlaneTransform(&clipSpacePlane, &dxplane, &m);
-   GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
+   // Not set on the device here: draws are executed later, with the frame, and each probe and space switch records its own plane.
+   // Each draw command captures the recorded plane and sets it when executed (see RenderCommand::Execute).
+   m_recordedClipPlane = vec4(clipSpacePlane.a, clipSpacePlane.b, clipSpacePlane.c, clipSpacePlane.d);
    // The ball impostor cannot rely on the hardware clip plane (which is evaluated at the impostor quad depth, not at the
    // analytic surface depth), so it receives the plane and performs the clip test in its fragment shader
    m_ballShader->SetVector(ShaderUniform::clip_plane, &plane);
@@ -3041,7 +3046,13 @@ void RenderDevice::DrawFullscreenTexturedQuad(Shader* shader)
 {
    assert(shader == m_FBShader || shader == m_stereoShader); // FrameBuffer/Stereo shaders are the only ones using Position/Texture vertex format
    static constexpr Vertex3Ds pos { 0.f, 0.f, 0.f };
+   // A fullscreen pass is 2D: the clip plane a reflection probe enables (as the default state of its passes) must not apply to it.
+   // Under DX9 the clip plane is fixed function, applied to every draw, and would clip the quad, which is given in clip space
+   // (other backends only clip in the scene shaders)
+   const RenderState::RenderStateValue clipPlane = m_renderstate.GetRenderState(RenderState::CLIPPLANEENABLE);
+   m_renderstate.SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_FALSE);
    DrawMesh(shader, false, pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
+   m_renderstate.SetRenderState(RenderState::CLIPPLANEENABLE, clipPlane);
 }
 
 void RenderDevice::DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, std::shared_ptr<MeshBuffer> mb, const PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount)
