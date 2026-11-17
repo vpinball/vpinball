@@ -212,6 +212,7 @@ private:
    RenderState UpdateLabelTexture(int outWidth, int outHeight, PUPFont* pFont, const string& szCaption, float size, int color, int shadowstate, int shadowcolor, SDL_FPoint offsetPixels);
    void ClearAnimationInternal();
    float EffectiveSize() const;
+   int EffectiveShadowType() const;
    SDL_FPoint GetShadowOffsetPixels(float fontHeight) const;
 
    class Animation {

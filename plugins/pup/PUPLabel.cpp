@@ -357,6 +357,13 @@ void PUPLabel::ClearAnimationInternal()
    }
 }
 
+int PUPLabel::EffectiveShadowType() const
+{
+   if (m_shadowType < 0)
+      return 2;
+   return std::min(m_shadowType, 2);
+}
+
 float PUPLabel::EffectiveSize() const
 {
    // PinUP's 'size' key sets TFont.Size in points at 96 dpi, i.e. an em height of 96/72 the
@@ -1115,7 +1122,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
          m_pendingTextureUpdate = std::async(std::launch::async, [this, rect, fontColor]() {
             std::lock_guard lock(m_mutex);
             const float fontHeight = (EffectiveSize() / 100.0f) * static_cast<float>(rect.h);
-            return UpdateLabelTexture(rect.w, rect.h, m_pFont, m_szCaption, EffectiveSize(), fontColor, m_shadowType, m_shadowColor, GetShadowOffsetPixels(fontHeight));
+            return UpdateLabelTexture(rect.w, rect.h, m_pFont, m_szCaption, EffectiveSize(), fontColor, EffectiveShadowType(), m_shadowColor, GetShadowOffsetPixels(fontHeight));
          });
    }
 
@@ -1273,7 +1280,7 @@ void PUPLabel::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, int p
    if (m_type == PUP_LABEL_TYPE_TEXT)
       dest.y += m_renderState.m_baselineOffset;
 
-   if (m_shadowType == 2)
+   if (EffectiveShadowType() == 2)
    {
       const float fontHeight = (EffectiveSize() / 100.0f) * static_cast<float>(rect.h);
       const SDL_FPoint shadowOffset = GetShadowOffsetPixels(fontHeight);
@@ -1450,7 +1457,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outWidth, int outHeight, 
    const PUPFont::SizeMetrics metrics = pFont->Apply(fontHeight);
    TTF_Font* const pTTFFont = pFont->GetTTFFont();
 
-   const float shadowTop = (m_shadowType == 2) ? static_cast<float>(SDL_max(1, static_cast<int>(SDL_max(std::abs(offsetPixels.x), std::abs(offsetPixels.y))) - 2)) : 0.f;
+   const float shadowTop = (shadowstate == 2) ? static_cast<float>(SDL_max(1, static_cast<int>(SDL_max(std::abs(offsetPixels.x), std::abs(offsetPixels.y))) - 2)) : 0.f;
    rs.m_baselineOffset = metrics.winAscent - metrics.sdlAscent - shadowTop;
 
    // FIXME TTF_SetFontOutline does not gives clean outlines
