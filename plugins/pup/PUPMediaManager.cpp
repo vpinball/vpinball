@@ -447,11 +447,16 @@ bool PUPMediaManager::IsBackgroundPlaying() { return m_bg.active && !m_bg.szPath
 
 void PUPMediaManager::Render(VPXRenderContext2D* const ctx, float alpha)
 {
+   Render(ctx, m_bounds, alpha);
+}
+
+void PUPMediaManager::Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, float alpha)
+{
    if (m_player.IsPlaying()) {
       if (m_currentAlpha < 255) {
          m_currentAlpha = std::min(255, m_currentAlpha + m_fadeStep);
       }
-      m_player.Render(ctx, m_bounds, alpha * (static_cast<float>(m_currentAlpha) / 255.f));
+      m_player.Render(ctx, rect, alpha * (static_cast<float>(m_currentAlpha) / 255.f));
    }
 }
 

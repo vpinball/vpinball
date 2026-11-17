@@ -363,8 +363,13 @@ void PUPScreen::Unduck()
 
 void PUPScreen::OnMediaStart(const std::filesystem::path& path)
 {
-   if (m_labelLayer && PluginStrings::PathToUTF8(path).find('@') != string::npos)
-      SetHideDuringPlay(true);
+   if (PluginStrings::PathToUTF8(path).find('@') != string::npos)
+   {
+      if (m_labelLayer)
+         SetHideDuringPlay(true);
+      else if (PUPScreen* host = GetHost(); host && host->m_labelLayer)
+         host->SetHideDuringPlay(true);
+   }
    else if (m_labelLayer && m_hideDuringPlay && !path.empty() && m_pManager->GetEngine() == PUPManager::Engine::PinUP20)
    {
       m_hideDuringPlay = false;
@@ -895,8 +900,18 @@ bool PUPScreen::IsBackgroundPlaying() const
    return m_pMediaPlayerManager->IsBackgroundPlaying();
 }
 
+PUPScreen* PUPScreen::GetHost() const
+{
+   if (m_pParent && m_pCustomPos && m_pCustomPos->GetFlag() == 6 && m_pManager->GetEngine() == PUPManager::Engine::PinUP20)
+      return m_pParent;
+   return nullptr;
+}
+
 void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
    assert(std::this_thread::get_id() == m_apiThread);
+
+   if (GetHost())
+      return;
 
    // ForcePop / ForcePopBack hide their window (underlay, image and video, not the label overlay)
    // when their media ends with no background to return to, until the next media start or FN 1.
@@ -913,6 +928,9 @@ void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
       m_pMediaPlayerManager->Render(ctx, m_screenAlpha);
       if (!m_pMediaPlayerManager->IsMainPlaying() && !m_pMediaPlayerManager->IsBackgroundPlaying())
          m_staticImage.Render(ctx, m_rect, m_screenAlpha);
+      for (const auto& pChild : m_children)
+         if (pChild->GetHost() == this && pChild->m_mode != Mode::Off && pChild->m_mode != Mode::MusicOnly)
+            pChild->m_pMediaPlayerManager->Render(ctx, m_rect, pChild->m_screenAlpha);
       break;
 
    case 3:

@@ -30,7 +30,8 @@ std::unique_ptr<PUPCustomPos> PUPCustomPos::CreateFromCSV(const string& line)
 
    pCustomPos->m_sourceScreen = sourceScreen;
    if (parts.size() == 6) {
-      switch (string_to_int(parts[5], 0)) {
+      pCustomPos->m_flag = static_cast<int>(std::lround(string_to_float(parts[5], 0.f)));
+      switch (pCustomPos->m_flag) {
       case 1: pCustomPos->m_rotation = 90; break;
       case 2: pCustomPos->m_rotation = 180; break;
       case 3: pCustomPos->m_rotation = 270; break;

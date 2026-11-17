@@ -32,6 +32,7 @@ public:
    void Stop(int priority);
    void Stop(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile);
    void Render(VPXRenderContext2D* const ctx, float alpha = 1.f);
+   void Render(VPXRenderContext2D* const ctx, const SDL_Rect& rect, float alpha);
    bool IsMainPlaying();
    bool IsBackgroundPlaying();
 
