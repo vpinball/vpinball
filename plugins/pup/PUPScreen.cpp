@@ -261,6 +261,27 @@ void PUPScreen::FadeOut(int endMode, int interval)
    m_videoTimerNext = SDL_GetTicks() + m_videoTimerInterval;
 }
 
+void PUPScreen::HardStop()
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   if (m_pMediaPlayerManager->IsMainPlaying() || m_pMediaPlayerManager->IsBackgroundPlaying())
+      m_pMediaPlayerManager->Halt();
+}
+
+void PUPScreen::SetSafeMode(bool safeMode)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   if (safeMode == m_safeMode)
+      return;
+   m_safeMode = safeMode;
+   if (!safeMode)
+      return;
+   const bool playing = m_pMediaPlayerManager->IsMainPlaying() || m_pMediaPlayerManager->IsBackgroundPlaying();
+   m_pMediaPlayerManager->Halt();
+   if (playing)
+      OnMediaEnd();
+}
+
 void PUPScreen::UpdateVideoTimer()
 {
    assert(std::this_thread::get_id() == m_apiThread);
@@ -681,6 +702,8 @@ void PUPScreen::Play(const string& szPlaylist, const std::filesystem::path& szPl
 void PUPScreen::Play(PUPPlaylist* pPlaylist, const std::filesystem::path& szPlayFile, float volume, int priority, PlayAction action, int length)
 {
    assert(std::this_thread::get_id() == m_apiThread);
+   if (m_safeMode)
+      return;
    //LOGD(std::format("play, screen={{{}}}, playlist={{{}}}, playFile={}, volume={:.0f}, priority={}", ToString(false), pPlaylist->ToString(), PluginStrings::PathToUTF8(szPlayFile), volume, priority));
    //StopMedia(); // Does it stop the played media on all request like overlays or alphas ? I don't think so but unsure
    const bool background = (action == PlayAction::SetBG);
