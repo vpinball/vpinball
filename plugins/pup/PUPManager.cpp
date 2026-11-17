@@ -1359,9 +1359,18 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
             if (const int interval = json["KS"s].as<int>(0); pScreen->HasLabelLayer() && interval > 10)
                pScreen->m_paintInterval = interval;
             break;
+         case 24:
+            // { "mt":301, "SN": XX, "FN":24, "EN":1 } safe mode stops the screen and ignores plays until EN 0
+            if (const int en = json["EN"s].as<int>(0); en == 0 || en == 1)
+               pScreen->SetSafeMode(en == 1);
+            break;
          case 29:
             // { "mt":301, "SN": XX, "FN":29, "FT":0, "FI":100 } fade the screen out, FT 0 stop, 1 pause, 2 stop and hide, 3 pause and hide, FI tick interval in ms
             pScreen->FadeOut(json["FT"s].as<int>(0), json["FI"s].as<int>(0));
+            break;
+         case 300:
+            // { "mt":301, "SN": XX, "FN":300 } stop the player without an end of media, nothing restarts until the next play
+            pScreen->HardStop();
             break;
          case 301:
             // { "mt":301, "SN": XX, "FN":301 } a fade out that would pause stops instead

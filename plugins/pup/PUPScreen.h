@@ -62,6 +62,7 @@ public:
    bool m_customImageMode = false;
    bool m_stopInsteadOfPause = false;
    int m_paintInterval = 32;
+   bool m_safeMode = false;
    bool m_raiseOnPlay = true;
    bool m_raiseLabelsOnPlay = true;
    bool m_labelsTopmost = true;
@@ -138,6 +139,8 @@ public:
    void SetAsBackGround(int mode);
    void SetFadeStep(int step);
    void FadeOut(int endMode, int interval);
+   void HardStop();
+   void SetSafeMode(bool safeMode);
    bool IsJukebox() const;
    void SetJukebox(bool jukebox);
    void JukeboxSkip(int direction);
