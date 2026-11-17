@@ -581,6 +581,17 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       if (ImGui::Checkbox("Show whitespace", &whitespace))
          settings.SetEditor_ScriptEditorShowWhitespace(whitespace, false);
 
+      // Ctrl+wheel zoom (see RenderPane); show the current level and offer a reset
+      if (m_fontZoom != 1.0f)
+      {
+         ImGui::Separator();
+         ImGui::TextDisabled("Font zoom: %d%%", static_cast<int>(m_fontZoom * 100.f + 0.5f));
+         if (ImGui::MenuItem("Reset font zoom"))
+            m_fontZoom = 1.0f;
+      }
+
+      ImGui::Separator();
+
       // Outliner: jump to any declaration (classes expose their members as submenus)
       if (ImGui::BeginMenu("Go to symbol"))
       {
@@ -714,7 +725,15 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       // editor focus, but only after the widget's transient UI (autocomplete popup,
       // find/replace window, secondary cursors) had its chance to consume it.
       const bool transientActive = m_te.HasActiveTransient();
-      ImGui::PushFont(m_editor.m_liveUI.GetMonoFont(), m_editor.m_liveUI.GetMonoFont()->LegacySize);
+
+      // Ctrl+mouse wheel zooms the editor font (consumed here so it doesn't also scroll the text)
+      ImGuiIO &io = ImGui::GetIO();
+      if (io.KeyCtrl && io.MouseWheel != 0.0f && ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows))
+      {
+         m_fontZoom = ImClamp(m_fontZoom * powf(1.1f, io.MouseWheel), 0.5f, 3.0f);
+         io.MouseWheel = 0.0f;
+      }
+      ImGui::PushFont(m_editor.m_liveUI.GetMonoFont(), m_editor.m_liveUI.GetMonoFont()->LegacySize * m_fontZoom);
       const ImGuiWindowFlags teFlags = wordWrap ? ImGuiWindowFlags_NoMove : (ImGuiWindowFlags_NoMove | ImGuiWindowFlags_HorizontalScrollbar);
       const bool changed = m_te.Render("##script", ImVec2(-FLT_MIN, -FLT_MIN), ImGuiChildFlags_None, teFlags);
       ImGui::PopFont();

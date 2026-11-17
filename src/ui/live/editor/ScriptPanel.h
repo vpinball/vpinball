@@ -50,6 +50,8 @@ private:
    PinTable *m_teTable = nullptr; // Table whose script text is currently loaded in m_te
    bool m_teReload = false; // Script text changed outside the widget: push it on next render
 
+   float m_fontZoom = 1.0f; // Ctrl+wheel zoom factor applied to the editor's mono font
+
    // Script model + API metadata for dynamic highlighting and autocomplete
    ScriptModel m_model;
    ScriptApi m_api;
