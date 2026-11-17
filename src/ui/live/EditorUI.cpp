@@ -815,7 +815,8 @@ void EditorUI::RenderUI()
          else
          {
             const float halfW = flyVp->m_camDistance * aspect, halfH = flyVp->m_camDistance;
-            proj = Matrix3D::MatrixOrthoOffCenterRH(-halfW, halfW, -halfH, halfH, 0.5f, -50000.f);
+            const float zExtent = max(50000.f, flyVp->m_camDistance * 4.f); // Same clip volume as the pane's ortho projection
+            proj = Matrix3D::MatrixOrthoOffCenterRH(-halfW, halfW, -halfH, halfH, zExtent, -zExtent);
          }
          m_renderer->GetPrimaryView()->SetViewProj(RH2LH * flyVp->m_camView * YAxis, YAxis * proj);
       }
