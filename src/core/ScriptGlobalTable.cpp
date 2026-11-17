@@ -441,8 +441,6 @@ STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR
 
 STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 {
-   if (g_pplayer == nullptr)
-      return E_FAIL;
    const string szFileName = MakeString(FileName);
    const std::filesystem::path filepath = PathFromUTF8(normalize_path_separators(szFileName));
    if (std::filesystem::path file = g_app->m_fileLocator.SearchScript(m_table, filepath); !file.empty())
@@ -460,7 +458,8 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
          if (path_has_extension(szFileName, "vbs"s)) // Ignoring case
          {
             PLOGI << "Reading script: " << PathToUTF8(file);
-            content = g_pplayer->m_pluginAPI.ApplyScriptCOMObjectOverrides(content);
+            if (g_pplayer)
+               content = g_pplayer->m_pluginAPI.ApplyScriptCOMObjectOverrides(content);
          }
          *pContents = MakeWideBSTR(content);
          return S_OK;
