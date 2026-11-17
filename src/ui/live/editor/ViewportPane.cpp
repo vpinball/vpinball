@@ -2201,11 +2201,14 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       }
       else
       {
-         constexpr float zNear = 0.5f;
-         constexpr float zFar = 50000.f;
+         // Ortho depth is linear, so a wide clip volume costs no depth precision: extend it
+         // symmetrically around the camera. The orbit camera sits only m_camDistance from its
+         // target, so a near plane at the camera clips scene parts behind it when zoomed in, and
+         // a too short far plane clips the far side when zoomed out
+         const float zExtent = max(50000.f, m_camDistance * 4.f);
          const float viewHeight = m_camDistance;
          const float viewWidth = viewHeight * camAspect;
-         m_camProj = Matrix3D::MatrixOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, zNear, -zFar);
+         m_camProj = Matrix3D::MatrixOrthoOffCenterRH(-viewWidth, viewWidth, -viewHeight, viewHeight, zExtent, -zExtent);
       }
 
       // The pane's camera is pushed to the render view by Render3D (during the render pass)

@@ -148,7 +148,8 @@ void RendererInspectionModal::Render()
       else
       {
          const float halfW = vp->m_camDistance * aspect, halfH = vp->m_camDistance;
-         proj = Matrix3D::MatrixOrthoOffCenterRH(-halfW, halfW, -halfH, halfH, 0.5f, -50000.f);
+         const float zExtent = max(50000.f, vp->m_camDistance * 4.f); // Same clip volume as the pane's ortho projection
+         proj = Matrix3D::MatrixOrthoOffCenterRH(-halfW, halfW, -halfH, halfH, zExtent, -zExtent);
       }
       m_editor.m_renderer->GetPrimaryView()->SetViewProj(RH2LH * vp->m_camView * YAxis, YAxis * proj);
    }
