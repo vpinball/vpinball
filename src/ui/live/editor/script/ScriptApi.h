@@ -22,6 +22,32 @@ class PinTable;
 namespace VPX::EditorUI
 {
 
+// One script-visible member/event of a COM interface, from the generated table
+// (src/core/generated/vpinball_script_api.inc, emitted by tools/idl)
+struct ScriptApiEntry
+{
+   const char *name; // member/event name with IDL casing
+   unsigned flags; // kScriptApi* combination
+   const char *signature; // display signature, or the event's parameter list
+};
+
+// flags stored in ScriptApiEntry::flags
+inline constexpr unsigned kScriptApiMethod = 1u << 0;
+inline constexpr unsigned kScriptApiPropRead = 1u << 1;
+inline constexpr unsigned kScriptApiPropWrite = 1u << 2;
+inline constexpr unsigned kScriptApiEvent = 1u << 3;
+inline constexpr unsigned kScriptApiConst = 1u << 4;
+
+// Per-interface row of the generated table
+struct ScriptApiInterface
+{
+   const char *name;
+   const ScriptApiEntry *members;
+   int memberCount;
+   const ScriptApiEntry *events;
+   int eventCount;
+};
+
 class ScriptApi
 {
 public:
@@ -41,9 +67,15 @@ public:
    // Script name -> interface name ("Bumper1" -> "IBumper", "Debug" -> "IVPDebug"), "" when unknown
    std::string InterfaceOf(std::string_view name) const;
 
+   // Generated COM interface table lookup (case-insensitive), nullptr when unknown
+   static const ScriptApiInterface *FindInterface(std::string_view name);
+
+   // Interface entry for a script-visible name ("Bumper1" -> the IBumper row), nullptr when unknown
+   const ScriptApiInterface *InterfaceOfName(std::string_view name) const;
+
    // Members of a named class/interface: script classes come from the table script's
-   // own model, core classes from the builtin libraries; COM interface members land in
-   // a later phase (vpinball_script_api.inc)
+   // own model, core classes from the builtin libraries, COM interfaces from the
+   // generated table (e.g. "Bumper1" -> IBumper members, "Me" -> ITableGlobal)
    std::vector<const Symbol *> MembersOf(std::string_view name, const ScriptModel &scriptModel) const;
 
    // Files included by a script through GetTextFile("x.vbs") (comments/strings aware)
@@ -57,6 +89,7 @@ private:
    std::vector<Symbol> m_globals; // core top-level symbols + part names
    std::unordered_map<std::string, std::string> m_partIface; // script lowerName -> interface name
    std::string m_parsedIncludes; // include scan input (reparse on change)
+   mutable std::vector<Symbol> m_tmpMembers; // synthesized interface members for MembersOf results
 };
 
 }

@@ -13,6 +13,9 @@
 namespace VPX::EditorUI
 {
 
+// generated per-interface member/event tables
+#include "core/generated/vpinball_script_api.inc"
+
 namespace
 {
 
@@ -223,6 +226,9 @@ void ScriptApi::Refresh(const PinTable *table, const std::string_view scriptText
    addGlobal("Me", "ITableGlobal");
    if (table != nullptr)
    {
+      // the table's own script name ("Table1"), used for "Table1_Init" style handlers
+      if (const IScriptable *scriptable = table->GetIScriptable(); scriptable != nullptr && !scriptable->m_name.empty())
+         addGlobal(scriptable->m_name, "ITable");
       for (const IEditable *part : table->GetParts())
          if (const char *iface = InterfaceOfType(part->GetItemType()))
             addGlobal(part->GetName(), iface);
@@ -237,21 +243,68 @@ std::string ScriptApi::InterfaceOf(const std::string_view name) const
    return it == m_partIface.end() ? std::string() : it->second;
 }
 
+const ScriptApiInterface *ScriptApi::FindInterface(const std::string_view name)
+{
+   const std::string lower = Lower(name);
+   for (const ScriptApiInterface *iface = s_scriptApiInterfaces; iface->name != nullptr; ++iface)
+      if (lower == Lower(iface->name))
+         return iface;
+   return nullptr;
+}
+
+const ScriptApiInterface *ScriptApi::InterfaceOfName(const std::string_view name) const
+{
+   const std::string iface = InterfaceOf(name);
+   return iface.empty() ? nullptr : FindInterface(iface);
+}
+
 std::vector<const Symbol *> ScriptApi::MembersOf(const std::string_view name, const ScriptModel &scriptModel) const
 {
-   // script classes win over builtin library classes of the same name
-   std::vector<const Symbol *> members = scriptModel.MembersOf(name);
-   if (!members.empty())
-      return members;
-   const std::string cls = scriptModel.ResolveClassName(name);
-   if (!cls.empty())
-      return scriptModel.MembersOf(cls);
-   members = m_coreModel.MembersOf(name);
-   if (!members.empty())
-      return members;
-   const std::string coreCls = m_coreModel.ResolveClassName(name);
-   if (!coreCls.empty())
-      members = m_coreModel.MembersOf(coreCls);
+   // resolve the name a few hops: script classes win over builtin library classes
+   // of the same name, `Set x = ...` bindings chain to their target, and whatever
+   // remains is tried as a COM part name -> script interface
+   const ScriptApiInterface *iface = nullptr;
+   std::string current(name);
+   for (int hops = 0; hops < 8; ++hops)
+   {
+      std::vector<const Symbol *> members = scriptModel.MembersOf(current);
+      if (members.empty())
+         members = m_coreModel.MembersOf(current);
+      if (!members.empty())
+         return members;
+
+      iface = InterfaceOfName(current);
+      std::string next = scriptModel.ResolveClassName(current);
+      if (next.empty())
+         next = m_coreModel.ResolveClassName(current);
+      if (iface != nullptr || next.empty() || next == current)
+         break;
+      current = std::move(next);
+   }
+   if (iface == nullptr)
+      return {};
+
+   m_tmpMembers.clear();
+   m_tmpMembers.reserve(static_cast<size_t>(iface->memberCount));
+   for (int i = 0; i < iface->memberCount; ++i)
+   {
+      const ScriptApiEntry &entry = iface->members[i];
+      Symbol sym;
+      sym.name = entry.name;
+      sym.lowerName = Lower(entry.name);
+      sym.signature = entry.signature;
+      if (entry.flags & kScriptApiMethod)
+         sym.kind = std::string_view(entry.signature).starts_with("Function") ? SymbolKind::Function : SymbolKind::Sub;
+      else if (entry.flags & kScriptApiConst)
+         sym.kind = SymbolKind::Const;
+      else
+         sym.kind = SymbolKind::PropGet;
+      m_tmpMembers.push_back(std::move(sym));
+   }
+   std::vector<const Symbol *> members;
+   members.reserve(m_tmpMembers.size());
+   for (const Symbol &sym : m_tmpMembers)
+      members.push_back(&sym);
    return members;
 }
 
