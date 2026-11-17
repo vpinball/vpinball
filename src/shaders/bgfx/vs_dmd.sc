@@ -47,7 +47,7 @@ void main()
 		vec3 wpos_rel = tpos.xyz - cCameraPosWorld;
 		gl_Position = mul(mRotViewProj, vec4(wpos_rel, 1.0));
 		#ifdef CLIP
-			v_clipDistance = dot(clip_plane, pos);
+			v_clipDistance = dot(clip_plane, tpos);
 		#endif
 	#else
 		// Set Z to 1. which in turns result in a written depth of 0. needed to avoid tonemapping of DMD and for correct fake stereo

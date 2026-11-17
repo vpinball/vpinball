@@ -115,7 +115,9 @@ public:
    void SetViewProj(const Matrix3D& view, const Matrix3D& proj) { m_activeView->SetViewProj(view, proj); } // Override the MVP, applied to the base MVP
    // Set a reflection matrix to be applied to the view matrix, used for mirror reflections, applied to current MVP, NOT the base MVP
    void SetReflection(const Matrix3D& reflectionMatrix) { m_activeView->SetReflection(reflectionMatrix); }
-   // Apply a sub pixel offset to the projection of the current MVP (same offset as InitLayout but without resetting view and base MVP, allowing to jitter a reflected MVP)
+   // Clip plane in playfield space (nullptr to clear), applied in the reference space of the parts rendered next
+   void SetClipPlane(const vec4* playfieldPlane) { m_activeView->SetClipPlane(playfieldPlane); }
+   // Add a sub pixel offset to the projection, kept across space switches and reflections (undone by the opposite offset)
    void ApplyViewJitter(const float xpixoff, const float ypixoff) { m_activeView->ApplyViewJitter(xpixoff, ypixoff); }
    const ModelViewProj& GetMVP() const { return m_activeView->m_mvp; }
    Vertex3Ds Unproject(const int width, const int height, const Vertex3Ds& point) const { return m_activeView->Unproject(width, height, point); }

@@ -103,8 +103,10 @@ public:
    void SetFlip(ModelViewProj::FlipMode flipMode); // Flip the rendered image horizontally and/or vertically (e.g. for rear projection setups), applied to base MVP
    void SetViewProj(const Matrix3D& view, const Matrix3D& proj); // Override the MVP, applied to the base MVP
    void SetReflection(const Matrix3D& reflectionMatrix); // Set a reflection matrix to be applied to the view matrix, used for mirror reflections, applied to current MVP, NOT the base MVP
-   void ApplyViewJitter(const float xpixoff, const float ypixoff); // Apply a sub pixel offset to the projection of the current MVP
+   void ApplyViewJitter(const float xpixoff, const float ypixoff); // Add a sub pixel offset to the projection, kept across space switches (undone by the opposite offset)
    void SetSpaceReference(PartGroupData::SpaceReference spaceReference, bool force);
+   // Clip plane in playfield space (nullptr to clear), applied in the reference space of the parts rendered next (see SetSpaceReference)
+   void SetClipPlane(const vec4* playfieldPlane);
    void SetScreenOffset(const float x, const float y); // Set render offset in screen coordinates, e.g., for the nudge shake
    Vertex3Ds Unproject(const int width, const int height, const Vertex3Ds& point) const;
    Vertex3Ds Get3DPointFrom2D(const int width, const int height, const Vertex2D& p, float z);
@@ -221,4 +223,12 @@ private:
    // VPX::SpaceReference): all the space switches of a render share the same stable matrices
    Matrix3D m_spaceView[3][2];
    Matrix3D m_spaceProj[3][2];
+   Vertex2D m_viewJitter { 0.f, 0.f }; // Sub pixel offset applied on top of the space projections (see ApplyViewJitter)
+
+   bool m_hasReflection = false;
+   Matrix3D m_reflection = Matrix3D::MatrixIdentity(); // Playfield space reflection (see SetReflection), applied per reference space by SetSpaceReference
+
+   void ApplyClipPlane(); // Apply m_clipPlane in the current reference space (and under DX9 with the current transforms)
+   bool m_hasClipPlane = false;
+   vec4 m_clipPlane { 0.f, 0.f, 0.f, 0.f }; // Playfield space clip plane (see SetClipPlane)
 };

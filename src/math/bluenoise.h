@@ -1,6 +1,8 @@
 // license:GPLv3+
 
 // precomputed blue-noise'ish points for oversampling the static pre-rendered objects
+// The tables are ordered by bands of increasing second coordinate: a progressive use (partial sums displayed while the
+// samples are accumulated) must index them in a scrambled order, not sequentially (see StaticPrerenderSampleIndex)
 
 #define STATIC_PRERENDER_ITERATIONS /*32*//*64*/128
 /*   static const float xyLDBNbnot[STATIC_PRERENDER_ITERATIONS*2] = {
@@ -232,3 +234,16 @@
      0.99192f,0.91227f,
      0.00566f,0.99072f,
      0.61086f,0.98512f};
+
+// Index in xyLDBNbnot of the n-th accumulated sample. The table is ordered by bands of increasing second coordinate, which
+// gaussianDistribution maps to the jitter angle: walked in order, consecutive samples push the image the same way and the
+// partial accumulation, displayed while it progresses, drifts by up to half a pixel in a rotating direction. The bit-reversed
+// order spreads each run of samples over all the angles (index 0, the unjittered sample, stays first).
+inline unsigned int StaticPrerenderSampleIndex(unsigned int n) //!! could be optimized
+{
+   static_assert((STATIC_PRERENDER_ITERATIONS & (STATIC_PRERENDER_ITERATIONS - 1)) == 0, "Bit reversal needs a power of 2 sample count");
+   unsigned int index = 0;
+   for (unsigned int bit = 1; bit < STATIC_PRERENDER_ITERATIONS; bit <<= 1, n >>= 1)
+      index = (index << 1) | (n & 1u);
+   return index;
+}

@@ -358,6 +358,7 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
 
    m_rendering = true;
    RenderPass* const previousRT = m_renderer->m_renderDevice->GetCurrentPass();
+   const PartGroupData::SpaceReference previousSpace = m_renderer->GetActiveView()->m_mvpSpaceReference;
    const size_t firstPass = m_renderer->m_renderDevice->GetRenderFramePasses().size();
 
    m_renderer->m_renderDevice->ResetRenderState();
@@ -372,7 +373,7 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
    Vertex3Ds n(m_reflection_plane.x, m_reflection_plane.y, m_reflection_plane.z);
    n.Normalize();
    const vec4 clip_plane(n.x, n.y, n.z, m_reflection_plane.w);
-   m_renderer->m_renderDevice->SetClipPlane(clip_plane);
+   m_renderer->SetClipPlane(&clip_plane); // Kept in sync with the reflection and the reference space of each rendered part
    m_renderer->m_renderDevice->SetRenderState(RenderState::CLIPPLANEENABLE, RenderState::RS_TRUE);
    // Reverse cull mode since we multiply by a reversing matrix (mirror also has a reversing matrix)
    m_renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, g_pplayer->m_tblMirrorEnabled ? RenderState::CULL_CCW : RenderState::CULL_CW);
@@ -406,8 +407,9 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
             // Setup the view matrices with a jitter depending on the accumulation step.
             // The first accumulated sample always uses a centered offset so that the acquired depth buffer is the unjittered one.
             const bool isFirstSample = vs.staticAccumCount == 0;
-            float u1 = xyLDBNbnot[vs.staticAccumCount * 2];
-            float u2 = xyLDBNbnot[vs.staticAccumCount * 2 + 1];
+            const unsigned int sampleIndex = StaticPrerenderSampleIndex(vs.staticAccumCount);
+            float u1 = xyLDBNbnot[sampleIndex * 2];
+            float u2 = xyLDBNbnot[sampleIndex * 2 + 1];
             if (!isFirstSample)
             {
                // the following line implements filter importance sampling for a small gauss (i.e. less jaggies as it also samples neighboring pixels) -> but also potentially more artifacts in compositing!
@@ -502,6 +504,8 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
 
    // Restore initial render states and camera
    m_renderer->SetReflection(Matrix3D::MatrixIdentity());
+   m_renderer->SetClipPlane(nullptr);
+   m_renderer->GetActiveView()->SetSpaceReference(previousSpace, true); // The space of the part the probe is rendered for, not the one of the last part it rendered
    m_renderer->m_render_mask = prevRenderMask;
    m_renderer->m_renderDevice->CopyRenderAndShaderStates(false, *m_rdState);
    m_renderer->m_renderDevice->SetDefaultRenderState();

@@ -376,12 +376,11 @@ void RenderView::InitLayout()
 void RenderView::ApplyViewJitter(const float xpixoff, const float ypixoff)
 {
    assert(m_renderer->m_stereo3D != STEREO_VR);
-   // Apply a clip space offset (same convention as the projTrans pixel offset in ViewSetup::ComputeMVP) on the current
-   // MVP, preserving the (eventually reflected) view matrix since the offset is a post projection translation which does
-   // not interact with it
-   const Matrix3D offset = Matrix3D::MatrixTranslate(xpixoff / (float)GetDisplayWidth(), ypixoff / (float)GetDisplayHeight(), 0.f);
-   for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
-      m_mvp.SetProj(eye, m_mvp.GetProj(eye) * offset);
+   // The jitter is kept apart from the per space projections and applied on top of them by SetSpaceReference, so it survives
+   // the space switches of the jittered render. It is a post projection translation, independent of the (reflected) view.
+   m_viewJitter.x += xpixoff;
+   m_viewJitter.y += ypixoff;
+   SetSpaceReference(m_mvpSpaceReference, true);
 }
 
 void RenderView::SetFlip(ModelViewProj::FlipMode flipMode)
@@ -394,7 +393,8 @@ void RenderView::SetFlip(ModelViewProj::FlipMode flipMode)
 
 void RenderView::SetReflection(const Matrix3D& reflectionMatrix)
 {
-   m_mvp.SetReflection(reflectionMatrix);
+   m_reflection = reflectionMatrix;
+   m_hasReflection = !(reflectionMatrix == Matrix3D::MatrixIdentity());
    SetSpaceReference(m_mvpSpaceReference, true);
 }
 
@@ -653,6 +653,7 @@ void RenderView::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool 
 // all the space switches of the render (the layout may lazily recompute between renders).
 void RenderView::SetupSpaceViews()
 {
+   m_viewJitter = Vertex2D(0.f, 0.f);
    const SceneLayout& sceneLayout = g_pplayer->m_ptable->GetSceneLayout();
 #if defined(ENABLE_XR)
    if (m_renderer->m_stereo3D == STEREO_VR && !IsMirror())
@@ -708,17 +709,58 @@ void RenderView::SetSpaceReference(PartGroupData::SpaceReference spaceReference,
    if (!force && m_mvpSpaceReference == spaceReference)
       return;
 
-   // Apply the view/projection pair defined for this render (see SetupSpaceViews)
+   // Apply the view/projection pair defined for this render (see SetupSpaceViews), with the current sub pixel jitter
+   // (same convention as the projTrans pixel offset in ViewSetup::ComputeMVP, see ApplyViewJitter)
    const int space = static_cast<int>(spaceReference);
+   const bool jittered = m_viewJitter.x != 0.f || m_viewJitter.y != 0.f;
+   const Matrix3D jitter = jittered ? Matrix3D::MatrixTranslate(m_viewJitter.x / (float)GetDisplayWidth(), m_viewJitter.y / (float)GetDisplayHeight(), 0.f)
+                                    : Matrix3D::MatrixIdentity();
    for (unsigned int eye = 0; eye < m_mvp.m_nEyes; eye++)
    {
       m_mvp.SetView(eye, m_spaceView[space][eye]);
-      m_mvp.SetProj(eye, m_spaceProj[space][eye]);
+      m_mvp.SetProj(eye, jittered ? m_spaceProj[space][eye] * jitter : m_spaceProj[space][eye]);
+   }
+   // The reflection is defined in playfield space but applied to the coordinates of the space, before its view: conjugate it by
+   // the space to playfield transform (space -> playfield, reflect, back to the space)
+   if (!m_hasReflection || spaceReference == PartGroupData::SpaceReference::Playfield || spaceReference == PartGroupData::SpaceReference::Inherit)
+      m_mvp.SetReflection(m_reflection);
+   else
+   {
+      const Matrix3D& toPlayfield = g_pplayer->m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(spaceReference).m_transform;
+      m_mvp.SetReflection(toPlayfield * m_reflection * Matrix3D::MatrixInverse(toPlayfield));
    }
 
    m_mvpSpaceReference = spaceReference;
    UpdateBasicShaderMatrix();
    UpdateBallShaderMatrix();
+   if (m_hasClipPlane)
+      ApplyClipPlane();
+}
+
+void RenderView::SetClipPlane(const vec4* playfieldPlane)
+{
+   m_hasClipPlane = playfieldPlane != nullptr;
+   if (m_hasClipPlane)
+   {
+      m_clipPlane = *playfieldPlane;
+      ApplyClipPlane();
+   }
+}
+
+// The parts are rendered in the coordinates of their reference space: express the playfield space plane in it. A point p of the space maps
+// to M * p in the playfield, so the plane (n, w) becomes (n . (A x), n . (A y), n . (A z), n . t + w) with A the linear part of M, t its translation
+void RenderView::ApplyClipPlane()
+{
+   vec4 plane = m_clipPlane;
+   if (m_mvpSpaceReference != PartGroupData::SpaceReference::Playfield && m_mvpSpaceReference != PartGroupData::SpaceReference::Inherit)
+   {
+      const Matrix3D& toPlayfield = g_pplayer->m_ptable->GetSceneLayout().GetSpaceToPlayfieldTransform(m_mvpSpaceReference).m_transform;
+      const Vertex3Ds n(m_clipPlane.x, m_clipPlane.y, m_clipPlane.z);
+      const Vertex3Ds t = toPlayfield * Vertex3Ds(0.f, 0.f, 0.f);
+      plane = vec4(n.Dot(toPlayfield.MultiplyVectorNoTranslate(Vertex3Ds(1.f, 0.f, 0.f))), n.Dot(toPlayfield.MultiplyVectorNoTranslate(Vertex3Ds(0.f, 1.f, 0.f))),
+         n.Dot(toPlayfield.MultiplyVectorNoTranslate(Vertex3Ds(0.f, 0.f, 1.f))), n.Dot(t) + m_clipPlane.w);
+   }
+   m_renderer->m_renderDevice->SetClipPlane(plane, m_mvp.GetModelViewProj(0));
 }
 
 void RenderView::SetScreenOffset(const float x, const float y)
@@ -799,8 +841,9 @@ void RenderView::RenderStatics()
 
       // Setup the view matrices with a jitter depending on the accumulation step.
       // The first accumulated sample always uses a centered offset so that the acquired depth buffer is the unjittered one.
-      float u1 = xyLDBNbnot[m_staticPrepassAccumCount * 2];
-      float u2 = xyLDBNbnot[m_staticPrepassAccumCount * 2 + 1];
+      const unsigned int sampleIndex = StaticPrerenderSampleIndex(m_staticPrepassAccumCount);
+      float u1 = xyLDBNbnot[sampleIndex * 2];
+      float u2 = xyLDBNbnot[sampleIndex * 2 + 1];
       if (!isFirstSample)
       {
          // the following line implements filter importance sampling for a small gauss (i.e. less jaggies as it also samples neighboring pixels) -> but also potentially more artifacts in compositing!
