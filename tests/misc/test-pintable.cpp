@@ -221,6 +221,34 @@ TEST_CASE("PinTable part")
       table->Release();
    }
 
+   SUBCASE("degree unit option displays unscaled with a degree sign suffix")
+   {
+      PinTable* const table = CreateTestTable();
+      VARIANT values;
+      VariantInit(&values);
+
+      // Float option (e.g. a playfield slope): value is shown and stored unscaled, with the degree sign suffix
+      BSTR name = SysAllocString(L"Slope");
+      float v = -1.f;
+      REQUIRE(table->get_Option(name, 0.f, 10.f, 0.1f, 6.f, 2, values, &v) == S_OK);
+      CHECK(v == 6.f);
+      REQUIRE(table->GetOptions().size() == 1);
+      CHECK(table->GetOptions().back().displayScale == 1.f);
+      CHECK(table->GetOptions().back().format == "%4.1f\xC2\xB0");
+      SysFreeString(name);
+
+      // Int option likewise
+      name = SysAllocString(L"Rotation");
+      REQUIRE(table->get_Option(name, 0.f, 360.f, 1.f, 90.f, 2, values, &v) == S_OK);
+      CHECK(v == 90.f);
+      REQUIRE(table->GetOptions().size() == 2);
+      CHECK(table->GetOptions().back().displayScale == 1.f);
+      CHECK(table->GetOptions().back().format == "%d\xC2\xB0");
+      SysFreeString(name);
+
+      table->Release();
+   }
+
    SUBCASE("collections are owned by the table")
    {
       PinTable* const table = CreateTestTable();
