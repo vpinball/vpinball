@@ -60,6 +60,7 @@ public:
    void SetHideDuringPlay(bool hide);
    bool m_padTextAlways = false;
    bool m_customImageMode = false;
+   bool m_stopInsteadOfPause = false;
    bool m_raiseOnPlay = true;
    bool m_raiseLabelsOnPlay = true;
    bool m_labelsTopmost = true;
@@ -85,7 +86,6 @@ public:
    void SetVolumeMultiplier(int multiplier);
    void SetDefaultVolume(int volume);
    void SetVolumeCurrent(int volume);
-   void UpdateVolumeFade();
    void Duck(int percent);
    void Unduck();
    bool IsDuckMaster() const { return m_duckMaster; }
@@ -136,6 +136,7 @@ public:
    void SetLength(int seconds);
    void SetAsBackGround(int mode);
    void SetFadeStep(int step);
+   void FadeOut(int endMode, int interval);
    bool IsJukebox() const;
    void SetJukebox(bool jukebox);
    void JukeboxSkip(int direction);
@@ -157,6 +158,9 @@ private:
    float EffectiveVolume(int volume) const;
    void ApplyVolume(int volume);
    void StartVolumeFade(int from, int to, int step);
+   void CancelVolumeFade();
+   void UpdateVideoTimer();
+   void FadeOutTick();
 
    PUPManager* const m_pManager = nullptr;
    const int m_screenNum;
@@ -178,7 +182,10 @@ private:
    int m_fadeVolume = -1;
    int m_fadeTarget = 0;
    int m_volumeFadeStep = 0;
-   uint64_t m_fadeNextTick = 0;
+   bool m_videoTimer = false;
+   uint64_t m_videoTimerNext = 0;
+   int m_videoTimerInterval = 100;
+   int m_fadeOutMode = 0;
    std::unique_ptr<PUPCustomPos> m_pCustomPos;
    SDL_Rect m_rect {};
    vector<PUPLabel*> m_labels;
