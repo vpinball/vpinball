@@ -190,6 +190,34 @@ inline int SmartIndentDelta(const std::string_view code)
    return 0;
 }
 
+// Companion of SmartIndentDelta for re-indentation: how the statement's own
+// line indents relative to the enclosing block level. Returns -1 when the
+// statement backs one level out of the block (hard closers `End X`, `Next`,
+// `Loop`, `Wend`, and mid-block statements `Else`, `ElseIf`, `Case`), 0
+// otherwise. Combined with SmartIndentDelta as:
+//   lineIndent = level + SelfDelta;  level += SelfDelta + Delta
+inline int SmartIndentSelfDelta(const std::string_view code)
+{
+   std::string stripped(code.size(), ' ');
+   StripCommentsAndStrings(code.data(), code.data() + code.size(), stripped.data());
+   const std::vector<std::string> words = CodeWords(stripped);
+   size_t w = 0;
+   while (w < words.size() && (words[w] == "public" || words[w] == "private" || words[w] == "default"))
+      ++w;
+   if (w == words.size())
+      return 0;
+   const std::string &first = words[w];
+   if (first == "next" || first == "loop" || first == "wend" || first == "else" || first == "elseif" || first == "case")
+      return -1;
+   if (first == "end" && w + 1 < words.size())
+   {
+      const std::string &what = words[w + 1];
+      if (what == "sub" || what == "function" || what == "if" || what == "select" || what == "class" || what == "property" || what == "with")
+         return -1;
+   }
+   return 0;
+}
+
 // The statement text of a physical line with comments (' and rem) and string
 // literals removed: characters outside code are blanked to space so positions
 // are preserved. `in`/`out` are char-based (UTF-8 is safe: VBS code is ASCII).

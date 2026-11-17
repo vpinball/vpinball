@@ -219,4 +219,30 @@ TEST_CASE("VbsLex: SmartIndentDelta block awareness")
    CHECK(SmartIndentDelta("' just a comment") == 0);
    CHECK(SmartIndentDelta("x = \"End Sub\"") == 0); // inside a string, not a closer
 }
+
+TEST_CASE("VbsLex: SmartIndentSelfDelta re-indentation")
+{
+   using VbsLex::SmartIndentSelfDelta;
+
+   // hard closers and mid-block statements back out of the enclosing block
+   CHECK(SmartIndentSelfDelta("End Sub") == -1);
+   CHECK(SmartIndentSelfDelta("End If") == -1);
+   CHECK(SmartIndentSelfDelta("Private Sub Foo()") == 0); // modifiers skipped, opener
+   CHECK(SmartIndentSelfDelta("Next") == -1);
+   CHECK(SmartIndentSelfDelta("Loop") == -1);
+   CHECK(SmartIndentSelfDelta("Wend") == -1);
+   CHECK(SmartIndentSelfDelta("Else") == -1);
+   CHECK(SmartIndentSelfDelta("ElseIf x Then") == -1);
+   CHECK(SmartIndentSelfDelta("Case 1, 2") == -1);
+   CHECK(SmartIndentSelfDelta("Case Else") == -1);
+
+   // openers and neutral statements stay at the enclosing level
+   CHECK(SmartIndentSelfDelta("Sub Foo()") == 0);
+   CHECK(SmartIndentSelfDelta("If x Then") == 0);
+   CHECK(SmartIndentSelfDelta("Select Case a") == 0);
+   CHECK(SmartIndentSelfDelta("x = 1") == 0);
+   CHECK(SmartIndentSelfDelta("End") == 0); // bare End ends the script
+   CHECK(SmartIndentSelfDelta("") == 0);
+   CHECK(SmartIndentSelfDelta("' comment") == 0);
+}
 }
