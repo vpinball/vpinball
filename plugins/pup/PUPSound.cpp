@@ -67,7 +67,7 @@ void PUPSoundBank::Load(const std::filesystem::path& packPath)
          if (std::ranges::all_of(digits, [](char c) { return isdigit(static_cast<unsigned char>(c)) != 0; }))
          {
             const int slot = string_to_int(digits, 0);
-            if (slot < 29)
+            if (slot < static_cast<int>(std::size(m_ballRoll)))
                m_ballRoll[slot].sample = sample;
          }
       }
@@ -137,6 +137,9 @@ void PUPSoundBank::PlayBallRoll(int slot, int x, int vol, double speed, bool pin
    BallRoll& roll = m_ballRoll[slot];
    roll.volume = vol;
    roll.x = x;
+   // The speed comes from the table script: keep it finite and bounded, as a huge value would overflow the float rate
+   // and give a 0 or negative stream sample rate (and a 0 loop duration)
+   speed = std::isfinite(speed) ? std::clamp(speed, -1000., 1000.) : 0.;
    if (pinup20)
       roll.rate = static_cast<float>((std::abs(speed) / 100.0 * 0.75 + 0.25) * 44100.0 / roll.sample->sampleRate);
    if (speed == 0.0)
@@ -173,7 +176,7 @@ void PUPSoundBank::Play(const string& name, int x, int y, int z, int vol, const 
          if (digits.ends_with(".wav"))
             digits.resize(digits.size() - 4);
          const int slot = string_to_int(digits, 0);
-         if (slot >= 0 && slot < 30 && m_ballRoll[slot].sample)
+         if (slot >= 0 && slot < static_cast<int>(std::size(m_ballRoll)) && m_ballRoll[slot].sample)
             PlayBallRoll(slot, x, vol, std::atof(special.c_str()), true);
          return;
       }
