@@ -1396,8 +1396,8 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
                pScreen->m_paintInterval = interval;
             break;
          case 24:
-            // { "mt":301, "SN": XX, "FN":24, "EN":1 } safe mode stops the screen and ignores plays until EN 0
-            if (const int en = json["EN"s].as<int>(0); en == 0 || en == 1)
+            // { "mt":301, "SN": XX, "FN":24, "EN":1 } safe mode stops the screen and ignores plays until EN 0, the 2.0 engine ignores it
+            if (const int en = json["EN"s].as<int>(0); m_engine == Engine::PinUP15 && (en == 0 || en == 1))
                pScreen->SetSafeMode(en == 1);
             break;
          case 29:
