@@ -369,9 +369,12 @@ void ScriptModel::Parse(const std::string_view script)
             addDecls(kw == "dim" ? SymbolKind::Dim : SymbolKind::Const, stmtCode.substr(words[w].start + words[w].text.size()));
          else if (kw == "set")
          {
-            // Set x = New Class -> remember the variable's class for member completion
-            if (words.size() >= w + 4 && wordAt(w + 2) == "new")
+            // Set x = New Class / Set x = part -> remember the variable's target so
+            // member completion can resolve x's members (class members or interface)
+            if (words.size() == w + 4 && wordAt(w + 2) == "new")
                m_varClass[Lower(words[w + 1].text)] = Lower(words[w + 3].text);
+            else if (words.size() == w + 3)
+               m_varClass[Lower(words[w + 1].text)] = Lower(words[w + 2].text);
          }
          else if (w < words.size() && !stack.empty() && m_symbols[static_cast<size_t>(stack.back())].kind == SymbolKind::Class)
          {
@@ -433,14 +436,7 @@ std::string ScriptModel::ResolveClassName(const std::string_view name) const
       if (s.kind == SymbolKind::Class && s.lowerName == lower)
          return s.lowerName;
    const auto it = m_varClass.find(lower);
-   if (it != m_varClass.end())
-   {
-      // resolve `Set x = New y` where y itself is a variable bound to a class
-      for (const Symbol &s : m_symbols)
-         if (s.kind == SymbolKind::Class && s.lowerName == it->second)
-            return s.lowerName;
-   }
-   return {};
+   return it != m_varClass.end() ? it->second : std::string();
 }
 
 } // namespace VPX::EditorUI

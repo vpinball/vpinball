@@ -1,8 +1,9 @@
 #!/bin/bash
 #
-# Regenerate the IDispatch proxy stub from src/core/vpinball.idl using the
-# Java parser under tools/idl/parser. Overwrites
-# src/core/generated/vpinball_standalone_i_proxy.cpp.
+# Regenerate the IDispatch proxy stub and the script API metadata table from
+# src/core/vpinball.idl using the Java parser under tools/idl/parser. Overwrites
+# src/core/generated/vpinball_standalone_i_proxy.cpp and
+# src/core/generated/vpinball_script_api.inc.
 #
 # Usage: ./tools/idl/genproxy.sh
 

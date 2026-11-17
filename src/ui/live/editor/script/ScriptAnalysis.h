@@ -66,11 +66,12 @@ public:
 
    const Symbol *Find(std::string_view name) const; // Case insensitive, top-level symbols first
    std::vector<const Symbol *> MembersOf(std::string_view className) const; // Members when name is a class
-   std::string ResolveClassName(std::string_view name) const; // name -> class name via Class decl or `Set name = New C`
+   // name -> what the name is bound to: itself for Class decls, the target of `Set name = X`
+   std::string ResolveClassName(std::string_view name) const;
 
 private:
    std::vector<Symbol> m_symbols;
-   std::unordered_map<std::string, std::string> m_varClass; // variable lowerName -> class lowerName (`Set x = New C`)
+   std::unordered_map<std::string, std::string> m_varClass; // variable lowerName -> bound name (`Set x = New C` / `Set x = obj`)
 };
 
 }

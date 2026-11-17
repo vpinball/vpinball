@@ -6,6 +6,7 @@ On Windows, the scripting interface described in `src/core/vpinball.idl` is expo
 |---|---|---|
 | `vpinball_standalone_i.h`, `vpinball_standalone_i.c` | `widlgen.sh` (Wine `widl`) | Interface declarations and GUIDs |
 | `vpinball_standalone_i_proxy.cpp` | `genproxy.sh` (Java parser in `parser/`) | `IDispatch::GetIDsOfNames` and `IDispatch::Invoke` implementations |
+| `vpinball_script_api.inc` | `genproxy.sh` (Java parser in `parser/`) | Per-interface member/event tables for the live editor's script pane (`ScriptApi`) |
 
 Regenerate both whenever `src/core/vpinball.idl` changes.
 

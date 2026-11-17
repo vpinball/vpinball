@@ -122,6 +122,9 @@ void ScriptPanel::ReparseModel()
 // word completes from keywords, builtins, script symbols and API globals
 void ScriptPanel::OnAutoComplete(TextEditor::AutoCompleteState &state)
 {
+   if (state.inComment || state.inString)
+      return;
+
    const std::string ctx = m_te.GetContext(state.searchTermStart, [](ImWchar c) { return VbsLex::IsIdentChar(c) || c == '.'; });
    const size_t lastDot = ctx.rfind('.');
    const std::string chain = lastDot == std::string::npos ? std::string() : ctx.substr(0, lastDot);
@@ -149,20 +152,24 @@ void ScriptPanel::OnAutoComplete(TextEditor::AutoCompleteState &state)
    if (!chain.empty())
    {
       // member context: resolve the chain's first segment to something with members
+      // (script classes, `Set x = ...` variables, core.vbs classes, COM parts)
       const std::string first = LowerWord(chain.substr(0, chain.find('.')));
-      if (first == "me")
-         for (const Symbol *s : m_model.TopLevel())
-            addSymbol(*s);
-      else if (!m_api.InterfaceOf(first).empty())
-      {
-         // COM interface members come from vpinball_script_api.inc in a later phase
-      }
-      else
-         for (const Symbol *s : m_api.MembersOf(first, m_model))
-            addSymbol(*s);
+      for (const Symbol *s : m_api.MembersOf(first, m_model))
+         addSymbol(*s);
    }
    else
    {
+      // "part_" prefix offers the part's event handler names (Sub Part_Event)
+      const size_t underscore = state.searchTerm.find('_');
+      if (underscore != std::string::npos && underscore > 0)
+      {
+         if (const ScriptApiInterface *iface = m_api.InterfaceOfName(state.searchTerm.substr(0, underscore)); iface != nullptr)
+         {
+            const std::string partName = state.searchTerm.substr(0, underscore);
+            for (int i = 0; i < iface->eventCount; ++i)
+               add(partName + "_" + iface->events[i].name, partName + "_" + iface->events[i].name + "(" + iface->events[i].signature + ")  \xe2\x80\x94 event handler");
+         }
+      }
       for (const std::string &kw : TextEditorVbs::getDefinition()->keywords)
          add(kw, kw + "  \xe2\x80\x94 keyword");
       for (const std::string &w : BaseIdentifiers())
@@ -389,6 +396,42 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       bool whitespace = settings.GetEditor_ScriptEditorShowWhitespace();
       if (ImGui::Checkbox("Show whitespace", &whitespace))
          settings.SetEditor_ScriptEditorShowWhitespace(whitespace, false);
+
+      // Event handler stub insertion: one submenu per script-visible object that has
+      // events (the table's own script name, parts, collections); already implemented
+      // handlers are listed disabled
+      const bool canEdit = !m_editor.IsInspectMode() && !m_editor.m_table->IsLocked() && m_extTable == nullptr;
+      ImGui::BeginDisabled(!canEdit);
+      if (ImGui::BeginMenu("Insert event handler"))
+      {
+         for (const Symbol &global : m_api.Globals())
+         {
+            if (global.lowerName == "me" || global.lowerName == "debug" || global.signature.empty())
+               continue;
+            const ScriptApiInterface *iface = ScriptApi::FindInterface(global.signature);
+            if (iface == nullptr || iface->eventCount == 0)
+               continue;
+            if (ImGui::BeginMenu(global.name.c_str()))
+            {
+               for (int e = 0; e < iface->eventCount; ++e)
+               {
+                  const ScriptApiEntry &event = iface->events[e];
+                  const std::string handlerName = global.name + "_" + event.name;
+                  const bool exists = m_model.Find(handlerName) != nullptr;
+                  const std::string label = handlerName + "(" + event.signature + ")" + (exists ? " (defined)" : "");
+                  if (ImGui::MenuItem(label.c_str(), nullptr, false, !exists))
+                  {
+                     const TextEditor::DocPos pos = m_te.GetMainCursorPosition();
+                     m_te.ReplaceTextInCurrentCursor("Sub " + handlerName + "(" + event.signature + ")\n\t\nEnd Sub\n");
+                     m_te.SetCursor(TextEditor::DocPos(pos.line + 1, 1));
+                  }
+               }
+               ImGui::EndMenu();
+            }
+         }
+         ImGui::EndMenu();
+      }
+      ImGui::EndDisabled();
       ImGui::EndPopup();
    }
    ImGui::Separator();
