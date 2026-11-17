@@ -433,6 +433,61 @@ unsigned int AudioPlayer::GetStreamOutputSampleRate() const
    return m_backglassEngine ? ma_engine_get_sample_rate(m_backglassEngine.get()) : 0;
 }
 
+AudioPlayer::OutputInfo AudioPlayer::GetOutputInfo(SoundOutTypes out) const
+{
+   OutputInfo info;
+   const int sdlDevice = out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldAudioDevice : out == SoundOutTypes::SNDOUT_HAPTIC ? m_hapticAudioDevice : m_backglassAudioDevice;
+   if (const char* name = SDL_GetAudioDeviceName(sdlDevice); name)
+      info.deviceName = name;
+   const ma_device_ex* const device = out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldDevice.get() : out == SoundOutTypes::SNDOUT_HAPTIC ? m_hapticDevice.get() : m_backglassDevice.get();
+   if (device == nullptr || GetEngine(out) == nullptr)
+      return info;
+   info.opened = true;
+   info.sampleRate = device->device.playback.internalSampleRate;
+   info.channels = device->device.playback.internalChannels;
+   info.periodFrames = device->device.playback.internalPeriodSizeInFrames;
+   switch (device->device.playback.internalFormat)
+   {
+   case ma_format_u8:  info.sampleFormat = "U8"s;  break;
+   case ma_format_s16: info.sampleFormat = "S16"s; break;
+   case ma_format_s24: info.sampleFormat = "S24"s; break;
+   case ma_format_s32: info.sampleFormat = "S32"s; break;
+   case ma_format_f32: info.sampleFormat = "F32"s; break;
+   default: info.sampleFormat = "?"s; break;
+   }
+   if (const SpatialAudioMixer* const mixer = GetSpatialMixer(out); mixer)
+   {
+      info.spatial = true;
+      info.spatialReady = mixer->IsBinauralReady();
+   }
+   return info;
+}
+
+bool AudioPlayer::IsSameDevice(SoundOutTypes a, SoundOutTypes b) const
+{
+   const auto deviceOf = [this](SoundOutTypes out)
+   { return out == SoundOutTypes::SNDOUT_TABLE ? m_playfieldAudioDevice : out == SoundOutTypes::SNDOUT_HAPTIC ? m_hapticAudioDevice : m_backglassAudioDevice; };
+   return deviceOf(a) == deviceOf(b);
+}
+
+string AudioPlayer::GetDriverName()
+{
+   const char* const driver = SDL_GetCurrentAudioDriver();
+   return driver ? string(driver) : "none"s;
+}
+
+unsigned int AudioPlayer::GetSoundSampleRate(const Sound* const sound) const
+{
+   ma_decoder decoder;
+   ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_unknown, 0, 0);
+   AddOpusDecoder(decoderConfig);
+   if (ma_decoder_init_memory(sound->GetFileRaw(), sound->GetFileSize(), &decoderConfig, &decoder) != MA_SUCCESS)
+      return 0;
+   const unsigned int sampleRate = decoder.outputSampleRate;
+   ma_decoder_uninit(&decoder);
+   return sampleRate;
+}
+
 void AudioPlayer::ReleaseFinishedStreams()
 {
    // Streams closed after their end of stream are kept until played out.

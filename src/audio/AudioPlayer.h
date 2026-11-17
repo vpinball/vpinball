@@ -155,6 +155,23 @@ public:
    SoundConfigTypes GetHapticMode() const { return m_hapticMode; }
    BackglassConfigTypes GetBackglassMode() const { return m_backglassMode; }
 
+   // State of an output as opened, for diagnostics
+   struct OutputInfo
+   {
+      bool opened = false;           // The device and its engine were initialized
+      string deviceName;
+      unsigned int sampleRate = 0;   // Device format as opened (the engine mixes at this rate)
+      unsigned int channels = 0;
+      string sampleFormat;
+      unsigned int periodFrames = 0; // Device period, an approximation of the output buffering
+      bool spatial = false;          // Spatial (binaural) rendering enabled
+      bool spatialReady = false;     // The binaural renderer was configured (its HRTF loaded): spatial audio is silent otherwise
+   };
+   OutputInfo GetOutputInfo(SoundOutTypes out) const;
+   bool IsSameDevice(SoundOutTypes a, SoundOutTypes b) const; // Both outputs use the same selected device
+   static string GetDriverName();                             // SDL audio driver in use (wasapi, pulseaudio, coreaudio, ...)
+   unsigned int GetSoundSampleRate(const Sound* sound) const; // Sample rate of the sound's file, from its header (0 if it cannot be decoded)
+
    struct AudioDevice
    {
       string name;

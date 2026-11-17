@@ -195,6 +195,8 @@ SpatialAudioMixer::~SpatialAudioMixer()
 
 void* SpatialAudioMixer::GetMixBus() const { return m_impl ? &m_impl->node.base : nullptr; }
 
+bool SpatialAudioMixer::IsBinauralReady() const { return m_impl && m_impl->binauralConfigured; }
+
 
 struct vpx_spatial_src_node
 {

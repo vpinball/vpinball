@@ -382,6 +382,22 @@ public:
    float m_playfieldVolume;
    float m_hapticVolume;
 
+   // Snapshot of the plugin audio sources and their open streams, for diagnostics
+   struct AudioLaneInfo
+   {
+      struct Stream
+      {
+         unsigned int sampleRate;
+         unsigned int channels;
+         bool isFloat;
+      };
+      string name;
+      float mixerVolume;
+      bool overridden; // Muted, replaced by another source (e.g. AltSound replacing PinMAME's sound)
+      vector<Stream> streams;
+   };
+   vector<AudioLaneInfo> GetAudioLaneInfos() const;
+
    float GetAudioLaneMixerVolume(uint64_t laneId) const;
    void SetAudioLaneMixerVolume(uint64_t laneId, float volume);
 

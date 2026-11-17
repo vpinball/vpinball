@@ -56,6 +56,8 @@ public:
    // Canonical listener pose (the fixed fake pose the tables' loudness is
    // authored for), used as the reference for distance attenuation
    SpatialAudioListener* GetReferenceListener() { return &m_referenceListener; }
+   // Whether the binaural renderer was configured (its HRTF loaded): the mixer stays silent otherwise
+   bool IsBinauralReady() const;
 
    // Opaque implementation, defined in the .cpp (publicly visible for the node struct helpers)
    struct Impl;

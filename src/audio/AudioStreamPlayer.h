@@ -36,6 +36,10 @@ public:
    bool IsFinished() const; // Whether a flushed stream has played out (a live stream never ends, underruns play silence)
    int GetQueuedSize() const;
    void SetName(string name) { m_name = std::move(name); }
+   // Format of the enqueued data, fixed at creation
+   uint32_t GetFrequency() const { return m_frequency; }
+   uint32_t GetChannels() const { return m_channels; }
+   bool IsFloat() const { return m_isFloat; }
    void SetStreamVolume(const float volume);
    void SetMainVolume(const float volume);
 
