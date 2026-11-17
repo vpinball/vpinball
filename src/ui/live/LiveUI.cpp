@@ -9,6 +9,7 @@
 #include "LucideFont.h"
 #include "fonts/DroidSans.h"
 #include "fonts/DroidSansBold.h"
+#include "fonts/JetBrainsMono.h"
 #include "math/matrix.h"
 #include "plugins/VPXPlugin.h"
 #include "renderer/Renderer.h"
@@ -70,6 +71,17 @@ LiveUI::LiveUI(RenderDevice *const rd)
    lucide_config.GlyphOffset = ImVec2(0.f, 1.5f * m_uiScale);
    static constexpr ImWchar lucide_ranges[] = { ICON_MIN_LC, ICON_MAX_LC, 0 };
    io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char *>(lucide_subset_ttf), static_cast<int>(sizeof(lucide_subset_ttf)), 15.0f * m_uiScale, &lucide_config, lucide_ranges);
+   // Monospace font for the script editor; merge the icons into it as well since the
+   // editor's own popup UI (context menu, ...) renders under it
+   const float monoSize = static_cast<float>(g_settingsService.GetAppSettings().GetEditor_ScriptEditorFontSize()) * m_uiScale;
+   m_monoFont = io.Fonts->AddFontFromMemoryCompressedTTF(jetbrainsmono_compressed_data, jetbrainsmono_compressed_size, monoSize);
+   ImFontConfig lucide_mono_config;
+   lucide_mono_config.MergeMode = true;
+   lucide_mono_config.PixelSnapH = true;
+   lucide_mono_config.FontDataOwnedByAtlas = false;
+   lucide_mono_config.GlyphMinAdvanceX = monoSize * 15.f / 13.f;
+   lucide_mono_config.GlyphOffset = ImVec2(0.f, monoSize * 1.5f / 13.f);
+   io.Fonts->AddFontFromMemoryTTF(const_cast<unsigned char *>(lucide_subset_ttf), static_cast<int>(sizeof(lucide_subset_ttf)), monoSize * 15.f / 13.f, &lucide_mono_config, lucide_ranges);
 
    const float overlaySize = 13.0f * m_uiScale;
    m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);

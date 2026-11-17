@@ -124,6 +124,9 @@
     <Filter Include="third-party\serial">
       <UniqueIdentifier>{de0cf113-92b0-4b46-a761-2db6a8318f96}</UniqueIdentifier>
     </Filter>
+    <Filter Include="third-party\textedit">
+      <UniqueIdentifier>{1e8228d9-10e2-4046-811f-7db3fdd86da5}</UniqueIdentifier>
+    </Filter>
     <Filter Include="third-party\imgui\bgfx">
       <UniqueIdentifier>{e966d012-e5d4-48a9-9771-e71ba51d1128}</UniqueIdentifier>
     </Filter>
@@ -1127,6 +1130,9 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/miniz/miniz.c">
       <Filter>third-party</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/textedit/TextEditor.cpp">
+      <Filter>third-party\textedit</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/pole/pole.cpp">
       <Filter>third-party</Filter>
@@ -2311,6 +2317,18 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi.h">
       <Filter>third-party\nvapi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/textedit/languages/TextEditorVbs.h">
+      <Filter>third-party\textedit</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/textedit/TextEditor.h">
+      <Filter>third-party\textedit</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/textedit/TextEditorLanguages.h">
+      <Filter>third-party\textedit</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/textedit/VbsLex.h">
+      <Filter>third-party\textedit</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../third-party/include/nvapi/nvapi_lite_common.h">
       <Filter>third-party\nvapi</Filter>

@@ -1,0 +1,35 @@
+--- TextEditor.h (9f812a0)
++++ TextEditor.h (VPX)
+@@ -25,7 +25,7 @@
+ #include <unordered_set>
+ #include <vector>
+ 
+-#include "imgui.h"
++#include "imgui/imgui.h"
+ 
+ 
+ //
+@@ -380,6 +380,10 @@
+ 	inline void ClearSquiggles() { clearSquiggles(); }
+ 	inline bool HasSquiggles() const { return squiggles.size() != 0; }
+ 
++	// VPX: whether a transient sub UI (autocomplete popup, find/replace window) or
++	// secondary cursors are active - callers use this to give Esc to the widget first
++	inline bool HasActiveTransient() const { return autocomplete.isActive() || findReplaceVisible || cursors.hasMultiple(); }
++
+ 	// specify a change callback (called when changes are made (including undo/redo))
+ 	// the delay parameter specifies a time in miliseconds that the editor will wait for before calling
+ 	// which helps in case you don't need to track every keystroke
+--- TextEditor.cpp (9f812a0)
++++ TextEditor.cpp (VPX)
+@@ -17,8 +17,8 @@
+ #define IMGUI_DEFINE_MATH_OPERATORS
+ #endif
+ 
+-#include "imgui.h"
+-#include "imgui_internal.h"
++#include "imgui/imgui.h"
++#include "imgui/imgui_internal.h"
+ 
+ #include "TextEditor.h"
+ 

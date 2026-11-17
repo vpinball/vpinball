@@ -1176,6 +1176,9 @@
     <ClCompile Include="$(SolutionDir)/../../third-party/include/bc6h/basisu_bc6h.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../third-party/include/textedit/TextEditor.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../third-party/include/bc7f/basisu_bc7f.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -2188,6 +2191,10 @@
     <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_impl_sdl3.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_internal.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/imgui/imgui_stdlib.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/textedit/languages/TextEditorVbs.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/textedit/TextEditor.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/textedit/TextEditorLanguages.h" />
+    <ClInclude Include="$(SolutionDir)/../../third-party/include/textedit/VbsLex.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/implot/implot_internal.h" />
     <ClInclude Include="$(SolutionDir)/../../third-party/include/bc6h/basisu_bc6h.h" />

@@ -527,6 +527,11 @@ set(VPX_SOURCES
    third-party/include/tinyxml2/tinyxml2.h
    third-party/include/miniz/miniz.c
    third-party/include/miniz/miniz.h
+   third-party/include/textedit/languages/TextEditorVbs.h
+   third-party/include/textedit/TextEditor.cpp
+   third-party/include/textedit/TextEditor.h
+   third-party/include/textedit/TextEditorLanguages.h
+   third-party/include/textedit/VbsLex.h
    third-party/include/unordered_dense.h
    third-party/include/pole/pole.h
    third-party/include/pole/pole.cpp
