@@ -3242,6 +3242,40 @@ void TextEditor::autoIndentAllCursors(std::shared_ptr<Transaction> transaction) 
 		std::string insert = "\n" + whitespace;
 		auto newCursorIndex = whitespace.size();
 
+		// (VPX) language-specific smart indent (Language::autoIndentDelta): adjust the
+		// copied whitespace when the statement opens (+1) or closes (-1) a block
+		if (config.language && config.language->autoIndentDelta) {
+			std::string codeBeforeCursor;
+			for (size_t i = 0; i < start.index && i < line.size(); i++) {
+				char utf8[4];
+				codeBeforeCursor.append(utf8, CodePoint::write(utf8, line[i].codepoint));
+			}
+			const int delta = config.language->autoIndentDelta(codeBeforeCursor);
+			if (delta > 0) {
+				if (config.insertSpacesOnTabs) {
+					insert.append(config.tabSize, ' ');
+					newCursorIndex += config.tabSize;
+				} else {
+					insert += '\t';
+					newCursorIndex++;
+				}
+			} else if (delta < 0 && !whitespace.empty()) {
+				// drop one indent unit (a tab or up to tabSize spaces) from the copied whitespace
+				std::string trimmed = whitespace;
+				if (trimmed.back() == '\t') {
+					trimmed.pop_back();
+				} else {
+					size_t n = 0;
+					while (!trimmed.empty() && trimmed.back() == ' ' && n < config.tabSize) {
+						trimmed.pop_back();
+						n++;
+					}
+				}
+				insert = "\n" + trimmed;
+				newCursorIndex = trimmed.size();
+			}
+		}
+
 		// handle special cases
 		if (previousChar == CodePoint::openCurlyBracket || previousChar == CodePoint::openSquareBracket) {
 			if (config.insertSpacesOnTabs) {
