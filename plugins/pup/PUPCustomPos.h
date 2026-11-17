@@ -15,12 +15,14 @@ public:
 
    int GetSourceScreen() const { return m_sourceScreen; }
    int GetRotation() const { return m_rotation; }
+   int GetFlag() const { return m_flag; }
    SDL_Rect ScaledRect(int w, int h) const;
    string ToString() const;
 
 private:
    int m_sourceScreen = 0;
    int m_rotation = 0;
+   int m_flag = 0;
    SDL_FRect m_frect { };
 };
 
