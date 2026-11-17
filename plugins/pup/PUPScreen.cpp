@@ -368,6 +368,7 @@ void PUPScreen::OnMediaStart(const std::filesystem::path& path)
    if (m_mode == Mode::Off || m_mode == Mode::MusicOnly)
       return;
    m_hidden = false;
+   m_windowHidden = false;
    if (m_raiseOnPlay)
       m_pManager->RaiseLayer(this, PUPManager::Layer::Window);
    if (m_labelLayer && m_raiseLabelsOnPlay && !m_hideDuringPlay)
@@ -639,6 +640,12 @@ void PUPScreen::SetPage(int pagenum, int durationMs, const string& special)
    }
 }
 
+void PUPScreen::OnIdle()
+{
+   if (IsPop())
+      m_windowHidden = true;
+}
+
 void PUPScreen::UpdateTimers()
 {
    assert(std::this_thread::get_id() == m_apiThread);
@@ -881,11 +888,11 @@ bool PUPScreen::IsBackgroundPlaying() const
 void PUPScreen::Render(VPXRenderContext2D* const ctx, int pass) {
    assert(std::this_thread::get_id() == m_apiThread);
 
-   // ForcePop / ForcePopBack only affect z-order (topmost), handled by the render-order tiers
-   // in PUPManager::Render. The screen still renders its background, overlay, labels and static
-   // image when no main video is playing, so packs that drive a screen purely via background
-   // videos, overlays, or labels stay visible.
+   // ForcePop / ForcePopBack hide their window (underlay, image and video, not the label overlay)
+   // when their media ends with no background to return to, until the next media start or FN 1.
    if (m_mode == Mode::Off || m_mode == Mode::MusicOnly || m_hidden)
+      return;
+   if (m_windowHidden && pass != 3)
       return;
 
    switch (pass)

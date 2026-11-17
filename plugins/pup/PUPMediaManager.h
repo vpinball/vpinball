@@ -49,7 +49,7 @@ public:
 
 private:
    void OnPlayerEnd();
-   void PlayBackground();
+   bool PlayBackground();
    void StartCurrent();
    void ApplyDuckPrefix(const std::filesystem::path& path);
    void CheckEndTime();
