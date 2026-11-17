@@ -61,6 +61,7 @@ public:
    bool m_padTextAlways = false;
    bool m_customImageMode = false;
    bool m_stopInsteadOfPause = false;
+   int m_paintInterval = 32;
    bool m_raiseOnPlay = true;
    bool m_raiseLabelsOnPlay = true;
    bool m_labelsTopmost = true;

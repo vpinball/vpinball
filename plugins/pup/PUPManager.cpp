@@ -412,6 +412,9 @@ void PUPManager::Unload()
 
    m_zOrder.clear();
    m_screenOrder.clear();
+   m_fadeOutCounter = 255;
+   m_labelShadowType = 0;
+   m_labelShadowColor = 0x808080;
    m_screenMap.clear();
 
    if (m_overlaySheetRegistered && m_pagedUIApi != nullptr)
@@ -1340,6 +1343,21 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
             // We don't act on it yet, so sending it produces no visible change on screen.
             // TODO implement overlay hide/show toggling the screen's overlay (HUD) visibility
             LOGW(std::format("Overlay hide (OH) toggle not implemented, ignoring: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
+            break;
+         case 38:
+            // { "mt":301, "SN": XX, "FN":38, "SD":1, "SC":8421504 } shadow type and colour of the labels created afterwards
+            m_labelShadowType = (json["SD"s].as<int>(0) == 1) ? 1 : 0;
+            m_labelShadowColor = json["SC"s].as<int>(0);
+            break;
+         case 44:
+            // { "mt":301, "SN": XX, "FN":44, "PI":32 } label paint interval in ms, label animations advance a fixed step per paint
+            if (const int interval = json["PI"s].as<int>(0); pScreen->HasLabelLayer() && interval >= 16 && interval <= 250)
+               pScreen->m_paintInterval = interval;
+            break;
+         case 47:
+            // { "mt":301, "SN": XX, "FN":47, "KS":20 } label paint interval in ms from a high resolution timer
+            if (const int interval = json["KS"s].as<int>(0); pScreen->HasLabelLayer() && interval > 10)
+               pScreen->m_paintInterval = interval;
             break;
          case 29:
             // { "mt":301, "SN": XX, "FN":29, "FT":0, "FI":100 } fade the screen out, FT 0 stop, 1 pause, 2 stop and hide, 3 pause and hide, FI tick interval in ms

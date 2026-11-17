@@ -211,6 +211,8 @@ PUPLabel::PUPLabel(PUPManager* manager, const string& szName, const string& szFo
    , m_visible(visible)
    , m_pagenum(pagenum)
 {
+   m_shadowType = manager->m_labelShadowType;
+   m_shadowColor = manager->m_labelShadowColor;
    if (!szFont.empty() && !m_pFont)
    {
       LOGE("Font not found: label=" + szName + ", font=" + szFont);
@@ -1827,7 +1829,8 @@ void PUPLabel::Animation::Restore()
 
 bool PUPLabel::Animation::Update(const SDL_Rect& screenRect, const SDL_FRect& labelRect)
 {
-   const uint64_t elapsed = SDL_GetTicks() - m_startTimestamp;
+   const int paintInterval = m_label->m_pScreen ? m_label->m_pScreen->m_paintInterval : 32;
+   const uint64_t elapsed = (SDL_GetTicks() - m_startTimestamp) * 32 / paintInterval;
 
    if (elapsed >= m_lengthMs)
    {

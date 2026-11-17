@@ -89,6 +89,8 @@ public:
    void Unload();
    bool IsRunning() const { return m_B2SPluginEventStream != nullptr; }
    int m_fadeOutCounter = 255;
+   int m_labelShadowType = 0;
+   int m_labelShadowColor = 0x808080;
    const std::filesystem::path& GetPath() const { return m_szPath; }
    bool AddScreen(std::shared_ptr<PUPScreen> pScreen);
    bool AddScreen(int screenNum);
