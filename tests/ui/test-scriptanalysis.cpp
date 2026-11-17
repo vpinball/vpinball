@@ -4,6 +4,8 @@
 
 #include "ui/live/editor/script/ScriptAnalysis.h"
 
+#include "textedit/VbsLex.h"
+
 #include "doctest.h"
 
 using VPX::EditorUI::ScriptModel;
@@ -177,4 +179,44 @@ TEST_CASE("ScriptModel: malformed input stays safe")
    CHECK(m.Symbols().empty());
 }
 
+TEST_CASE("VbsLex: SmartIndentDelta block awareness")
+{
+   using VbsLex::SmartIndentDelta;
+
+   // block openers indent the following line
+   CHECK(SmartIndentDelta("Sub Foo()") == 1);
+   CHECK(SmartIndentDelta("Private Function Foo()") == 1);
+   CHECK(SmartIndentDelta("Public Property Get X()") == 1);
+   CHECK(SmartIndentDelta("Class Foo") == 1);
+   CHECK(SmartIndentDelta("If x Then") == 1);
+   CHECK(SmartIndentDelta("If x Then ' comment") == 1);
+   CHECK(SmartIndentDelta("Else") == 1);
+   CHECK(SmartIndentDelta("ElseIf x Then") == 1);
+   CHECK(SmartIndentDelta("For i = 1 To 10") == 1);
+   CHECK(SmartIndentDelta("For Each f In c") == 1);
+   CHECK(SmartIndentDelta("Do While x") == 1);
+   CHECK(SmartIndentDelta("While x") == 1);
+   CHECK(SmartIndentDelta("Select Case a") == 1);
+   CHECK(SmartIndentDelta("Case 1, 2") == 1);
+   CHECK(SmartIndentDelta("Case Else") == 1);
+   CHECK(SmartIndentDelta("With x") == 1);
+
+   // block closers dedent the following line
+   CHECK(SmartIndentDelta("End Sub") == -1);
+   CHECK(SmartIndentDelta("End If") == -1);
+   CHECK(SmartIndentDelta("End Select") == -1);
+   CHECK(SmartIndentDelta("End Class") == -1);
+   CHECK(SmartIndentDelta("Next") == -1);
+   CHECK(SmartIndentDelta("Loop") == -1);
+   CHECK(SmartIndentDelta("Wend") == -1);
+
+   // everything else keeps the same indent
+   CHECK(SmartIndentDelta("x = 1") == 0);
+   CHECK(SmartIndentDelta("If x Then y") == 0); // single-line If
+   CHECK(SmartIndentDelta("If x Then : y") == 0);
+   CHECK(SmartIndentDelta("End") == 0); // bare End ends the script
+   CHECK(SmartIndentDelta("") == 0);
+   CHECK(SmartIndentDelta("' just a comment") == 0);
+   CHECK(SmartIndentDelta("x = \"End Sub\"") == 0); // inside a string, not a closer
+}
 }

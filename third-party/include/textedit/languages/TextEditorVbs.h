@@ -73,6 +73,7 @@ struct TextEditorVbs {
 			language.getNumber = getNumber;
 			language.isPunctuation = isPunctuation;
 			language.customTokenizer = customTokenizer;
+			language.autoIndentDelta = VbsLex::SmartIndentDelta;
 
 			language.keywords = {
 				"and",

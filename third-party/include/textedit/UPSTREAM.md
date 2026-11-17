@@ -35,6 +35,9 @@ Upstream files deliberately not vendored: `TextDiff.*`, `dtl.h`, all other
 - `TextEditor::HasActiveTransient()` — exposes whether the autocomplete
   popup, find/replace window or secondary cursors are active, so the host
   pane can give Esc to the widget before defocusing it
+- `Language::autoIndentDelta` — optional language callback used by
+  `autoIndentAllCursors` to adjust the copied indentation by a block-aware
+  delta (-1/0/+1); `TextEditorVbs` fills it with `VbsLex::SmartIndentDelta`
 
 The upstream sources compile without the VPX precompiled header; they are
 marked `SKIP_PRECOMPILE_HEADERS`/`NotUsing` in the build files rather than

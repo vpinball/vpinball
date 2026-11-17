@@ -20,6 +20,19 @@
  	// specify a change callback (called when changes are made (including undo/redo))
  	// the delay parameter specifies a time in miliseconds that the editor will wait for before calling
  	// which helps in case you don't need to track every keystroke
+@@ -735,6 +739,12 @@
+ 		// does the language use indentation for blocks (e.g Python)
+ 		bool indentationForBlocks = false;
+ 
++		// (VPX) optional language-specific smart indent for auto-indent: called with the
++		// code before the cursor on the line where Enter was pressed; returns the indent
++		// delta to apply on the new line (-1 dedent, 0 keep, +1 indent), e.g. +1 after a
++		// VBScript block opener, -1 after `End X`/`Next`/`Loop`
++		std::function<int(std::string_view code)> autoIndentDelta;
++
+ 		// set of keywords, declarations, identifiers used in the language (can be blank if language doesn't have these features)
+ 		// if language is not case sensitive, all entries should be in lower case
+ 
 --- TextEditor.cpp (9f812a0)
 +++ TextEditor.cpp (VPX)
 @@ -17,8 +17,8 @@
@@ -33,3 +46,53 @@
  
  #include "TextEditor.h"
  
+@@ -3242,6 +3242,40 @@
+ 		std::string insert = "\n" + whitespace;
+ 		auto newCursorIndex = whitespace.size();
+ 
++		// (VPX) language-specific smart indent (Language::autoIndentDelta): adjust the
++		// copied whitespace when the statement opens (+1) or closes (-1) a block
++		if (config.language && config.language->autoIndentDelta) {
++			std::string codeBeforeCursor;
++			for (size_t i = 0; i < start.index && i < line.size(); i++) {
++				char utf8[4];
++				codeBeforeCursor.append(utf8, CodePoint::write(utf8, line[i].codepoint));
++			}
++			const int delta = config.language->autoIndentDelta(codeBeforeCursor);
++			if (delta > 0) {
++				if (config.insertSpacesOnTabs) {
++					insert.append(config.tabSize, ' ');
++					newCursorIndex += config.tabSize;
++				} else {
++					insert += '\t';
++					newCursorIndex++;
++				}
++			} else if (delta < 0 && !whitespace.empty()) {
++				// drop one indent unit (a tab or up to tabSize spaces) from the copied whitespace
++				std::string trimmed = whitespace;
++				if (trimmed.back() == '\t') {
++					trimmed.pop_back();
++				} else {
++					size_t n = 0;
++					while (!trimmed.empty() && trimmed.back() == ' ' && n < config.tabSize) {
++						trimmed.pop_back();
++						n++;
++					}
++				}
++				insert = "\n" + trimmed;
++				newCursorIndex = trimmed.size();
++			}
++		}
++
+ 		// handle special cases
+ 		if (previousChar == CodePoint::openCurlyBracket || previousChar == CodePoint::openSquareBracket) {
+ 			if (config.insertSpacesOnTabs) {
+@@ -4399,7 +4433,7 @@
+ 	auto start = pos;
+ 	auto end = pos;
+ 
+-	if (isContext(line[end.index].codepoint)) {
++	if (end.index < line.size() && isContext(line[end.index].codepoint)) {
+ 		end.index++;
+ 
+ 		while (end.index < line.size() && isContext(line[end.index].codepoint)) {

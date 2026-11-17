@@ -739,6 +739,12 @@ public:
 		// does the language use indentation for blocks (e.g Python)
 		bool indentationForBlocks = false;
 
+		// (VPX) optional language-specific smart indent for auto-indent: called with the
+		// code before the cursor on the line where Enter was pressed; returns the indent
+		// delta to apply on the new line (-1 dedent, 0 keep, +1 indent), e.g. +1 after a
+		// VBScript block opener, -1 after `End X`/`Next`/`Loop`
+		std::function<int(std::string_view code)> autoIndentDelta;
+
 		// set of keywords, declarations, identifiers used in the language (can be blank if language doesn't have these features)
 		// if language is not case sensitive, all entries should be in lower case
 
