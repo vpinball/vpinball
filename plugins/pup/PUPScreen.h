@@ -51,7 +51,13 @@ public:
    void SetTopmost(bool topmost) { m_topmost = topmost; }
 
    bool IsHidden() const { return m_hidden; }
-   void SetHidden(bool hidden) { m_hidden = hidden; }
+   void SetHidden(bool hidden)
+   {
+      m_hidden = hidden;
+      if (!hidden)
+         m_windowHidden = false;
+   }
+   void OnIdle();
 
    float m_screenAlpha = 1.0f;
    float m_overlayAlpha = 1.0f;
@@ -173,6 +179,7 @@ private:
    Mode m_mode;
    bool m_topmost = false;
    bool m_hidden = false;
+   bool m_windowHidden = false;
    bool m_labelLayer = false;
    bool m_keepBack = false;
    bool m_transparent;

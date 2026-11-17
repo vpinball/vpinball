@@ -193,7 +193,7 @@ void PUPMediaManager::ApplyDuckPrefix(const std::filesystem::path& path)
       m_pScreen->GetManager()->DuckAllExcept(percent, m_pScreen->GetScreenNum(), false);
 }
 
-void PUPMediaManager::PlayBackground()
+bool PUPMediaManager::PlayBackground()
 {
    if (m_bg.active && !m_bg.szPath.empty() && m_pScreen->GetMode() != PUPScreen::Mode::Off)
    {
@@ -205,7 +205,9 @@ void PUPMediaManager::PlayBackground()
       m_loopCount = m_player.GetLoopCount();
       ApplyDuckPrefix(m_bg.szPath);
       m_pScreen->OnMediaStart(m_bg.szPath);
+      return true;
    }
+   return false;
 }
 
 void PUPMediaManager::Pause()
@@ -285,7 +287,11 @@ void PUPMediaManager::Stop()
          PlayBackground();
    }
    else
+   {
       m_player.Stop();
+      if (anyPlaying)
+         m_pScreen->OnIdle();
+   }
 }
 
 void PUPMediaManager::Halt()
@@ -371,7 +377,8 @@ void PUPMediaManager::OnPlayerEnd()
       StartCurrent();
       return;
    }
-   PlayBackground();
+   if (!PlayBackground())
+      m_pScreen->OnIdle();
 }
 
 bool PUPMediaManager::JukeboxSkip(int direction, bool ended)
@@ -400,8 +407,8 @@ bool PUPMediaManager::JukeboxSkip(int direction, bool ended)
       m_queue.pop_front();
       if (!m_queue.empty())
          StartCurrent();
-      else
-         PlayBackground();
+      else if (!PlayBackground())
+         m_pScreen->OnIdle();
    }
    else if (m_queue.empty() && m_player.IsPlaying())
       m_pScreen->OnMediaStart(m_bg.szPath);
