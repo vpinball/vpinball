@@ -4,6 +4,7 @@
 #include "ScriptPanel.h"
 
 #include "core/SettingsService.h"
+#include "core/ScriptInterpreter.h"
 #include "ui/live/IconsLucide.h"
 #include "parts/pintable.h"
 #include "ui/live/EditorUI.h"
@@ -94,6 +95,10 @@ ScriptPanel::ScriptPanel(EditorUI &editor)
    m_acConfig.callback = [this](TextEditor::AutoCompleteState &state) { OnAutoComplete(state); };
    m_acConfig.userData = this;
    m_te.SetAutoCompleteConfig(&m_acConfig);
+
+   // right-click "go to definition" and hover tooltips on symbols
+   m_te.SetTextContextMenuCallback([this](TextEditor::PopupData &data) { OnContextMenu(data); });
+   m_te.SetTextHoverCallback([this](TextEditor::PopupData &data) { OnTextHover(data); });
 
    BaseDeclarations(); // pin the base word snapshots before the first dynamic merge
    BaseIdentifiers();
@@ -188,6 +193,185 @@ void ScriptPanel::OnAutoComplete(TextEditor::AutoCompleteState &state)
    {
       state.suggestions.push_back(std::move(suggestion));
       state.labels.push_back(std::move(label));
+   }
+}
+
+// Symbol lookup for go-to-definition: only the table script's own symbols are
+// navigable (core.vbs symbols and COM members have no script location)
+const Symbol *ScriptPanel::FindDefinition(const std::string &word) const { return m_model.Find(word); }
+
+void ScriptPanel::JumpToLine(const size_t line)
+{
+   m_te.SetCursor(TextEditor::DocPos(line, 0));
+   m_te.ScrollToLine(line, TextEditor::Scroll::alignMiddle);
+   m_te.SetFocus();
+}
+
+void ScriptPanel::GoToDefinition(const TextEditor::DocPos pos)
+{
+   const std::string ctx = m_te.GetContext(pos, [](ImWchar c) { return VbsLex::IsIdentChar(c) || c == '.'; });
+   const size_t lastDot = ctx.rfind('.');
+   if (lastDot != std::string::npos)
+   {
+      // member context: navigate only when the member is declared in this script
+      // (symbols pointing into the table script's own model have a real line number)
+      const std::string first = LowerWord(ctx.substr(0, ctx.find('.')));
+      const std::string word = ctx.substr(lastDot + 1);
+      const std::vector<Symbol> &scriptSymbols = m_model.Symbols();
+      for (const Symbol *s : m_api.MembersOf(first, m_model))
+         if (s->lowerName == LowerWord(word))
+         {
+            if (!scriptSymbols.empty() && s >= scriptSymbols.data() && s < scriptSymbols.data() + scriptSymbols.size())
+            {
+               JumpToLine(static_cast<size_t>(s->line));
+               return;
+            }
+            m_status = s->signature;
+            return;
+         }
+      m_status = "No definition for '" + word + "'";
+      return;
+   }
+
+   if (const Symbol *s = FindDefinition(ctx); s != nullptr)
+   {
+      JumpToLine(static_cast<size_t>(s->line));
+      return;
+   }
+   if (const Symbol *s = m_api.CoreModel().Find(ctx); s != nullptr)
+   {
+      m_status = "'" + ctx + "' is defined in the builtin scripts (" + s->signature + ")";
+      return;
+   }
+   if (const std::string iface = m_api.InterfaceOf(ctx); !iface.empty())
+   {
+      m_status = "'" + ctx + "' is a script object (" + iface + ")";
+      return;
+   }
+   m_status = "No definition for '" + ctx + "'";
+}
+
+void ScriptPanel::OnContextMenu(TextEditor::PopupData &data)
+{
+   const std::string word = m_te.GetContext(data.pos, [](ImWchar c) { return VbsLex::IsIdentChar(c) || c == '.'; });
+   if (ImGui::MenuItem(ICON_LC_ARROW_RIGHT "  Go to definition", "F12", false, !word.empty()))
+      GoToDefinition(data.pos);
+}
+
+void ScriptPanel::OnTextHover(TextEditor::PopupData &data)
+{
+   const auto describe = [this](const Symbol *s, const char *origin)
+   {
+      if (!s->signature.empty())
+         ImGui::TextUnformatted(s->signature.c_str());
+      else
+         ImGui::TextUnformatted(s->name.c_str());
+      ImGui::TextDisabled("%s%s", SymbolKindName(s->kind), origin);
+      if (!s->comment.empty())
+         ImGui::TextUnformatted(s->comment.c_str());
+   };
+
+   const std::string ctx = m_te.GetContext(data.pos, [](ImWchar c) { return VbsLex::IsIdentChar(c) || c == '.'; });
+   const size_t lastDot = ctx.rfind('.');
+   if (lastDot != std::string::npos)
+   {
+      const std::string first = LowerWord(ctx.substr(0, ctx.find('.')));
+      const std::string word = ctx.substr(lastDot + 1);
+      const std::string lower = LowerWord(word);
+      for (const Symbol *s : m_api.MembersOf(first, m_model))
+         if (s->lowerName == lower)
+         {
+            describe(s, "");
+            return;
+         }
+      ImGui::CloseCurrentPopup(); // nothing known about this member
+      return;
+   }
+
+   if (const Symbol *s = m_model.Find(ctx); s != nullptr)
+   {
+      describe(s, "");
+      return;
+   }
+   if (const Symbol *s = m_api.CoreModel().Find(ctx); s != nullptr)
+   {
+      describe(s, " (builtin scripts)");
+      return;
+   }
+   for (const Symbol &s : m_api.Globals())
+      if (s.lowerName == LowerWord(ctx))
+      {
+         ImGui::TextUnformatted(s.name.c_str());
+         ImGui::TextDisabled("script object (%s)", s.signature.c_str());
+         return;
+      }
+   ImGui::CloseCurrentPopup(); // no info for this word: don't flash an empty popup
+}
+
+// Gutter marker + squiggly underline for one script engine diagnostic (1-based line)
+void ScriptPanel::ReportError(const int line, const int column, const std::string &description)
+{
+   const size_t l = static_cast<size_t>(line > 0 ? line - 1 : 0);
+   const size_t c = static_cast<size_t>(column > 0 ? column : 0);
+   const ImU32 red = EditorTheme::Rgb(240, 80, 80);
+   m_te.AddMarker(l, red, red, description, description);
+   m_te.AddSquiggle(TextEditor::DocPos(l, c), TextEditor::DocPos(l, c + 8), s_errorSquiggle, red, description);
+}
+
+void ScriptPanel::ClearErrors()
+{
+   m_te.ClearMarkers();
+   m_te.ClearSquiggles(s_errorSquiggle);
+}
+
+// Runtime error during a play test (or a compile check): mark it in the editor
+void ScriptPanel::OnScriptError(const int line, const int column, const string &description) { ReportError(line, column, description); }
+
+// Full compile pass through the script engine (same mechanism as the Win32
+// editor's CheckSyntax): parse errors land in ReportError via the error handler
+void ScriptPanel::CheckSyntax()
+{
+   ClearErrors();
+   int errorCount = 0;
+   std::string firstError;
+   CComObject<ScriptInterpreter> *interpreter;
+   CComObject<ScriptInterpreter>::CreateInstance(&interpreter);
+   interpreter->AddRef();
+   interpreter->Start(m_editor.m_table);
+   interpreter->SetScriptErrorHandler(
+      [this, &errorCount, &firstError](ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &)
+      {
+         if (type != ScriptInterpreter::ErrorType::DebugConsole)
+         {
+            ++errorCount;
+            if (firstError.empty())
+               firstError = description;
+            ReportError(line, column, description);
+         }
+      });
+   interpreter->Evaluate(m_editor.m_table->m_script_text, false);
+   const bool hasError = interpreter->HasError();
+   interpreter->Stop(m_editor.m_table);
+   interpreter->Release();
+   m_status = hasError ? std::to_string(errorCount) + " error(s): " + firstError : "Syntax OK";
+}
+
+// Outliner menu entry: classes open a submenu of their members, everything else
+// is a leaf item that jumps to the declaration line
+void ScriptPanel::RenderSymbolMenuItem(const Symbol &symbol)
+{
+   const std::string label = symbol.name + "  \xe2\x80\x94 " + SymbolKindName(symbol.kind) + "##" + std::to_string(symbol.line);
+   if (symbol.children.empty())
+   {
+      if (ImGui::MenuItem(label.c_str()))
+         JumpToLine(static_cast<size_t>(symbol.line));
+      return;
+   }
+   if (ImGui::BeginMenu(label.c_str()))
+   {
+      for (const int child : symbol.children)
+         RenderSymbolMenuItem(m_model.Symbols()[static_cast<size_t>(child)]);
+      ImGui::EndMenu();
    }
 }
 
@@ -397,6 +581,16 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       if (ImGui::Checkbox("Show whitespace", &whitespace))
          settings.SetEditor_ScriptEditorShowWhitespace(whitespace, false);
 
+      // Outliner: jump to any declaration (classes expose their members as submenus)
+      if (ImGui::BeginMenu("Go to symbol"))
+      {
+         for (const Symbol *s : m_model.TopLevel())
+            RenderSymbolMenuItem(*s);
+         ImGui::EndMenu();
+      }
+      if (ImGui::MenuItem("Check syntax", "F7"))
+         CheckSyntax();
+
       // Event handler stub insertion: one submenu per script-visible object that has
       // events (the table's own script name, parts, collections); already implemented
       // handlers are listed disabled
@@ -478,6 +672,8 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       ImGui::EndDisabled();
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
          ImGui::SetTooltip("%s", canOpenExternal ? "Open the script in the external editor" : "Configure an external editor command to open the script in it");
+      if (!m_status.empty())
+         ImGui::TextDisabled("%s", m_status.c_str());
 
       // (Re)load the editor content when the edited table changes or when the script text
       // was modified outside the widget (external editor file sync)
@@ -529,12 +725,21 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
             table->SetDirtyScript(SaveDirtyState::Dirty);
             m_modelDirty = true;
             m_modelDirtyAt = ImGui::GetTime();
+            m_status.clear();
+            ClearErrors(); // diagnostics point at stale positions after an edit
          }
       }
-      if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows) && ImGui::IsKeyPressed(ImGuiKey_Escape, false) && !transientActive)
+      if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
       {
-         ImGui::SetWindowFocus(static_cast<const char *>(nullptr));
-         m_editor.m_suppressNextEscape = true;
+         if (ImGui::IsKeyPressed(ImGuiKey_F12, false))
+            GoToDefinition(m_te.GetMainCursorPosition());
+         else if (ImGui::IsKeyPressed(ImGuiKey_F7, false))
+            CheckSyntax();
+         else if (ImGui::IsKeyPressed(ImGuiKey_Escape, false) && !transientActive)
+         {
+            ImGui::SetWindowFocus(static_cast<const char *>(nullptr));
+            m_editor.m_suppressNextEscape = true;
+         }
       }
    }
    ImGui::PopID();

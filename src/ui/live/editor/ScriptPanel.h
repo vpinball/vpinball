@@ -34,6 +34,9 @@ public:
    void Update(); // Per frame housekeeping (external editor session)
    void RenderPane(const AreaRect &rect, int leafId); // Renders the script editor inside an area leaf
 
+   // Script engine error report (runtime errors during a play test, 1-based line/column)
+   void OnScriptError(int line, int column, const string &description);
+
 private:
    void OpenInExternalEditor();
    void SyncExternalScript();
@@ -55,6 +58,22 @@ private:
    bool m_modelDirty = true;
    void ReparseModel();
    void OnAutoComplete(TextEditor::AutoCompleteState &state);
+   void OnContextMenu(TextEditor::PopupData &data);
+   void OnTextHover(TextEditor::PopupData &data);
+
+   // Word at position -> declaration: script symbols navigate, core.vbs/API names only describe
+   const Symbol *FindDefinition(const std::string &word) const;
+   void GoToDefinition(TextEditor::DocPos pos);
+   void JumpToLine(size_t line);
+
+   // Parse/compile errors as gutter markers + squiggly underlines
+   static constexpr size_t s_errorSquiggle = 1;
+   void ReportError(int line, int column, const std::string &description);
+   void ClearErrors();
+   void CheckSyntax();
+   string m_status; // Transient status shown under the title row (check results, def lookup)
+
+   void RenderSymbolMenuItem(const Symbol &symbol); // One outliner entry (recursive for classes)
 
    string m_extEditorCmd; // External editor command, mirrored to the Editor.ExternalScriptEditor app setting
    bool m_extCmdLoaded = false;

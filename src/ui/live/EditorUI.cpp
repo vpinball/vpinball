@@ -233,6 +233,8 @@ void EditorUI::SetTable(PinTable *const table)
    m_partLibrary.CancelPlacement();
 }
 
+void EditorUI::OnScriptError(const int line, const int column, const string &description) { m_scriptPanel.OnScriptError(line, column, description); }
+
 void EditorUI::PlayTest()
 {
    if (IsInspectMode())
