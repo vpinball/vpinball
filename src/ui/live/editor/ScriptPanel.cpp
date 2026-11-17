@@ -588,7 +588,9 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
             RenderSymbolMenuItem(*s);
          ImGui::EndMenu();
       }
-      if (ImGui::MenuItem("Check syntax", "F7"))
+      // the check runs the script's top-level code, so it's not offered while
+      // inspecting a live play-test copy
+      if (ImGui::MenuItem("Check syntax", "F7", false, !m_editor.IsInspectMode()))
          CheckSyntax();
 
       // Event handler stub insertion: one submenu per script-visible object that has
@@ -733,7 +735,7 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       {
          if (ImGui::IsKeyPressed(ImGuiKey_F12, false))
             GoToDefinition(m_te.GetMainCursorPosition());
-         else if (ImGui::IsKeyPressed(ImGuiKey_F7, false))
+         else if (ImGui::IsKeyPressed(ImGuiKey_F7, false) && !m_editor.IsInspectMode())
             CheckSyntax();
          else if (ImGui::IsKeyPressed(ImGuiKey_Escape, false) && !transientActive)
          {
