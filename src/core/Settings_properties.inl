@@ -1470,6 +1470,12 @@ PropEnum(Editor, Units, "Units"s, "Unit used in viewport/editor"s, int, 0, "Inch
 PropBool(Editor, AlwaysViewScript, "AlwaysViewScript"s, "Always view Script window"s, false);
 PropString(Editor, PartLibraryFolders, "PartLibraryFolders"s, "List of part library folders (';' separated)"s, ""s);
 PropString(Editor, ExternalScriptEditor, "ExternalScriptEditor"s, "Command used to edit the table script in an external editor ('{file}' is replaced by the script file path, appended when absent)"s, ""s);
+PropInt(Editor, ScriptEditorFontSize, "Script Editor Font Size"s, "Font size of the script code editor"s, 8, 32, 13);
+PropInt(Editor, ScriptEditorTabSize, "Script Editor Tab Size"s, "Tabulation width of the script code editor"s, 1, 16, 4);
+PropBool(Editor, ScriptEditorAutoIndent, "Script Editor Auto Indent"s, "Keep the indentation level when creating new lines in the script code editor"s, true);
+PropBool(Editor, ScriptEditorWordWrap, "Script Editor Word Wrap"s, "Wrap long lines instead of horizontal scrolling in the script code editor"s, false);
+PropBool(Editor, ScriptEditorShowMinimap, "Script Editor Minimap"s, "Show the document minimap in the script code editor"s, false);
+PropBool(Editor, ScriptEditorShowWhitespace, "Script Editor Whitespace"s, "Show whitespace and tabulation glyphs in the script code editor"s, false);
 PropFloatUnbounded(Editor, ThrowBallMass, "ThrowBallMass"s, "Mass of thrown ball in 'throw ball' debugging mode"s, 1.f);
 PropIntUnbounded(Editor, ThrowBallSize, "ThrowBallSize"s, "Size of thrown ball in 'throw ball' debugging mode"s, 50);
 PropBool(Editor, RenderSolid, "RenderSolid"s, "Render solid in viewport/editor"s, true);

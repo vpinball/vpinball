@@ -7,6 +7,7 @@
 #include <filesystem>
 
 #include "EditorAreaView.h"
+#include "textedit/TextEditor.h"
 
 class PinTable;
 
@@ -15,9 +16,10 @@ namespace VPX::EditorUI
 
 class EditorUI;
 
-// Table script editor pane: a basic embedded text editor by default. Alternatively, when an
-// external editor command is configured, the script can be written to a temporary file opened
-// in that editor, and synchronized back to the table whenever the file changes on disk.
+// Table script editor pane: an embedded code editor (ImGuiColorTextEdit) by default.
+// Alternatively, when an external editor command is configured, the script can be written to
+// a temporary file opened in that editor, and synchronized back to the table whenever the
+// file changes on disk.
 class ScriptPanel
 {
 public:
@@ -37,6 +39,11 @@ private:
 
    EditorUI &m_editor;
    bool m_focus = false; // Focus the pane on next render (Show was called while already open)
+
+   // Embedded code editor hosting the table script (see third-party/include/textedit)
+   TextEditor m_te;
+   PinTable *m_teTable = nullptr; // Table whose script text is currently loaded in m_te
+   bool m_teReload = false; // Script text changed outside the widget: push it on next render
 
    string m_extEditorCmd; // External editor command, mirrored to the Editor.ExternalScriptEditor app setting
    bool m_extCmdLoaded = false;

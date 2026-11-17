@@ -10,6 +10,9 @@
 #include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
 
+#include "EditorTheme.h"
+#include "textedit/languages/TextEditorVbs.h"
+
 #include <SDL3/SDL_error.h>
 
 #include "imgui/imgui_internal.h"
@@ -20,9 +23,50 @@
 namespace VPX::EditorUI
 {
 
+namespace
+{
+
+   // Code editor palette: dark base adjusted to the live editor theme (VS Code dark like syntax colors)
+   TextEditor::Palette BuildScriptPalette()
+   {
+      TextEditor::Palette palette = TextEditor::GetDarkPalette();
+      using C = TextEditor::Color;
+      palette[static_cast<size_t>(C::text)] = EditorTheme::Text;
+      palette[static_cast<size_t>(C::keyword)] = EditorTheme::Rgb(86, 156, 214);
+      palette[static_cast<size_t>(C::declaration)] = EditorTheme::Rgb(78, 201, 176);
+      palette[static_cast<size_t>(C::number)] = EditorTheme::Rgb(181, 206, 168);
+      palette[static_cast<size_t>(C::string)] = EditorTheme::Rgb(206, 145, 120);
+      palette[static_cast<size_t>(C::punctuation)] = EditorTheme::Text;
+      palette[static_cast<size_t>(C::identifier)] = EditorTheme::Text;
+      palette[static_cast<size_t>(C::knownIdentifier)] = EditorTheme::Rgb(220, 220, 170);
+      palette[static_cast<size_t>(C::comment)] = EditorTheme::Rgb(106, 153, 85);
+      palette[static_cast<size_t>(C::background)] = EditorTheme::Strip;
+      palette[static_cast<size_t>(C::cursor)] = EditorTheme::Text;
+      palette[static_cast<size_t>(C::selection)] = EditorTheme::Rgb(71, 114, 179, 110);
+      palette[static_cast<size_t>(C::whitespace)] = EditorTheme::TextFaint;
+      palette[static_cast<size_t>(C::matchingBracketBackground)] = EditorTheme::Raised;
+      palette[static_cast<size_t>(C::matchingBracketActive)] = EditorTheme::Accent;
+      palette[static_cast<size_t>(C::matchingBracketError)] = EditorTheme::Rgb(220, 80, 80);
+      palette[static_cast<size_t>(C::lineNumber)] = EditorTheme::TextFaint;
+      palette[static_cast<size_t>(C::currentLineNumber)] = EditorTheme::Text;
+      palette[static_cast<size_t>(C::currentLineHighlight)] = EditorTheme::Rgb(255, 255, 255, 10);
+      palette[static_cast<size_t>(C::currentLineHighlightBorder)] = EditorTheme::Rgb(0, 0, 0, 0);
+      return palette;
+   }
+
+}
+
 ScriptPanel::ScriptPanel(EditorUI &editor)
    : m_editor(editor)
 {
+   m_te.SetLanguage(TextEditorVbs::getDefinition());
+   m_te.SetPalette(BuildScriptPalette());
+   m_te.SetShowLineNumbersEnabled(true);
+   m_te.SetLineFoldingEnabled(true);
+   m_te.SetCompletePairedGlyphs(true);
+   m_te.SetShowCurrentLineHighlightEnabled(true);
+   m_te.SetInsertSpacesOnTabs(false);
+   m_te.SetFindReplaceEnabled(true);
 }
 
 ScriptPanel::~ScriptPanel() { StopExternalSession(); }
@@ -149,6 +193,8 @@ void ScriptPanel::SyncExternalScript()
    {
       m_extTable->m_script_text = script;
       m_extTable->SetDirtyScript(SaveDirtyState::Dirty);
+      if (m_teTable == m_extTable)
+         m_teReload = true; // push the new text into the embedded editor (ReplaceAllText keeps the undo history)
    }
 }
 
@@ -207,12 +253,36 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
    ImGui::SameLine();
    ImGui::AlignTextToFramePadding();
    ImGui::TextDisabled("Table Script");
+
+   // Right side of the title row: editor options popover
+   const float optW = IconButtonInkSize(ICON_LC_SLIDERS_HORIZONTAL).x;
+   const float rightX = rect.Width() - ImGui::GetStyle().WindowPadding.x - optW;
+   ImGui::SameLine();
+   if (rightX > ImGui::GetCursorPosX())
+      ImGui::SetCursorPosX(rightX);
+   if (IconButtonInk(ICON_LC_SLIDERS_HORIZONTAL, "##ScriptOptions"))
+      ImGui::OpenPopup("Script Options");
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopup("Script Options"))
+   {
+      Settings &settings = g_settingsService.GetAppSettings();
+      bool wordWrap = settings.GetEditor_ScriptEditorWordWrap();
+      if (ImGui::Checkbox("Word wrap", &wordWrap))
+         settings.SetEditor_ScriptEditorWordWrap(wordWrap, false);
+      bool minimap = settings.GetEditor_ScriptEditorShowMinimap();
+      if (ImGui::Checkbox("Minimap", &minimap))
+         settings.SetEditor_ScriptEditorShowMinimap(minimap, false);
+      bool whitespace = settings.GetEditor_ScriptEditorShowWhitespace();
+      if (ImGui::Checkbox("Show whitespace", &whitespace))
+         settings.SetEditor_ScriptEditorShowWhitespace(whitespace, false);
+      ImGui::EndPopup();
+   }
    ImGui::Separator();
 
    if (m_focus)
    {
       m_focus = false;
       ImGui::SetWindowFocus();
+      m_te.SetFocus();
    }
    if (!m_extCmdLoaded)
    {
@@ -221,7 +291,9 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
    }
 
    {
-      const bool readOnly = m_editor.IsInspectMode() || m_editor.m_table->IsLocked();
+      // The embedded editor is read-only while inspecting a play test, when the table is
+      // locked, and while an external editing session is armed (the file on disk wins)
+      const bool readOnly = m_editor.IsInspectMode() || m_editor.m_table->IsLocked() || m_extTable != nullptr;
       if (m_editor.IsInspectMode())
          ImGui::TextDisabled("Inspecting a play test session: the script is read-only");
       else if (m_editor.m_table->IsLocked())
@@ -249,20 +321,51 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
          ImGui::SetTooltip("%s", canOpenExternal ? "Open the script in the external editor" : "Configure an external editor command to open the script in it");
 
-      // Esc must not revert the typing: ImGui restores the text the field had when it was activated (the edits are applied on
-      // every keystroke), so the field is deactivated before it sees the key. The text is kept, the focus leaves the editor,
-      // and the Esc is not an editor Esc.
-      if (ImGui::GetActiveID() == ImGui::GetID("##script") && ImGui::IsKeyPressed(ImGuiKey_Escape, false))
+      // (Re)load the editor content when the edited table changes or when the script text
+      // was modified outside the widget (external editor file sync)
+      PinTable *const table = m_editor.m_table;
+      if (m_teTable != table)
       {
-         ImGui::ClearActiveID();
+         m_teTable = table;
+         m_te.SetText(table->m_script_text);
+      }
+      else if (m_teReload)
+      {
+         m_teReload = false;
+         m_te.ReplaceAllText(table->m_script_text);
+      }
+
+      const Settings &settings = g_settingsService.GetAppSettings();
+      m_te.SetTabSize(static_cast<size_t>(settings.GetEditor_ScriptEditorTabSize()));
+      m_te.SetAutoIndentEnabled(settings.GetEditor_ScriptEditorAutoIndent());
+      const bool wordWrap = settings.GetEditor_ScriptEditorWordWrap();
+      m_te.SetWordWrapEnabled(wordWrap);
+      m_te.SetShowMiniMapEnabled(settings.GetEditor_ScriptEditorShowMinimap());
+      m_te.SetShowWhitespacesEnabled(settings.GetEditor_ScriptEditorShowWhitespace());
+      m_te.SetReadOnlyEnabled(readOnly);
+
+      // Embedded code editor, applied to the table script on every edit. Esc releases the
+      // editor focus, but only after the widget's transient UI (autocomplete popup,
+      // find/replace window, secondary cursors) had its chance to consume it.
+      const bool transientActive = m_te.HasActiveTransient();
+      ImGui::PushFont(m_editor.m_liveUI.GetMonoFont(), m_editor.m_liveUI.GetMonoFont()->LegacySize);
+      const ImGuiWindowFlags teFlags = wordWrap ? ImGuiWindowFlags_NoMove : (ImGuiWindowFlags_NoMove | ImGuiWindowFlags_HorizontalScrollbar);
+      const bool changed = m_te.Render("##script", ImVec2(-FLT_MIN, -FLT_MIN), ImGuiChildFlags_None, teFlags);
+      ImGui::PopFont();
+      if (changed)
+      {
+         const string text = m_te.GetText();
+         if (text != table->m_script_text)
+         {
+            table->m_script_text = text;
+            table->SetDirtyScript(SaveDirtyState::Dirty);
+         }
+      }
+      if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows) && ImGui::IsKeyPressed(ImGuiKey_Escape, false) && !transientActive)
+      {
+         ImGui::SetWindowFocus(static_cast<const char *>(nullptr));
          m_editor.m_suppressNextEscape = true;
       }
-      // Basic embedded text editor, applied to the table script on every edit
-      ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput;
-      if (readOnly)
-         flags |= ImGuiInputTextFlags_ReadOnly;
-      if (ImGui::InputTextMultiline("##script", &m_editor.m_table->m_script_text, ImVec2(-FLT_MIN, -FLT_MIN), flags))
-         m_editor.m_table->SetDirtyScript(SaveDirtyState::Dirty);
    }
    ImGui::PopID();
    ImGui::End();

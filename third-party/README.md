@@ -99,6 +99,10 @@ Droid Sans
 - Upstream: https://www.fontsquirrel.com/fonts/droid-sans
 - License: Apache 2 licensed
 
+JetBrains Mono
+- Upstream: https://github.com/JetBrains/JetBrainsMono
+- License: SIL Open Font License 1.1
+
 ForkAwesome
 - Upstream: https://github.com/ForkAwesome/Fork-Awesome
 - License: SIL OFL 1.1
