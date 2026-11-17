@@ -14,7 +14,6 @@
 namespace PUP {
 
 static constexpr int PUP_VOLUME_MAX = 200;
-static constexpr uint64_t PUP_VOLUME_FADE_INTERVAL_MS = 50;
 
 /*
    screens.pup: ScreenNum,ScreenDes,PlayList,PlayFile,Loopit,Active,Priority,CustomPos
@@ -187,7 +186,7 @@ void PUPScreen::ApplyVolume(int volume)
 float PUPScreen::StartMediaVolume(int volume)
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   m_fadeVolume = -1;
+   CancelVolumeFade();
    m_duckOrigVolume = -1;
    m_currentVolume = volume;
    return EffectiveVolume(volume);
@@ -223,7 +222,7 @@ void PUPScreen::SetDefaultVolume(int volume)
 void PUPScreen::SetVolumeCurrent(int volume)
 {
    assert(std::this_thread::get_id() == m_apiThread);
-   m_fadeVolume = -1;
+   CancelVolumeFade();
    const int clamped = std::clamp(volume, 1, PUP_VOLUME_MAX);
    m_pMediaPlayerManager->SetCurrentItemVolume(clamped);
    ApplyVolume(clamped);
@@ -234,25 +233,86 @@ void PUPScreen::StartVolumeFade(int from, int to, int step)
    m_fadeVolume = from;
    m_fadeTarget = to;
    m_volumeFadeStep = step;
-   m_fadeNextTick = SDL_GetTicks();
+   if (!m_videoTimer)
+   {
+      m_videoTimer = true;
+      m_videoTimerNext = SDL_GetTicks() + m_videoTimerInterval;
+   }
 }
 
-void PUPScreen::UpdateVolumeFade()
+void PUPScreen::CancelVolumeFade()
 {
-   assert(std::this_thread::get_id() == m_apiThread);
    if (m_fadeVolume < 0)
       return;
-   const uint64_t now = SDL_GetTicks();
-   if (now < m_fadeNextTick)
+   m_fadeVolume = -1;
+   m_videoTimer = false;
+}
+
+void PUPScreen::FadeOut(int endMode, int interval)
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   if (m_videoTimer)
       return;
-   m_fadeNextTick = now + PUP_VOLUME_FADE_INTERVAL_MS;
+   m_pManager->m_fadeOutCounter = 255;
+   m_fadeOutMode = endMode;
+   if (interval > 30)
+      m_videoTimerInterval = interval;
+   m_videoTimer = true;
+   m_videoTimerNext = SDL_GetTicks() + m_videoTimerInterval;
+}
+
+void PUPScreen::UpdateVideoTimer()
+{
+   assert(std::this_thread::get_id() == m_apiThread);
+   if (!m_videoTimer)
+      return;
+   const uint64_t now = SDL_GetTicks();
+   if (now < m_videoTimerNext)
+      return;
+   m_videoTimerNext = now + m_videoTimerInterval;
+   if (m_fadeVolume < 0)
+   {
+      FadeOutTick();
+      return;
+   }
    if (m_fadeVolume > m_fadeTarget)
       m_fadeVolume = std::max(m_fadeTarget, m_fadeVolume - m_volumeFadeStep);
    else
       m_fadeVolume = std::min(m_fadeTarget, m_fadeVolume + m_volumeFadeStep);
    ApplyVolume(m_fadeVolume);
    if (m_fadeVolume == m_fadeTarget)
+   {
       m_fadeVolume = -1;
+      m_videoTimer = false;
+   }
+}
+
+void PUPScreen::FadeOutTick()
+{
+   int& counter = m_pManager->m_fadeOutCounter;
+   if (counter < 0)
+      return;
+   counter -= 10;
+   if (counter >= 1)
+   {
+      m_screenAlpha = static_cast<float>(counter) / 255.f;
+      if (m_currentVolume > 0)
+         m_pMediaPlayerManager->SetVolume(EffectiveVolume(std::max(1, static_cast<int>(std::lround(m_currentVolume * counter / 255.0)))));
+      return;
+   }
+   m_videoTimer = false;
+   const bool pause = (m_fadeOutMode == 1 || m_fadeOutMode == 3) && !m_stopInsteadOfPause;
+   if (m_fadeOutMode >= 0 && m_fadeOutMode <= 3)
+   {
+      if (pause)
+         Pause();
+      else
+         Stop();
+      if (m_fadeOutMode >= 2)
+         m_hidden = true;
+   }
+   m_screenAlpha = 1.f;
+   SetDefaultVolume(m_currentVolume);
 }
 
 void PUPScreen::Duck(int percent)
@@ -355,7 +415,7 @@ void PUPScreen::OnMediaEnd()
    else if (action == HudReturn::RestorePage)
       SetPage(m_defaultPagenum, 0);
 
-   m_fadeVolume = -1;
+   CancelVolumeFade();
    m_duckOrigVolume = -1;
    if (m_duckMaster)
    {
@@ -602,7 +662,7 @@ void PUPScreen::Update(double gameTime)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    UpdateTimers();
-   UpdateVolumeFade();
+   UpdateVideoTimer();
    m_pMediaPlayerManager->SetGameTime(gameTime);
 }
 

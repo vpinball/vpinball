@@ -1341,6 +1341,14 @@ void PUPManager::CustomFunction(int sn, const string& szMsg)
             // TODO implement overlay hide/show toggling the screen's overlay (HUD) visibility
             LOGW(std::format("Overlay hide (OH) toggle not implemented, ignoring: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
             break;
+         case 29:
+            // { "mt":301, "SN": XX, "FN":29, "FT":0, "FI":100 } fade the screen out, FT 0 stop, 1 pause, 2 stop and hide, 3 pause and hide, FI tick interval in ms
+            pScreen->FadeOut(json["FT"s].as<int>(0), json["FI"s].as<int>(0));
+            break;
+         case 301:
+            // { "mt":301, "SN": XX, "FN":301 } a fade out that would pause stops instead
+            pScreen->m_stopInsteadOfPause = true;
+            break;
          default:
             NOT_IMPLEMENTED(std::format("Unknown function not implemented: screen={{{}}}, fn={}, szMsg={}", pScreen->ToString(false), fn, szMsg));
             break;
