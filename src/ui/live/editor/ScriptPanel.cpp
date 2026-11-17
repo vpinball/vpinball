@@ -76,6 +76,15 @@ namespace
          c = static_cast<char>(VbsLex::ToLower(c));
       return r;
    }
+
+   // Flat menu header for the pane's top bar: a selectable label that opens the
+   // given popup anchored under it (menu bar style)
+   void MenuHeader(const char *label, const char *popupId)
+   {
+      const ImVec2 size(ImGui::CalcTextSize(label).x + 2.f * ImGui::GetStyle().FramePadding.x, ImGui::GetFrameHeight());
+      if (ImGui::Selectable(label, false, 0, size))
+         ImGui::OpenPopup(popupId);
+   }
 }
 
 ScriptPanel::ScriptPanel(EditorUI &editor)
@@ -375,6 +384,287 @@ void ScriptPanel::RenderSymbolMenuItem(const Symbol &symbol)
    }
 }
 
+// Top bar "View" menu: display options, zoom and navigation
+void ScriptPanel::RenderViewMenu()
+{
+   MenuHeader("View", "ScriptViewMenu");
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopup("ScriptViewMenu"))
+   {
+      Settings &settings = g_settingsService.GetAppSettings();
+      const bool wordWrap = settings.GetEditor_ScriptEditorWordWrap();
+      if (ImGui::MenuItem("Word wrap", nullptr, wordWrap))
+         settings.SetEditor_ScriptEditorWordWrap(!wordWrap, false);
+      const bool minimap = settings.GetEditor_ScriptEditorShowMinimap();
+      if (ImGui::MenuItem("Minimap", nullptr, minimap))
+         settings.SetEditor_ScriptEditorShowMinimap(!minimap, false);
+      const bool whitespace = settings.GetEditor_ScriptEditorShowWhitespace();
+      if (ImGui::MenuItem("Show whitespace", nullptr, whitespace))
+         settings.SetEditor_ScriptEditorShowWhitespace(!whitespace, false);
+      ImGui::Separator();
+      char zoomLabel[24];
+      snprintf(zoomLabel, sizeof(zoomLabel), "Zoom: %d%%", static_cast<int>(m_fontZoom * 100.f + 0.5f));
+      ImGui::MenuItem(zoomLabel, nullptr, false, false);
+      if (ImGui::MenuItem("Zoom In", "Ctrl+Scroll"))
+         m_fontZoom = ImClamp(m_fontZoom * 1.1f, 0.5f, 3.0f);
+      if (ImGui::MenuItem("Zoom Out"))
+         m_fontZoom = ImClamp(m_fontZoom / 1.1f, 0.5f, 3.0f);
+      if (ImGui::MenuItem("Reset Zoom", nullptr, false, m_fontZoom != 1.0f))
+         m_fontZoom = 1.0f;
+      ImGui::EndPopup();
+   }
+}
+
+// Top bar "Edit" menu: clipboard, editing actions and the script check
+void ScriptPanel::RenderEditMenu()
+{
+   MenuHeader("Edit", "ScriptEditMenu");
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopup("ScriptEditMenu"))
+   {
+      const bool canEdit = !m_editor.IsInspectMode() && !m_editor.m_table->IsLocked() && m_extTable == nullptr;
+      const bool hasSelection = m_te.MainCursorHasSelection();
+      if (ImGui::MenuItem("Cut", "Ctrl+X", false, canEdit && hasSelection))
+      {
+         m_te.Cut();
+         m_te.SetFocus();
+      }
+      if (ImGui::MenuItem("Copy", "Ctrl+C", false, hasSelection))
+         m_te.Copy();
+      if (ImGui::MenuItem("Paste", "Ctrl+V", false, canEdit))
+      {
+         m_te.Paste();
+         m_te.SetFocus();
+      }
+      ImGui::Separator();
+      if (ImGui::MenuItem("Duplicate Line", "Ctrl+D", false, canEdit))
+         DuplicateLine();
+      ImGui::Separator();
+      if (ImGui::MenuItem("Find & Replace", "Ctrl+F"))
+         m_te.OpenFindReplaceWindow();
+      if (ImGui::MenuItem("Go to line", "Ctrl+G"))
+         m_gotoLinePopup = true;
+      if (ImGui::MenuItem("Go to definition", "F12"))
+         GoToDefinition(m_te.GetMainCursorPosition());
+      // Outliner: jump to any declaration (classes expose their members as submenus)
+      if (ImGui::BeginMenu("Go to symbol"))
+      {
+         for (const Symbol *s : m_model.TopLevel())
+            RenderSymbolMenuItem(*s);
+         ImGui::EndMenu();
+      }
+      ImGui::Separator();
+      // the check runs the script's top-level code, so it's not offered while
+      // inspecting a live play-test copy
+      if (ImGui::MenuItem("Check syntax", "F7", false, !m_editor.IsInspectMode()))
+         CheckSyntax();
+      ImGui::Separator();
+
+      // Event handler stub insertion: one submenu per script-visible object that has
+      // events (the table's own script name, parts, collections); already implemented
+      // handlers are listed disabled
+      ImGui::BeginDisabled(!canEdit);
+      if (ImGui::BeginMenu("Insert event handler"))
+      {
+         for (const Symbol &global : m_api.Globals())
+         {
+            if (global.lowerName == "me" || global.lowerName == "debug" || global.signature.empty())
+               continue;
+            const ScriptApiInterface *iface = ScriptApi::FindInterface(global.signature);
+            if (iface == nullptr || iface->eventCount == 0)
+               continue;
+            if (ImGui::BeginMenu(global.name.c_str()))
+            {
+               for (int e = 0; e < iface->eventCount; ++e)
+               {
+                  const ScriptApiEntry &event = iface->events[e];
+                  const std::string handlerName = global.name + "_" + event.name;
+                  const bool exists = m_model.Find(handlerName) != nullptr;
+                  const std::string label = handlerName + "(" + event.signature + ")" + (exists ? " (defined)" : "");
+                  if (ImGui::MenuItem(label.c_str(), nullptr, false, !exists))
+                  {
+                     const TextEditor::DocPos pos = m_te.GetMainCursorPosition();
+                     m_te.ReplaceTextInCurrentCursor("Sub " + handlerName + "(" + event.signature + ")\n\t\nEnd Sub\n");
+                     m_te.SetCursor(TextEditor::DocPos(pos.line + 1, 1));
+                  }
+               }
+               ImGui::EndMenu();
+            }
+         }
+         ImGui::EndMenu();
+      }
+      ImGui::EndDisabled();
+      ImGui::EndPopup();
+   }
+}
+
+// Top bar "Format" menu: indentation and whitespace transforms
+void ScriptPanel::RenderFormatMenu()
+{
+   MenuHeader("Format", "ScriptFormatMenu");
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopup("ScriptFormatMenu"))
+   {
+      const bool canEdit = !m_editor.IsInspectMode() && !m_editor.m_table->IsLocked() && m_extTable == nullptr;
+      if (ImGui::MenuItem("Indent", "Tab", false, canEdit))
+      {
+         m_te.IndentLines();
+         m_te.SetFocus();
+      }
+      if (ImGui::MenuItem("Unindent", "Shift+Tab", false, canEdit))
+      {
+         m_te.DeindentLines();
+         m_te.SetFocus();
+      }
+      if (ImGui::BeginMenu("Auto Indent"))
+      {
+         const bool hasSelection = canEdit && m_te.MainCursorHasSelection();
+         if (ImGui::MenuItem("Selection", nullptr, false, hasSelection))
+         {
+            const TextEditor::DocSelection sel = m_te.GetMainCursorSelection();
+            AutoIndent(sel.start.line, sel.end.line);
+            m_te.SetFocus();
+         }
+         if (ImGui::MenuItem("Script", nullptr, false, canEdit))
+         {
+            AutoIndent(0, m_te.GetLineCount() - 1);
+            m_te.SetFocus();
+         }
+         ImGui::EndMenu();
+      }
+      ImGui::Separator();
+      if (ImGui::MenuItem("Toggle Comments", "Ctrl+/", false, canEdit))
+      {
+         m_te.ToggleComments();
+         m_te.SetFocus();
+      }
+      ImGui::Separator();
+      if (ImGui::MenuItem("Convert whitespaces to tabs", nullptr, false, canEdit))
+         ConvertIndentation(true);
+      if (ImGui::MenuItem("Convert tabs to whitespaces", nullptr, false, canEdit))
+         ConvertIndentation(false);
+      ImGui::EndPopup();
+   }
+}
+
+// Small line-number input opened by "Go to line" (Ctrl+G)
+void ScriptPanel::RenderGotoLinePopup()
+{
+   if (m_gotoLinePopup)
+   {
+      ImGui::OpenPopup("Go to Line##script");
+      m_gotoLine = static_cast<int>(m_te.GetMainCursorPosition().line) + 1;
+      m_gotoLinePopup = false;
+   }
+   if (const MenuPopupPadding menuPad; ImGui::BeginPopup("Go to Line##script"))
+   {
+      if (ImGui::IsWindowAppearing())
+         ImGui::SetKeyboardFocusHere();
+      ImGui::TextUnformatted("Go to line:");
+      ImGui::SameLine();
+      ImGui::SetNextItemWidth(ImGui::GetFontSize() * 6.f);
+      const bool go = ImGui::InputInt("##gotoline", &m_gotoLine, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue);
+      ImGui::SameLine();
+      if (go || ImGui::SmallButton("Go"))
+      {
+         m_gotoLine = ImClamp(m_gotoLine, 1, static_cast<int>(m_te.GetLineCount()));
+         JumpToLine(static_cast<size_t>(m_gotoLine - 1));
+         ImGui::CloseCurrentPopup();
+      }
+      ImGui::EndPopup();
+   }
+}
+
+// Scintilla-style Ctrl+D: insert a copy of the cursor line right below it
+void ScriptPanel::DuplicateLine()
+{
+   const TextEditor::DocPos pos = m_te.GetMainCursorPosition();
+   const std::string line = m_te.GetLineText(pos.line);
+   if (pos.line + 1 < m_te.GetLineCount())
+      m_te.InsertSectionText(TextEditor::DocPos(pos.line + 1, 0), line + "\n");
+   else // the last line has no trailing newline: add one before the copy
+      m_te.InsertSectionText(TextEditor::DocPos(pos.line, line.size()), "\n" + line);
+   m_te.SetCursor(TextEditor::DocPos(pos.line + 1, pos.index));
+   m_te.SetFocus();
+}
+
+// Re-indents the lines [first, last] from the block level reached before
+// `first`: each line's indent is rewritten to the running VBScript block
+// level (see VbsLex::SmartIndentSelfDelta/SmartIndentDelta), the rest of the
+// line is left untouched
+void ScriptPanel::AutoIndent(const size_t first, const size_t last)
+{
+   const size_t lineCount = m_te.GetLineCount();
+   int level = 0;
+   for (size_t i = 0; i < first && i < lineCount; ++i)
+   {
+      const std::string line = m_te.GetLineText(i);
+      level += VbsLex::SmartIndentSelfDelta(line) + VbsLex::SmartIndentDelta(line);
+      level = std::max(level, 0);
+   }
+   const size_t tabSize = std::max<size_t>(m_te.GetTabSize(), 1);
+   const std::string unit = m_te.IsInsertSpacesOnTabs() ? std::string(tabSize, ' ') : "\t";
+   std::string out;
+   for (size_t i = first; i <= last && i < lineCount; ++i)
+   {
+      const std::string line = m_te.GetLineText(i);
+      size_t ws = 0;
+      while (ws < line.size() && (line[ws] == ' ' || line[ws] == '\t'))
+         ++ws;
+      if (ws == line.size()) // blank line: untouched, no level change
+      {
+         out += line;
+         if (i < lineCount - 1)
+            out += '\n';
+         continue;
+      }
+      const int self = VbsLex::SmartIndentSelfDelta(line);
+      const int next = VbsLex::SmartIndentDelta(line);
+      for (int k = std::max(level + self, 0); k > 0; --k)
+         out += unit;
+      out.append(line, ws, std::string::npos);
+      if (i < lineCount - 1)
+         out += '\n';
+      level += self + next;
+      level = std::max(level, 0);
+   }
+   const TextEditor::DocPos endPos = last + 1 < lineCount ? TextEditor::DocPos(last + 1, 0) : TextEditor::DocPos(lineCount, 0);
+   m_te.ReplaceSectionText(TextEditor::DocPos(first, 0), endPos, out);
+}
+
+// Rewrites the leading whitespace of every line: spaces to tabSize-sized tabs,
+// or tabs to tabSize spaces each
+void ScriptPanel::ConvertIndentation(const bool toTabs)
+{
+   const size_t tabSize = std::max<size_t>(m_te.GetTabSize(), 1);
+   const std::string text = m_te.GetText();
+   std::string out;
+   out.reserve(text.size() + 16);
+   for (size_t start = 0;;)
+   {
+      const size_t eol = text.find('\n', start);
+      const size_t len = (eol == std::string::npos ? text.size() : eol) - start;
+      size_t ws = 0;
+      if (toTabs)
+      {
+         while (ws < len && text[start + ws] == ' ')
+            ++ws;
+         out.append(ws / tabSize, '\t');
+         out.append(ws % tabSize, ' ');
+      }
+      else
+      {
+         while (ws < len && text[start + ws] == '\t')
+            ++ws;
+         out.append(ws * tabSize, ' ');
+      }
+      out.append(text, start + ws, len - ws);
+      if (eol == std::string::npos)
+         break;
+      out += '\n';
+      start = eol + 1;
+   }
+   m_te.ReplaceAllText(out);
+   m_te.SetFocus();
+}
+
 ScriptPanel::~ScriptPanel() { StopExternalSession(); }
 
 void ScriptPanel::Show()
@@ -557,90 +847,16 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
    ImGui::PushID(leafId);
    m_editor.RenderAreaTypeButton(leafId);
    ImGui::SameLine();
-   ImGui::AlignTextToFramePadding();
-   ImGui::TextDisabled("Table Script");
-
-   // Right side of the title row: editor options popover
-   const float optW = IconButtonInkSize(ICON_LC_SLIDERS_HORIZONTAL).x;
-   const float rightX = rect.Width() - ImGui::GetStyle().WindowPadding.x - optW;
+   RenderViewMenu();
    ImGui::SameLine();
-   if (rightX > ImGui::GetCursorPosX())
-      ImGui::SetCursorPosX(rightX);
-   if (IconButtonInk(ICON_LC_SLIDERS_HORIZONTAL, "##ScriptOptions"))
-      ImGui::OpenPopup("Script Options");
-   if (const MenuPopupPadding menuPad; ImGui::BeginPopup("Script Options"))
-   {
-      Settings &settings = g_settingsService.GetAppSettings();
-      bool wordWrap = settings.GetEditor_ScriptEditorWordWrap();
-      if (ImGui::Checkbox("Word wrap", &wordWrap))
-         settings.SetEditor_ScriptEditorWordWrap(wordWrap, false);
-      bool minimap = settings.GetEditor_ScriptEditorShowMinimap();
-      if (ImGui::Checkbox("Minimap", &minimap))
-         settings.SetEditor_ScriptEditorShowMinimap(minimap, false);
-      bool whitespace = settings.GetEditor_ScriptEditorShowWhitespace();
-      if (ImGui::Checkbox("Show whitespace", &whitespace))
-         settings.SetEditor_ScriptEditorShowWhitespace(whitespace, false);
-
-      // Ctrl+wheel zoom (see RenderPane); show the current level and offer a reset
-      if (m_fontZoom != 1.0f)
-      {
-         ImGui::Separator();
-         ImGui::TextDisabled("Font zoom: %d%%", static_cast<int>(m_fontZoom * 100.f + 0.5f));
-         if (ImGui::MenuItem("Reset font zoom"))
-            m_fontZoom = 1.0f;
-      }
-
-      ImGui::Separator();
-
-      // Outliner: jump to any declaration (classes expose their members as submenus)
-      if (ImGui::BeginMenu("Go to symbol"))
-      {
-         for (const Symbol *s : m_model.TopLevel())
-            RenderSymbolMenuItem(*s);
-         ImGui::EndMenu();
-      }
-      // the check runs the script's top-level code, so it's not offered while
-      // inspecting a live play-test copy
-      if (ImGui::MenuItem("Check syntax", "F7", false, !m_editor.IsInspectMode()))
-         CheckSyntax();
-
-      // Event handler stub insertion: one submenu per script-visible object that has
-      // events (the table's own script name, parts, collections); already implemented
-      // handlers are listed disabled
-      const bool canEdit = !m_editor.IsInspectMode() && !m_editor.m_table->IsLocked() && m_extTable == nullptr;
-      ImGui::BeginDisabled(!canEdit);
-      if (ImGui::BeginMenu("Insert event handler"))
-      {
-         for (const Symbol &global : m_api.Globals())
-         {
-            if (global.lowerName == "me" || global.lowerName == "debug" || global.signature.empty())
-               continue;
-            const ScriptApiInterface *iface = ScriptApi::FindInterface(global.signature);
-            if (iface == nullptr || iface->eventCount == 0)
-               continue;
-            if (ImGui::BeginMenu(global.name.c_str()))
-            {
-               for (int e = 0; e < iface->eventCount; ++e)
-               {
-                  const ScriptApiEntry &event = iface->events[e];
-                  const std::string handlerName = global.name + "_" + event.name;
-                  const bool exists = m_model.Find(handlerName) != nullptr;
-                  const std::string label = handlerName + "(" + event.signature + ")" + (exists ? " (defined)" : "");
-                  if (ImGui::MenuItem(label.c_str(), nullptr, false, !exists))
-                  {
-                     const TextEditor::DocPos pos = m_te.GetMainCursorPosition();
-                     m_te.ReplaceTextInCurrentCursor("Sub " + handlerName + "(" + event.signature + ")\n\t\nEnd Sub\n");
-                     m_te.SetCursor(TextEditor::DocPos(pos.line + 1, 1));
-                  }
-               }
-               ImGui::EndMenu();
-            }
-         }
-         ImGui::EndMenu();
-      }
-      ImGui::EndDisabled();
-      ImGui::EndPopup();
-   }
+   RenderEditMenu();
+   ImGui::SameLine();
+   RenderFormatMenu();
+   ImGui::SameLine();
+   ImGui::AlignTextToFramePadding();
+   ImGui::SetCursorPosX((rect.Width() - ImGui::CalcTextSize("Table Script").x) * 0.5f);
+   ImGui::TextDisabled("Table Script");
+   RenderGotoLinePopup();
    ImGui::Separator();
 
    if (m_focus)
@@ -733,6 +949,19 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
          m_fontZoom = ImClamp(m_fontZoom * powf(1.1f, io.MouseWheel), 0.5f, 3.0f);
          io.MouseWheel = 0.0f;
       }
+
+      // Ctrl+D duplicates the cursor line (Scintilla style); the widget binds Ctrl+D to
+      // "add next occurrence", so claim the chord before the widget sees it
+      if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows) && !readOnly)
+      {
+         if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_D))
+            DuplicateLine();
+         // Toggle comments: claim the chord ourselves because the widget binds it too
+         // late for AZERTY, where Ctrl+/ is typed on the ':' key (the physical key at
+         // the US '/' position, delivered as ImGuiKey_Slash)
+         else if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_Slash))
+            m_te.ToggleComments();
+      }
       ImGui::PushFont(m_editor.m_liveUI.GetMonoFont(), m_editor.m_liveUI.GetMonoFont()->LegacySize * m_fontZoom);
       const ImGuiWindowFlags teFlags = wordWrap ? ImGuiWindowFlags_NoMove : (ImGuiWindowFlags_NoMove | ImGuiWindowFlags_HorizontalScrollbar);
       const bool changed = m_te.Render("##script", ImVec2(-FLT_MIN, -FLT_MIN), ImGuiChildFlags_None, teFlags);
@@ -756,6 +985,8 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
             GoToDefinition(m_te.GetMainCursorPosition());
          else if (ImGui::IsKeyPressed(ImGuiKey_F7, false) && !m_editor.IsInspectMode())
             CheckSyntax();
+         else if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_G))
+            m_gotoLinePopup = true;
          else if (ImGui::IsKeyPressed(ImGuiKey_Escape, false) && !transientActive)
          {
             ImGui::SetWindowFocus(static_cast<const char *>(nullptr));

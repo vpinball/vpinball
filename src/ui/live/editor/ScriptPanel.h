@@ -51,6 +51,8 @@ private:
    bool m_teReload = false; // Script text changed outside the widget: push it on next render
 
    float m_fontZoom = 1.0f; // Ctrl+wheel zoom factor applied to the editor's mono font
+   bool m_gotoLinePopup = false; // Open the go-to-line input on the next render
+   int m_gotoLine = 1; // Last target of the go-to-line input
 
    // Script model + API metadata for dynamic highlighting and autocomplete
    ScriptModel m_model;
@@ -67,6 +69,15 @@ private:
    const Symbol *FindDefinition(const std::string &word) const;
    void GoToDefinition(TextEditor::DocPos pos);
    void JumpToLine(size_t line);
+
+   // Top bar menus and the editing actions they trigger
+   void RenderViewMenu();
+   void RenderEditMenu();
+   void RenderFormatMenu();
+   void RenderGotoLinePopup();
+   void DuplicateLine();
+   void AutoIndent(size_t first, size_t last);
+   void ConvertIndentation(bool toTabs);
 
    // Parse/compile errors as gutter markers + squiggly underlines
    static constexpr size_t s_errorSquiggle = 1;
