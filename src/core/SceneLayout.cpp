@@ -69,11 +69,12 @@ void SceneLayout::Recompute(const TableGeometry &geometry, const Setup &setup) c
    // Inherit is never resolved (PartGroup::GetReferenceSpace resolves it to Playfield at the root): map it to playfield anyway
    m_spaces[static_cast<int>(VPX::SpaceReference::Inherit)] = m_spaces[static_cast<int>(VPX::SpaceReference::Playfield)];
 
-   // Derived space -> playfield transforms (the playfield space itself maps to identity): the other
-   // spaces are expressed in the playfield space so their scale is the cabinet scale inverse
-   const Matrix3D invPlayfield = Matrix3D::MatrixInverse(playfield);
-   for (int s = 0; s < 3; s++)
-      m_spaceToPlayfield[s] = { m_spaces[s].m_transform * invPlayfield, m_spaces[s].m_scale / m_cabinetScale };
+   // Derived space -> playfield transforms: the room is expressed in the playfield space so its scale is the
+   // cabinet scale inverse. The playfield space (and Inherit, resolved to it) maps to an exact identity, as
+   // playfield * inv(playfield) would leave a rounding residue (about 1e-4 VPU of translation)
+   m_spaceToPlayfield[static_cast<int>(VPX::SpaceReference::Room)] = { room * Matrix3D::MatrixInverse(playfield), 1.f / m_cabinetScale };
+   m_spaceToPlayfield[static_cast<int>(VPX::SpaceReference::Playfield)] = { Matrix3D::MatrixIdentity(), 1.f };
+   m_spaceToPlayfield[static_cast<int>(VPX::SpaceReference::Inherit)] = m_spaceToPlayfield[static_cast<int>(VPX::SpaceReference::Playfield)];
 }
 
 void SceneLayout::Update(const TableGeometry &geometry, const Setup &setup) { Recompute(geometry, setup); }
