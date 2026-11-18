@@ -1581,8 +1581,14 @@ RenderTarget* RenderView::ApplyBallMotionBlur(RenderTarget* beforeTonemapRT, Ren
             bool behindCamera = false;
             for (int k = 0; k < 2; k++)
                for (int eye = 0; eye < nEyes; eye++)
-                  behindCamera |= Ball::m_ash.computeProjBounds(GetMVP().GetFlippedProj(eye), ballPos[k].x, ballPos[k].y, ballPos[k].z, pball->m_hitBall.m_d.m_radius,
-                     bounds[k][0], bounds[k][1], bounds[k][2], bounds[k][3]);
+               {
+                  // Same bound as the ball impostor (exact ellipsoid outline): the 35-sample computeProjBounds bound falls
+                  // ~10% short of it, leaving the bright rim outside the blurred/copied region with a seam that crawls
+                  const Matrix3D ballToClip
+                     = Matrix3D::MatrixScale(pball->m_hitBall.m_d.m_radius) * Matrix3D::MatrixTranslate(ballPos[k].x, ballPos[k].y, ballPos[k].z) * GetMVP().GetFlippedProj(eye);
+                  float zMin; // Nearest depth, unused here
+                  behindCamera |= !AccumulateUnitSphereClipBounds(ballToClip, bounds[k][0], bounds[k][1], bounds[k][2], bounds[k][3], zMin);
+               }
 
             int nSamples = 2;
             if (behindCamera)
