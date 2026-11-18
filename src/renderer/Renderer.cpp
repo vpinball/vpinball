@@ -988,7 +988,7 @@ void Renderer::UpdateStereoShaderState()
 }
 
 // Loads a segment SDF atlas together with its pre-integrated coverage atlas '<name>-cov.png' (generated offline
-// alongside the SDF atlases by src/assets/alphaseg/extract-segs.py and expected to be in sync with them: the left
+// alongside the SDF atlases by tools/alphaseg/extract-segs.py and expected to be in sync with them: the left
 // half holds the sharp segment coverage, the right half the squared SDF for glass light dispersion). Box filtered
 // mipmaps of the coverage atlas directly provide the emitted light integrated over each texel footprint, making
 // the segment rendering independent of the display resolution (see fs_display.sc)
