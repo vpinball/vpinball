@@ -67,7 +67,7 @@ void PUPSoundBank::Load(const std::filesystem::path& packPath)
          if (std::ranges::all_of(digits, [](char c) { return isdigit(static_cast<unsigned char>(c)) != 0; }))
          {
             const int slot = string_to_int(digits, 0);
-            if (slot < static_cast<int>(std::size(m_ballRoll)))
+            if (slot < 29) // legacy, should be static_cast<int>(std::size(m_ballRoll))
                m_ballRoll[slot].sample = sample;
          }
       }
@@ -176,7 +176,7 @@ void PUPSoundBank::Play(const string& name, int x, int y, int z, int vol, const 
          if (digits.ends_with(".wav"))
             digits.resize(digits.size() - 4);
          const int slot = string_to_int(digits, 0);
-         if (slot >= 0 && slot < static_cast<int>(std::size(m_ballRoll)) && m_ballRoll[slot].sample)
+         if (slot >= 0 && slot < 30 && m_ballRoll[slot].sample) // legacy, 30 should be static_cast<int>(std::size(m_ballRoll))
             PlayBallRoll(slot, x, vol, std::atof(special.c_str()), true);
          return;
       }
