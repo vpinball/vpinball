@@ -7637,16 +7637,12 @@ STDMETHODIMP PinTable::get_YieldTime(LONG *pVal)
 {
    PLOGW << "YieldTime is deprecated";
    *pVal = 0;
-   if (!g_pplayer)
-      return E_FAIL;
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_YieldTime(LONG newVal)
 {
    PLOGW << "YieldTime is deprecated";
-   if (!g_pplayer)
-      return E_FAIL;
    return S_OK;
 }
 

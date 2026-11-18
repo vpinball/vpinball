@@ -209,13 +209,13 @@ STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
    return S_OK;
 }
 
-// Without a player, the input actions do not exist: the key getters then return 0, which matches no key. This happens when
-// the editor is used to compile the script, as it runs it (top-level code executes)
+// Without a player (editor Compile runs the top-level script code), the input actions do not exist: the key getters then return
+// an action code matching no action. It keeps the 0x10000 flag, as 0 breaks core.vbs vpmKeyName, called at top level by machine scripts
 static bool NoInputActions(LONG *pVal)
 {
    if (g_pplayer != nullptr)
       return false;
-   *pVal = 0;
+   *pVal = (LONG)0x10000 | 0xFFFF;
    return true;
 }
 
@@ -558,7 +558,7 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(LONG *pVal)
    if (!g_pplayer)
    {
       *pVal = 0;
-      return E_FAIL;
+      return S_OK;
    }
    #ifdef _WIN32
    if (g_pplayer->IsVR())
@@ -738,10 +738,14 @@ STDMETHODIMP ScriptGlobalTable::get_ActiveBall(IBall **pVal)
    return S_OK;
 }
 
+// Without a player (editor Compile), return 0: core.vbs probes FrameIndex and PreciseGameTime at top level
 STDMETHODIMP ScriptGlobalTable::get_FrameIndex(LONG *pVal)
 {
    if (!g_pplayer)
-      return E_POINTER;
+   {
+      *pVal = 0;
+      return S_OK;
+   }
 
    *pVal = g_pplayer->m_overall_frames;
    return S_OK;
@@ -750,7 +754,10 @@ STDMETHODIMP ScriptGlobalTable::get_FrameIndex(LONG *pVal)
 STDMETHODIMP ScriptGlobalTable::get_GameTime(LONG *pVal)
 {
    if (!g_pplayer)
-      return E_POINTER;
+   {
+      *pVal = 0;
+      return S_OK;
+   }
 
    *pVal = g_pplayer->m_time_msec;
    return S_OK;
@@ -759,7 +766,10 @@ STDMETHODIMP ScriptGlobalTable::get_GameTime(LONG *pVal)
 STDMETHODIMP ScriptGlobalTable::get_PreciseGameTime(double *pVal)
 {
    if (!g_pplayer)
-      return E_POINTER;
+   {
+      *pVal = 0.0;
+      return S_OK;
+   }
 
    *pVal = g_pplayer->m_time_sec;
    return S_OK;
@@ -773,9 +783,7 @@ STDMETHODIMP ScriptGlobalTable::get_SystemTime(LONG *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
 {
-   if (g_pplayer)
-      *pVal = quantizeUnsignedPercent(g_pplayer->m_renderer->m_sceneLighting.GetGlobalEmissionScale());
-
+   *pVal = g_pplayer ? quantizeUnsignedPercent(g_pplayer->m_renderer->m_sceneLighting.GetGlobalEmissionScale()) : 100;
    return S_OK;
 }
 
@@ -926,15 +934,13 @@ STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
 
 STDMETHODIMP ScriptGlobalTable::get_WindowWidth(int *pVal)
 {
-   if (g_pplayer)
-      *pVal = g_pplayer->m_playfieldWnd->GetWidth();
+   *pVal = g_pplayer ? g_pplayer->m_playfieldWnd->GetWidth() : 0;
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_WindowHeight(int *pVal)
 {
-   if (g_pplayer)
-      *pVal = g_pplayer->m_playfieldWnd->GetHeight();
+   *pVal = g_pplayer ? g_pplayer->m_playfieldWnd->GetHeight() : 0;
    return S_OK;
 }
 
@@ -1033,7 +1039,10 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! assumes 
 STDMETHODIMP ScriptGlobalTable::get_DisableStaticPrerendering(VARIANT_BOOL *pVal)
 {
    if (g_pplayer == nullptr)
-      return E_FAIL;
+   {
+      *pVal = VARIANT_FALSE;
+      return S_OK;
+   }
 
    *pVal = FTOVB(!g_pplayer->m_renderer->IsUsingStaticPrepass());
    return S_OK;
@@ -1042,7 +1051,7 @@ STDMETHODIMP ScriptGlobalTable::get_DisableStaticPrerendering(VARIANT_BOOL *pVal
 STDMETHODIMP ScriptGlobalTable::put_DisableStaticPrerendering(VARIANT_BOOL newVal)
 {
    if (g_pplayer == nullptr)
-      return E_FAIL;
+      return S_OK;
 
    // Renderer disable is refCounted while script is binary
    if (m_scriptDisableStaticPrerendering != VBTOb(newVal))
@@ -1056,8 +1065,15 @@ STDMETHODIMP ScriptGlobalTable::put_DisableStaticPrerendering(VARIANT_BOOL newVa
 
 STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
 {
-   if (!pVal || !g_pplayer)
+   if (!pVal)
       return E_POINTER;
+
+   if (!g_pplayer)
+   {
+      CComSafeArray<VARIANT> balls((ULONG)0);
+      *pVal = balls.Detach();
+      return S_OK;
+   }
 
    CComSafeArray<VARIANT> balls((ULONG)g_pplayer->m_vball.size());
 
@@ -1076,9 +1092,10 @@ STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
    return S_OK;
 }
 
+// GetElements, GetElementByName and ActiveTable also work without a player (editor Compile) on the edited table
 STDMETHODIMP ScriptGlobalTable::GetElements(LPSAFEARRAY *pVal)
 {
-   if (!pVal || !g_pplayer)
+   if (!pVal)
       return E_POINTER;
 
    CComSafeArray<VARIANT> objs((ULONG)m_table->GetParts().size());
@@ -1097,7 +1114,7 @@ STDMETHODIMP ScriptGlobalTable::GetElements(LPSAFEARRAY *pVal)
 
 STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
 {
-   if (!pVal || !g_pplayer)
+   if (!pVal)
       return E_POINTER;
 
    const string sname = MakeString(name);
@@ -1119,7 +1136,7 @@ STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_ActiveTable(ITable **pVal)
 {
-   if (!pVal || !g_pplayer)
+   if (!pVal)
       return E_POINTER;
 
    m_table->QueryInterface(IID_ITable, (void**)pVal);

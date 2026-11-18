@@ -1307,9 +1307,6 @@ STDMETHODIMP Surface::put_IsBottomSolid(VARIANT_BOOL newVal)
 
 STDMETHODIMP Surface::get_IsDropped(VARIANT_BOOL *pVal)
 {
-   if (!g_pplayer)
-      return E_FAIL;
-
    *pVal = FTOVB(m_isDropped);
    return S_OK;
 }
