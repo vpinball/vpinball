@@ -23,6 +23,7 @@ public:
    static void Disarm(); // Another part type is picked
    static void OnCreated(EditorUI &ed, IEditable *part, const Vertex2D &center); // A wall was placed: if armed, makes it round and starts the radius drag
    static void Drag(EditorUI &ed, const Vertex2D &pos); // Mouse position on the table plane while the placing button is held (viewport and blueprint panes)
+   static bool IsDragging(); // The placing button is still held: the mouse is setting the radius
    static void Reapply(EditorUI &ed); // Adjust Last Operation
    static bool RenderParameters(const std::function<void(const char *)> &row);
 

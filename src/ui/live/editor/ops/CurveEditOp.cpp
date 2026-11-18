@@ -3,7 +3,9 @@
 #include "core/stdafx.h"
 #include "CurveEditOp.h"
 #include "ui/live/editor/parts/EditorUIPart.h"
+#include "ui/live/editor/EditorAreaView.h"
 #include "ui/live/EditorUI.h"
+#include "ui/live/IconsLucide.h"
 #include "imgui/imgui_internal.h"
 
 namespace VPX::EditorUI
@@ -108,12 +110,26 @@ void CurveEditOp::Rebuild(EditorUI &ed)
    ed.EndPointEdit();
 }
 
-void CurveEditOp::RenderMenuItems(EditorUI &ed)
+void CurveEditOp::RenderMenuItems(EditorUI &ed, const bool iconColumn)
 {
    const bool canApply = CanApply(ed);
+   // The tools have no icons: when the menu's other items do (the icon is a glyph at the start of their label), the tool labels are moved
+   // to the right of the same column so all the labels align
+   const float iconColumnWidth = iconColumn ? ImGui::CalcTextSize(ICON_LC_SAVE " ").x : 0.f;
    for (Tool *const tool : Tools())
-      if (ImGui::MenuItem(tool->GetName(), tool->GetShortcut() != 0 ? ImGui::GetKeyChordName(tool->GetShortcut()) : nullptr, false, canApply))
+   {
+      ImGui::PushID(tool);
+      const int shortcut = tool->GetShortcut();
+      if (ImGui::MenuItem("##tool", shortcut != 0 ? ImGui::GetKeyChordName(shortcut) : nullptr, false, canApply))
          Apply(ed, *tool);
+      ImGui::SameLine(0.f, 0.f);
+      ImGui::SetCursorPosX(ImGui::GetItemRectMin().x - ImGui::GetWindowPos().x + iconColumnWidth);
+      if (canApply)
+         ImGui::TextUnformatted(tool->GetName());
+      else
+         ImGui::TextDisabled("%s", tool->GetName());
+      ImGui::PopID();
+   }
 }
 
 bool CurveEditOp::HandleShortcuts(EditorUI &ed)
@@ -129,4 +145,12 @@ bool CurveEditOp::HandleShortcuts(EditorUI &ed)
    return false;
 }
 
+void CurveEditOp::AppendStatusHints(const EditorUI &ed, vector<StatusHint> &hints)
+{
+   if (!CanApply(ed))
+      return;
+   for (Tool *const tool : Tools())
+      if (tool->GetShortcut() != 0)
+         hints.push_back({ ImGui::GetKeyChordName(tool->GetShortcut()), tool->GetName() });
+}
 }

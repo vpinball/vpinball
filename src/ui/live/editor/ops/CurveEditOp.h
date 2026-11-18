@@ -14,6 +14,7 @@ namespace VPX::EditorUI
 
 class EditorUI;
 class EditorUIPart;
+struct StatusHint;
 
 // Drag point curve operations of the point edit mode (Blender's mesh edit tools, e.g. bevel): a tool rebuilds the edited curve from its
 // points before the operation and the selected ones, with its own parameters. The operation is one undo step, and it stays adjustable
@@ -58,8 +59,9 @@ public:
    static void Apply(EditorUI &ed, Tool &tool);
    static void Reapply(EditorUI &ed); // Rebuilds the curve of the last operation from its start points (Adjust Last Operation)
 
-   static void RenderMenuItems(EditorUI &ed); // Menu items of the registered tools (point edit menus)
+   static void RenderMenuItems(EditorUI &ed, bool iconColumn = false); // Menu items of the registered tools (point edit menus; iconColumn reserves the icon column the icon'd items use)
    static bool HandleShortcuts(EditorUI &ed); // Applies the tool whose shortcut is pressed, true if one was
+   static void AppendStatusHints(const EditorUI &ed, vector<StatusHint> &hints); // Status bar hints of the tools, only when one could be applied
 
    static bool IsClosed(const EditorUIPart &part); // Ramps are open curves, the other curve parts are closed loops
 
