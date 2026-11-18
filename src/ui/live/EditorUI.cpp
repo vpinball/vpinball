@@ -2186,7 +2186,7 @@ std::shared_ptr<Sampler> EditorUI::PartTypeIcon(const ItemTypeEnum type)
 {
    if (const auto it = m_partTypeIcons.find(type); it != m_partTypeIcons.end())
       return it->second;
-   // Part icons are the ones of the Win32 toolbar (src/assets/editor/*.png); eItemInvalid maps to the reference image icon
+   // Part icons from src/assets/editor/*.png (vector sources in tools/editor-icons); eItemInvalid maps to the reference image icon
    const char *file = nullptr;
    switch (type)
    {

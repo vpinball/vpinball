@@ -332,7 +332,7 @@ private:
    vector<AddPartButton> m_addPartButtons; // Lazily initialized part type picker buttons (shared by the viewport panes)
    void EnsureAddPartButtons();
    void RenderAddPartPicker(); // Part type list of the 'Add Part' picker popup (rendered inside the popup, in the host pane's window scope)
-   // Part type icons (the same as the win32 toolbar, src/assets/editor/*.png), lazily loaded and shared
+   // Part type icons (src/assets/editor/*.png, vector sources in tools/editor-icons), lazily loaded and shared
    // by the part picker, the outliner and the property pane. eItemInvalid maps to the reference image icon.
    std::shared_ptr<Sampler> PartTypeIcon(ItemTypeEnum type); // Icon of a part type, null when it has none
    std::shared_ptr<Sampler> PartIcon(const IEditable *editable); // Icon of a part: its type icon, the reference image icon
