@@ -72,6 +72,8 @@ void CircleWallOp::Drag(EditorUI &ed, const Vertex2D &pos)
    Rebuild(ed);
 }
 
+bool CircleWallOp::IsDragging() { return state.dragging; }
+
 void CircleWallOp::Reapply(EditorUI &ed) { Rebuild(ed); }
 
 // The wall is still the one created by the last operation, which is still adjustable (the creation is the last undo step)

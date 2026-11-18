@@ -3398,7 +3398,9 @@ void ViewportPane::RenderViewGizmo(ImDrawList* const drawList)
 
 void ViewportPane::AppendStatusHints(vector<StatusHint>& hints) const
 {
-   if (m_op.op != ImGuizmo::OPERATION(0))
+   if (CircleWallOp::IsDragging())
+      hints = { { "Drag", "Set Radius" }, { "Release " ICON_LC_MOUSE_LEFT, "Confirm" } };
+   else if (m_op.op != ImGuizmo::OPERATION(0))
    {
       // Modal transform op: confirm / cancel, axis & plane constraints, numeric entry (Blender)
       hints = { { ICON_LC_MOUSE_LEFT " / Enter", "Confirm" }, { ICON_LC_MOUSE_RIGHT " / Esc", "Cancel" }, { "X Y Z", "Axis" }, { "Shift+X Y Z", "Plane" },
@@ -3424,7 +3426,11 @@ void ViewportPane::AppendStatusHints(vector<StatusHint>& hints) const
       if (m_editor.m_pointEditCenter)
          hints = { { ICON_LC_MOUSE_LEFT, "Select Center" }, { "Shift+" ICON_LC_MOUSE_LEFT, "Toggle" }, { "G", "Move" }, { "Tab", "Exit" } };
       else
-         hints = { { ICON_LC_MOUSE_LEFT, "Select Point" }, { "Shift+" ICON_LC_MOUSE_LEFT, "Toggle" }, { "G", "Move" }, { "Shift+A", "Add Point" }, { "Del", "Delete" }, { "Tab", "Exit" } };
+      {
+         hints = { { ICON_LC_MOUSE_LEFT, "Select Point" }, { "Shift+" ICON_LC_MOUSE_LEFT, "Toggle" }, { "G", "Move" }, { "Shift+A", "Add Point" }, { "Del", "Delete" } };
+         CurveEditOp::AppendStatusHints(m_editor, hints); // Curve tools (bevel,...) when usable on the selection
+         hints.push_back({ "Tab", "Exit" });
+      }
    }
    else if (m_viewType == ViewMode::PreviewCam)
       // A render preview shows the game view: the camera is not editable, only part picking is

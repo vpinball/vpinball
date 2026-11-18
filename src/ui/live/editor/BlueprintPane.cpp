@@ -1145,7 +1145,9 @@ void BlueprintPane::RenderUI(ImDrawList* const overlayDrawList)
 
 void BlueprintPane::AppendStatusHints(vector<StatusHint>& hints) const
 {
-   if (m_moveDragActive)
+   if (CircleWallOp::IsDragging())
+      hints = { { "Drag", "Set Radius" }, { "Release " ICON_LC_MOUSE_LEFT, "Confirm" } };
+   else if (m_moveDragActive)
       hints = { { "Drag", "Move" }, { "Release " ICON_LC_MOUSE_LEFT, "Confirm" } };
    else if (m_pointDragActive)
       hints = { { "Drag", "Move Point" }, { "Release " ICON_LC_MOUSE_LEFT, "Confirm" } };
@@ -1162,7 +1164,11 @@ void BlueprintPane::AppendStatusHints(vector<StatusHint>& hints) const
       if (m_editor.m_pointEditCenter)
          hints = { { ICON_LC_MOUSE_LEFT, "Select Center" }, { "Shift+" ICON_LC_MOUSE_LEFT, "Toggle" }, { "G", "Move" }, { "Tab", "Exit" } };
       else
-         hints = { { ICON_LC_MOUSE_LEFT, "Select Point" }, { "Shift+" ICON_LC_MOUSE_LEFT, "Toggle" }, { "G", "Move" }, { "Shift+A", "Add Point" }, { "Del", "Delete" }, { "Tab", "Exit" } };
+      {
+         hints = { { ICON_LC_MOUSE_LEFT, "Select Point" }, { "Shift+" ICON_LC_MOUSE_LEFT, "Toggle" }, { "G", "Move" }, { "Shift+A", "Add Point" }, { "Del", "Delete" } };
+         CurveEditOp::AppendStatusHints(m_editor, hints); // Curve tools (bevel,...) when usable on the selection
+         hints.push_back({ "Tab", "Exit" });
+      }
    }
    else
    {

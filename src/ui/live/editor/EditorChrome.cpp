@@ -290,7 +290,7 @@ void EditorChrome::RenderMenuBar()
          if (ImGui::MenuItem(ICON_LC_MOUSE_POINTER_2 " Edit Points", "Tab", false, editor.CanEnterPointEdit()))
             editor.EnterPointEditMode();
          if (editor.m_pointEditPart != nullptr)
-            CurveEditOp::RenderMenuItems(editor); // Point edit mode tools (bevel,...)
+            CurveEditOp::RenderMenuItems(editor, true); // Point edit mode tools (bevel,...), labels aligned with the icon'd items
          ImGui::Separator();
          if (ImGui::BeginMenu(ICON_LC_CIRCLE_DOT " Set Origin"))
          {
