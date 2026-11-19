@@ -248,6 +248,9 @@ FEATURES:
 
  - a cross-platform script debugger is available in the LiveUI, replacing the previous Windows-only debugger dialog
 
+- new table 'Audit & Fix' dialog to detect errors and quirks, and that can also re-encode images and sounds/music, so that shipped table versions can be semi-automatically optimized to be smaller on disc.
+  non-WebP, non-EXR, non-Opus files get converted to these formats if its worth it, at reasonable conversion quality (=trying to roughly match the original quality, but at more efficient compression)
+
 - copy/paste now works between VPX instances, and between the Windows editor and the LiveEditor (through the system clipboard)
 
 - for cabinet users, a new option in the graphics settings allows to enable an automatic window camera fitting at table startup, based on table or screen fitting
