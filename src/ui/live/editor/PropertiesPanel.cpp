@@ -120,7 +120,7 @@ void PropertiesPanel::RenderPane(const AreaRect &rect, const int leafId)
       props.SetShowStartup(m_inspectShowStartup);
    IEditable *const displayed
       = (editor.m_selection.GetType() == Selection::S_EDITABLE && !editor.m_table->IsLocked()) ? props.GetEditedPart<IEditable>(editor.m_selection.GetPart()->GetEditable()) : nullptr;
-   const vector<UsedResource> tabs = BuildTabs(displayed);
+   const vector<UsedResource> tabs = BuildTabs(props, displayed);
    // The active tab may vanish with the selection or a field change: fall back to the item tab
    const auto matchActive = [this](const UsedResource &tab) { return tab.kind == m_tab && (tab.kind == PaneTab::Item || tab.kind == PaneTab::Collections || tab.name == m_tabResource); };
    const UsedResource *activeTab = &tabs[0];
@@ -267,26 +267,37 @@ const char *PropertiesPanel::TabKindName(const PaneTab tab)
    }
 }
 
-vector<PropertiesPanel::UsedResource> PropertiesPanel::BuildTabs(IEditable *displayed) const
+vector<PropertiesPanel::UsedResource> PropertiesPanel::BuildTabs(const PropertyPane &props, IEditable *displayed) const
 {
    vector<UsedResource> tabs { { PaneTab::Item, ""s, ""s } };
+   if (displayed == nullptr)
+   {
+      // The item tab renders the table's properties when nothing is selected, and for a locked
+      // table whatever the selection: its resource tabs are the table fields' own references
+      if (m_editor.m_selection.GetType() == Selection::S_NONE || m_editor.m_table->IsLocked())
+         CollectTableResources(props.GetEditedPart<PinTable>(m_editor.m_table), tabs);
+      return tabs;
+   }
    // Only scriptable parts may belong to a collection (membership is persisted by name)
-   if (displayed == nullptr || displayed->GetIScriptable() == nullptr)
+   if (displayed->GetIScriptable() == nullptr)
       return tabs;
    tabs.push_back({ PaneTab::Collections, ""s, ""s });
    CollectPartResources(displayed, tabs);
    return tabs;
 }
 
-// The table resources a part references, in field order. Deduplicated by (kind, name): a part
-// referencing the same resource in several fields gets a single tab (its tooltip names the first field)
+// A resource tab is deduplicated by (kind, name): an item referencing the same resource in
+// several fields gets a single tab (its tooltip names the first field)
+void PropertiesPanel::AddResourceTab(vector<UsedResource> &out, const PaneTab kind, const string &name, const string &role)
+{
+   if (!name.empty() && std::ranges::none_of(out, [&kind, &name](const UsedResource &tab) { return tab.kind == kind && tab.name == name; }))
+      out.push_back({ kind, name, role });
+}
+
+// The table resources a part references, in field order
 void PropertiesPanel::CollectPartResources(const IEditable *part, vector<UsedResource> &out)
 {
-   const auto add = [&out](const PaneTab kind, const string &name, const string &role)
-   {
-      if (!name.empty() && std::ranges::none_of(out, [&kind, &name](const UsedResource &tab) { return tab.kind == kind && tab.name == name; }))
-         out.push_back({ kind, name, role });
-   };
+   const auto add = [&out](const PaneTab kind, const string &name, const string &role) { AddResourceTab(out, kind, name, role); };
    switch (part->GetItemType())
    {
    case eItemPrimitive:
@@ -413,6 +424,20 @@ void PropertiesPanel::CollectPartResources(const IEditable *part, vector<UsedRes
    }
    default: break;
    }
+}
+
+// The table resources the table's own fields reference, in the item tab's field order
+void PropertiesPanel::CollectTableResources(const PinTable *table, vector<UsedResource> &out)
+{
+   AddResourceTab(out, PaneTab::Material, table->m_playfieldMaterial, "Material"s);
+   AddResourceTab(out, PaneTab::Image, table->m_image, "Image"s);
+   AddResourceTab(out, PaneTab::Image, table->m_ballImage, "Ball Image"s);
+   AddResourceTab(out, PaneTab::Image, table->m_ballImageDecal, "Ball Decal"s);
+   AddResourceTab(out, PaneTab::Image, table->m_BG_image[0], "DT Image"s);
+   AddResourceTab(out, PaneTab::Image, table->m_BG_image[1], "FS Image"s);
+   AddResourceTab(out, PaneTab::Image, table->m_BG_image[2], "FSS Image"s);
+   AddResourceTab(out, PaneTab::Image, table->m_imageColorGrade, "Color Grading LUT"s);
+   AddResourceTab(out, PaneTab::Image, table->m_envImage, "Environment Image"s);
 }
 
 void PropertiesPanel::WithStartupLiveTabs(PropertyPane &props, const std::function<void(bool isLive)> &content)
@@ -659,8 +684,10 @@ void PropertiesPanel::RenderCollectionsTab(PropertyPane &props, const bool readO
 void PropertiesPanel::RenderResourceTab(PropertyPane &props, const UsedResource &res)
 {
    EditorUI &editor = m_editor;
-   IEditable *const displayed = props.GetEditedPart<IEditable>(editor.m_selection.GetPart()->GetEditable());
-   PinTable *const displayedTable = displayed->GetPTable();
+   // The displayed side of the selection: its own table for a part (a part without a startup copy
+   // resolves to its live table), the displayed table itself when the pane shows the table
+   const std::shared_ptr<EditorUIPart> &part = editor.m_selection.GetPart();
+   PinTable *const displayedTable = part != nullptr ? props.GetEditedPart<IEditable>(part->GetEditable())->GetPTable() : props.GetEditedPart<PinTable>(editor.m_table);
    PinTable *const liveTable = editor.m_table;
 
    // The resource is resolved by name on the displayed side (the field only holds its name), then
