@@ -66,6 +66,9 @@ struct ma_device_ex
    SDL_AudioDeviceID deviceID;
    SDL_AudioStream* stream;
    vector<uint8_t> buffer;
+   // u8/s16 device: its format. miniaudio renders f32 into floatBuffer for it, converted with dither in ma_audio_callback_playback__sdl
+   ma_format ditherFormat = ma_format_unknown;
+   vector<float> floatBuffer;
 };
 
 static ma_result ma_context_enumerate_devices__sdl(ma_context* pContext, ma_enum_devices_callback_proc callback, void* pUserData)
@@ -139,10 +142,21 @@ void ma_audio_callback_playback__sdl(void* pUserData, SDL_AudioStream* stream, i
    auto pDevice = static_cast<ma_device_ex*>(pUserData);
    if ((int)pDevice->buffer.size() < total_amount)
       pDevice->buffer.resize(total_amount);
-   const int sizePerMAFrame = ma_get_bytes_per_frame(pDevice->device.playback.internalFormat, pDevice->device.playback.internalChannels);
-   const int nFrames = total_amount / sizePerMAFrame;
-   ma_device__read_frames_from_client(&pDevice->device, nFrames, pDevice->buffer.data());
-   SDL_PutAudioStreamData(stream, pDevice->buffer.data(), nFrames * sizePerMAFrame);
+   const ma_uint32 channels = pDevice->device.playback.internalChannels;
+   const ma_format sdlFormat = (pDevice->ditherFormat != ma_format_unknown) ? pDevice->ditherFormat : pDevice->device.playback.internalFormat;
+   const int sizePerSDLFrame = ma_get_bytes_per_frame(sdlFormat, channels);
+   const int nFrames = total_amount / sizePerSDLFrame;
+   if (pDevice->ditherFormat != ma_format_unknown)
+   {
+      // miniaudio's conversion to u8/s16 does not dither: it renders f32 (see ma_device_init__sdl), converted here with TPDF dither
+      if (pDevice->floatBuffer.size() < static_cast<size_t>(nFrames) * channels)
+         pDevice->floatBuffer.resize(static_cast<size_t>(nFrames) * channels);
+      ma_device__read_frames_from_client(&pDevice->device, nFrames, pDevice->floatBuffer.data());
+      ma_convert_pcm_frames_format(pDevice->buffer.data(), pDevice->ditherFormat, pDevice->floatBuffer.data(), ma_format_f32, nFrames, channels, ma_dither_mode_triangle);
+   }
+   else
+      ma_device__read_frames_from_client(&pDevice->device, nFrames, pDevice->buffer.data());
+   SDL_PutAudioStreamData(stream, pDevice->buffer.data(), nFrames * sizePerSDLFrame);
 }
 
 static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config* pConfig, ma_device_descriptor* pDescriptorPlayback, ma_device_descriptor* pDescriptorCapture)
@@ -206,6 +220,15 @@ static ma_result ma_device_init__sdl(ma_device* pDevice, const ma_device_config*
          }
          deviceFormat = ma_format_f32;
          break;
+   }
+
+   // u8/s16 device: miniaudio renders f32, converted with dither in ma_audio_callback_playback__sdl (miniaudio's own conversion
+   // does not dither). s32 and f32 devices do not need it
+   pDeviceEx->ditherFormat = ma_format_unknown;
+   if (deviceFormat == ma_format_u8 || deviceFormat == ma_format_s16)
+   {
+      pDeviceEx->ditherFormat = deviceFormat;
+      deviceFormat = ma_format_f32;
    }
 
    // Update miniaudio descriptor with actual device settings
@@ -343,7 +366,9 @@ AudioPlayer::AudioPlayer(const string& backglassDevice, const string& playfieldD
       deviceConfig.playback.pDeviceID = &deviceInfo.dev.id;
       deviceConfig.playback.format = ma_format_f32;
       deviceConfig.noPreSilencedOutputBuffer = MA_TRUE; // We'll always be outputting to every frame in the callback so there's no need for a pre-silenced buffer.
-      deviceConfig.noClip = MA_TRUE; // The engine will do clipping itself.
+      // Clip the f32 mix to +-1 (the engine does not): a f32 device would get the overshoots (summed sources, PinMAME's
+      // unclipped float output) as is. The conversion to an integer device format clamps anyway
+      deviceConfig.noClip = MA_FALSE;
       ma_result result = ma_device_init(m_maContext.get(), &deviceConfig, reinterpret_cast<ma_device*>(device.get()));
 
       if (result == MA_SUCCESS)
@@ -446,10 +471,11 @@ AudioPlayer::OutputInfo AudioPlayer::GetOutputInfo(SoundOutTypes out) const
    info.sampleRate = device->device.playback.internalSampleRate;
    info.channels = device->device.playback.internalChannels;
    info.periodFrames = device->device.playback.internalPeriodSizeInFrames;
-   switch (device->device.playback.internalFormat)
+   // the device's format (miniaudio renders f32 for a dithered one, see ma_device_init__sdl)
+   switch (device->ditherFormat != ma_format_unknown ? device->ditherFormat : device->device.playback.internalFormat)
    {
-   case ma_format_u8:  info.sampleFormat = "U8"s;  break;
-   case ma_format_s16: info.sampleFormat = "S16"s; break;
+   case ma_format_u8:  info.sampleFormat = device->ditherFormat != ma_format_unknown ? "U8 (dithered)"s : "U8"s;  break;
+   case ma_format_s16: info.sampleFormat = device->ditherFormat != ma_format_unknown ? "S16 (dithered)"s : "S16"s; break;
    case ma_format_s24: info.sampleFormat = "S24"s; break;
    case ma_format_s32: info.sampleFormat = "S32"s; break;
    case ma_format_f32: info.sampleFormat = "F32"s; break;

@@ -430,7 +430,7 @@ MSGPI_EXPORT void MSGPIAPI PinMAMEPluginLoad(const uint32_t sessionId, const Msg
       assert(controller == nullptr); // We do not support having multiple instance running concurrently
 
       PinmameConfig config = {
-         PINMAME_AUDIO_FORMAT_INT16,
+         PINMAME_AUDIO_FORMAT_FLOAT, // Unclipped and undithered
          GetSampleRate(),
          "",
          NULL, // State update => prefer update on request
