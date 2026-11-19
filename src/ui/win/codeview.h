@@ -64,6 +64,7 @@ public:
    BOOL PreTranslateMessage(MSG& msg) override;
 
    void SetScript(const string& script);
+   void ReloadScript(); // Was the table script changed by another editor: pick it up as one undoable edit
 
    PinTableWnd *const m_tableEditor;
 

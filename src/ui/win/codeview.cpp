@@ -889,6 +889,33 @@ void CodeViewer::SetScript(const string& script)
    UpdateScinFromPrefs();
 }
 
+// Was the table changed by another editor (i.e. the live editor's script pane): replaces the text as one
+// undoable edit, instead of SetScript's reload which drops the undo history. The caret and the scroll position are kept
+void CodeViewer::ReloadScript()
+{
+   if (!m_hwndScintilla)
+      return;
+   const string &script = m_tableEditor->m_table->m_script_text;
+   const size_t length = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+   if (length == script.size())
+   {
+      const char *const text = reinterpret_cast<const char *>(::SendMessage(m_hwndScintilla, SCI_GETCHARACTERPOINTER, 0, 0));
+      if (text != nullptr && memcmp(text, script.data(), length) == 0)
+         return;
+   }
+   const LRESULT firstLine = ::SendMessage(m_hwndScintilla, SCI_GETFIRSTVISIBLELINE, 0, 0);
+   const LRESULT anchor = ::SendMessage(m_hwndScintilla, SCI_GETANCHOR, 0, 0);
+   const LRESULT caret = ::SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0);
+   const string copy(script); // The replace notifies SCEN_CHANGE, which rewrites m_script_text from the new text
+   ::SendMessage(m_hwndScintilla, SCI_BEGINUNDOACTION, 0, 0);
+   ::SendMessage(m_hwndScintilla, SCI_TARGETWHOLEDOCUMENT, 0, 0);
+   ::SendMessage(m_hwndScintilla, SCI_REPLACETARGET, copy.size(), reinterpret_cast<LPARAM>(copy.c_str()));
+   ::SendMessage(m_hwndScintilla, SCI_ENDUNDOACTION, 0, 0);
+   const LRESULT end = static_cast<LRESULT>(copy.size());
+   ::SendMessage(m_hwndScintilla, SCI_SETSEL, min(anchor, end), min(caret, end));
+   ::SendMessage(m_hwndScintilla, SCI_SETFIRSTVISIBLELINE, firstLine, 0);
+}
+
 BOOL CodeViewer::PreTranslateMessage(MSG &msg)
 {
    if (!IsWindow())
@@ -2271,6 +2298,7 @@ BOOL CodeViewer::OnCommand(WPARAM wparam, LPARAM lparam)
    {
       case SCEN_SETFOCUS:
       {
+         pcv->ReloadScript(); // Before any edit here: pick up a change of the live editor's script pane not notified yet
          pcv->m_warn_on_dupes = true;
          pcv->ParseForFunction();
          return TRUE;
