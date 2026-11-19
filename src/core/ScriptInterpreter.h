@@ -51,6 +51,7 @@ public:
    void AddItem(const wstring& name, IDispatch *dispatch, const bool global);
    void RemoveItem(IScriptable *const piscript);
    void Evaluate(const string &script, bool isDebugStatement);
+   void Parse(const string &script); // Compiles without running anything (syntax check): errors go to the error handler
    bool HasError() const { return m_hasError || (m_pScript == nullptr); }
    void GetScriptDispatch(IDispatch **ppdisp) const;
 

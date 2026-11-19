@@ -286,6 +286,17 @@ void ScriptInterpreter::Evaluate(const string &script, bool isDebugStatement)
       m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
 }
 
+// The engine is left in its initialized state (see Start): the parsed code is only queued for a later start, so none of it
+// runs (no top-level code, no ExecuteGlobal'd includes), and Stop drops it. Syntax errors are reported by the parse itself
+void ScriptInterpreter::Parse(const string &script)
+{
+   if (m_pScriptParse)
+   {
+      EXCEPINFO exception {};
+      m_pScriptParse->ParseScriptText(MakeWString(script).c_str(), nullptr, nullptr, nullptr, m_compileContextCookie, 0, SCRIPTTEXT_ISVISIBLE, nullptr, &exception);
+   }
+}
+
 void ScriptInterpreter::GetScriptDispatch(IDispatch **ppdisp) const
 {
    if (m_pScript)

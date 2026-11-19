@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "../vpx-test.h"
 
+#include "core/ScriptInterpreter.h"
 #include "parts/pintable.h"
 #include "parts/timer.h"
 #include "parts/bumper.h"
@@ -401,5 +402,28 @@ TEST_CASE("PinTable image import and removal with the lookup table in use")
    table->RemoveImage(duplicate);
    CHECK(table->GetImage(title) == nullptr);
    CHECK(table->GetImage("imported"s) == reimported);
+   table->Release();
+}
+
+TEST_CASE("ScriptInterpreter syntax check parses the table script without running it")
+{
+   PinTable* const table = CreateTestTable();
+   // Script check of the live editor (F7): the number of errors reported for a script
+   const auto check = [table](const string& script)
+   {
+      int errors = 0;
+      CComObject<ScriptInterpreter>* interpreter;
+      CComObject<ScriptInterpreter>::CreateInstance(&interpreter);
+      interpreter->AddRef();
+      interpreter->Start(table);
+      interpreter->SetScriptErrorHandler([&errors](ScriptInterpreter::ErrorType, int, int, const string&, const vector<string>&) { errors++; });
+      interpreter->Parse(script);
+      interpreter->Stop(table);
+      interpreter->Release();
+      return errors;
+   };
+   CHECK(check("Sub Foo()\nEnd Sub\n") == 0);
+   CHECK(check("Sub Foo(\nEnd Sub\n") == 1); // Syntax error
+   CHECK(check("Err.Raise 5\n") == 0); // Top-level code that would fail if it ran
    table->Release();
 }

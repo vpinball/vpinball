@@ -2296,6 +2296,8 @@ void PinTableWnd::OnFontRemoved(PinFont *font) { m_fontRegistrar.Unregister(font
 
 void PinTableWnd::SetScript(const string &script) { m_pcv->SetScript(script); }
 
+void PinTableWnd::OnScriptChanged() { m_pcv->ReloadScript(); }
+
 void PinTableWnd::OnScriptableAdded(IScriptable *scriptable, const bool global) { m_pcv->AddItem(scriptable, global); }
 
 void PinTableWnd::OnScriptableRemoved(IScriptable *scriptable) { m_pcv->RemoveItem(scriptable); }

@@ -145,6 +145,7 @@ public:
    void OnDirtyStateChanged(SaveDirtyState sds) final;
    void OnTableBoundsChanged() final;
    void SetScript(const string &script) final;
+   void OnScriptChanged() final;
    void OnScriptableAdded(IScriptable *scriptable, bool global) final;
    void OnScriptableRemoved(IScriptable *scriptable) final;
    void OnScriptableRenamed(IScriptable *scriptable, const string &newName) final; // Must be called before the rename, as the code view finds the item by its current name
