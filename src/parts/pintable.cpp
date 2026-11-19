@@ -653,12 +653,22 @@ PinTable* PinTable::CopyForPlay() const
       dst->m_vfont.push_back(font);
 
    PLOGI << "Duplicating parts for live instance"; // For profiling
+   // All the parts are copied before attaching each copy to the copy of its group: a part may come before its group in m_vedit
+   // (groups are only moved first on load and save, a new group is appended, and nested groups are not ordered by depth)
+   vector<std::pair<IEditable *, IEditable *>> copies; // Startup part, live copy, in the startup order
+   copies.reserve(src->m_vedit.size());
    for (IEditable* const editable : src->m_vedit)
    {
       // Player session objects are recreated by the live session (copying the implicit playfield mesh would hide the real playfield)
       if (src->IsPlayerSessionObject(editable))
          continue;
       IEditable* const edit_dst = editable->CopyForPlay();
+      copies.emplace_back(editable, edit_dst);
+      dst->m_startupToLive[editable] = edit_dst;
+      dst->m_liveToStartup[edit_dst] = editable;
+   }
+   for (const auto& [editable, edit_dst] : copies)
+   {
       if (editable->GetPartGroup())
       {
          PartGroup *dstParent = static_cast<PartGroup *>(dst->GetLiveFromStartup<IEditable>(editable->GetPartGroup()));
@@ -666,8 +676,6 @@ PinTable* PinTable::CopyForPlay() const
          edit_dst->SetPartGroup(dstParent);
       }
       live_table->AddPart(edit_dst);
-      dst->m_startupToLive[editable] = edit_dst;
-      dst->m_liveToStartup[edit_dst] = editable;
    }
 
    PLOGI << "Duplicating collections"; // For profiling

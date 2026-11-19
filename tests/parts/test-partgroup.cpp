@@ -79,6 +79,48 @@ TEST_CASE("PartGroup part")
       liveCopy->Release();
    }
 
+   SUBCASE("table CopyForPlay keeps the group of parts listed before their group")
+   {
+      // Part listed first, then its group, then the group's parent group (groups created after their content, or
+      // nested groups not ordered by depth): the live copies must still be attached to the live copies of their groups
+      Timer* const part = Timer::COMCreate();
+      part->Init(1.f, 2.f, false);
+      part->SetName("EarlyPart");
+      table->AddPart(part);
+      part->Release();
+
+      PartGroup* const inner = PartGroup::COMCreate();
+      inner->Init(0.f, 0.f, false);
+      inner->SetName("InnerGroup");
+      table->AddPart(inner);
+      inner->Release();
+
+      PartGroup* const outer = PartGroup::COMCreate();
+      outer->Init(0.f, 0.f, false);
+      outer->SetName("OuterGroup");
+      table->AddPart(outer);
+      outer->Release();
+
+      part->SetPartGroup(inner);
+      inner->SetPartGroup(outer);
+
+      PinTable* const live = table->CopyForPlay();
+      IEditable* const livePart = live->GetLiveFromStartup<IEditable>(part);
+      IEditable* const liveInner = live->GetLiveFromStartup<IEditable>(inner);
+      IEditable* const liveOuter = live->GetLiveFromStartup<IEditable>(outer);
+      REQUIRE(livePart != nullptr);
+      REQUIRE(liveInner != nullptr);
+      REQUIRE(liveOuter != nullptr);
+      CHECK(livePart->GetPartGroup() == liveInner);
+      CHECK(liveInner->GetPartGroup() == liveOuter);
+      CHECK(liveOuter->GetPartGroup() == nullptr);
+      // The live table keeps the startup order
+      const auto indexOf = [live](const IEditable* p) { return std::ranges::find(live->GetParts(), p) - live->GetParts().begin(); };
+      CHECK(indexOf(livePart) < indexOf(liveInner));
+      CHECK(indexOf(liveInner) < indexOf(liveOuter));
+      live->Release();
+   }
+
    SUBCASE("group hierarchy, visibility mask and reference space inheritance")
    {
       PartGroup* const root = PartGroup::COMCreate();
