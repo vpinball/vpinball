@@ -58,6 +58,16 @@ static bool staticPrepassDisabled = false;
 static bool windowModeWarned = false;
 static int trackerRetryDelay = 0;
 
+// Headtracking moves the point of view each frame, so the static part prerender is disabled while it applies
+// (tracker connected, window view mode) and only then. VPX counts the requests: only state changes are sent
+static void SetStaticPrepassDisabled(const bool disable)
+{
+   if (staticPrepassDisabled == disable || vpxApi == nullptr)
+      return;
+   vpxApi->DisableStaticPrerendering(disable ? 1 : 0);
+   staticPrepassDisabled = disable;
+}
+
 // VPX window (cabinet) view layout mode, see ViewLayoutMode in src/renderer/ViewSetup.h
 constexpr int VLM_WINDOW = 2;
 
@@ -80,12 +90,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
    tableHeight = tableInfo.tableHeight;
    tracker.Connect();
    if (tracker.IsBAMTrackerPresent())
-   {
-      // The point of view is updated each frame, so the static part prerender must be disabled
-      vpxApi->DisableStaticPrerendering(1);
-      staticPrepassDisabled = true;
-      vpxApi->PushNotification("BAM headtracking enabled", 2000);
-   }
+      vpxApi->PushNotification("BAM headtracking enabled", 2000); // onPrepareFrame disables the static prerender while headtracking applies
    else
    {
       LPI_LOGI_CPP("BAM tracker not found. Start BAM-Tracker.exe to enable headtracking."s);
@@ -95,13 +100,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
 void onGameEnd(const unsigned int eventId, void* userData, void* eventData)
 {
    tableHeight = 0.f;
-   if (vpxApi == nullptr)
-      return;
-   if (staticPrepassDisabled)
-   {
-      vpxApi->DisableStaticPrerendering(0);
-      staticPrepassDisabled = false;
-   }
+   SetStaticPrepassDisabled(false);
 }
 
 void onPrepareFrame(const unsigned int eventId, void* userData, void* eventData)
@@ -110,6 +109,7 @@ void onPrepareFrame(const unsigned int eventId, void* userData, void* eventData)
       return;
    if (!tracker.IsBAMTrackerPresent())
    {
+      SetStaticPrepassDisabled(false); // No headtracking without the tracker (not started yet, or closed)
       // The tracker application may be started after the game, so retry to
       // connect from time to time (connection failure is fast to evaluate)
       if (trackerRetryDelay > 0)
@@ -123,21 +123,13 @@ void onPrepareFrame(const unsigned int eventId, void* userData, void* eventData)
          return;
       LPI_LOGI_CPP("BAM tracker connected"s);
       vpxApi->PushNotification("BAM headtracking enabled", 2000);
-      if (!staticPrepassDisabled)
-      {
-         vpxApi->DisableStaticPrerendering(1);
-         staticPrepassDisabled = true;
-      }
    }
-
-   double x, y, z;
-   if (!tracker.GetPosition(x, y, z))
-      return;
 
    VPXViewSetupDef view;
    vpxApi->GetActiveViewSetup(&view);
    if (view.viewMode != VLM_WINDOW)
    {
+      SetStaticPrepassDisabled(false); // No headtracking in the other view modes
       if (!windowModeWarned)
       {
          vpxApi->PushNotification("BAM headtracking requires the 'window' (cabinet) view layout mode", 5000);
@@ -145,6 +137,11 @@ void onPrepareFrame(const unsigned int eventId, void* userData, void* eventData)
       }
       return;
    }
+   SetStaticPrepassDisabled(true);
+
+   double x, y, z;
+   if (!tracker.GetPosition(x, y, z))
+      return;
 
    // Rotate the tracked head position around the screen normal to match the
    // cabinet screen frame (same convention as legacy VPX implementation)
@@ -208,6 +205,7 @@ MSGPI_EXPORT void MSGPIAPI BAMPluginLoad(const uint32_t sessionId, const MsgPlug
 
 MSGPI_EXPORT void MSGPIAPI BAMPluginUnload()
 {
+   SetStaticPrepassDisabled(false); // Restores the static prerender when unloaded during a game
    tracker.Disconnect();
    msgApi->UnsubscribeMsg(onGameStartId, onGameStart, nullptr);
    msgApi->UnsubscribeMsg(onGameEndId, onGameEnd, nullptr);
