@@ -47,7 +47,7 @@ static void CaptureMultiView(const string& screenshotPath)
    for (int i = 1; i < 4; i++)
    {
       RenderView* const view = player->m_renderer->AddView(RenderView::Kind::Editor);
-      view->m_outputWnd = player->m_playfieldWnd;
+      view->SetOutputWindow(player->m_playfieldWnd);
       view->SetOutputArea(quadrants[i]);
    }
 

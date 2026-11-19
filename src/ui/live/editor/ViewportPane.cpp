@@ -1074,7 +1074,7 @@ bool ViewportPane::SetupOverlay(LiveRenderContext* const ctx, ImDrawList* const 
 Matrix3D ViewportPane::ViewSpaceTransform() const
 {
    // The view's space reference is the one of the last part recorded into it (see RenderView::SetSpaceReference)
-   return m_view != nullptr ? m_editor.m_table->GetSceneLayout().GetSpaceToPlayfieldTransform(m_view->m_mvpSpaceReference).m_transform : Matrix3D::MatrixIdentity();
+   return m_view != nullptr ? m_editor.m_table->GetSceneLayout().GetSpaceToPlayfieldTransform(m_view->GetSpaceReference()).m_transform : Matrix3D::MatrixIdentity();
 }
 
 Matrix3D ViewportPane::PartSpaceToView(const IEditable* const editable) const
@@ -1090,11 +1090,11 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    if (m_view == nullptr)
    {
       m_view = editor.m_renderer->CreateEditorView();
-      m_view->m_outputWnd = editor.m_player->m_playfieldWnd; // The view draws to its output area of the shared window backbuffer
-      m_view->m_renderOverlay3D = true;
-      m_view->m_applyPostFX = false; // Keep per-pane rendering cheap: no postprocess tail
+      m_view->SetOutputWindow(editor.m_player->m_playfieldWnd); // The view draws to its output area of the shared window backbuffer
+      m_view->SetRenderOverlay3D(true);
+      m_view->SetApplyPostFX(false); // Keep per-pane rendering cheap: no postprocess tail
    }
-   m_view->m_renderScene = true; // The leaf is shown (Reset by the editor for hidden leaves)
+   m_view->SetRenderScene(true); // The leaf is shown (Reset by the editor for hidden leaves)
 
    char name[40];
    snprintf(name, sizeof(name), "##Pane%d", leafId);
@@ -1297,12 +1297,12 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    const ImVec2 disp = ImGui::GetIO().DisplaySize;
    // Defer the render target chain rebuild while an area op is resizing the pane: recreating all the view and
    // probe targets on every mouse move breaks the accumulated renders (darkened view) and stalls the frame
-   m_view->m_deferResize = editor.m_splitDragNode >= 0 || editor.m_areaDrag.active;
+   m_view->SetDeferResize(editor.m_splitDragNode >= 0 || editor.m_areaDrag.active);
    const bool validArea = avail.x > 0.f && avail.y > 0.f; // A degenerate area (collapsed pane) must not drive the view's output rect
    if (validArea)
       m_view->SetOutputArea(vec4(m_imageRect.x0 / disp.x, m_imageRect.y0 / disp.y, m_imageRect.x1 / disp.x, m_imageRect.y1 / disp.y));
    else
-      m_view->m_renderScene = false;
+      m_view->SetRenderScene(false);
    ImGui::InvisibleButton("##view", ImVec2(max(1.f, avail.x), max(1.f, avail.y)));
    m_viewItemId = ImGui::GetItemID(); // The pane's scene item: its ID must not count as a widget (see RenderAreaCorners)
    m_hovered = ImGui::IsItemHovered();
@@ -1320,11 +1320,11 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
 
    // Per frame view setup: editor flags and shading; the camera of the edit viewport is pushed by
    // RenderUI, the other panes restore their stored camera state
-   m_view->m_editorView = camMode != ViewMode::PreviewCam; // A render preview displays the game view, not an editor view
-   m_view->m_editorBackdropEdit = camMode == ViewMode::DesktopBackdrop;
+   m_view->SetEditorState(camMode != ViewMode::PreviewCam, // A render preview displays the game view, not an editor view
+      camMode == ViewMode::DesktopBackdrop);
    const ViewSetupID modeOverride = camMode == ViewMode::PreviewCam ? m_viewMode : BG_INVALID;
    m_view->SetViewModeOverride(modeOverride);
-   m_view->m_shadeMode = m_shadeMode;
+   m_view->SetShadeMode(m_shadeMode);
 }
 
 void ViewportPane::BoxSelectParts(const ImVec2& cornerA, const ImVec2& cornerB, bool add)
@@ -3269,7 +3269,7 @@ void ViewportPane::RenderViewGizmo(ImDrawList* const drawList)
       m_viewGizmoDragging = false;
       m_viewGizmoPressEnd = -1;
    }
-   if (m_viewType != ViewMode::EditorCam || !m_cameraValid || m_flyMode || m_view == nullptr || !m_view->m_renderScene)
+   if (m_viewType != ViewMode::EditorCam || !m_cameraValid || m_flyMode || m_view == nullptr || !m_view->IsRenderingScene())
       return;
 
    const ImGuiIO& io = ImGui::GetIO();

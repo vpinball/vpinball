@@ -33,7 +33,7 @@ void RendererInspectionModal::Render()
    {
       // The inspected view is driven by the user camera while this dialog is open: release the
       // override when it is not, so the primary view goes back to the table camera
-      m_editor.m_renderer->GetPrimaryView()->m_customViewProj = false;
+      m_editor.m_renderer->GetPrimaryView()->ClearViewProj();
       return;
    }
 
@@ -159,7 +159,7 @@ void RendererInspectionModal::Render()
    {
       m_passSelection = IF_FPS;
       m_editor.m_player->m_infoMode = IF_FPS;
-      m_editor.m_renderer->GetPrimaryView()->m_customViewProj = false;
+      m_editor.m_renderer->GetPrimaryView()->ClearViewProj();
    }
 }
 

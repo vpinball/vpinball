@@ -84,44 +84,43 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    // Create the primary view: the playfield window (or the VR headset when playing in VR)
    m_primaryView = std::make_unique<RenderView>(this, RenderView::Kind::Player);
-   m_primaryView->m_outputWnd = m_renderDevice->m_outputWnd[0];
-   m_primaryView->m_renderOverlay3D = true;
-   m_primaryView->m_renderLiveUI = true;
-   m_primaryView->m_runGameLogic = true;
+   m_primaryView->SetOutputWindow(m_renderDevice->m_outputWnd[0]);
+   m_primaryView->SetRenderOverlay3D(true);
+   m_primaryView->SetRenderLiveUI(true);
+   m_primaryView->SetRunGameLogic(true);
    m_activeView = m_primaryView.get();
    m_renderViews.push_back(m_primaryView.get());
 
    RenderView* const view = m_primaryView.get();
+   int renderWidth, renderHeight;
    if (m_stereo3D == STEREO_VR)
    {
       // For VR, renders at the HMD native eye resolution (the desktop display will reuse and scale/stretch it)
-      view->m_renderWidth = g_pplayer->m_vrDevice->GetEyeWidth();
-      view->m_renderHeight = g_pplayer->m_vrDevice->GetEyeHeight();
+      renderWidth = g_pplayer->m_vrDevice->GetEyeWidth();
+      renderHeight = g_pplayer->m_vrDevice->GetEyeHeight();
    }
    else if (m_stereo3D == STEREO_SBS)
    {
       // Side by side fits the 2 views along the output width, so each view is rendered at half the output width
-      view->m_renderWidth = wnd->GetPixelWidth() / 2;
-      view->m_renderHeight = wnd->GetPixelHeight();
+      renderWidth = wnd->GetPixelWidth() / 2;
+      renderHeight = wnd->GetPixelHeight();
    }
    else if (m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT)
    {
       // Top/Bottom (and interlaced) fits the 2 views along the output height, so each view is rendered at half the output height
-      view->m_renderWidth = wnd->GetPixelWidth();
-      view->m_renderHeight = wnd->GetPixelHeight() / 2;
+      renderWidth = wnd->GetPixelWidth();
+      renderHeight = wnd->GetPixelHeight() / 2;
    }
    else
    {
       // Default renders at the output window pixel resolution
-      view->m_renderWidth = wnd->GetPixelWidth();
-      view->m_renderHeight = wnd->GetPixelHeight();
+      renderWidth = wnd->GetPixelWidth();
+      renderHeight = wnd->GetPixelHeight();
    }
-   view->m_renderSourceWidth = wnd->GetPixelWidth();
-   view->m_renderSourceHeight = wnd->GetPixelHeight();
    const float AAfactor = Settings::GetPlayer_AAFactor_Property()->GetValid(m_table->GetSettings().GetPlayer_AAFactor());
-   view->m_aaFactor = AAfactor;
-   const int renderWidthAA = (int)((float)view->m_renderWidth * AAfactor);
-   const int renderHeightAA = (int)((float)view->m_renderHeight * AAfactor);
+   view->SetRenderSize(renderWidth, renderHeight, wnd->GetPixelWidth(), wnd->GetPixelHeight(), AAfactor);
+   const int renderWidthAA = (int)((float)renderWidth * AAfactor);
+   const int renderHeightAA = (int)((float)renderHeight * AAfactor);
 
    m_ancillaryRenderContext = VPXRenderContext2D {
       VPXWindowId::VPXWINDOW_Playfield, 0.f, 0.f, 0, 0.f, 0.f,
@@ -260,10 +259,12 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_renderDevice->ResetRenderState();
 #if defined(ENABLE_DX9)
    D3DVIEWPORT9 viewPort;
+   int renderW, renderH;
+   view->GetRenderSize(renderW, renderH);
    viewPort.X = 0;
    viewPort.Y = 0;
-   viewPort.Width = view->m_renderWidth;
-   viewPort.Height = view->m_renderHeight;
+   viewPort.Width = renderW;
+   viewPort.Height = renderH;
    viewPort.MinZ = 0.0f;
    viewPort.MaxZ = 1.0f;
    CHECKD3D(m_renderDevice->GetCoreDevice()->SetViewport(&viewPort));
@@ -373,11 +374,7 @@ void Renderer::SetTable(PinTable* const table)
 
    // Static prerendering must be fully re-evaluated for the new table
    for (RenderView* v : m_renderViews)
-   {
-      v->m_isStaticPrepassDirty = true;
-      v->m_staticPrepassAccumCount = 0;
-      v->m_statsDrawnStaticTriangles = 0;
-   }
+      v->ResetStaticPrepass();
 
    // The environment map sampler and its precomputed radiance are kept: base tables and their
    // live copies share the same table images (and therefore the same environment map). Rebinding
@@ -1186,7 +1183,7 @@ void Renderer::SetupCRTRender(int profile, const bool isBackdrop, const vec3& co
 void Renderer::DrawStatics()
 {
    const unsigned int mask = m_render_mask;
-   const bool isNoBackdrop = m_activeView->m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
+   const bool isNoBackdrop = m_activeView->HasNoBackdrop() || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
    m_render_mask |= Renderer::STATIC_ONLY;
    for (auto renderable : g_pplayer->m_ptable->GetParts())
       RenderItem(renderable, isNoBackdrop);
@@ -1196,9 +1193,9 @@ void Renderer::DrawStatics()
 void Renderer::DrawDynamics(bool onlyBalls)
 {
    const unsigned int mask = m_render_mask;
-   const bool isNoBackdrop = m_activeView->m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
+   const bool isNoBackdrop = m_activeView->HasNoBackdrop() || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
    m_render_mask |= Renderer::DYNAMIC_ONLY;
-   const bool isBackdropEdit = m_activeView->m_editorBackdropEdit;
+   const bool isBackdropEdit = m_activeView->IsEditorBackdropEdit();
    if (!onlyBalls)
    {
       if (!isBackdropEdit)
@@ -1357,11 +1354,11 @@ void Renderer::RenderMesh(const unsigned int renderMask, RenderMeshDesc& draw, c
 void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
 {
    // Wireframe modes only apply to the main scene render, not to sub passes (UI wireframe fill/edges, light buffer, reflection probes)
-   const bool isWireframe = m_activeView->m_shadeMode != ShadeMode::Default && (m_render_mask & (UI_FILL | UI_EDGES | LIGHT_BUFFER | REFLECTION_PASS)) == 0;
+   const bool isWireframe = m_activeView->GetShadeMode() != ShadeMode::Default && (m_render_mask & (UI_FILL | UI_EDGES | LIGHT_BUFFER | REFLECTION_PASS)) == 0;
    if (editable->GetIRenderable() == nullptr // Not renderable
       || (editable->m_desktopBackdrop && isNoBackdrop) // Don't render backdrop items in reflections or VR & cabinet modes
-      || (!m_activeView->m_editorView // Apply player mode visibility mask (superseded by the editor's UI visibility in editor views)
-         && editable->GetPartGroup() != nullptr && (editable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_activeView->m_visibilityMask) == 0))
+      || (!m_activeView->IsEditorView() // Apply player mode visibility mask (superseded by the editor's UI visibility in editor views)
+         && editable->GetPartGroup() != nullptr && (editable->GetPartGroup()->GetPlayerModeVisibilityMask() & m_activeView->GetVisibilityMask()) == 0))
       return;
 
    const PartGroupData::SpaceReference spaceReference = editable->GetPartGroup() ? editable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::Playfield;
@@ -1375,20 +1372,16 @@ void Renderer::RenderItem(IEditable* const editable, bool isNoBackdrop)
    else
    {
       const vec4 fillColor
-         = m_activeView->m_shadeMode == ShadeMode::NoDepthWireframe ? vec4(0.f, 0.f, 0.f, (float)(32. / 255.)) : vec4((float)(32. / 255.), (float)(32. / 255.), (float)(32. / 255.), 1.f);
+         = m_activeView->GetShadeMode() == ShadeMode::NoDepthWireframe ? vec4(0.f, 0.f, 0.f, (float)(32. / 255.)) : vec4((float)(32. / 255.), (float)(32. / 255.), (float)(32. / 255.), 1.f);
       constexpr vec4 edgeColor { 0.f, 0.f, 0.f, 1.f };
-      DrawWireframe(editable, fillColor, edgeColor, m_activeView->m_shadeMode != ShadeMode::NoDepthWireframe);
+      DrawWireframe(editable, fillColor, edgeColor, m_activeView->GetShadeMode() != ShadeMode::NoDepthWireframe);
    }
 }
 
 void Renderer::DisableStaticPrePass(const bool disable)
 {
    for (RenderView* view : m_renderViews)
-   {
-      const bool wasUsingStaticPrepass = view->IsUsingStaticPrepass();
-      view->m_disableStaticPrepass += disable ? 1 : -1;
-      view->m_isStaticPrepassDirty |= wasUsingStaticPrepass != view->IsUsingStaticPrepass();
-   }
+      view->SetStaticPrepassDisabled(disable);
 }
 
 void Renderer::MarkStaticsDirty()
@@ -1396,7 +1389,7 @@ void Renderer::MarkStaticsDirty()
    // The accumulated static part prerender (and the static render probes, which are dirtied with it) is
    // stale: the views re-accumulate it on their next render. Views not using the prepass ignore the flag.
    for (RenderView* view : m_renderViews)
-      view->m_isStaticPrepassDirty = true;
+      view->MarkPrepassDirty();
 }
 
 
@@ -1522,9 +1515,9 @@ void Renderer::Render3DScene()
       if (m_vrMirrorView == nullptr)
       {
          m_vrMirrorView = std::make_unique<RenderView>(this, RenderView::Kind::VRMirror);
-         m_vrMirrorView->m_outputWnd = m_renderDevice->m_outputWnd[1];
-         m_vrMirrorView->m_applyPostFX = false;
-         m_vrMirrorView->m_outputLayer = 0; // The desktop display scene render only writes to the first layer of its (stereo typed) render targets
+         m_vrMirrorView->SetOutputWindow(m_renderDevice->m_outputWnd[1]);
+         m_vrMirrorView->SetApplyPostFX(false);
+         m_vrMirrorView->SetOutputLayer(0); // The desktop display scene render only writes to the first layer of its (stereo typed) render targets
          m_renderViews.push_back(m_vrMirrorView.get());
       }
    }
@@ -1541,10 +1534,7 @@ void Renderer::Render3DScene()
       m_activeView = view;
       // The primary view follows the global editor state; the other views own theirs (per view editor flags)
       if (view == m_primaryView.get())
-      {
-         view->m_editorView = g_pplayer->m_liveUI->IsEditorViewMode();
-         view->m_editorBackdropEdit = g_pplayer->m_liveUI->IsEditorBackdropViewMode();
-      }
+         view->SetEditorState(g_pplayer->m_liveUI->IsEditorViewMode(), g_pplayer->m_liveUI->IsEditorBackdropViewMode());
       view->Render();
    }
    m_activeView = m_primaryView.get();
@@ -1552,7 +1542,7 @@ void Renderer::Render3DScene()
    // While the primary view is sceneless (the editor areas own the frame, the viewport panes drawing the
    // scene to their areas of the shared output), its LiveUI pass is recorded now, at the end of the frame
    // record: the pass is then sorted after the views' outputs, compositing the UI above the 3D panes
-   if (!m_primaryView->m_renderScene && m_primaryView->m_renderLiveUI && m_primaryView->GetOutput() != nullptr)
+   if (!m_primaryView->IsRenderingScene() && m_primaryView->RendersLiveUI() && m_primaryView->GetOutput() != nullptr)
    {
       m_renderDevice->SetRenderTarget("LiveUI"s, m_primaryView->GetOutput(), true, true);
       g_pplayer->m_liveUI->RenderUI();

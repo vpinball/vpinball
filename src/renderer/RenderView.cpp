@@ -100,13 +100,15 @@ void RenderView::ReleaseTargets()
    ReleaseAORenderTargets();
 }
 
-RenderTarget* RenderView::GetOutput() const
+RenderTarget* RenderView::GetOutput() const { return m_outputWnd ? m_outputWnd->GetBackBuffer() : nullptr; }
+
+void RenderView::SetRenderSize(const int width, const int height, const int sourceWidth, const int sourceHeight, const float aaFactor)
 {
-   if (m_ownedOutputRT)
-      return m_ownedOutputRT.get();
-   if (m_sharedOutputRT)
-      return m_sharedOutputRT;
-   return m_outputWnd ? m_outputWnd->GetBackBuffer() : nullptr;
+   m_renderWidth = width;
+   m_renderHeight = height;
+   m_renderSourceWidth = sourceWidth;
+   m_renderSourceHeight = sourceHeight;
+   m_aaFactor = aaFactor;
 }
 
 vec4 RenderView::GetOutputAreaClip() const { return vec4(2.f * m_outputArea.x - 1.f, 1.f - 2.f * m_outputArea.w, 2.f * m_outputArea.z - 1.f, 1.f - 2.f * m_outputArea.y); }
@@ -813,6 +815,13 @@ bool RenderView::IsTemporalAccumulationInProgress() const
       if (probe->IsStaticAccumulationPending())
          return true;
    return false;
+}
+
+void RenderView::SetStaticPrepassDisabled(const bool disable)
+{
+   const bool wasUsingStaticPrepass = IsUsingStaticPrepass();
+   m_disableStaticPrepass += disable ? 1 : -1;
+   m_isStaticPrepassDirty |= wasUsingStaticPrepass != IsUsingStaticPrepass();
 }
 
 void RenderView::RenderStatics()

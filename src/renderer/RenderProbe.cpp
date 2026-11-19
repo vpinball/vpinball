@@ -358,7 +358,7 @@ RenderTarget* RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
 
    m_rendering = true;
    RenderPass* const previousRT = m_renderer->m_renderDevice->GetCurrentPass();
-   const PartGroupData::SpaceReference previousSpace = m_renderer->GetActiveView()->m_mvpSpaceReference;
+   const PartGroupData::SpaceReference previousSpace = m_renderer->GetActiveView()->GetSpaceReference();
    const size_t firstPass = m_renderer->m_renderDevice->GetRenderFramePasses().size();
 
    m_renderer->m_renderDevice->ResetRenderState();
