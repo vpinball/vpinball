@@ -197,7 +197,7 @@ void EditorUI::Close()
    SaveAreaLayoutSettings(); // The layout and the view setups survive the session end
    m_renderer->DisableStaticPrePass(false);
    m_renderer->SetShadeMode(Renderer::ShadeMode::Default);
-   m_renderer->GetPrimaryView()->m_renderScene = true; // The primary view renders the scene again once the editor areas are gone
+   m_renderer->GetPrimaryView()->SetRenderScene(true); // The primary view renders the scene again once the editor areas are gone
    if (!m_player->IsPlaying(false))
       m_player->SetPlayState(true); // Resume the play session suspended while editing
 }
@@ -246,7 +246,7 @@ void EditorUI::PlayTest()
    // The pane views must not draw over the play session (RenderPane re-arms them when the editor comes back)
    for (const auto &[id, view] : m_areaViews)
       if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->GetView() != nullptr) // A pane never rendered has no view
-         vp->GetView()->m_renderScene = false; // The leaf is hidden while a playtest table is stacked
+         vp->GetView()->SetRenderScene(false); // The leaf is hidden while a playtest table is stacked
 }
 
 void EditorUI::PlayTestVR()
@@ -799,7 +799,7 @@ void EditorUI::RenderUI()
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
 
    bool showFullUI = !m_inspectionModal.IsVisible() && !IsFlyMode();
-   m_renderer->GetPrimaryView()->m_renderScene = !showFullUI; // While areas are drawn, the scene lives in the viewport panes
+   m_renderer->GetPrimaryView()->SetRenderScene(!showFullUI); // While areas are drawn, the scene lives in the viewport panes
    if (!showFullUI)
    {
       // While the scene covers the window, it is driven by the user camera of the target viewport:

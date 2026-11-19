@@ -156,11 +156,11 @@ public:
             return true;
       return false;
    } // True while the static parts prerender is still accumulating samples (any view or any render probe)
-   unsigned int GetNPrerenderTris() const { return m_activeView->m_statsDrawnStaticTriangles; }
+   unsigned int GetNPrerenderTris() const { return m_activeView->GetDrawnStaticTriangles(); }
 
    using ShadeMode = RenderView::ShadeMode;
-   void SetShadeMode(ShadeMode mode) { m_activeView->m_shadeMode = mode; };
-   ShadeMode GetShadeMode() const { return m_activeView->m_shadeMode; };
+   void SetShadeMode(ShadeMode mode) { m_activeView->SetShadeMode(mode); };
+   ShadeMode GetShadeMode() const { return m_activeView->GetShadeMode(); };
 
    void Render3DScene(); // Records the passes of a full frame rendering the 3D scene to the output backbuffer
    void RenderUIScene(); // Records a frame containing only the LiveUI (used while the initial table content is being loaded)

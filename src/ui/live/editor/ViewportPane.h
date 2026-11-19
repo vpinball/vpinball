@@ -57,7 +57,7 @@ public:
    void SetRendering(const bool on)
    {
       if (m_view != nullptr)
-         m_view->m_renderScene = on;
+         m_view->SetRenderScene(on);
    }
 
    // The pane's camera definition (mode, pose and shading), owned by the pane
