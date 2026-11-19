@@ -11,6 +11,7 @@
 class Collection;
 class IEditable;
 class Material;
+class PinTable;
 class Texture;
 class RenderProbe;
 struct WhereUsedInfo;
@@ -60,8 +61,9 @@ private:
    void RefreshEditedParts(PropertyPane &props);
 
    // Icon tabs of the pane's vertical rail: the item's own pane, a collection membership tab for
-   // editable parts, and one tab per resource the part references (materials, images, render
-   // probes, sounds, fonts)
+   // editable parts, and one tab per resource the displayed item references (materials, images,
+   // render probes, sounds, fonts). For the table, the resources of the item tab's own fields
+   // (playfield material & image, ball & backdrop images, color grading LUT, environment image)
    enum class PaneTab
    {
       Item,
@@ -82,8 +84,10 @@ private:
       string role;
    };
 
+   static void AddResourceTab(vector<UsedResource> &out, PaneTab kind, const string &name, const string &role);
    static void CollectPartResources(const IEditable *part, vector<UsedResource> &out);
-   vector<UsedResource> BuildTabs(IEditable *displayed) const;
+   static void CollectTableResources(const PinTable *table, vector<UsedResource> &out);
+   vector<UsedResource> BuildTabs(const PropertyPane &props, IEditable *displayed) const;
    void RenderItemTab(PropertyPane &props, bool uniformPartSel);
    void RenderCollectionsTab(PropertyPane &props, const bool readOnly); // readOnly: inspected live side (not saved)
    void RenderResourceTab(PropertyPane &props, const UsedResource &res);
