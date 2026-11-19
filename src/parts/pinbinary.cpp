@@ -34,6 +34,9 @@ void PinBinary::Load(IObjectReader& reader)
          switch (tag)
          {
          case FID(NAME): m_name = reader.AsString(); break;
+         // Deprecated: old files stored the binary's internal name (a length prefixed string).
+         // Read and discard it so the field is consumed and does not get reported as unread/skipped.
+         case FID(INME): reader.AsString(); break;
          case FID(PATH): m_path = PathFromUTF8(reader.AsString()); break;
          case FID(SIZE): m_buffer.resize(reader.AsInt()); break;
          // Size must come before data, otherwise our structure won't be allocated
