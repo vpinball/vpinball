@@ -734,7 +734,7 @@ static const ankerl::unordered_dense::map<int, FieldMap>& GetFieldMaps()
          { FID(ALTV), "alpha_test" }, // Alpha test value on a 0..255 scale, negative when disabled
          { FID(MD5H), "md5" }, // Legacy image hash, ignored on load
          { FID(OPAQ), "opaque" }, { FID(JPEG), "image" }, // Sub object holding the binary image data (name is historical)
-         { FID(LINK), "link" }, { FID(BITS), "bits" }, // Legacy raw bitmap, pre 10.8.1
+         { FID(LINK), "link" }, { FID(BITS), "bits" }, // Legacy raw bitmap, pre 10.9.0
          { FID(SIGN), "signed" }, // Legacy, unused
       });
 

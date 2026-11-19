@@ -1,4 +1,4 @@
-VP 10.8.1 Changelog
+VP 10.9.0 Changelog
 ------------------------
 
 Main highlighted features, detailed below:
@@ -10,7 +10,7 @@ Main highlighted features, detailed below:
 - The LiveEditor is now (mostly) as powerful as the 'old' Windows UI Editor, but its fully realtime!
 - A new plugin system allows to hook up all kinds of 3rdparty extensions, apps and tools into VPX
 
-Note that these changes need explicit configuration updates when upgrading to 10.8.1, at least for input, display and nudging.
+Note that these changes need explicit configuration updates when upgrading to 10.9.0, at least for input, display and nudging.
 
 FEATURES:
 
@@ -47,9 +47,13 @@ FEATURES:
 - add overall GPU memory used, and overall file size to the image dialog
 
 - add 'Neutral' tonemapper (the part of the rendering which handles how overly bright parts are displayed on non-HDR displays) that keeps sRGB colors as authentic as possible.
+- the AgX tonemapper now matches Blender/Godot (the 'punchy' and 'golden' variants were removed)
 - also add a new 'exposure' property that adjusts the overall scene exposure (like the corresponding camera control in Blender)
 
 - add new FAAA postprocessing anti-aliasing mode (its mostly subtle, but also rather fast and less blurry)
+
+- add a 'Nuance' and 'Lottes' CRT texture filtering mode (picked by the input resolution), with oversampling against aliasing/moire and correct mask/scanline sizes, plus a new LCD display profile (both also available in the ScoreView plugin)
+  and a 'pixelated' texture sampling mode (sharp pixels when magnified, anisotropic filtering when minified)
 
 - improved environment and light reflections: glossy materials now blur the environment correctly over the whole roughness range (blending with the diffuse
   lighting for the roughest ones); the diffuse environment lighting is now computed exactly (no more issues with bright HDR suns plus faster table loading);
@@ -58,7 +62,8 @@ FEATURES:
 - balls can now be created and edited directly from the editor like all other parts, and not only from the script
 - the movement of the ball is now slightly extrapolated/predicted to (ideally) reduce the display/visual latency to 0
 - improved ball trail, also exposing strength control
-- add 'raytraced'/true ball motion blur (BGFX only, not supported in VR or headtracking)
+- the balls are now raytraced analytically per pixel (exact silhouette and shading, no more mesh facets)
+- also add a raytraced/true ball motion blur (BGFX only, not supported in VR or headtracking)
 
 - nudging was redesigned with support for the following modes:
   . gamecontroller nudge, a new mode designed for gamepads and VR controllers, which evaluates the intent of the player from stick moves and uses a simulated cabinet model to emulate the nudge physically plausible
@@ -91,6 +96,7 @@ FEATURES:
   . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input/physics/controller latency,
     better nudging, more stable gameplay emulation, as well as a performance boost
   . it supports rendering to multiple outputs (windows)
+  . also supports MSAA for anti-aliasing
 
 - input system was rewritten with the following changes:
   . selecting between different input APIs is not needed anymore, as SDL is now used on all platforms (on Windows it supports simultaneously all XInput & DirectInput devices),
@@ -129,7 +135,7 @@ FEATURES:
   that table object into the 'Properties' editor dialog for you.
 
 - VR/XR was rewritten and is now fully supported by VPX, using OpenXR in its BGFX variant (The legacy OpenVR implementation was removed).
-  . All OpenXR backends are supported (Virtual Desktop, SteamVR, Meta Quest Link, ...)
+  . All OpenXR backends are supported (Virtual Desktop, SteamVR, Meta Quest Link, ...), also on Linux
   . Layers (see below) now have properties to automatically show/hide parts depending on the player mode
   . Layers (see below) now have properties to perform adequate positioning & stretching, depending on player situation, allowing to keep room elements sized to the real world, while adjusting the pinball machine to user choice, eventually matching a real world cabinet or controller
   . All scaling is now done using the OpenXR framework, based on target lockbar width, which can be adjusted in the tweak UI, for example to match the width of a cab, a keyboard or any controller.
@@ -151,6 +157,8 @@ FEATURES:
   . Cabinet scaling modes and a seated play cabinet tilt option have been added
   . The VR settings are now split between the real world setup and per-table tweaks
   . The player no longer pauses when the desktop window loses focus while playing in VR
+  . The desktop window can show black, the full scene, the playfield only, or one eye mirrored while playing in VR, and the VR positioning is saved in the app settings
+  . an option allows to unlock the feet from the real ground (e.g. to play a mini pin placed on a desk), and a custom lockbar width can be measured with the controllers during view centering
 
 - number of layers is not limited anymore. Layers can also be nested and they now feature properties:
   . a visibility mask, that allows to filter on which player mode layers are active (desktop, cabinet, virtual reality, mixed reality, ...)
@@ -201,6 +209,8 @@ FEATURES:
   On Windows, the PinMAME plugin falls back to the folders of a registered VPinMAME installation (ROMs, NVRAM, samples,
   configuration, high scores) when no pinmame folder is found next to the table. The B2S plugin is now enabled by default
   as the backglass renderer.
+- the VPinMAME DIP switch dialog, the VPinMAME volume and the F4/F5 keys are replaced by table options in the InGameUI (with a notice if a changed DIP option needs a table restart)
+- the audio level of each source (PinMAME, other plugins, ...) can be adjusted in the InGameUI and is saved
 
 - note that the old LiveUI/TweakUI is now split between a LiveEditor for editing, and the InGameUI to change all settings:
 
@@ -220,17 +230,25 @@ FEATURES:
   . Full undo/redo support with a labeled history
   . Move/rotate/scale gizmo with optional snapping, and modal keyboard editing of transforms
   . A part library pane to browse and place parts, a blueprint view, and multi-editing of uniform part selections
-  . A script editor pane
+  . A script editor pane (with syntax highlighting, autocomplete, go to definition, smart indent, F7 syntax check, error log and a two-way sync with the Windows code view)
   . The table can be play tested directly from the editor, and tables are loaded/saved asynchronously
+  . Add reference images (a scan, blueprint or photo placed at its real size to trace parts over)
+  . Point edit tools (bevel corners, arc edges, add point)
+  . 'Round Wall' tool,
+  . Measure mode
+  . Blender-style sidebar and orthographic views
+  . Note that many settings like rumble, legacy fly-over and VR mode moved to the InGameUI and the toolbar (e.g. the player options dialog was removed)
 
  - InGameUI (via default 'F12' ingame):
   . Supports all player modes (VR, XR, cabinet, desktop) and all screen orientations
   . Add mouse interaction support
   . Add settings pages, moving lots of settings inside these pages
-  . Add a system info page, displaying some details of the GPU,CPU,Display,etc, and the paths used to load the various components
+  . Add a system info page, displaying some details of the GPU,CPU,Display,Audio,etc, and the paths used to load the various components
   . Navigation using flipper input has been unified: per default, magna buttons allow to move, while flipper buttons allow to select
 
  - a cross-platform script debugger is available in the LiveUI, replacing the previous Windows-only debugger dialog
+
+- copy/paste now works between VPX instances, and between the Windows editor and the LiveEditor (through the system clipboard)
 
 - for cabinet users, a new option in the graphics settings allows to enable an automatic window camera fitting at table startup, based on table or screen fitting
 
@@ -239,19 +257,32 @@ FEATURES:
 - after many years of great service, 'Fake' 3D stereo mode has been removed, replaced by real stereo. Note that the 'Reshade' app could be used to get approximate 3D stereo if still wanted.
   Also, the stereo calibration has been enhanced and refined again.
 
-- texture compression is actually usable (=much faster) when using BGFX
+- texture compression is actually usable (=much faster) now when using BGFX: it uses GPU formats (BC7/BC1/BC3, ASTC/ETC2 on mobile, BC6H for HDR, or RGB9E5/RG11B10F where BC6H is missing) with a per-table disk cache,
+  takes the available GPU memory into account, and is now enabled by default on all platforms
+  Note that the compressed textures are cached per table (in its cache folder), so following loads skip the decoding and compression, and stale cache files are removed automatically
+  (DX9 and GL have texture compression force-disabled by now)
 
 - backside lighting for normal-mapped parts
 
 - normal mapping can now also be used on parts without an albedo texture
+
+- mesh import/export now offers VPX or Blender units
 
 - debug builds have now been "replaced" by release builds with debug info, so that stack traces show more usable info by default, and there is less to generate/compile in the github actions
 
 FIXES:
 
 - fix SMAA looking worse compared to 10.7.X, and slightly improve its quality in general
+- ambient occlusion is now computed in linear view space (more accurate, also for rotated/sheared views)
+
+- fix the DX9 texture filter/wrap settings being applied to the wrong sampler
+- DX9/OpenGL: fix GL normal maps lit from the wrong side, refraction on untextured parts, the sRGB decoding of DX9 color DMDs (as in 10.7),
+  DX9 ball reflection edge wrapping, GL stereo right eye normals
 
 - fix wrong primitive animation when using the endless-loop function (removing the need for NFozzy's workaround via script)
+
+- walls with points in reversed (clockwise) order now also render their top face
+- fix a possible hang/crash on curves (walls, ramps, rubbers, ...) with degenerate drag points
 
 - allow for larger inclination value range
 
@@ -260,6 +291,10 @@ FIXES:
 - fix different maximum tessellation/detail levels for ramps & rubbers, dependent on static vs non-static rendering
 
 - improve 'resting' ball detection and better filtering for physics hit events
+
+- fix the playfield side walls under a sloped glass (the ball could escape at the back below the glass)
+
+- fix a duplicate collision at ramp entrances, and plungers with a very low 'Mech Strength' missing the release
 
 - add a per-table 'Physics Profile' option (in the table's physics properties, defaults to 10.8): existing tables keep the
   VPX 10.8 physics they were tuned for, while selecting the 10.9 profile enables the corrected physics engine behavior.
@@ -313,35 +348,65 @@ FIXES:
     keyboard & gamepad cabinet-model nudges was raised from 0.5g to 0.7g (1.4x). Nudges therefore move the ball more and tilt the plumb more easily than before (Adjust the nudge strength settings if needed).
   . plunger: the speed of a plunger speed sensor (e.g. Pinscape) is now correctly converted to the plunger's travel range (from rest position to fully retracted),
     so launches with a speed sensor are weaker than before (about 17% with the usual rest position of 1/6 of the range).
+  . friction is no longer capped at 1 (only negative values are clamped to 0), also the maximum friction clamp of kickers, balls and flippers was broken for a long time
+  . the glass collider now uses the authored elasticity (before, it was implicitly overridden)
 
 - improve flipper latency reporting in the performance UI
 
 - fix the Ultracade U-Shock knocker and plunger outputs only working in the first game after starting VPX, and (potentially) support them on Linux and macOS too
+- improve gamepad rumble on flipper/ball/plunger hits and on nudge, scaled by the impact strength, with a strength setting per source (bumper, slingshot, plunger, flipper, nudge), and overlapping pulses are now mixed
 
 - export of a sound from the sound manager will now export the sound file as-is (without adding a wave header in front of non-WAV files)
 - fix wrong/too-loud volume for the test play in the sound manager
 - improve looping sounds
 - add an optional haptic audio output that clones the playfield sound engine to a dedicated device (for driving tactile transducers),
   with its own device selection, output mode and volume (disabled by default: no device is mapped to it)
+- add support for Arcade2TV-Pinball split audio
+
+- renaming a surface or ramp also updates the parts that reference it
 
 - respect the decimal point locale in more UI editboxes (e.g. video/vr/physics preferences, sound/dimension manager, element search, VPP im-/exports, etc) for consistency,
   and be more robust against wrong inputs (including the .ini/.vpp files)
 - (hopefully) more robust handling of non-ASCII characters (i.e. unicode), incl. (file)paths, throughout all of VPX
+  also: element names (incl. materials) are now matched case insensitively everywhere, image/sound names that only differ by case are reported at load,
+  and texts in the table file are now stored as UTF-8 (older files are read as Windows-1252)
 
 - reduce startup time (or even potential freezes/deadlocks) for large fade-speed bulb values
 - in general, all table loading, and image conversions have been optimized
+  it includes a new loading screen with progress, which can be closed and allows to skip the new prepass texture compression
+- also, static parts are now prerendered over several frames instead of one initial blocking pass, so startup and changes of render properties are faster
 
-- remove some of the limits (like maximum line length) of the code view/script editor
+- loading broken or malicious table/model/image files is more robust (no more crashes or out of bounds reads)
+- don't save an invalid table version
+- saving a table first writes a temporary file, so the old table is kept if saving fails (e.g. disk full)
 
 - fix script editor changes not leading to flagging the table as changed (visible via the added '*')
 - fix ctrl+s not working within the script editor 
+- script editor's 'Compile' works on ROM tables (no more 'Can't open core.vbs')
+- remove some of the limits (like maximum line length) of the code view/script editor
 
 - WinUI: fix zooming on a wall with image
 -        fix zoom blocking at max or min
 -        redraw display when grid/playfield is toggled
--        do not filter navigation inside property pane
 -        delete elements of deleted layer
 -        fix crash on second Select Dialog open
+-        fix moving/rotating/scaling/flipping triggers
+-        fix moving lights/primitives/EM reels
+-        fix selecting a part together with some of its drag points
+-        fix box selection of targets
+-        fix picking/selection cycling and invisible parts
+-        fix flasher centers getting out of sync
+-        fix light sequencer center limits
+-        fix swapped EM reel default values
+-        fix the collection manager always renaming
+-        fix 'assign to layer'
+-        fix renaming (collections, case only renames, too long names)
+-        fix Alt key menu combinations not always working
+-        fix tabbing in the property pane and shortcut filtering in edit boxes
+-        fix crashes on delete on undo past the first change, in the context menu and on spinner mesh export
+-        closing a modified table or quitting now asks about unsaved changes
+-        undo also restores the selection
+-        script calls or the automatic VPP import no longer create undo points
 
 - LiveUI: fix delayed mipmap generation (happens when starting with static rendering, then opening LiveUI) (used for trilinear and anisotropic texture filtering)
 
@@ -351,8 +416,6 @@ FIXES:
 
 - note that the support for ancient windows versions (e.g. Windows XP) for the DX9 build has been removed in order to be able to use newer compilers
 - due to this, VPX now allows to use the C++20 language feature set, which means that the windows build system requires Visual Studio 2019 or newer
-
-- no need anymore to download the DirectX9 SDK/dlls, its all packaged into VPX now
 
 - SDL2 code was updated and modernized to SDL3
 
@@ -368,8 +431,7 @@ FIXES:
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
 
 - add Visual Studio 2026 support
-- employ C++20
-- DX9 build does not need the old DX SDK to be downloaded anymore
+- no need anymore to download the DirectX9 SDK/dlls, its all packaged into VPX now
 
 - note that the vast majority of the code base is now available under GPLv3+ (see license.txt for all details)
 

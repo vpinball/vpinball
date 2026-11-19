@@ -99,4 +99,4 @@ Under Windows, to optimize desktop composition latency, user may perform the fol
 When everything is optimized as stated above, on a powerful enough computer, the finger to display latency should stay below the length of a single frame (for example, on a 60Hz display, it should stay below 16.6ms).
 
 
-<sub><sup>[Information applicable to version 10.8.1 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.9.0 Beta]</sup></sub>

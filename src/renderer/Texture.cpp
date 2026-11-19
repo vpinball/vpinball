@@ -976,14 +976,14 @@ Texture* Texture::CreateFromObjectReader(IObjectReader& reader, PinTable* const 
             break;
          case FID(BITS):
          {
-            // The 'BITS' field is deprecated and only used in pre 10.8.1 files which were all BIFF streams so we can safely cast here
+            // The 'BITS' field is deprecated and only used in pre 10.9.0 files which were all BIFF streams so we can safely cast here
             BiffReader& br = (BiffReader&)reader;
 
             // This is a legacy deprecated and largely unused feature, moreover bmp are not supposed to enter this codeblock (no undo or copy/paste)
             // so the reader is expected to always be backed by a POLE storage stream
             assert(br.m_stream != nullptr);
 
-            // Old files used to store some bitmaps as a 32-bit SBGRA picture, we now (10.8.1+) always use a compressed file format. Convert here to simplify the code
+            // Old files used to store some bitmaps as a 32-bit SBGRA picture, we now (10.9.0+) always use a compressed file format. Convert here to simplify the code
             const size_t size = (size_t)height * width;
             assert(ppb == nullptr && size != 0);
             if (width == 0 || height == 0 || width > 16384 || height > 16384 || size * 4 < size) // Bound on-disk fields before sizing the decode buffer

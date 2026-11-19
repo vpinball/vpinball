@@ -2400,11 +2400,11 @@
     </ItemGroup>
     <Copy SourceFiles="@(_VpxContentAssets)" DestinationFiles="@(_VpxContentAssets->'$(OutDir)assets\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(_VpxContentScripts)" DestinationFiles="@(_VpxContentScripts->'$(OutDir)scripts\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(_VpxContentShaders)" DestinationFiles="@(_VpxContentShaders->'$(OutDir)shaders-10.8.1\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_VpxContentShaders)" DestinationFiles="@(_VpxContentShaders->'$(OutDir)shaders-10.9.0\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
     <ItemGroup>
       <FileWrites Include="@(_VpxContentAssets->'$(OutDir)assets\%(RecursiveDir)%(Filename)%(Extension)')" />
       <FileWrites Include="@(_VpxContentScripts->'$(OutDir)scripts\%(RecursiveDir)%(Filename)%(Extension)')" />
-      <FileWrites Include="@(_VpxContentShaders->'$(OutDir)shaders-10.8.1\%(Filename)%(Extension)')" />
+      <FileWrites Include="@(_VpxContentShaders->'$(OutDir)shaders-10.9.0\%(Filename)%(Extension)')" />
     </ItemGroup>
   </Target>
   <ItemGroup>

@@ -9,7 +9,7 @@ Beside the graphic backend flavor, VPX is provided as:
 
 
 ## BGFX
-This build was introduced with version 10.8.1. It uses the BGFX library to run VPX using the latest graphic backends like Vulkan, Metal, DirectX 11, latest OpenGL & OpenGL ES.
+This build was introduced with version 10.9.0. It uses the BGFX library to run VPX using the latest graphic backends like Vulkan, Metal, DirectX 11, latest OpenGL & OpenGL ES.
 It is the most up-to-date, feature complete and actively developed flavor. This is the flavor that should be used in almost all situations.
 
 The following features are offered by the BGFX version:
@@ -48,4 +48,4 @@ The following features were introduced by the OpenGL version:
 This flavor is only available for Windows, as a window player/editor application.
 
 
-<sub><sup>[Information applicable to version 10.8.1 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.9.0 Beta]</sup></sub>

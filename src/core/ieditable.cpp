@@ -128,7 +128,7 @@ void IEditable::LoadSharedEditableField(const int tag, IObjectReader& reader)
       m_onLoadExpectedPartGroup = std::move(layerName);
       break;
    }
-   case FID(GRUP): // 10.8.1 groups (unlimited number of hierarchical parenting with properties)
+   case FID(GRUP): // 10.9.0 groups (unlimited number of hierarchical parenting with properties)
    {
       m_onLoadExpectedPartGroup = reader.AsString();
       break;

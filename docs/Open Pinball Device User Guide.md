@@ -5,7 +5,7 @@ is a new kind of USB HID interface designed specifically for virtual pinball cab
 controllers.  
 
 OPD is essentially brand new as of this writing (September 2024, during the development
-phase of Visual Pinball 10.8.1), and it's still in the experimental stages.  Its goal is
+phase of Visual Pinball 10.9.0), and it's still in the experimental stages.  Its goal is
 to provide a better alternative to the traditional joystick/game controller emulation that
 all pin cab I/O controllers up to now have used.  "Better" in two main ways...
 

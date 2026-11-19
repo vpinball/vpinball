@@ -1,11 +1,11 @@
-# Upgrading a table to 10.8.1
+# Upgrading a table to 10.9.0
 
 ## Table of Contents
 1. [Inputs](#inputs)
 2. [VR/XR Setup](#vrxr-setup)
 3. [Ball motion trail/blur](#ball-motion-trailblur)
 
-VPX 10.8.1 tries to be entirely backwards compatible and should not require any update to existing tables. Informations below describe new features and how to support them.
+VPX 10.9.0 tries to be entirely backwards compatible and should not require any update to existing tables. Informations below describe new features and how to support them.
 
 
 
@@ -13,7 +13,7 @@ VPX 10.8.1 tries to be entirely backwards compatible and should not require any 
 
 As VPX used to be only available under Windows operating systems, its input system was tied to it, using a combination of Direct Input and native Windows methods, but also allowing to select XInput and SDL input for which support was added along the years.
 This lead to some issues as these 3 input systems were not implemented in the same way, mixing joystick and gamepad definitions, allowing to select devices or accumulating them, and making the setup incompatible between them.
-In VPX 10.8.1, the input system has been entirely rewritten to solve this issue, also integrating and allowing for new uses cases.
+In VPX 10.9.0, the input system has been entirely rewritten to solve this issue, also integrating and allowing for new uses cases.
 
 ***As a consequence, input button/keys/joystick must be redefined when upgrading from an earlier release***
 
@@ -52,4 +52,4 @@ VPX used to only provide fake/hacked ball motion trails. These are now deprecate
 
 
 
-<sub><sup>[Information applicable to version 10.8.1]</sup></sub>
+<sub><sup>[Information applicable to version 10.9.0]</sup></sub>

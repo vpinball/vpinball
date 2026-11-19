@@ -953,7 +953,7 @@ The following methods only applies to mesh primitives with an animation sequence
 -------------------------------------------------------------------------------
 ## Changelog
 
-### 10.8.1
+### 10.9.0
 - add `PreciseGameTime` (same as GameTime but using seconds and more precise for better emulation syncronization)
 - add `VPXActionKey` to the globals
 - add `SoundDone` event to Table

@@ -2095,7 +2095,7 @@ void PinTable::FinalizeLoadedParts(vector<IEditable *> &parts)
 
    PLOGI << "Images, Sounds, Fonts and Parts loaded"; // For profiling
 
-   // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.8.1 when adding hierarchical PartGroup
+   // Resolve layer names once all part & collection names are known as they must be unique but this constraint was added in 10.9.0 when adding hierarchical PartGroup
    parts = GetParts();
    vector<string> functions;
    vector<string> identifiers;
@@ -2171,7 +2171,7 @@ void PinTable::FinalizeLoadedParts(vector<IEditable *> &parts)
       }
    }
 
-   // Since 10.8.1, layers have been replaced by groups with properties, keep partgroups at the beginning of the editable list.
+   // Since 10.9.0, layers have been replaced by groups with properties, keep partgroups at the beginning of the editable list.
    std::ranges::stable_partition(m_vedit.begin(), m_vedit.end(), [](IEditable *p) { return p->GetItemType() == ItemTypeEnum::eItemPartGroup; });
 
    // Resolve collection parts
@@ -2286,7 +2286,7 @@ void PinTable::ApplyLoadedVersionFixups(const int loadfileversion)
          });
    }
 
-   // Since 10.8.1, Flashers are allowed on a 2D backdrop, with advanced rendering capabilities.
+   // Since 10.9.0, Flashers are allowed on a 2D backdrop, with advanced rendering capabilities.
    /* This code would replace a DMD textbox by a flasher. It is deactivated since it would break scripting (but does anyone script this ?)
    for (size_t i = 0; i < m_vedit.size(); ++i)
    {

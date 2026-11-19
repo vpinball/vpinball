@@ -46,7 +46,7 @@ void PlumbHandler::StepOneMillisecond(const Vertex2D& cabAcceleration)
    // - send mechanical tilt like the plumb on real machine, triggering rom tile (instead of a fake keyboard central nudge like in previous implementation. not sure why previous implementation did that: isn't the point of a plumb to actually tilt ?)
    // Consequently NudgePlugIn_xxx scripts were also removed, support VBS script were also adapted to handle nudging and tilting separately.
    //
-   // In 10.8.1 the cabinet physics was rewritten, using an angular pendulum model.
+   // In 10.9.0 the cabinet physics was rewritten, using an angular pendulum model
 
    if (g_pplayer)
    {

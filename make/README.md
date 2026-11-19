@@ -4,7 +4,7 @@
 
 For a pre-compiled download of all external/third-party dependencies:
 
-Download `VPinballX-10.8.1-(revision)-(SHA1)-dev-third-party-windows-(x86/x64)-(Debug/Release).zip` from [Actions](https://github.com/vpinball/vpinball/actions) of a `vpinball` run,
+Download `VPinballX-10.9.0-(revision)-(SHA1)-dev-third-party-windows-(x86/x64)-(Debug/Release).zip` from [Actions](https://github.com/vpinball/vpinball/actions) of a `vpinball` run,
 and extract the content to the `third-party` folder in the top directory, overwriting all existing files.
 
 Run the `create_vs_solution.bat` from this folder here and select the Visual Studio version that will be used. This will create `.sln`/`.proj` files in the `.build/vsproject` directory.

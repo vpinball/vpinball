@@ -16,7 +16,7 @@ fun parseVersion(versionName: String): List<Int> {
 }
 
 val versionNameValue: String by lazy {
-    val value = project.findProperty("versionName")?.toString() ?: "10.8.1.0000"
+    val value = project.findProperty("versionName")?.toString() ?: "10.9.0.0000"
     println("versionName: $value")
     value
 }

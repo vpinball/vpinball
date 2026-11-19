@@ -4,8 +4,8 @@
 
 // Update VERSION_START_SHA in .github\workflows\vpinball.yml to point to the latest commit.
 #define VP_VERSION_MAJOR    10 // X Digits
-#define VP_VERSION_MINOR    8  // Max 2 Digits
-#define VP_VERSION_REV      1  // Max 1 Digit
+#define VP_VERSION_MINOR    9  // Max 2 Digits
+#define VP_VERSION_REV      0  // Max 1 Digit
 
 #define CURRENT_FILE_FORMAT_VERSION  1090 // 1090: narrow text (names, texts, paths) is stored as UTF-8 (older files may contain legacy ANSI)
 #define NO_ENCRYPTION_FORMAT_VERSION 1050

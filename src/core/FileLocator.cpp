@@ -328,7 +328,7 @@ std::filesystem::path FileLocator::GetTablePath(const PinTable* table, TableSubF
             }
             else
             {
-               // Not found and path searched for read only, retry in app mode only which was the only file layout used before 10.8.1
+               // Not found and path searched for read only, retry in app mode only which was the only file layout used before 10.9.0
                // This ease the transition, especially for music (if the user did not migrate it) and user folders (which will read for previous plays, but saved in new location)
                const_cast<FileLocator*>(this)->m_fileLayoutMode = FileLayoutMode::AppOnly;
                path = GetTablePath(table, sub, searchForWriting);

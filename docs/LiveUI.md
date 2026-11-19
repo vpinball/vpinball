@@ -100,4 +100,4 @@ In drag point edit mode (Edit mode only, entered with [Tab] on parts defined by 
 
 Use the buttons on the right of the menu bar to leave the editor: the back arrow resumes playing (tweak mode), the close button exits the editor (back to the main editor in tweak mode, quit the application in edit mode).
 
-<sub><sup>[Information applicable to version 10.8.1 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.9.0 Beta]</sup></sub>

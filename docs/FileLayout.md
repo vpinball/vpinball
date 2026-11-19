@@ -34,7 +34,7 @@ Mobile platform notes:
   - The Documents folder is accessible via the **Files app** on the device
   - When connected to a Mac, files can be transferred through **Finder**
 
-Starting with VPX 10.8.1, settings are stored in a subfolder per minor version, that is to say 10.8, 10.9,... . This allows to have multiple minor versions installed on the same computer, without facing setting conflicts.
+Starting with VPX 10.9.0, settings are stored in a subfolder per minor version, that is to say 10.9, 10.10,... . This allows to have multiple minor versions installed on the same computer, without facing setting conflicts.
 
 ## Global Settings and table overrides
 
@@ -169,4 +169,4 @@ The following is an example of the proposed information file format (fields coul
 ```
 
 
-<sub><sup>[Information applicable to version 10.8.1 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.9.0 Beta]</sup></sub>

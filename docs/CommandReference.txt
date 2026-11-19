@@ -8,7 +8,7 @@ Also see https://docs.orbitalpin.com/welcome for some more detailed help
 As for coding light sequences for original tables, please check this helper app: https://github.com/horseyhorsey/VpLightSequencing
 
 Changelog:
-10.8.1:
+10.9.0:
 - add PreciseGameTime (same as GameTime but using seconds and more precise for better emulation syncronization) to the globals
 - add VPXActionKey to the globals
 - add SoundDone event to Table
