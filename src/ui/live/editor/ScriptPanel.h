@@ -36,6 +36,8 @@ public:
    void Update(); // Per frame housekeeping (external editor session, Win32 code view notification)
    void RenderPane(const AreaRect &rect, int leafId); // Renders the script editor inside an area leaf
 
+   void ShowLine(int line); // Hosts the panel if needed and reveals the given (1-based) script line
+
    // Script engine error report (runtime errors during a play test, 1-based line/column)
    void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
 
