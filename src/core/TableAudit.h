@@ -14,6 +14,7 @@ class Texture;
 namespace VPX
 {
 class Sound;
+struct SoundSpec;
 }
 
 // One finding of a table audit: a severity, a one line summary and a longer explanation,
@@ -54,6 +55,16 @@ public:
 
    // Collects the findings of a table audit. Non const: items hold mutable handles for fixing.
    static TableAudit Run(PinTable &table);
+
+   // The re-encode fixes the audit offers for 'sound' given its decoded specification
+   // (from AudioPlayer::GetSoundInformations, zeroed when the file cannot be decoded):
+   // a stereo-to-mono fix for playfield sounds and/or an Ogg Opus re-encode for non-Opus
+   // data. Exposed for the Live Editor property pane, which offers the same actions.
+   static vector<TableAuditItem> SoundFixes(VPX::Sound &sound, const VPX::SoundSpec &specs);
+
+   // The re-encode fix the audit offers for 'image': re-encode when the stored format is
+   // not the compact one for its range (WebP for LDR, EXR for HDR). Empty for linked images.
+   static vector<TableAuditItem> ImageFixes(PinTable &table, Texture &image);
 
    // The findings in the legacy textual form (". Error: ..." / ". Warning: ..." / stats lines)
    string Format() const;

@@ -320,6 +320,55 @@ std::function<IEditable *(PinTable &table, PinUndo &undo)> ReencodeImageFix(Text
 }
 }
 
+vector<TableAuditItem> TableAudit::SoundFixes(VPX::Sound &sound, const VPX::SoundSpec &specs)
+{
+   vector<TableAuditItem> fixes;
+   const int channels = static_cast<int>(specs.nChannels);
+   if (channels <= 0)
+      return fixes;
+   if (channels > 1 && sound.GetOutputTarget() == VPX::SNDOUT_TABLE)
+   {
+      TableAuditItem &item = fixes.emplace_back();
+      item.severity = TableAuditItem::Severity::Error;
+      item.summary = "sound '" + sound.GetName() + "' is used for playfield physical sound but has multiple channels (not mono).";
+      item.details = item.summary;
+      item.sound = &sound;
+      item.fix = ReencodeSoundFix(&sound, 1);
+      item.fixLabel = "Re-encode as mono Ogg Opus";
+   }
+   if (!specs.isOpus)
+   {
+      TableAuditItem &item = fixes.emplace_back();
+      item.severity = TableAuditItem::Severity::Info;
+      item.summary = "sound '" + sound.GetName() + "' is not stored in the compact 'Ogg Opus' format";
+      item.details = item.summary;
+      item.sound = &sound;
+      item.fix = ReencodeSoundFix(&sound, std::min(channels, 2)); // Opus' simple channel mapping only supports mono/stereo
+      item.fixLabel = "Re-encode as Ogg Opus";
+   }
+   return fixes;
+}
+
+vector<TableAuditItem> TableAudit::ImageFixes(PinTable &table, Texture &image)
+{
+   vector<TableAuditItem> fixes;
+   if (table.GetImageLink(&image))
+      return fixes; // Linked (shared) images are managed outside of the table: do not re-encode them
+   const string extension = lowerCase(PathToUTF8(image.GetFilePath().extension()));
+   if (image.IsHDR() ? extension != ".exr" : extension != ".webp")
+   {
+      TableAuditItem &item = fixes.emplace_back();
+      item.severity = TableAuditItem::Severity::Info;
+      item.summary = (image.IsHDR() ? "HDR image '"s : "Image '"s) + image.m_name + "' is stored in the '" + extension + "' format instead of the more compact '"
+         + (image.IsHDR() ? "EXR"s : "WebP"s) + '\'';
+      item.details = item.summary;
+      item.image = &image;
+      item.fix = image.IsHDR() ? ReencodeImageFix(&image, FIF_EXR, EXR_DEFAULT, ".exr") : ReencodeImageFix(&image, FIF_WEBP, WBMP_DEFAULT, ".webp");
+      item.fixLabel = image.IsHDR() ? "Re-encode as EXR"s : "Re-encode as WebP"s;
+   }
+   return fixes;
+}
+
 TableAudit TableAudit::Run(PinTable &table)
 {
    // Perform a simple table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
@@ -539,46 +588,14 @@ TableAudit TableAudit::Run(PinTable &table)
          addItem(TableAuditItem::Severity::Error, "sound '" + sound->GetName() + "' could not be decoded (invalid or unsupported file)").sound = sound;
          continue; // An undecodable sound cannot be checked or re-encoded
       }
-      if (specs.nChannels > 1 && sound->GetOutputTarget() == VPX::SNDOUT_TABLE)
-      {
-         TableAuditItem &item = addItem(TableAuditItem::Severity::Error, "sound '" + sound->GetName() + "' is used for playfield physical sound but has multiple channels (not mono).");
-         item.sound = sound;
-         item.fix = ReencodeSoundFix(sound, 1);
-         item.fixLabel = "Re-encode as mono Ogg Opus";
-      }
-      if (!specs.isOpus)
-      {
-         TableAuditItem &item = addItem(TableAuditItem::Severity::Info, "sound '" + sound->GetName() + "' is not stored in the compact 'Ogg Opus' format");
-         item.sound = sound;
-         item.fix = ReencodeSoundFix(sound, std::min<int>(static_cast<int>(specs.nChannels), 2)); // Opus' simple channel mapping only supports mono/stereo
-         item.fixLabel = "Re-encode as Ogg Opus";
-      }
+      for (TableAuditItem &fix : SoundFixes(*sound, specs))
+         items.push_back(std::move(fix));
    }
    audioPlayer = nullptr;
 
    for (Texture *const image : table.m_vimage)
-   {
-      if (table.GetImageLink(image))
-         continue; // Linked (shared) images are managed outside of the table: do not re-encode them
-      const string extension = lowerCase(PathToUTF8(image->GetFilePath().extension()));
-      if (image->IsHDR())
-      {
-         if (extension != ".exr")
-         {
-            TableAuditItem &item = addItem(TableAuditItem::Severity::Info, "HDR image '" + image->m_name + "' is stored in the '" + extension + "' format instead of the more compact 'EXR'");
-            item.image = image;
-            item.fix = ReencodeImageFix(image, FIF_EXR, EXR_DEFAULT, ".exr");
-            item.fixLabel = "Re-encode as EXR";
-         }
-      }
-      else if (extension != ".webp")
-      {
-         TableAuditItem &item = addItem(TableAuditItem::Severity::Info, "Image '" + image->m_name + "' is stored in the '" + extension + "' format instead of the more compact 'WebP'");
-         item.image = image;
-         item.fix = ReencodeImageFix(image, FIF_WEBP, WBMP_DEFAULT, ".webp");
-         item.fixLabel = "Re-encode as WebP";
-      }
-   }
+      for (TableAuditItem &fix : ImageFixes(table, *image))
+         items.push_back(std::move(fix));
 
    const bool issueFound = std::ranges::any_of(items, [](const TableAuditItem &item) { return item.severity != TableAuditItem::Severity::Info; });
    if (!issueFound)
