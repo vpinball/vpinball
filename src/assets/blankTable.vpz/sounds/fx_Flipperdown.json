@@ -1,6 +1,6 @@
 {
   "$type": "sound",
-  "import_path": "C:\\Users\\vcbou\\Desktop\\BlankTable\\ogg\\fx_Flipperdown.ogg",
+  "import_path": "C:\\Users\\vcbou\\Desktop\\BlankTable\\ogg\\fx_Flipperdown.opus",
   "output_target": "playfield",
   "volume_offset": 0,
   "left_right_offset": 0,

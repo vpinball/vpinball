@@ -1,6 +1,6 @@
 {
   "$type": "sound",
-  "import_path": "C:\\Users\\vcbou\\Desktop\\BlankTable\\ogg\\ballrelease.ogg",
+  "import_path": "C:\\Users\\vcbou\\Desktop\\BlankTable\\ogg\\ballrelease.opus",
   "output_target": "playfield",
   "volume_offset": 0,
   "left_right_offset": 0,
