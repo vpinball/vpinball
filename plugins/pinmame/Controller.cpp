@@ -172,8 +172,6 @@ void Controller::Run(int32_t hParentWnd, int nMinVersion)
    if (m_szRomName.empty())
       return;
 
-   PinmameSetCheat(m_cheat);
-
    // Disable sound if requested through game's settings object
    Game* game = GetGames(m_szGameName);
    if (game)
@@ -192,6 +190,9 @@ void Controller::Run(int32_t hParentWnd, int nMinVersion)
       settings->Release();
       game->Release();
    }
+
+   // Apply after PinmameSetConfig: it clears the whole options struct
+   PinmameSetCheat(m_cheat);
 
    // Search and load a memory map with its platform if provided (see https://github.com/tomlogic/pinmame-nvram-maps)
    if (std::error_code ec; std::filesystem::exists(m_memmapPath, ec))
