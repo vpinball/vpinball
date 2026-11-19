@@ -9,7 +9,7 @@
  
  
  //
-@@ -380,6 +380,10 @@
+@@ -380,6 +380,14 @@
  	inline void ClearSquiggles() { clearSquiggles(); }
  	inline bool HasSquiggles() const { return squiggles.size() != 0; }
  
@@ -17,10 +17,14 @@
 +	// secondary cursors are active - callers use this to give Esc to the widget first
 +	inline bool HasActiveTransient() const { return autocomplete.isActive() || findReplaceVisible || cursors.hasMultiple(); }
 +
++	// VPX: recolorize every line on the next render, e.g. after the word sets of the current language changed
++	// (SetLanguage with the same language does not recolorize)
++	inline void RecolorizeAll() { colorizer.invalidate(); }
++
  	// specify a change callback (called when changes are made (including undo/redo))
  	// the delay parameter specifies a time in miliseconds that the editor will wait for before calling
  	// which helps in case you don't need to track every keystroke
-@@ -735,6 +739,12 @@
+@@ -735,6 +743,12 @@
  		// does the language use indentation for blocks (e.g Python)
  		bool indentationForBlocks = false;
  
@@ -33,6 +37,16 @@
  		// set of keywords, declarations, identifiers used in the language (can be blank if language doesn't have these features)
  		// if language is not case sensitive, all entries should be in lower case
  
+@@ -1642,6 +1656,9 @@
+ 		// update state (if required)
+ 		bool update(const Config& config, Document& document);
+ 
++		// VPX: forget the colorized language, so the next update recolorizes every line
++		inline void invalidate() { language = nullptr; }
++
+ 	private:
+ 		// update color in a single line
+ 		LineState updateLine(Line& line);
 --- TextEditor.cpp (9f812a0)
 +++ TextEditor.cpp (VPX)
 @@ -17,8 +17,8 @@

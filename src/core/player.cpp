@@ -1705,9 +1705,10 @@ void Player::OnScriptError(ScriptInterpreter::ErrorType type, int line, int colu
    }
 
    // Report to the script editor, if any (live editor pane through the LiveUI,
-   // Win32 code view through the table editor sink)
-   if (m_liveUI)
-      m_liveUI->m_editorUI.OnScriptError(line, column, desc);
+   // Win32 code view through the table editor sink). Debugger console errors are
+   // about the typed command, not a line of the table script
+   if (m_liveUI && type != ScriptInterpreter::ErrorType::DebugConsole)
+      m_liveUI->m_editorUI.OnScriptError(type, line, column, desc, stackDump);
    if (m_ptable->m_tableEditor)
       m_ptable->m_tableEditor->OnScriptError(type, line, column, description, stackDump);
    else if (m_ptable->m_liveBaseTable && m_ptable->m_liveBaseTable->m_tableEditor)

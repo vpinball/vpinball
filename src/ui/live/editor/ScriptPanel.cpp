@@ -98,6 +98,8 @@ ScriptPanel::ScriptPanel(EditorUI &editor)
    m_te.SetShowCurrentLineHighlightEnabled(true);
    m_te.SetInsertSpacesOnTabs(false);
    m_te.SetFindReplaceEnabled(true);
+   // Any document change (the return value of Render only reports the keyboard edits)
+   m_te.SetChangeCallback([this] { m_teEdited = true; });
 
    // autocomplete: trigger on typing and on '.' for member completion; Ctrl+Space manually
    m_acConfig.triggerCharacters = ".";
@@ -128,7 +130,23 @@ void ScriptPanel::ReparseModel()
       (s.kind == SymbolKind::Class ? mutableLang->declarations : mutableLang->identifiers).insert(s.lowerName);
    for (const Symbol &s : m_api.Globals())
       mutableLang->identifiers.insert(s.lowerName);
-   m_te.SetLanguage(lang); // re-colorize with the updated sets
+   m_te.SetLanguage(lang);
+   m_te.RecolorizeAll(); // the language is unchanged, only its word sets: lines using a new or removed symbol need new colors
+
+   // Unbalanced block structure (the Win32 code view's "Construct not closed/opened"), as warning underlines with the reason as tooltip
+   m_te.ClearSquiggles(s_blockSquiggle);
+   const ImU32 warning = EditorTheme::Rgb(230, 170, 60);
+   for (const ScriptDiagnostic &d : m_model.Diagnostics())
+   {
+      // Byte column to glyph index (UTF-8 continuation bytes are not glyphs)
+      const std::string line = m_te.GetLineText(static_cast<size_t>(d.line));
+      size_t glyph = 0;
+      for (size_t p = 0; p < static_cast<size_t>(d.column) && p < line.size(); ++p)
+         if ((static_cast<unsigned char>(line[p]) & 0xC0) != 0x80)
+            ++glyph;
+      m_te.AddSquiggle(TextEditor::DocPos(static_cast<size_t>(d.line), glyph), TextEditor::DocPos(static_cast<size_t>(d.line), glyph + static_cast<size_t>(d.length)), s_blockSquiggle,
+         warning, d.message);
+   }
 }
 
 // Fills the widget's suggestion list: "x." before the cursor completes x's members
@@ -317,11 +335,14 @@ void ScriptPanel::OnTextHover(TextEditor::PopupData &data)
    ImGui::CloseCurrentPopup(); // no info for this word: don't flash an empty popup
 }
 
-// Gutter marker + squiggly underline for one script engine diagnostic (1-based line)
+// Gutter marker + squiggly underline for one script engine diagnostic (1-based line), the first one of each line only
+// (the widget never drops markers by itself: an error raised again and again, e.g. in a timer, would pile them up)
 void ScriptPanel::ReportError(const int line, const int column, const std::string &description)
 {
    const size_t l = static_cast<size_t>(line > 0 ? line - 1 : 0);
    const size_t c = static_cast<size_t>(column > 0 ? column : 0);
+   if (!m_errorLines.insert(l).second)
+      return;
    const ImU32 red = EditorTheme::Rgb(240, 80, 80);
    m_te.AddMarker(l, red, red, description, description);
    m_te.AddSquiggle(TextEditor::DocPos(l, c), TextEditor::DocPos(l, c + 8), s_errorSquiggle, red, description);
@@ -331,16 +352,194 @@ void ScriptPanel::ClearErrors()
 {
    m_te.ClearMarkers();
    m_te.ClearSquiggles(s_errorSquiggle);
+   m_errorLines.clear();
 }
 
-// Runtime error during a play test (or a compile check): mark it in the editor
-void ScriptPanel::OnScriptError(const int line, const int column, const string &description) { ReportError(line, column, description); }
+bool ScriptPanel::HasKeyboardFocus() const { return m_teFocusFrame == ImGui::GetFrameCount(); }
 
-// Full compile pass through the script engine (same mechanism as the Win32
-// editor's CheckSyntax): parse errors land in ReportError via the error handler
+// Loads the table script into the widget, which keeps line feeds only: CR LF and lone CR line ends are loaded as line feeds,
+// and written back as CR LF if the script had any CR. Any other difference between the script and what the widget holds
+// (text that is not valid UTF-8) makes the widget read-only, so that an edit can not silently rewrite the whole script.
+void ScriptPanel::LoadScript(const string &script, const bool keepUndo)
+{
+   m_teSyncedScript = script;
+   m_teCrlf = script.find('\r') != string::npos;
+   string text;
+   text.reserve(script.size());
+   for (size_t i = 0; i < script.size(); ++i)
+   {
+      if (script[i] != '\r')
+         text += script[i];
+      else
+      {
+         text += '\n';
+         if (i + 1 < script.size() && script[i + 1] == '\n')
+            ++i;
+      }
+   }
+   if (keepUndo)
+   {
+      // Undoable, keeps the edit history; the cursor stays where it was (SetCursor clamps it to the new text)
+      const TextEditor::DocPos cursor = m_te.GetMainCursorPosition();
+      m_te.ReplaceAllText(text);
+      m_te.SetCursor(cursor);
+   }
+   else
+      m_te.SetText(text);
+   m_teSynced = m_te.GetText();
+   m_teLossy = m_teSynced != text;
+   m_teEdited = false;
+}
+
+// Writes the widget text back to the table script after any change of the widget's document (typing, autocomplete,
+// find/replace, menu actions, undo/redo); reloads (LoadScript) are already in sync
+void ScriptPanel::SyncScript(PinTable *const table)
+{
+   if (!m_teEdited)
+      return;
+   m_teEdited = false;
+   if (m_teLossy) // Read-only, but some widget API edits do not check it
+      return;
+   string text = m_te.GetText();
+   if (text == m_teSynced)
+      return;
+   m_teSynced = text;
+   if (m_teCrlf)
+   {
+      string crlf;
+      crlf.reserve(text.size() + text.size() / 16);
+      for (const char c : text)
+      {
+         if (c == '\n')
+            crlf += '\r';
+         crlf += c;
+      }
+      text = std::move(crlf);
+   }
+   table->m_script_text = std::move(text);
+   m_teSyncedScript = table->m_script_text;
+   m_notifyTableEditorAt = ImGui::GetTime();
+   table->SetDirtyScript(SaveDirtyState::Dirty);
+   m_modelDirty = true;
+   m_modelDirtyAt = ImGui::GetTime();
+   m_status.clear();
+   ClearErrors(); // diagnostics point at stale positions after an edit
+}
+
+// Runtime error during a play test: mark it in the editor and log it
+void ScriptPanel::OnScriptError(const ScriptInterpreter::ErrorType type, const int line, const int column, const string &description, const vector<string> &stackDump)
+{
+   ReportError(line, column, description);
+   AddErrorLog(type, line, column, description, stackDump);
+}
+
+void ScriptPanel::AddErrorLog(const ScriptInterpreter::ErrorType type, const int line, const int column, const string &description, const vector<string> &stackDump)
+{
+   for (ErrorLogEntry &entry : m_errorLog)
+      if (entry.type == type && entry.line == line && entry.column == column && entry.description == description)
+      {
+         entry.count++;
+         entry.stackDump = stackDump; // The latest call site (arguments may differ)
+         return;
+      }
+   constexpr size_t maxEntries = 100;
+   if (m_errorLog.size() >= maxEntries)
+      m_errorLog.erase(m_errorLog.begin());
+   m_errorLog.push_back({ type, line, column, description, stackDump });
+   m_errorLogOpen = true;
+}
+
+// Error log list above the code: newest first, a click jumps to the line, the stack trace of an entry unfolds under it
+void ScriptPanel::RenderErrorLog()
+{
+   if (m_errorLog.empty())
+      return;
+   char header[48];
+   snprintf(header, sizeof(header), "Script errors (%d)###ScriptErrorLog", static_cast<int>(m_errorLog.size()));
+   ImGui::SetNextItemOpen(m_errorLogOpen);
+   m_errorLogOpen = ImGui::TreeNodeEx(header, ImGuiTreeNodeFlags_NoTreePushOnOpen); // Not spanning the width: the Clear button follows it
+   ImGui::SameLine();
+   const bool clear = ImGui::SmallButton("Clear##ScriptErrorLog");
+   if (m_errorLogOpen)
+   {
+      const float rows = static_cast<float>(std::min<size_t>(m_errorLog.size(), 5));
+      if (ImGui::BeginChild("##ScriptErrorLogList", ImVec2(-FLT_MIN, rows * ImGui::GetTextLineHeightWithSpacing() + 2.f * ImGui::GetStyle().WindowPadding.y),
+             ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeY))
+      {
+         for (size_t i = m_errorLog.size(); i-- > 0;)
+         {
+            const ErrorLogEntry &entry = m_errorLog[i];
+            ImGui::PushID(static_cast<int>(i));
+            const char *const kind = entry.type == ScriptInterpreter::ErrorType::Compile ? "Compile" : "Runtime";
+            string label = string(kind) + " error, line " + std::to_string(entry.line) + ", col " + std::to_string(entry.column) + ": " + entry.description;
+            if (entry.count > 1)
+               label += " (x" + std::to_string(entry.count) + ')';
+            ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::Rgb(240, 120, 120));
+            const bool open = ImGui::TreeNodeEx("##entry", ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow | (entry.stackDump.empty() ? ImGuiTreeNodeFlags_Leaf : 0), "%s", label.c_str());
+            ImGui::PopStyleColor();
+            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+               JumpToLine(static_cast<size_t>(entry.line > 0 ? entry.line - 1 : 0));
+            if (open)
+            {
+               // The call stack, most recent call first, each with its arguments and local variables
+               for (const string &callSite : entry.stackDump)
+                  ImGui::BulletText("%s", callSite.c_str());
+               ImGui::TreePop();
+            }
+            ImGui::PopID();
+         }
+      }
+      ImGui::EndChild();
+   }
+   if (clear)
+      m_errorLog.clear();
+}
+
+// Win32 code view's double click highlight: a background behind every occurrence of the word (whole word, case insensitive as
+// VBScript), until the next double click (squiggles stay on their glyphs through edits)
+void ScriptPanel::HighlightOccurrences(const std::string &word)
+{
+   m_te.ClearSquiggles(s_occurrenceSquiggle);
+   if (word.empty() || !VbsLex::IsIdentStart(word[0]))
+      return;
+   const std::string lowerWord = LowerWord(word);
+   const ImU32 color = EditorTheme::Rgb(255, 255, 255, 40);
+   constexpr int maxOccurrences = 5000;
+   int count = 0;
+   for (size_t l = 0; l < m_te.GetLineCount() && count < maxOccurrences; ++l)
+   {
+      const std::string line = m_te.GetLineText(l);
+      size_t glyph = 0; // Glyph index of byte p (UTF-8 continuation bytes are not glyphs)
+      for (size_t p = 0; p < line.size();)
+      {
+         if (VbsLex::IsIdentStart(line[p]) && (p == 0 || !VbsLex::IsIdentChar(line[p - 1])))
+         {
+            size_t e = p + 1;
+            while (e < line.size() && VbsLex::IsIdentChar(line[e]))
+               ++e;
+            if (e - p == lowerWord.size() && LowerWord(std::string_view(line).substr(p, e - p)) == lowerWord)
+            {
+               m_te.AddSquiggle(TextEditor::DocPos(l, glyph), TextEditor::DocPos(l, glyph + (e - p)), s_occurrenceSquiggle, color, {}, TextEditor::SquiggleStyle::background);
+               count++;
+            }
+            glyph += e - p; // ASCII identifier: one glyph per byte
+            p = e;
+            continue;
+         }
+         if ((static_cast<unsigned char>(line[p]) & 0xC0) != 0x80)
+            ++glyph;
+         ++p;
+      }
+   }
+}
+
+// Compile pass through the script engine: parse errors land in ReportError via the error handler. The script is only
+// parsed, not run: its top-level code would otherwise run against the edited table while the editor's player is live
+// (part property writes saved with the table, sounds, renderer settings, an endless loop freezing the editor)
 void ScriptPanel::CheckSyntax()
 {
    ClearErrors();
+   std::erase_if(m_errorLog, [](const ErrorLogEntry &entry) { return entry.type == ScriptInterpreter::ErrorType::Compile; }); // Replaced by this check's
    int errorCount = 0;
    std::string firstError;
    CComObject<ScriptInterpreter> *interpreter;
@@ -348,7 +547,7 @@ void ScriptPanel::CheckSyntax()
    interpreter->AddRef();
    interpreter->Start(m_editor.m_table);
    interpreter->SetScriptErrorHandler(
-      [this, &errorCount, &firstError](ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &)
+      [this, &errorCount, &firstError](ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump)
       {
          if (type != ScriptInterpreter::ErrorType::DebugConsole)
          {
@@ -356,9 +555,10 @@ void ScriptPanel::CheckSyntax()
             if (firstError.empty())
                firstError = description;
             ReportError(line, column, description);
+            AddErrorLog(type, line, column, description, stackDump);
          }
       });
-   interpreter->Evaluate(m_editor.m_table->m_script_text, false);
+   interpreter->Parse(m_editor.m_table->m_script_text);
    const bool hasError = interpreter->HasError();
    interpreter->Stop(m_editor.m_table);
    interpreter->Release();
@@ -420,7 +620,7 @@ void ScriptPanel::RenderEditMenu()
    MenuHeader("Edit", "ScriptEditMenu");
    if (const MenuPopupPadding menuPad; ImGui::BeginPopup("ScriptEditMenu"))
    {
-      const bool canEdit = !m_editor.IsInspectMode() && !m_editor.m_table->IsLocked() && m_extTable == nullptr;
+      const bool canEdit = !m_editor.IsInspectMode() && !m_editor.m_table->IsLocked() && m_extTable == nullptr && !m_teLossy;
       const bool hasSelection = m_te.MainCursorHasSelection();
       if (ImGui::MenuItem("Cut", "Ctrl+X", false, canEdit && hasSelection))
       {
@@ -452,16 +652,15 @@ void ScriptPanel::RenderEditMenu()
          ImGui::EndMenu();
       }
       ImGui::Separator();
-      // the check runs the script's top-level code, so it's not offered while
-      // inspecting a live play-test copy
+      // Not offered while inspecting a play test session: the check binds the parts of the inspected live table to its own
+      // script engine, and unbinds them when done (VPX_MANUAL_SCRIPT_DISPATCH), under the running session's engine
       if (ImGui::MenuItem("Check syntax", "F7", false, !m_editor.IsInspectMode()))
          CheckSyntax();
       ImGui::Separator();
 
       // Event handler stub insertion: one submenu per script-visible object that has
-      // events (the table's own script name, parts, collections); already implemented
-      // handlers are listed disabled
-      ImGui::BeginDisabled(!canEdit);
+      // events (the table's own script name, parts, collections); picking an already
+      // implemented handler jumps to it (the Win32 code view's item/event lists)
       if (ImGui::BeginMenu("Insert event handler"))
       {
          for (const Symbol &global : m_api.Globals())
@@ -477,13 +676,18 @@ void ScriptPanel::RenderEditMenu()
                {
                   const ScriptApiEntry &event = iface->events[e];
                   const std::string handlerName = global.name + "_" + event.name;
-                  const bool exists = m_model.Find(handlerName) != nullptr;
-                  const std::string label = handlerName + "(" + event.signature + ")" + (exists ? " (defined)" : "");
-                  if (ImGui::MenuItem(label.c_str(), nullptr, false, !exists))
+                  const Symbol *const handler = m_model.Find(handlerName);
+                  const std::string label = handlerName + "(" + event.signature + ")" + (handler != nullptr ? "  \xe2\x80\x94 go to" : "");
+                  if (ImGui::MenuItem(label.c_str(), nullptr, false, handler != nullptr || canEdit))
                   {
-                     const TextEditor::DocPos pos = m_te.GetMainCursorPosition();
-                     m_te.ReplaceTextInCurrentCursor("Sub " + handlerName + "(" + event.signature + ")\n\t\nEnd Sub\n");
-                     m_te.SetCursor(TextEditor::DocPos(pos.line + 1, 1));
+                     if (handler != nullptr)
+                        JumpToLine(static_cast<size_t>(handler->line));
+                     else
+                     {
+                        const TextEditor::DocPos pos = m_te.GetMainCursorPosition();
+                        m_te.ReplaceTextInCurrentCursor("Sub " + handlerName + "(" + event.signature + ")\n\t\nEnd Sub\n");
+                        m_te.SetCursor(TextEditor::DocPos(pos.line + 1, 1));
+                     }
                   }
                }
                ImGui::EndMenu();
@@ -491,7 +695,6 @@ void ScriptPanel::RenderEditMenu()
          }
          ImGui::EndMenu();
       }
-      ImGui::EndDisabled();
       ImGui::EndPopup();
    }
 }
@@ -502,7 +705,7 @@ void ScriptPanel::RenderFormatMenu()
    MenuHeader("Format", "ScriptFormatMenu");
    if (const MenuPopupPadding menuPad; ImGui::BeginPopup("ScriptFormatMenu"))
    {
-      const bool canEdit = !m_editor.IsInspectMode() && !m_editor.m_table->IsLocked() && m_extTable == nullptr;
+      const bool canEdit = !m_editor.IsInspectMode() && !m_editor.m_table->IsLocked() && m_extTable == nullptr && !m_teLossy;
       if (ImGui::MenuItem("Indent", "Tab", false, canEdit))
       {
          m_te.IndentLines();
@@ -596,8 +799,7 @@ void ScriptPanel::AutoIndent(const size_t first, const size_t last)
    for (size_t i = 0; i < first && i < lineCount; ++i)
    {
       const std::string line = m_te.GetLineText(i);
-      level += VbsLex::SmartIndentSelfDelta(line) + VbsLex::SmartIndentDelta(line);
-      level = std::max(level, 0);
+      level = VbsLex::SmartIndentNextLevel(level, line);
    }
    const size_t tabSize = std::max<size_t>(m_te.GetTabSize(), 1);
    const std::string unit = m_te.IsInsertSpacesOnTabs() ? std::string(tabSize, ' ') : "\t";
@@ -615,15 +817,12 @@ void ScriptPanel::AutoIndent(const size_t first, const size_t last)
             out += '\n';
          continue;
       }
-      const int self = VbsLex::SmartIndentSelfDelta(line);
-      const int next = VbsLex::SmartIndentDelta(line);
-      for (int k = std::max(level + self, 0); k > 0; --k)
+      for (int k = std::max(level + VbsLex::SmartIndentSelfDelta(line), 0); k > 0; --k)
          out += unit;
       out.append(line, ws, std::string::npos);
       if (i < lineCount - 1)
          out += '\n';
-      level += self + next;
-      level = std::max(level, 0);
+      level = VbsLex::SmartIndentNextLevel(level, line);
    }
    const TextEditor::DocPos endPos = last + 1 < lineCount ? TextEditor::DocPos(last + 1, 0) : TextEditor::DocPos(lineCount, 0);
    m_te.ReplaceSectionText(TextEditor::DocPos(first, 0), endPos, out);
@@ -789,8 +988,7 @@ void ScriptPanel::SyncExternalScript()
    {
       m_extTable->m_script_text = script;
       m_extTable->SetDirtyScript(SaveDirtyState::Dirty);
-      if (m_teTable == m_extTable)
-         m_teReload = true; // push the new text into the embedded editor (ReplaceAllText keeps the undo history)
+      m_notifyTableEditorAt = ImGui::GetTime(); // The embedded editor picks the new text up by itself (see RenderPane), the Win32 code view is told
    }
 }
 
@@ -812,6 +1010,15 @@ void ScriptPanel::Update()
    PinTable *const baseTable = m_editor.m_table->m_liveBaseTable ? m_editor.m_table->m_liveBaseTable : m_editor.m_table;
    if (m_extTable != nullptr && m_extTable != baseTable)
       StopExternalSession();
+
+   // The Win32 code view of the same table keeps its own copy of the script: tell it once the edits here pause (it replaces its
+   // whole text, too slow for every keystroke on a large script). It also checks when it gets the focus, before any edit there
+   if (m_notifyTableEditorAt >= 0.0 && ImGui::GetTime() - m_notifyTableEditorAt > 0.25)
+   {
+      m_notifyTableEditorAt = -1.0;
+      if (baseTable->m_tableEditor)
+         baseTable->m_tableEditor->OnScriptChanged();
+   }
    if (m_extProcess != nullptr)
    {
       int exitCode = 0;
@@ -904,21 +1111,27 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       if (!m_status.empty())
          ImGui::TextDisabled("%s", m_status.c_str());
 
-      // (Re)load the editor content when the edited table changes or when the script text
-      // was modified outside the widget (external editor file sync)
+      // (Re)load the editor content when the edited table changes, or when another editor changed the table script: the Win32
+      // code view of the same table (it writes it on each edit), the external editor file sync, or a script file override.
+      // Without this, the next edit here would overwrite the other editor's changes with the stale text
       PinTable *const table = m_editor.m_table;
       if (m_teTable != table)
       {
          m_teTable = table;
-         m_te.SetText(table->m_script_text);
+         LoadScript(table->m_script_text, false);
          m_modelDirty = true;
          m_modelDirtyAt = 0.0;
       }
-      else if (m_teReload)
+      else if (table->m_script_text != m_teSyncedScript)
       {
-         m_teReload = false;
-         m_te.ReplaceAllText(table->m_script_text);
+         LoadScript(table->m_script_text, true);
+         ClearErrors(); // diagnostics point at stale positions
+         m_modelDirty = true;
+         m_modelDirtyAt = ImGui::GetTime();
       }
+      if (m_teLossy)
+         ImGui::TextDisabled("The script has text the code editor can not keep unchanged: it is read-only here");
+      RenderErrorLog();
 
       const Settings &settings = g_settingsService.GetAppSettings();
       m_te.SetTabSize(static_cast<size_t>(settings.GetEditor_ScriptEditorTabSize()));
@@ -927,7 +1140,7 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       m_te.SetWordWrapEnabled(wordWrap);
       m_te.SetShowMiniMapEnabled(settings.GetEditor_ScriptEditorShowMinimap());
       m_te.SetShowWhitespacesEnabled(settings.GetEditor_ScriptEditorShowWhitespace());
-      m_te.SetReadOnlyEnabled(readOnly);
+      m_te.SetReadOnlyEnabled(readOnly || m_teLossy);
 
       // Rebuild the script model shortly after the last edit (drives dynamic coloring
       // and autocomplete) — cheap enough to keep simple, debounced per keystroke burst
@@ -952,7 +1165,7 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
 
       // Ctrl+D duplicates the cursor line (Scintilla style); the widget binds Ctrl+D to
       // "add next occurrence", so claim the chord before the widget sees it
-      if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows) && !readOnly)
+      if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows) && !readOnly && !m_teLossy)
       {
          if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_D))
             DuplicateLine();
@@ -964,23 +1177,15 @@ void ScriptPanel::RenderPane(const AreaRect &rect, const int leafId)
       }
       ImGui::PushFont(m_editor.m_liveUI.GetMonoFont(), m_editor.m_liveUI.GetMonoFont()->LegacySize * m_fontZoom);
       const ImGuiWindowFlags teFlags = wordWrap ? ImGuiWindowFlags_NoMove : (ImGuiWindowFlags_NoMove | ImGuiWindowFlags_HorizontalScrollbar);
-      const bool changed = m_te.Render("##script", ImVec2(-FLT_MIN, -FLT_MIN), ImGuiChildFlags_None, teFlags);
+      if (m_te.Render("##script", ImVec2(-FLT_MIN, -FLT_MIN), ImGuiChildFlags_None, teFlags))
+         m_teEdited = true; // Keyboard edits are reported right away, the change callback catches up with the others
+      if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+         HighlightOccurrences(m_te.GetWordAtMousePos(ImGui::GetMousePos())); // Under the editor font, as the widget measured it
       ImGui::PopFont();
-      if (changed)
-      {
-         const string text = m_te.GetText();
-         if (text != table->m_script_text)
-         {
-            table->m_script_text = text;
-            table->SetDirtyScript(SaveDirtyState::Dirty);
-            m_modelDirty = true;
-            m_modelDirtyAt = ImGui::GetTime();
-            m_status.clear();
-            ClearErrors(); // diagnostics point at stale positions after an edit
-         }
-      }
+      SyncScript(table);
       if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
       {
+         m_teFocusFrame = ImGui::GetFrameCount();
          if (ImGui::IsKeyPressed(ImGuiKey_F12, false))
             GoToDefinition(m_te.GetMainCursorPosition());
          else if (ImGui::IsKeyPressed(ImGuiKey_F7, false) && !m_editor.IsInspectMode())

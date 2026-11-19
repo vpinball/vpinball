@@ -233,7 +233,10 @@ void EditorUI::SetTable(PinTable *const table)
    m_partLibrary.CancelPlacement();
 }
 
-void EditorUI::OnScriptError(const int line, const int column, const string &description) { m_scriptPanel.OnScriptError(line, column, description); }
+void EditorUI::OnScriptError(const ScriptInterpreter::ErrorType type, const int line, const int column, const string &description, const vector<string> &stackDump)
+{
+   m_scriptPanel.OnScriptError(type, line, column, description, stackDump);
+}
 
 void EditorUI::PlayTest()
 {
@@ -951,11 +954,13 @@ void EditorUI::RenderUI()
    // Ctrl+S must work while a widget (e.g. a slider) has keyboard focus; only a text input being edited takes precedence
    if (m_fileOp == nullptr && !transformModal && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_S, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
       SaveTable();
-   // Ctrl+Space maximizes / restores the area under the mouse (Blender)
-   if (m_fileOp == nullptr && !transformModal && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_Space, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+   // Ctrl+Space maximizes / restores the area under the mouse (Blender). Neither this nor Ctrl+F apply while the script code
+   // editor has the focus (it does not raise WantTextInput): there, they open autocomplete and find/replace
+   const bool scriptEditing = m_scriptPanel.HasKeyboardFocus();
+   if (m_fileOp == nullptr && !transformModal && !io.WantTextInput && !scriptEditing && ImGui::IsKeyPressed(ImGuiKey_Space, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
       ToggleMaximizeArea();
    // Ctrl+F focuses the search field of the outliner under the mouse (or the first hosted one)
-   if (m_fileOp == nullptr && !transformModal && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_F, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
+   if (m_fileOp == nullptr && !transformModal && !io.WantTextInput && !scriptEditing && ImGui::IsKeyPressed(ImGuiKey_F, false) && io.KeyCtrl && !io.KeyAlt && !io.KeyShift)
    {
       OutlinerPanel *outliner = nullptr;
       if (const int leaf = AreaLayout::LeafAt(m_leafRects, io.MousePos.x, io.MousePos.y); leaf >= 0)
@@ -2660,6 +2665,12 @@ void EditorUI::DeleteParts(const vector<IEditable *> &parts)
          partsToDelete.push_back(edit);
    }
    NotifyLockedParts(locked);
+   // TODO Group deletion breaks invariants:
+   // - without any root group left, new/pasted parts are added group-less: UpdateEditableList drops them as live objects, so
+   //   they can no longer be listed, selected nor deleted (keep at least one root group?)
+   // - the group content expansion below ignores the UI lock: the locked parts of an unlocked group are deleted silently
+   //   (refuse a group with a locked descendant?)
+   // - balls are skipped by the expansion and keep pointing to the deleted group, only kept alive by the undo record
    // Delete group content, nested groups included (partsToDelete grows while iterating)
    for (size_t i = 0; i < partsToDelete.size(); i++)
       if (partsToDelete[i]->GetItemType() == eItemPartGroup)

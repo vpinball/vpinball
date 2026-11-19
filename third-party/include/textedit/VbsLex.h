@@ -195,7 +195,7 @@ inline int SmartIndentDelta(const std::string_view code)
 // statement backs one level out of the block (hard closers `End X`, `Next`,
 // `Loop`, `Wend`, and mid-block statements `Else`, `ElseIf`, `Case`), 0
 // otherwise. Combined with SmartIndentDelta as:
-//   lineIndent = level + SelfDelta;  level += SelfDelta + Delta
+//   lineIndent = level + SelfDelta;  level = SmartIndentNextLevel(level, line)
 inline int SmartIndentSelfDelta(const std::string_view code)
 {
    std::string stripped(code.size(), ' ');
@@ -216,6 +216,17 @@ inline int SmartIndentSelfDelta(const std::string_view code)
          return -1;
    }
    return 0;
+}
+
+// Block level after the statement line `code`, from the block level before it. A hard closer (`End X`, `Next`, `Loop`,
+// `Wend`) has both deltas at -1 for the one level it leaves, a mid-block statement (`Else`, `Case`) backs out then
+// reopens, an opener opens
+inline int SmartIndentNextLevel(const int level, const std::string_view code)
+{
+   const int self = SmartIndentSelfDelta(code);
+   const int delta = SmartIndentDelta(code);
+   const int next = level + ((self < 0 && delta < 0) ? -1 : self + delta);
+   return next > 0 ? next : 0;
 }
 
 // The statement text of a physical line with comments (' and rem) and string

@@ -384,6 +384,10 @@ public:
 	// secondary cursors are active - callers use this to give Esc to the widget first
 	inline bool HasActiveTransient() const { return autocomplete.isActive() || findReplaceVisible || cursors.hasMultiple(); }
 
+	// VPX: recolorize every line on the next render, e.g. after the word sets of the current language changed
+	// (SetLanguage with the same language does not recolorize)
+	inline void RecolorizeAll() { colorizer.invalidate(); }
+
 	// specify a change callback (called when changes are made (including undo/redo))
 	// the delay parameter specifies a time in miliseconds that the editor will wait for before calling
 	// which helps in case you don't need to track every keystroke
@@ -1651,6 +1655,9 @@ protected:
 	public:
 		// update state (if required)
 		bool update(const Config& config, Document& document);
+
+		// VPX: forget the colorized language, so the next update recolorizes every line
+		inline void invalidate() { language = nullptr; }
 
 	private:
 		// update color in a single line

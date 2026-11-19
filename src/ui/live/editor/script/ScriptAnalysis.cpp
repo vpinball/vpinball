@@ -5,6 +5,8 @@
 
 #include "textedit/VbsLex.h"
 
+#include <optional>
+
 namespace VPX::EditorUI
 {
 
@@ -218,6 +220,29 @@ void ScriptModel::Parse(const std::string_view script)
 
    std::vector<int> stack; // indices of open Sub/Function/Class/Property symbols
 
+   // Block structure check: the open blocks of any kind (keyword: sub, if, for, select,...), innermost last
+   m_diagnostics.clear();
+   struct OpenBlock
+   {
+      std::string kw;
+      ScriptDiagnostic at; // The opening statement
+   };
+   std::vector<OpenBlock> blocks;
+   const auto blockName = [](const std::string &kw) -> std::string
+   {
+      if (kw == "select")
+         return "Select Case";
+      std::string name = kw;
+      name[0] = static_cast<char>(toupper(static_cast<unsigned char>(name[0])));
+      return name;
+   };
+   const auto reportUnclosed = [&](const OpenBlock &block)
+   {
+      ScriptDiagnostic d = block.at;
+      d.message = '\'' + blockName(block.kw) + "' is not closed";
+      m_diagnostics.push_back(std::move(d));
+   };
+
    const auto addSymbol = [&](const SymbolKind kind, const std::string_view name, const std::string_view signature, const int line, const std::string_view ownComment)
    {
       Symbol sym;
@@ -260,23 +285,30 @@ void ScriptModel::Parse(const std::string_view script)
       }
       const size_t segEnd = segN < lines.size() ? segN : lines.size() - 1;
 
-      // Comment text of a statement is the comment of its starting segment plus
-      // the comment-only lines directly above it
+      // Comment text of a statement is the comment of its starting segment plus the comment-only lines directly above
+      // it, at most the last few of them (a large commented out block above a declaration is not its documentation)
       const auto commentFor = [&](const size_t stmtOff)
       {
          size_t seg = 0;
          for (size_t i = 0; i < segOff.size(); ++i)
             if (segOff[i] <= stmtOff)
                seg = i;
-         std::string c = lines[seg0 + seg].comment;
+         constexpr size_t maxDocLines = 16;
+         size_t first = seg0 + seg;
+         while (first > 0 && seg0 + seg - first < maxDocLines && lines[first - 1].commentOnly)
+            --first;
          std::string docs;
-         for (int l = static_cast<int>(seg0 + seg) - 1; l >= 0 && lines[static_cast<size_t>(l)].commentOnly; --l)
-            docs.insert(0, lines[static_cast<size_t>(l)].comment + '\n');
-         return docs + c;
+         for (size_t l = first; l < seg0 + seg; ++l)
+         {
+            docs += lines[l].comment;
+            docs += '\n';
+         }
+         return docs + lines[seg0 + seg].comment;
       };
 
       // Split the joined code into statements on ':' (strings are already blanked)
       size_t stmtStart = 0;
+      bool singleLineIf = false; // The rest of the logical line is the body of a single line If: not checked
       const auto runStatement = [&](const size_t a, const size_t b)
       {
          const std::string_view stmtCode = Trim(std::string_view(code).substr(a, b - a));
@@ -296,7 +328,9 @@ void ScriptModel::Parse(const std::string_view script)
                return seg;
             }());
          const std::string signature = JoinSignature(std::string_view(clean).substr(off, stmtCode.size()));
-         const std::string comment = commentFor(off);
+         // Only declarations keep a comment: computed on their first use, not for every statement
+         std::optional<std::string> commentCache;
+         const auto comment = [&]() -> const std::string & { return commentCache ? *commentCache : commentCache.emplace(commentFor(off)); };
 
          auto wordAt = [&](const size_t i) { return i < words.size() ? Lower(words[i].text) : std::string(); };
          size_t w = 0;
@@ -304,11 +338,92 @@ void ScriptModel::Parse(const std::string_view script)
             ++w; // declaration modifiers
 
          const std::string kw = wordAt(w);
+
+         // Block structure: openers push, closers pop their block, reporting the blocks left open in between
+         if (!singleLineIf)
+         {
+            // Position of the statement keyword(s) words[w..lastWord], on the physical line of the keyword
+            const auto at = [&](const size_t lastWord, std::string message)
+            {
+               const size_t kwOff = off + words[w].start;
+               size_t seg = 0;
+               for (size_t i = 0; i < segOff.size(); ++i)
+                  if (segOff[i] <= kwOff)
+                     seg = i;
+               ScriptDiagnostic d;
+               d.line = static_cast<int>(seg0 + seg);
+               d.column = static_cast<int>(kwOff - segOff[seg]);
+               d.length = static_cast<int>(words[lastWord].start + words[lastWord].text.size() - words[w].start);
+               d.message = std::move(message);
+               return d;
+            };
+            const std::string kw1 = wordAt(w + 1);
+            std::string opens, closes;
+            size_t lastWord = w;
+            if (kw == "sub" || kw == "function" || kw == "class" || kw == "for" || kw == "do" || kw == "while" || kw == "with")
+               opens = kw;
+            else if ((kw == "property" && (kw1 == "get" || kw1 == "let" || kw1 == "set")) || (kw == "select" && kw1 == "case"))
+            {
+               opens = kw;
+               lastWord = w + 1;
+            }
+            else if (kw == "if")
+            {
+               // Only `If x Then` ending its logical line opens a block. `If x Then y`, `If x Then : y` and even `If x Then :`
+               // are single line Ifs (VBScript rejects an `End If` on a later line, accepts one on the same line)
+               if (Lower(words.back().text) == "then" && b == code.size())
+                  opens = kw;
+               else
+                  singleLineIf = true;
+            }
+            else if (kw == "end" && (kw1 == "sub" || kw1 == "function" || kw1 == "class" || kw1 == "property" || kw1 == "if" || kw1 == "select" || kw1 == "with"))
+            {
+               closes = kw1;
+               lastWord = w + 1;
+            }
+            else if (kw == "next" || kw == "loop" || kw == "wend")
+               closes = kw == "next" ? "for" : kw == "loop" ? "do" : "while";
+            else if ((kw == "else" || kw == "elseif") && (blocks.empty() || blocks.back().kw != "if"))
+               m_diagnostics.push_back(at(w, std::string(kw == "else" ? "'Else'" : "'ElseIf'") + " outside of an 'If' block"));
+            else if (kw == "case" && (blocks.empty() || blocks.back().kw != "select"))
+               m_diagnostics.push_back(at(w, "'Case' outside of a 'Select Case' block"));
+
+            if (!opens.empty())
+            {
+               // A Sub/Function/Property can only be in a Class, and a Class at top level: the blocks still open were not closed
+               if (opens == "sub" || opens == "function" || opens == "property" || opens == "class")
+                  while (!blocks.empty() && (opens == "class" || blocks.back().kw != "class"))
+                  {
+                     reportUnclosed(blocks.back());
+                     blocks.pop_back();
+                  }
+               blocks.push_back({ opens, at(lastWord, {}) });
+            }
+            else if (!closes.empty())
+            {
+               if (std::ranges::none_of(blocks, [&closes](const OpenBlock &block) { return block.kw == closes; }))
+               {
+                  const std::string closer = kw == "end" ? "End " + blockName(closes) : blockName(kw);
+                  m_diagnostics.push_back(at(lastWord, '\'' + closer + "' without '" + blockName(closes) + '\''));
+               }
+               else
+               {
+                  // The blocks opened after the closed one were not closed
+                  while (blocks.back().kw != closes)
+                  {
+                     reportUnclosed(blocks.back());
+                     blocks.pop_back();
+                  }
+                  blocks.pop_back();
+               }
+            }
+         }
+
          const auto openBlock = [&](const SymbolKind kind, const size_t nameWord)
          {
             if (nameWord >= words.size())
                return;
-            const int index = addSymbol(kind, words[nameWord].text, signature, line0, comment);
+            const int index = addSymbol(kind, words[nameWord].text, signature, line0, comment());
             stack.push_back(index);
          };
 
@@ -334,7 +449,7 @@ void ScriptModel::Parse(const std::string_view script)
                      value = false;
                }
                if (!value)
-                  addSymbol(kind, ident.text, signature, line0, comment);
+                  addSymbol(kind, ident.text, signature, line0, comment());
             }
          };
 
@@ -395,6 +510,10 @@ void ScriptModel::Parse(const std::string_view script)
 
       seg0 = segN + 1;
    }
+
+   for (const OpenBlock &block : blocks)
+      reportUnclosed(block);
+   std::ranges::stable_sort(m_diagnostics, {}, [](const ScriptDiagnostic &d) { return d.line; });
 }
 
 std::vector<const Symbol *> ScriptModel::TopLevel() const

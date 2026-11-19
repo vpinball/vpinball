@@ -90,6 +90,7 @@ public:
    virtual void OnScriptableRemoved(IScriptable *scriptable) = 0;
    virtual void OnScriptableRenamed(IScriptable *scriptable, const string &newName) = 0; // Must be called before the rename, as the code view finds the item by its current name
    virtual void SetScript(const string &script) = 0;
+   virtual void OnScriptChanged() = 0; // m_script_text was changed by another editor (live editor script pane): the code view takes it, keeping its undo history
    virtual void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump) = 0;
 
    // The table was saved at the given level: records the undo clean point and updates the script save state

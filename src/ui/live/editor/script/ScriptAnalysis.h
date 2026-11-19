@@ -16,6 +16,8 @@
 // - ':' splits a logical line into statements
 // - Private/Public/Default declaration prefixes are skipped
 // - Class/Sub/Function/Property blocks are tracked on a stack, `End X` pops them
+// - all blocks (also If, For, Do, While, Select Case, With) are checked for balance: unclosed blocks, closers
+//   without their block, Else/Case outside of their block (see Diagnostics)
 
 #include <string>
 #include <string_view>
@@ -51,6 +53,15 @@ struct Symbol
    std::vector<int> children; // Indices of symbols declared inside this one
 };
 
+// A problem found by the parse (unbalanced block structure)
+struct ScriptDiagnostic
+{
+   int line = 0; // Zero-based line
+   int column = 0; // Zero-based byte offset in the line
+   int length = 0; // Bytes of the statement keyword(s) it is about
+   std::string message;
+};
+
 class ScriptModel
 {
 public:
@@ -59,9 +70,11 @@ public:
    {
       m_symbols.clear();
       m_varClass.clear();
+      m_diagnostics.clear();
    }
 
    const std::vector<Symbol> &Symbols() const { return m_symbols; }
+   const std::vector<ScriptDiagnostic> &Diagnostics() const { return m_diagnostics; }
    std::vector<const Symbol *> TopLevel() const;
 
    const Symbol *Find(std::string_view name) const; // Case insensitive, top-level symbols first
@@ -72,6 +85,7 @@ public:
 private:
    std::vector<Symbol> m_symbols;
    std::unordered_map<std::string, std::string> m_varClass; // variable lowerName -> bound name (`Set x = New C` / `Set x = obj`)
+   std::vector<ScriptDiagnostic> m_diagnostics;
 };
 
 }

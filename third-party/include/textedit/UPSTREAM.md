@@ -35,6 +35,10 @@ Upstream files deliberately not vendored: `TextDiff.*`, `dtl.h`, all other
 - `TextEditor::HasActiveTransient()` — exposes whether the autocomplete
   popup, find/replace window or secondary cursors are active, so the host
   pane can give Esc to the widget before defocusing it
+- `TextEditor::RecolorizeAll()` (and `Colorizer::invalidate()`) — recolorizes
+  every line on the next render: the script pane changes the word sets of the
+  VBScript language as script symbols come and go, which `SetLanguage` with the
+  same language does not pick up
 - `Language::autoIndentDelta` — optional language callback used by
   `autoIndentAllCursors` to adjust the copied indentation by a block-aware
   delta (-1/0/+1); `TextEditorVbs` fills it with `VbsLex::SmartIndentDelta`

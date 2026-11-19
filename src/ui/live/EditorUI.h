@@ -115,7 +115,7 @@ public:
 
    // Script engine error report during a play test: forwarded to the script pane
    // (1-based line/column as reported by the script engine)
-   void OnScriptError(int line, int column, const string &description);
+   void OnScriptError(ScriptInterpreter::ErrorType type, int line, int column, const string &description, const vector<string> &stackDump);
    bool IsFlyMode() const
    {
       const ViewportPane *const vp = GetTargetViewport();

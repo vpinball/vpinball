@@ -4,6 +4,7 @@
 
 #include "ui/live/editor/script/ScriptAnalysis.h"
 
+#include "textedit/TextEditor.h"
 #include "textedit/VbsLex.h"
 
 #include "doctest.h"
@@ -244,5 +245,51 @@ TEST_CASE("VbsLex: SmartIndentSelfDelta re-indentation")
    CHECK(SmartIndentSelfDelta("End") == 0); // bare End ends the script
    CHECK(SmartIndentSelfDelta("") == 0);
    CHECK(SmartIndentSelfDelta("' comment") == 0);
+}
+
+TEST_CASE("VbsLex: SmartIndentNextLevel nested blocks")
+{
+   // Re-indentation of nested blocks (Format > Auto Indent): each closer leaves exactly one level
+   const char *const lines[] = { "Sub Foo()", "If x Then", "y = 1", "Else", "y = 2", "End If", "Select Case a", "Case 1", "z = 1", "Case Else", "z = 2",
+      "End Select", "For i = 1 To 2", "Next", "w = 1", "End Sub", "v = 1" };
+   const int indents[] = { 0, 1, 2, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 0, 0 };
+   int level = 0;
+   for (size_t i = 0; i < std::size(lines); ++i)
+   {
+      CAPTURE(lines[i]);
+      CHECK(level + VbsLex::SmartIndentSelfDelta(lines[i]) == indents[i]);
+      level = VbsLex::SmartIndentNextLevel(level, lines[i]);
+   }
+   CHECK(level == 0);
+}
+
+TEST_CASE("TextEditor: a script with line feeds loads and reads back unchanged")
+{
+   // The script pane writes the widget text back to the table script: tabs, accents, characters beyond 0xFFFF (needs
+   // IMGUI_USE_WCHAR32), blank lines and the trailing line feed must survive (CR are handled by the pane, see LoadScript)
+   const std::string script = "' Caf\xc3\xa9 \xe2\x82\xac \xf0\x9f\x8e\xb1 \xf0\x9f\x98\x80\n"
+                              "Sub Foo()\n"
+                              "\tx = \"\xf0\x9f\x8e\xb1\"\n"
+                              "\n"
+                              "End Sub\n";
+   TextEditor te;
+   te.SetInsertSpacesOnTabs(false);
+   te.SetText(script);
+   CHECK(te.GetText() == script);
+}
+
+TEST_CASE("ScriptModel: doc comment of a declaration below a large commented out block")
+{
+   std::string script;
+   for (int i = 0; i < 1000; ++i)
+      script += "' old code " + std::to_string(i) + "\n";
+   script += "Sub Draw()\nEnd Sub\n";
+   ScriptModel m;
+   m.Parse(script);
+   const Symbol *draw = m.Find("draw");
+   REQUIRE(draw != nullptr);
+   // Only the last lines of the block are kept as its documentation
+   CHECK(draw->comment.starts_with("old code 984\n"));
+   CHECK(draw->comment.ends_with("old code 999"));
 }
 }
