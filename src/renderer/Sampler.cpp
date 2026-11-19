@@ -836,8 +836,20 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(std::shared_ptr<const BaseTextur
       ReportError("Fatal Error: unable to create texture!"s, hr, __FILE__, __LINE__);
    }
 
+   // 8 bit data is written as A8R8G8B8 (B, G, R, A bytes): directly into the texture, or for DXT5 into a staging buffer that D3DX
+   // compresses into it (a DXT5 texture can not be written texel per texel)
+   const bool isDXT5 = texformat == colorFormat::DXT5;
+   const bool is8bit = texformat == colorFormat::RGBA8 || isDXT5;
+   vector<uint32_t> staging;
    D3DLOCKED_RECT locked;
-   CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
+   if (isDXT5)
+   {
+      staging.resize((size_t)texwidth * texheight);
+      locked.pBits = staging.data();
+      locked.Pitch = (INT)(texwidth * sizeof(uint32_t));
+   }
+   else
+      CHECKD3D(sysTex->LockRect(0, &locked, nullptr, 0));
 
    // copy data into system memory texture
    if (basetexformat == BaseTexture::RGB_FP32 && texformat == colorFormat::RGBA32F)
@@ -871,7 +883,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(std::shared_ptr<const BaseTextur
       const uint16_t* const __restrict psrc = (const uint16_t*)(surf->datac());
       memcpy(pdest, psrc, (size_t)texwidth * texheight*4*sizeof(uint16_t));
    }
-   else if ((basetexformat == BaseTexture::BW) && texformat == colorFormat::RGBA8)
+   else if ((basetexformat == BaseTexture::BW) && is8bit)
    {
       uint8_t* const __restrict pdest = (uint8_t*)locked.pBits;
       const uint8_t* const __restrict psrc = (const uint8_t*)surf->datac();
@@ -883,23 +895,13 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(std::shared_ptr<const BaseTextur
          pdest[i * 4 + 3] = 255u;
       }
    }
-   else if ((basetexformat == BaseTexture::RGB || basetexformat == BaseTexture::SRGB) && texformat == colorFormat::RGBA8)
+   else if ((basetexformat == BaseTexture::RGB || basetexformat == BaseTexture::SRGB) && is8bit)
    {
       copy_rgb_rgba<true>((unsigned int*)locked.pBits, (const uint8_t*)surf->datac(), (size_t)texwidth * texheight);
    }
-   else if ((basetexformat == BaseTexture::RGBA || basetexformat == BaseTexture::SRGBA) && texformat == colorFormat::RGBA8)
+   else if ((basetexformat == BaseTexture::RGBA || basetexformat == BaseTexture::SRGBA) && is8bit)
    {
       copy_bgra_rgba<false>((unsigned int*)locked.pBits, (const unsigned int*)(surf->datac()), (size_t)texwidth * texheight);
-
-      /* IDirect3DSurface9* sysSurf;
-      CHECKD3D(sysTex->GetSurfaceLevel(0, &sysSurf));
-      RECT sysRect;
-      sysRect.top = 0;
-      sysRect.left = 0;
-      sysRect.right = texwidth;
-      sysRect.bottom = texheight;
-      CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, nullptr, nullptr, surf->datac(), (D3DFORMAT)colorFormat::RGBA8, surf->pitch(), nullptr, &sysRect, D3DX_FILTER_NONE, 0));
-      SAFE_RELEASE_NO_RCC(sysSurf);*/
    }
    else if (basetexformat == BaseTexture::SRGB565 && texformat == colorFormat::RGB5)
    {
@@ -916,7 +918,17 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(std::shared_ptr<const BaseTextur
    else
       assert(false); // Unsupported image format
 
-   CHECKD3D(sysTex->UnlockRect(0));
+   if (isDXT5)
+   {
+      // Compress the staging data into the top level (the lower ones are filtered from it below)
+      IDirect3DSurface9* sysSurf;
+      CHECKD3D(sysTex->GetSurfaceLevel(0, &sysSurf));
+      const RECT srcRect { 0, 0, (LONG)texwidth, (LONG)texheight };
+      CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, nullptr, nullptr, staging.data(), (D3DFORMAT)colorFormat::RGBA8, locked.Pitch, nullptr, &srcRect, D3DX_FILTER_NONE, 0));
+      SAFE_RELEASE_NO_RCC(sysSurf);
+   }
+   else
+      CHECKD3D(sysTex->UnlockRect(0));
 
    if (!(texformat != colorFormat::DXT5 && m_rd->m_autogen_mipmap))
       // normal maps or float textures are already in linear space!
