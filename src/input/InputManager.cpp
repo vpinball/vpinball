@@ -1016,7 +1016,7 @@ void InputManager::CreateInputActions()
             else
                SDL_ShowCursor();
          }
-         m_player->m_renderer->InitLayout();
+         m_player->m_renderer->InvalidateLayout();
          m_player->m_renderer->UpdateStereoShaderState();
          if (m_player->m_renderer->IsUsingStaticPrepass())
          {

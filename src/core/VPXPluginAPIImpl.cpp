@@ -114,7 +114,7 @@ void MSGPIAPI VPXPluginAPIImpl::SetActiveViewSetup(VPXViewSetupDef* view)
    viewSetup.mViewX = view->viewX;
    viewSetup.mViewY = view->viewY;
    viewSetup.mViewZ = view->viewZ;
-   g_pplayer->m_renderer->InitLayout();
+   g_pplayer->m_renderer->InvalidateLayout();
 }
 
 

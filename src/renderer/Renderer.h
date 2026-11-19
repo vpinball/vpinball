@@ -116,7 +116,11 @@ public:
    int GetDisplayWidth() const { return m_activeView->GetDisplayWidth(); } // Playfield display width, taking in consideration stretching applied by some stereo modes
    int GetDisplayHeight() const { return m_activeView->GetDisplayHeight(); } // Playfield display width, taking in consideration stretching applied by some stereo modes
    float GetDisplayAspectRatio() const { return m_activeView->GetDisplayAspectRatio(); }
-   void InitLayout() { m_activeView->InitLayout(); } // Reset both the base and the current MVP to the default view setup
+   void InvalidateLayout()
+   {
+      for (RenderView* view : m_renderViews)
+         view->InvalidateLayout();
+   } // Mark all views' camera layout as stale: recomputed lazily on next access or render
    // Flip the rendered image horizontally and/or vertically (e.g. for rear projection setups), applied to base MVP
    void SetFlip(ModelViewProj::FlipMode flipMode) { m_activeView->SetFlip(flipMode); }
    void SetViewProj(const Matrix3D& view, const Matrix3D& proj) { m_activeView->SetViewProj(view, proj); } // Override the MVP, applied to the base MVP
@@ -126,7 +130,7 @@ public:
    void SetClipPlane(const vec4* playfieldPlane) { m_activeView->SetClipPlane(playfieldPlane); }
    // Add a sub pixel offset to the projection, kept across space switches and reflections (undone by the opposite offset)
    void ApplyViewJitter(const float xpixoff, const float ypixoff) { m_activeView->ApplyViewJitter(xpixoff, ypixoff); }
-   const ModelViewProj& GetMVP() const { return m_activeView->m_mvp; }
+   const ModelViewProj& GetMVP() const { return m_activeView->GetMVP(); }
    Vertex3Ds Unproject(const int width, const int height, const Vertex3Ds& point) const { return m_activeView->Unproject(width, height, point); }
    Vertex3Ds Get3DPointFrom2D(const int width, const int height, const Vertex2D& p, float z) { return m_activeView->Get3DPointFrom2D(width, height, p, z); }
    // Maps a point in desktop backdrop coordinates (0..EDITOR_BG_WIDTH, 0..EDITOR_BG_HEIGHT) to clip space, going through the editor's orthographic camera when editing the backdrop in the live editor, or to the full render target otherwise

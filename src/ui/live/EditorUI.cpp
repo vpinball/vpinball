@@ -823,7 +823,7 @@ void EditorUI::RenderUI()
          m_renderer->GetPrimaryView()->SetViewProj(RH2LH * flyVp->m_camView * YAxis, YAxis * proj);
       }
       else if (!m_inspectionModal.IsVisible())
-         m_renderer->GetPrimaryView()->m_customViewProj = false; // Back to the table camera once the fly/inspection ends
+         m_renderer->GetPrimaryView()->ClearViewProj(); // Back to the table camera once the fly/inspection ends
    }
    UpdateAreaLayout(); // Area rects are computed before the chrome draws the status overlay into the viewport area
    m_chrome.Render(showFullUI);
