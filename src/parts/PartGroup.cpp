@@ -121,7 +121,19 @@ void PartGroup::Load(IObjectReader& reader)
          // get reported as unread/skipped.
          case FID(VMSK): reader.AsInt(); break;
          case FID(PMSK): m_d.m_playerModeVisibilityMask = reader.AsUInt(); break;
-         case FID(SPRF): m_d.m_spaceReference = static_cast<PartGroupData::SpaceReference>(reader.AsInt()); break;
+         case FID(SPRF):
+         {
+            m_d.m_spaceReference = static_cast<PartGroupData::SpaceReference>(reader.AsInt());
+            // The space references were renumbered during 10.8.1 development: tables saved by the
+            // intermediate builds may store out-of-range values, which are later used as indices into
+            // the per-space arrays. Reset them to inherit the parent's space instead of crashing.
+            if (m_d.m_spaceReference < PartGroupData::SpaceReference::Inherit || m_d.m_spaceReference > PartGroupData::SpaceReference::Room)
+            {
+               PLOGW << "Part group '" << m_name << "' has an out-of-range space reference (" << static_cast<int>(m_d.m_spaceReference) << "), it was reset to Inherit";
+               m_d.m_spaceReference = PartGroupData::SpaceReference::Inherit;
+            }
+            break;
+         }
          default: LoadSharedEditableField(tag, reader); break;
          }
          return true;

@@ -45,6 +45,25 @@ TEST_CASE("PartGroup part")
       copy->Release();
    }
 
+   SUBCASE("out-of-range serialized space reference is reset to Inherit")
+   {
+      // Tables saved before the space references were renumbered can store out-of-range values
+      PartGroup* const group = PartGroup::COMCreate();
+      group->Init(0.f, 0.f, false);
+      group->SetName("OldGroup");
+      table->AddPart(group);
+      group->Release();
+
+      PartGroup* const copy = PartGroup::COMCreate();
+      for (const int stored : { 3, 4, -1 })
+      {
+         group->m_d.m_spaceReference = static_cast<PartGroupData::SpaceReference>(stored);
+         LoadPartFromStream(copy, SavePartToStream(group));
+         CHECK(copy->m_d.m_spaceReference == PartGroupData::SpaceReference::Inherit);
+      }
+      copy->Release();
+   }
+
    SUBCASE("CopyForPlay preserves the serialized state")
    {
       PartGroup* const group = PartGroup::COMCreate();
