@@ -66,11 +66,36 @@ void AuditDialog::OnTableSwitch()
       RunAudit();
 }
 
+VPX::SoundSpec AuditDialog::GetSoundInformations(const VPX::Sound &sound)
+{
+   if (const auto it = m_soundSpecs.find(&sound); it != m_soundSpecs.end() && it->second.dataVersion == sound.GetDataVersion() && it->second.fileSize == sound.GetFileSize())
+      return it->second.specs;
+   const VPX::SoundSpec specs = m_editor.m_player->m_audioPlayer->GetSoundInformations(&sound);
+   m_soundSpecs[&sound] = { sound.GetDataVersion(), sound.GetFileSize(), specs };
+   return specs;
+}
+
+bool AuditDialog::IsAuditStale() const
+{
+   const PinTable &table = *m_editor.m_table;
+   return m_editor.m_undo.TopRecordId() != m_auditUndoId || table.m_vimage != m_auditImages || table.m_vsound != m_auditSounds || table.m_materials != m_auditMaterials;
+}
+
 void AuditDialog::RunAudit()
 {
    const int selection = m_selected;
-   m_audit = TableAudit::Run(*m_editor.m_table);
+   PinTable &table = *m_editor.m_table;
+   // Drop the specifications of deleted sounds (a new sound may get the same address)
+   std::erase_if(m_soundSpecs, [&table](const auto &entry) { return std::ranges::find(table.m_vsound, entry.first) == table.m_vsound.end(); });
+   // Use the running audio player, instead of opening the audio devices on each audit
+   if (m_editor.m_player->m_audioPlayer)
+      m_audit = TableAudit::Run(table, [this](const VPX::Sound &sound) { return GetSoundInformations(sound); });
+   else
+      m_audit = TableAudit::Run(table);
    m_auditUndoId = m_editor.m_undo.TopRecordId();
+   m_auditImages = table.m_vimage;
+   m_auditSounds = table.m_vsound;
+   m_auditMaterials = table.m_materials;
    // Keep the selection near its previous index (the list is only stable in content between refreshes)
    m_selected = m_audit.items.empty() ? -1 : clamp(selection, 0, static_cast<int>(m_audit.items.size()) - 1);
    m_scrollToSelected = true;
@@ -124,6 +149,12 @@ void AuditDialog::ApplyFix(TableAuditItem &item)
    IEditable *const created = item.fix(*editor.m_table, editor.m_undo);
    editor.m_undo.SetLabel("Audit: "s + fixLabel);
    editor.m_undo.EndUndo();
+   if (item.fixFailure && !item.fixFailure->empty())
+   {
+      editor.m_undo.Discard(); // Nothing was changed: no undo record, no dirty table
+      editor.Report(*item.fixFailure);
+      return;
+   }
    if (created != nullptr)
    {
       // Same player side setup as CreatePart (the fix only registers the part with the table)
@@ -150,9 +181,9 @@ void AuditDialog::Render()
    if (!m_visible)
       return;
 
-   // The items hold raw part/asset handles: re-audit when the table changed outside this dialog
-   // (undo/redo, edits, deletes) since the undo record id moves on every history change
-   if (m_editor.m_undo.TopRecordId() != m_auditUndoId)
+   // The items hold raw part/asset handles: re-audit when the table changed outside this dialog, through
+   // the undo history (edits, part deletes, undo/redo) or by an asset add/delete (not undoable)
+   if (IsAuditStale())
       RunAudit();
 
    const float dpi = m_editor.m_liveUI.GetDPI();

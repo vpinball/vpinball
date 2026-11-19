@@ -174,8 +174,8 @@ public:
    const std::filesystem::path& GetFilePath() const { return m_ppb->m_path; }
    bool SaveFile(const std::filesystem::path &filename) const { return m_ppb->WriteToFile(filename); }
 
-   // Replaces the stored file blob (e.g. after re-encoding to another format): the decoded image is
-   // unchanged so the cached bitmap stays valid, only the stored data and its path change
+   // Replaces the stored file blob (e.g. re-encoded to another format), keeping the cached bitmap: after a lossy re-encode, it
+   // shows the previous decode until the table is reloaded
    void SetFromFileData(const std::filesystem::path &filename, vector<uint8_t> filedata)
    {
       m_ppb->m_path = filename;

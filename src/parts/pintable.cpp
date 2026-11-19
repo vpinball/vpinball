@@ -4152,6 +4152,10 @@ void PinTable::RemoveSound(VPX::Sound *const pps)
 {
    RemoveFromVectorSingle(m_vsound, pps);
 
+   // A running player (live editor) may be playing the sound, decoding its data
+   if (g_pplayer && g_pplayer->m_audioPlayer)
+      g_pplayer->m_audioPlayer->ReleaseSound(pps);
+
    delete pps;
 }
 

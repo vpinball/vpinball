@@ -2,6 +2,8 @@
 
 #include "core/stdafx.h"
 #include "Sound.h"
+#include "audio/AudioPlayer.h"
+#include "core/player.h"
 
 #include <iomanip>
 
@@ -230,6 +232,9 @@ Sound* Sound::CreateFromStream(POLE::Stream& stream, const int LoadFileVersion)
 
 void Sound::SetFromFileData(const std::filesystem::path& filename, vector<uint8_t> filedata)
 {
+   // A running player (live editor, play test) shares the sound and may be playing it: its decoders read the data freed below
+   if (g_pplayer && g_pplayer->m_audioPlayer)
+      g_pplayer->m_audioPlayer->ReleaseSound(this);
    m_path = filename;
    m_data = std::move(filedata);
    m_dataVersion++;

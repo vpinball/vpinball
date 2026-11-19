@@ -758,6 +758,11 @@ void AudioPlayer::StopSound(Sound* sound)
       player->Stop();
 }
 
+void AudioPlayer::ReleaseSound(const Sound* sound)
+{
+   m_soundPlayers.erase(const_cast<Sound*>(sound)); // Player destructors stop the sound and wait for the audio thread
+}
+
 bool AudioPlayer::IsSoundPlaying(const Sound* sound) const
 {
    const auto it = m_soundPlayers.find(const_cast<Sound*>(sound));

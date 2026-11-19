@@ -138,6 +138,8 @@ public:
    float GetTableWidth() const { return m_tableWidth; }
    float GetTableHeight() const { return m_tableHeight; }
    void StopSound(Sound* sound);
+   // Destroys the players of 'sound' (stopping them). They decode its file data in place: call before replacing it or deleting the sound
+   void ReleaseSound(const Sound* sound);
    bool IsSoundPlaying(const Sound* sound) const;
    SoundSpec GetSoundInformations(const Sound* const sound) const;
 

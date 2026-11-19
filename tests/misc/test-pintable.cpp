@@ -20,6 +20,11 @@
 
 #include <fstream>
 
+#ifdef __STANDALONE__
+#define _WINDOWS_ // FreeImage then reuses the libwinevbs windows.h types (as in TableAudit.cpp)
+#endif
+#include "FreeImage.h"
+
 #include "doctest.h"
 
 namespace
@@ -468,7 +473,7 @@ TEST_CASE("PinTable part")
       table->Release();
    }
 
-   SUBCASE("audit re-encodes a Vorbis sound to Ogg Opus")
+   SUBCASE("audit re-encodes a lossy sound to Ogg Opus only well above the Opus bitrate")
    {
       PinTable* const table = CreateTestTable();
       PinUndo undo(table);
@@ -485,23 +490,50 @@ TEST_CASE("PinTable part")
       table->m_vsound.push_back(sound);
       const size_t oggSize = sound->GetFileSize();
 
+      // The source bitrate counts the audio pages only (the Vorbis setup header alone is several KB)
+      VPX::AudioPlayer player(""s, ""s, VPX::SNDCFG_SND3D2CH, VPX::SNDCFG_BG2CH, ""s, VPX::SNDCFG_SND3D2CH);
+      const VPX::SoundSpec sourceSpecs = player.GetSoundInformations(sound);
+      const TableAudit::SoundFileInfo source = TableAudit::AnalyzeSoundFile(*sound, sourceSpecs.lengthInSeconds);
+      CHECK(source.codec == TableAudit::SoundFileCodec::OggLossy);
+      const int sourceBitrate = source.bitrate;
+      CHECK(sourceBitrate > 16000);
+      CHECK(sourceBitrate < static_cast<int>(static_cast<float>(oggSize) * 8.f / sourceSpecs.lengthInSeconds));
+
+      // About 85 kbit/s, below 1.5x the 96 kbit/s mono Opus bitrate: a re-encode would barely save anything, it is not offered
+      REQUIRE(sourceBitrate < 144000);
       const TableAudit audit = TableAudit::Run(*table);
-      const auto it = std::ranges::find_if(audit.items, [](const TableAuditItem& item) { return item.summary.find("Ogg Opus") != string::npos; });
-      REQUIRE(it != audit.items.end());
-      CHECK(it->severity == TableAuditItem::Severity::Info);
-      CHECK(it->sound == sound);
-      REQUIRE(it->fix != nullptr);
+      CHECK(std::ranges::none_of(audit.items, [](const TableAuditItem& item) { return item.summary.find("Ogg Opus") != string::npos; }));
+
+      // The same sound seen as twice that bitrate (half its length): offered, encoded at 96 kbit/s
+      VPX::SoundSpec highBitrateSpecs = sourceSpecs;
+      highBitrateSpecs.lengthInSeconds *= 0.5f;
+      REQUIRE(TableAudit::AnalyzeSoundFile(*sound, highBitrateSpecs.lengthInSeconds).bitrate >= 144000);
+      const vector<TableAuditItem> fixes = TableAudit::SoundFixes(*sound, highBitrateSpecs);
+      REQUIRE(fixes.size() == 1);
+      CHECK(fixes[0].severity == TableAuditItem::Severity::Info);
+      CHECK(fixes[0].sound == sound);
+      CHECK(fixes[0].details.find("at 96 kbit/s") != string::npos);
+      REQUIRE(fixes[0].fix != nullptr);
 
       undo.BeginUndo();
-      it->fix(*table, undo);
+      fixes[0].fix(*table, undo);
       undo.EndUndo();
+      CHECK(fixes[0].fixFailure->empty());
 
       CHECK(sound->GetImportPath().extension() == ".opus");
       CHECK(memcmp(sound->GetFileRaw(), "OggS", 4) == 0);
-      VPX::AudioPlayer player(""s, ""s, VPX::SNDCFG_SND3D2CH, VPX::SNDCFG_BG2CH, ""s, VPX::SNDCFG_SND3D2CH);
+      CHECK(sound->GetFileSize() < oggSize);
       const VPX::SoundSpec specs = player.GetSoundInformations(sound);
       CHECK(specs.nChannels == 1);
       CHECK(specs.lengthInSeconds == doctest::Approx(0.53).epsilon(0.3));
+      // Opus' variable bitrate may exceed its target a bit
+      CHECK(TableAudit::AnalyzeSoundFile(*sound, specs.lengthInSeconds).bitrate < 96000 * 5 / 4);
+
+      // A lossy file of unknown length: no bitrate, no space saving re-encode
+      VPX::SoundSpec unknownLengthSpecs = sourceSpecs;
+      unknownLengthSpecs.lengthInSeconds = 0.f;
+      CHECK(TableAudit::AnalyzeSoundFile(*sound, 0.f).bitrate == 0);
+      CHECK(TableAudit::SoundFixes(*sound, unknownLengthSpecs).empty());
 
       undo.Undo(); // The original Vorbis data and path are restored
       CHECK(sound->GetFileSize() == oggSize);
@@ -510,34 +542,396 @@ TEST_CASE("PinTable part")
       table->Release();
    }
 
-   SUBCASE("audit re-encodes a non-WebP image")
+   SUBCASE("audit re-encodes a non-WebP image lossless, only when exact and smaller")
    {
       PinTable* const table = CreateTestTable();
       PinUndo undo(table);
 
-      // A WebP image relabeled as a PNG: the audit flags stored formats by their file extension
+      // PNG file data of a generated image, stored uncompressed so that WebP is smaller. With 'hiddenColors', the
+      // right half is fully transparent but holds varied colors (an encoder not in 'exact' mode clears them)
+      const auto makePng = [](const bool withAlpha, const bool hiddenColors)
+      {
+         FIBITMAP* const bitmap = FreeImage_Allocate(64, 64, withAlpha ? 32 : 24);
+         for (unsigned int y = 0; y < 64; y++)
+         {
+            BYTE* line = FreeImage_GetScanLine(bitmap, y);
+            for (unsigned int x = 0; x < 64; x++, line += withAlpha ? 4 : 3)
+            {
+               line[FI_RGBA_RED] = static_cast<BYTE>(x * 4);
+               line[FI_RGBA_GREEN] = static_cast<BYTE>(y * 4);
+               line[FI_RGBA_BLUE] = static_cast<BYTE>((x * y) & 0xFF);
+               if (withAlpha)
+                  line[FI_RGBA_ALPHA] = hiddenColors && x >= 32 ? 0 : 255;
+            }
+         }
+         FIMEMORY* const mem = FreeImage_OpenMemory();
+         FreeImage_SaveToMemory(FIF_PNG, bitmap, mem, PNG_Z_NO_COMPRESSION);
+         FreeImage_Unload(bitmap);
+         BYTE* data = nullptr;
+         DWORD size = 0;
+         FreeImage_AcquireMemory(mem, &data, &size);
+         vector<uint8_t> png(data, data + size);
+         FreeImage_CloseMemory(mem);
+         return png;
+      };
+      const auto decode = [](const uint8_t* data, size_t size)
+      {
+         FIMEMORY* const mem = FreeImage_OpenMemory(const_cast<BYTE*>(data), static_cast<DWORD>(size));
+         FIBITMAP* const bitmap = FreeImage_LoadFromMemory(FreeImage_GetFileTypeFromMemory(mem), mem, 0);
+         FreeImage_CloseMemory(mem);
+         vector<uint8_t> pixels;
+         if (bitmap != nullptr)
+         {
+            FIBITMAP* const bitmap32 = FreeImage_ConvertTo32Bits(bitmap);
+            for (unsigned int y = 0; y < FreeImage_GetHeight(bitmap32); y++)
+               pixels.insert(pixels.end(), FreeImage_GetScanLine(bitmap32, y), FreeImage_GetScanLine(bitmap32, y) + FreeImage_GetLine(bitmap32));
+            FreeImage_Unload(bitmap32);
+            FreeImage_Unload(bitmap);
+         }
+         return pixels;
+      };
+
+      // The texture object comes from an import, its file data is then replaced by the generated PNG
       Texture* const image = table->ImportImage(GetAssetPath() / "test000-default-table-Ref.webp", "auditimg"s);
       REQUIRE(image != nullptr);
-      const vector<uint8_t> webpData(image->GetFileRaw(), image->GetFileRaw() + image->GetFileSize());
-      image->SetFromFileData("auditimg.png", webpData);
+      const auto findFix = [&table]()
+      {
+         TableAudit audit = TableAudit::Run(*table);
+         const auto it = std::ranges::find_if(audit.items, [](const TableAuditItem& item) { return item.summary.find("'WebP'") != string::npos; });
+         return it != audit.items.end() ? std::optional<TableAuditItem>(*it) : std::nullopt;
+      };
 
-      const TableAudit audit = TableAudit::Run(*table);
-      const auto it = std::ranges::find_if(audit.items, [](const TableAuditItem& item) { return item.summary.find("'WebP'") != string::npos; });
-      REQUIRE(it != audit.items.end());
-      CHECK(it->severity == TableAuditItem::Severity::Info);
-      CHECK(it->image == image);
-      REQUIRE(it->fix != nullptr);
+      // Opaque PNG: lossless re-encode, same pixels, smaller
+      {
+         const vector<uint8_t> png = makePng(false, false);
+         image->SetFromFileData("auditimg.png", png);
+         const std::optional<TableAuditItem> fix = findFix();
+         REQUIRE(fix.has_value());
+         CHECK(fix->severity == TableAuditItem::Severity::Info);
+         CHECK(fix->image == image);
+         CHECK(fix->fixLabel == "Re-encode as WebP (lossless)");
+         REQUIRE(fix->fix != nullptr);
+         undo.BeginUndo();
+         fix->fix(*table, undo);
+         undo.EndUndo();
+         REQUIRE(fix->fixFailure != nullptr);
+         CHECK(fix->fixFailure->empty());
+         CHECK(image->GetFilePath().extension() == ".webp");
+         CHECK(memcmp(image->GetFileRaw(), "RIFF", 4) == 0); // WebP is RIFF containered
+         CHECK(memcmp(image->GetFileRaw() + 8, "WEBP", 4) == 0);
+         CHECK(image->GetFileSize() < png.size());
+         CHECK(decode(image->GetFileRaw(), image->GetFileSize()) == decode(png.data(), png.size()));
+
+         undo.Undo(); // The original blob and path are restored
+         CHECK(image->GetFilePath().extension() == ".png");
+         CHECK(image->GetFileSize() == png.size());
+      }
+
+      // Colors under fully transparent pixels would be altered by the lossless encoder: the image is kept as is
+      {
+         const vector<uint8_t> png = makePng(true, true);
+         image->SetFromFileData("auditimg.png", png);
+         const std::optional<TableAuditItem> fix = findFix();
+         REQUIRE(fix.has_value());
+         undo.BeginUndo();
+         fix->fix(*table, undo);
+         undo.EndUndo();
+         undo.Discard();
+         REQUIRE(fix->fixFailure != nullptr);
+         CHECK(fix->fixFailure->find("alter pixels") != string::npos);
+         CHECK(image->GetFilePath().extension() == ".png");
+         CHECK(image->GetFileSize() == png.size());
+      }
+
+      // A JPEG is offered a lossy re-encode, at its quality estimated from its quantization tables
+      {
+         const auto makeJpeg = [](const int flags)
+         {
+            FIBITMAP* const bitmap = FreeImage_Allocate(64, 64, 24);
+            FIMEMORY* const mem = FreeImage_OpenMemory();
+            FreeImage_SaveToMemory(FIF_JPEG, bitmap, mem, flags);
+            FreeImage_Unload(bitmap);
+            BYTE* data = nullptr;
+            DWORD size = 0;
+            FreeImage_AcquireMemory(mem, &data, &size);
+            vector<uint8_t> jpeg(data, data + size);
+            FreeImage_CloseMemory(mem);
+            return jpeg;
+         };
+         bool exact = false;
+         for (const int quality : { 100, 90, 75, 30, 5 })
+         {
+            const vector<uint8_t> jpeg = makeJpeg(quality); // FreeImage takes the JPEG quality in the low bits of the flags
+            CHECK(TableAudit::EstimateJpegQuality(jpeg.data(), jpeg.size(), exact) == quality);
+            CHECK(exact);
+         }
+
+         // Tables that are not scaled standard ones (one coefficient changed): an equivalent quality from their average scale
+         vector<uint8_t> jpeg = makeJpeg(90);
+         const auto dqt = std::ranges::search(jpeg, std::array<uint8_t, 2> { 0xFF, 0xDB });
+         REQUIRE(!dqt.empty());
+         jpeg[dqt.begin() - jpeg.begin() + 5 + 63]++; // Last coefficient of the first table (2 bytes marker, 2 bytes length, 1 byte id)
+         const int estimate = TableAudit::EstimateJpegQuality(jpeg.data(), jpeg.size(), exact);
+         CHECK(!exact);
+         CHECK(estimate >= 88);
+         CHECK(estimate <= 92);
+
+         // Not a JPEG
+         const vector<uint8_t> png = makePng(false, false);
+         CHECK(TableAudit::EstimateJpegQuality(png.data(), png.size(), exact) == 0);
+
+         image->SetFromFileData("auditimg.jpg", makeJpeg(90));
+         const std::optional<TableAuditItem> fix = findFix();
+         REQUIRE(fix.has_value());
+         CHECK(fix->fixLabel == "Re-encode as WebP (lossy)");
+         CHECK(fix->details.find("quality 90, the quality of the JPEG") != string::npos);
+         CHECK(fix->details.find("4:4:4") == string::npos); // FreeImage's default is 4:2:0
+
+         // Full color resolution (4:4:4): the details tell that lossy WebP halves it
+         const vector<uint8_t> jpeg444 = makeJpeg(90 | JPEG_SUBSAMPLING_444);
+         CHECK(TableAudit::JpegHasFullColorResolution(jpeg444.data(), jpeg444.size()));
+         const vector<uint8_t> jpeg420 = makeJpeg(90 | JPEG_SUBSAMPLING_420);
+         CHECK(!TableAudit::JpegHasFullColorResolution(jpeg420.data(), jpeg420.size()));
+         image->SetFromFileData("auditimg.jpg", jpeg444);
+         const std::optional<TableAuditItem> fix444 = findFix();
+         REQUIRE(fix444.has_value());
+         CHECK(fix444->details.find("4:4:4") != string::npos);
+      }
+
+      // A 16 bit per channel PNG is reduced to the 8 bits VPX renders, then stored lossless
+      {
+         FIBITMAP* const bitmap = FreeImage_AllocateT(FIT_RGB16, 64, 64);
+         for (unsigned int y = 0; y < 64; y++)
+         {
+            FIRGB16* const line = reinterpret_cast<FIRGB16*>(FreeImage_GetScanLine(bitmap, y));
+            for (unsigned int x = 0; x < 64; x++)
+               line[x] = { static_cast<WORD>(x * 1000 + 7), static_cast<WORD>(y * 1000 + 3), static_cast<WORD>((x * y * 13) & 0xFFFF) };
+         }
+         FIMEMORY* const mem = FreeImage_OpenMemory();
+         FreeImage_SaveToMemory(FIF_PNG, bitmap, mem, PNG_Z_NO_COMPRESSION);
+         BYTE* data = nullptr;
+         DWORD size = 0;
+         FreeImage_AcquireMemory(mem, &data, &size);
+         const vector<uint8_t> png16(data, data + size);
+         FreeImage_CloseMemory(mem);
+         FIBITMAP* const rendered = FreeImage_ConvertTo24Bits(bitmap); // As VPX's loader converts it
+         FreeImage_Unload(bitmap);
+         FIMEMORY* const renderedMem = FreeImage_OpenMemory();
+         FreeImage_SaveToMemory(FIF_PNG, rendered, renderedMem, 0);
+         FreeImage_Unload(rendered);
+         FreeImage_AcquireMemory(renderedMem, &data, &size);
+         const vector<uint8_t> renderedPng(data, data + size);
+         FreeImage_CloseMemory(renderedMem);
+
+         image->SetFromFileData("auditimg.png", png16);
+         const std::optional<TableAuditItem> fix = findFix();
+         REQUIRE(fix.has_value());
+         CHECK(fix->fixLabel == "Re-encode as WebP (as rendered, 8 bit)");
+         undo.BeginUndo();
+         fix->fix(*table, undo);
+         undo.EndUndo();
+         CHECK(fix->fixFailure->empty());
+         CHECK(image->GetFilePath().extension() == ".webp");
+         CHECK(decode(image->GetFileRaw(), image->GetFileSize()) == decode(renderedPng.data(), renderedPng.size()));
+      }
+
+      table->Release();
+   }
+
+   SUBCASE("audit re-encodes an HDR image to half float EXR only when no value needs clamping")
+   {
+      PinTable* const table = CreateTestTable();
+      PinUndo undo(table);
+
+      // Uncompressed 32 bit float TIFF file data of a smooth gradient, with an optional value beyond the half float range
+      const auto makeTiff = [](const float peak)
+      {
+         FIBITMAP* const bitmap = FreeImage_AllocateT(FIT_RGBF, 32, 32);
+         for (unsigned int y = 0; y < 32; y++)
+         {
+            FIRGBF* const line = reinterpret_cast<FIRGBF*>(FreeImage_GetScanLine(bitmap, y));
+            for (unsigned int x = 0; x < 32; x++)
+               line[x] = { static_cast<float>(x) * 31.3f + 0.1f, static_cast<float>(y) * 0.0137f, 1000.f / static_cast<float>(1 + x + y) };
+         }
+         reinterpret_cast<FIRGBF*>(FreeImage_GetScanLine(bitmap, 5))[7].red = peak;
+         FIMEMORY* const mem = FreeImage_OpenMemory();
+         FreeImage_SaveToMemory(FIF_TIFF, bitmap, mem, TIFF_NONE);
+         FreeImage_Unload(bitmap);
+         BYTE* data = nullptr;
+         DWORD size = 0;
+         FreeImage_AcquireMemory(mem, &data, &size);
+         vector<uint8_t> tiff(data, data + size);
+         FreeImage_CloseMemory(mem);
+         return tiff;
+      };
+      // Decoded values as RGB floats
+      const auto decode = [](const uint8_t* data, size_t size)
+      {
+         FIMEMORY* const mem = FreeImage_OpenMemory(const_cast<BYTE*>(data), static_cast<DWORD>(size));
+         FIBITMAP* const bitmap = FreeImage_LoadFromMemory(FreeImage_GetFileTypeFromMemory(mem), mem, 0);
+         FreeImage_CloseMemory(mem);
+         vector<float> values;
+         if (bitmap != nullptr)
+         {
+            FIBITMAP* const rgbf = FreeImage_ConvertToRGBF(bitmap);
+            for (unsigned int y = 0; y < FreeImage_GetHeight(rgbf); y++)
+            {
+               const float* const line = reinterpret_cast<const float*>(FreeImage_GetScanLine(rgbf, y));
+               values.insert(values.end(), line, line + FreeImage_GetWidth(rgbf) * 3);
+            }
+            FreeImage_Unload(rgbf);
+            FreeImage_Unload(bitmap);
+         }
+         return values;
+      };
+
+      // Without decoded data, a texture is HDR by its file extension: the TIFF data is labeled as a Radiance '.hdr' file
+      const std::filesystem::path dir = GetAssetPath() / "tmp";
+      std::filesystem::create_directories(dir);
+      const vector<uint8_t> inRange = makeTiff(60000.f);
+      {
+         std::ofstream file(dir / "audit-hdr.tif", std::ios::binary);
+         file.write(reinterpret_cast<const char*>(inRange.data()), static_cast<std::streamsize>(inRange.size()));
+      }
+      Texture* const image = table->ImportImage(dir / "audit-hdr.tif", "audithdr"s);
+      REQUIRE(image != nullptr);
+      image->SetFromFileData(dir / "audit-hdr.hdr", inRange);
+      REQUIRE(image->IsHDR());
+
+      const auto applyFix = [&table, &undo]()
+      {
+         TableAudit audit = TableAudit::Run(*table);
+         const auto it = std::ranges::find_if(audit.items, [](const TableAuditItem& item) { return item.summary.find("'EXR'") != string::npos; });
+         REQUIRE(it != audit.items.end());
+         CHECK(it->fixLabel == "Re-encode as EXR");
+         undo.BeginUndo();
+         it->fix(*table, undo);
+         undo.EndUndo();
+         REQUIRE(it->fixFailure != nullptr);
+         CHECK(it->fixFailure->empty());
+      };
+
+      // All values in the half float range: stored as half floats (close, not exact)
+      {
+         applyFix();
+         CHECK(image->GetFilePath().extension() == ".exr");
+         const vector<float> source = decode(inRange.data(), inRange.size());
+         const vector<float> stored = decode(image->GetFileRaw(), image->GetFileSize());
+         REQUIRE(stored.size() == source.size());
+         CHECK(stored != source); // Half float precision
+         for (size_t i = 0; i < source.size(); i++)
+            CHECK(stored[i] == doctest::Approx(source[i]).epsilon(1e-3));
+         undo.Undo();
+         CHECK(image->GetFilePath().extension() == ".hdr");
+      }
+
+      // A value beyond the half float range would be clamped: stored as 32 bit floats, exactly
+      {
+         const vector<uint8_t> outOfRange = makeTiff(1.0e6f);
+         image->SetFromFileData(dir / "audit-hdr.hdr", outOfRange);
+         applyFix();
+         CHECK(image->GetFilePath().extension() == ".exr");
+         CHECK(decode(image->GetFileRaw(), image->GetFileSize()) == decode(outOfRange.data(), outOfRange.size()));
+      }
+
+      table->Release();
+   }
+
+   SUBCASE("sound re-encode bitrate follows the sample rate, low quality sounds are not re-encoded to save space")
+   {
+      // PCM WAV of a sine wave
+      const auto makeWav = [](const int sampleRate, const int bits, const int channels)
+      {
+         vector<uint8_t> wav = MakeStereoSineWav(0.2f, sampleRate);
+         if (bits == 16 && channels == 2)
+            return wav;
+         // Rebuild the data for another layout: 'MakeStereoSineWav' holds 16 bit stereo frames after a 44 byte header
+         vector<uint8_t> samples;
+         for (size_t i = 44; i + 4 <= wav.size(); i += 4)
+            for (int c = 0; c < channels; c++)
+            {
+               const int16_t sample = static_cast<int16_t>(wav[i] | (wav[i + 1] << 8));
+               if (bits == 8)
+                  samples.push_back(static_cast<uint8_t>((sample >> 8) + 128));
+               else
+               {
+                  samples.push_back(wav[i]);
+                  samples.push_back(wav[i + 1]);
+               }
+            }
+         const auto put32 = [&wav](size_t pos, uint32_t v) { for (int b = 0; b < 4; b++) wav[pos + b] = static_cast<uint8_t>(v >> (8 * b)); };
+         const auto put16 = [&wav](size_t pos, uint32_t v) { for (int b = 0; b < 2; b++) wav[pos + b] = static_cast<uint8_t>(v >> (8 * b)); };
+         wav.resize(44);
+         put32(4, static_cast<uint32_t>(36 + samples.size()));
+         put16(22, static_cast<uint32_t>(channels));
+         put32(28, static_cast<uint32_t>(sampleRate * channels * bits / 8));
+         put16(32, static_cast<uint32_t>(channels * bits / 8));
+         put16(34, static_cast<uint32_t>(bits));
+         put32(40, static_cast<uint32_t>(samples.size()));
+         wav.insert(wav.end(), samples.begin(), samples.end());
+         return wav;
+      };
+      VPX::AudioPlayer player(""s, ""s, VPX::SNDCFG_SND3D2CH, VPX::SNDCFG_BG2CH, ""s, VPX::SNDCFG_SND3D2CH);
+      const auto fixesFor = [&player](const vector<uint8_t>& wav, const VPX::SoundOutTypes target)
+      {
+         VPX::Sound sound("Snd"s, "snd.wav", wav);
+         sound.SetOutputTarget(target);
+         return TableAudit::SoundFixes(sound, player.GetSoundInformations(&sound));
+      };
+
+      // Bit depth from the WAV header
+      {
+         VPX::Sound sound("Snd"s, "snd.wav", makeWav(22050, 8, 1));
+         CHECK(TableAudit::AnalyzeSoundFile(sound, 0.2f).bitsPerSample == 8);
+      }
+
+      // Space saving re-encode: full bitrate at 44.1kHz, 3/4 at 22kHz (encoded at 24kHz)
+      vector<TableAuditItem> fixes = fixesFor(makeWav(44100, 16, 2), VPX::SNDOUT_BACKGLASS);
+      REQUIRE(fixes.size() == 1);
+      CHECK(fixes[0].details.find("at 128 kbit/s") != string::npos);
+      fixes = fixesFor(makeWav(22050, 16, 2), VPX::SNDOUT_BACKGLASS);
+      REQUIRE(fixes.size() == 1);
+      CHECK(fixes[0].details.find("at 96 kbit/s") != string::npos);
+      fixes = fixesFor(makeWav(22050, 16, 1), VPX::SNDOUT_BACKGLASS);
+      REQUIRE(fixes.size() == 1);
+      CHECK(fixes[0].details.find("at 72 kbit/s") != string::npos);
+
+      // Low quality (11kHz or less, 8 bit): not re-encoded to save space
+      CHECK(fixesFor(makeWav(11025, 16, 2), VPX::SNDOUT_BACKGLASS).empty());
+      CHECK(fixesFor(makeWav(22050, 8, 1), VPX::SNDOUT_BACKGLASS).empty());
+
+      // ... but a stereo playfield sound still gets the mono fix, at a bitrate for its rate (12kHz: half of 96 kbit/s)
+      fixes = fixesFor(makeWav(11025, 16, 2), VPX::SNDOUT_TABLE);
+      REQUIRE(fixes.size() == 1);
+      CHECK(fixes[0].severity == TableAuditItem::Severity::Error);
+      CHECK(fixes[0].details.find("at 48 kbit/s") != string::npos);
+   }
+
+   SUBCASE("undo of a re-encode skips a deleted asset")
+   {
+      PinTable* const table = CreateTestTable();
+      PinUndo undo(table);
+
+      VPX::Sound* const sound = new VPX::Sound("Snd1", "snd1.wav", MakeStereoSineWav(0.1f, 22050));
+      table->m_vsound.push_back(sound);
+      VPX::AudioPlayer player(""s, ""s, VPX::SNDCFG_SND3D2CH, VPX::SNDCFG_BG2CH, ""s, VPX::SNDCFG_SND3D2CH);
+      const TableAudit::SoundFileInfo source = TableAudit::AnalyzeSoundFile(*sound, 0.1f);
+      CHECK(source.codec == TableAudit::SoundFileCodec::Lossless); // PCM WAV
+      CHECK(source.bitrate == 0);
+      const vector<TableAuditItem> fixes = TableAudit::SoundFixes(*sound, player.GetSoundInformations(sound));
+      REQUIRE(!fixes.empty());
 
       undo.BeginUndo();
-      it->fix(*table, undo);
+      fixes.front().fix(*table, undo);
       undo.EndUndo();
-      CHECK(image->GetFilePath().extension() == ".webp");
-      CHECK(memcmp(image->GetFileRaw(), "RIFF", 4) == 0); // WebP is RIFF containered
-      CHECK(memcmp(image->GetFileRaw() + 8, "WEBP", 4) == 0);
+      CHECK(sound->GetImportPath().extension() == ".opus");
 
-      undo.Undo(); // The original blob and path are restored
-      CHECK(image->GetFilePath().extension() == ".png");
-      CHECK(image->GetFileSize() == webpData.size());
+      table->RemoveSound(sound); // Not undoable: the re-encode record now refers to a deleted sound
+      CHECK(table->m_vsound.empty());
+      undo.Undo(); // Must neither restore into the freed sound nor crash
+      CHECK(table->m_vsound.empty());
+      undo.Redo();
+      CHECK(table->m_vsound.empty());
 
       table->Release();
    }

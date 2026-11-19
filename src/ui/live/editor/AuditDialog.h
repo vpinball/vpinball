@@ -3,6 +3,9 @@
 #pragma once
 
 #include "core/TableAudit.h"
+#include "audio/AudioPlayer.h"
+
+#include <unordered_map>
 
 namespace VPX::EditorUI
 {
@@ -29,6 +32,8 @@ private:
    void SelectItem(int index); // 'Select on pick': applies the item's subject to the editor selection
    void RevealSubject(const TableAuditItem &item); // Selects the subject and reveals it (frame part, open script line)
    void ApplyFix(TableAuditItem &item);
+   bool IsAuditStale() const;
+   VPX::SoundSpec GetSoundInformations(const VPX::Sound &sound);
 
    EditorUI &m_editor;
    bool m_visible = false;
@@ -36,6 +41,18 @@ private:
    int m_selected = -1;
    bool m_scrollToSelected = false;
    uint64_t m_auditUndoId = 0; // PinUndo::TopRecordId() at audit time: the items' handles are stale once it changes
+   // The table's assets at audit time: asset deletes are not undoable, so they do not change the undo record id
+   vector<Texture *> m_auditImages;
+   vector<VPX::Sound *> m_auditSounds;
+   vector<Material *> m_auditMaterials;
+   // Sound specifications kept between audits (decoding all sounds on each edit would be slow), until the sound's data changes
+   struct CachedSoundSpec
+   {
+      unsigned int dataVersion;
+      size_t fileSize;
+      VPX::SoundSpec specs;
+   };
+   std::unordered_map<const VPX::Sound *, CachedSoundSpec> m_soundSpecs;
 };
 
 }

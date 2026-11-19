@@ -1289,17 +1289,22 @@ void PropertiesPanel::ImageProperties(PropertyPane &props, Texture *texture)
       // The same re-encode fix as offered by the table audit, applied through an undo record
       for (const TableAuditItem &fix : TableAudit::ImageFixes(*editor.m_table, *texture))
       {
-         if (ImGui::Button(fix.fixLabel.c_str()) && !editor.m_table->IsLocked())
+         const bool apply = ImGui::Button(fix.fixLabel.c_str());
+         if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", fix.details.c_str());
+         if (apply && !editor.m_table->IsLocked())
          {
-            const std::filesystem::path before = texture->GetFilePath();
             editor.m_undo.BeginUndo();
             fix.fix(*editor.m_table, editor.m_undo);
             editor.m_undo.SetLabel(fix.fixLabel);
             editor.m_undo.EndUndo();
-            if (texture->GetFilePath() != before)
-               editor.Report("Re-encoded image '"s + texture->m_name + '\'');
+            if (fix.fixFailure && !fix.fixFailure->empty())
+            {
+               editor.m_undo.Discard(); // Nothing was changed: no undo record, no dirty table
+               editor.Report(*fix.fixFailure);
+            }
             else
-               editor.Report("Failed to re-encode '"s + texture->m_name + '\'');
+               editor.Report("Re-encoded image '"s + texture->m_name + '\'');
          }
       }
       props.EndSection();
@@ -1560,20 +1565,25 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
          if (!firstFix)
             ImGui::SameLine();
          firstFix = false;
-         if (ImGui::Button(fix.fixLabel.c_str()) && !editor.m_table->IsLocked())
+         const bool apply = ImGui::Button(fix.fixLabel.c_str());
+         if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", fix.details.c_str());
+         if (apply && !editor.m_table->IsLocked())
          {
-            const std::filesystem::path before = sound->GetImportPath();
             editor.m_undo.BeginUndo();
             fix.fix(*editor.m_table, editor.m_undo);
             editor.m_undo.SetLabel(fix.fixLabel);
             editor.m_undo.EndUndo();
-            if (sound->GetImportPath() != before)
+            if (fix.fixFailure && !fix.fixFailure->empty())
+            {
+               editor.m_undo.Discard(); // Nothing was changed: no undo record, no dirty table
+               editor.Report(*fix.fixFailure);
+            }
+            else
             {
                editor.Report("Re-encoded sound '"s + sound->GetName() + '\'');
                m_soundInfoFor = nullptr; // Refresh the displayed specifications
             }
-            else
-               editor.Report("Failed to re-encode '"s + sound->GetName() + '\'');
          }
       }
       props.EndSection();

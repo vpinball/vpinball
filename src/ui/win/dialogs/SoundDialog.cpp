@@ -397,6 +397,7 @@ void SoundDialog::ReImport()
             const auto &importPath = pps->GetImportPath();
             if (std::filesystem::exists(importPath))
             {
+               m_audioPlayer->ReleaseSound(pps); // The dialog's own players decode the data replaced below
                pt->ReImportSound(pps, importPath);
                pt->SetNonUndoableDirty(SaveDirtyState::Dirty);
             }
@@ -432,6 +433,7 @@ void SoundDialog::ReImportFrom()
             ListView_GetItem(hSoundList, &lvitem);
             VPX::Sound *const pps = (VPX::Sound *)lvitem.lParam;
 
+            m_audioPlayer->ReleaseSound(pps); // The dialog's own players decode the data replaced below
             pt->ReImportSound(pps, szFileName[0]);
             ListView_SetItemText_Safe(hSoundList, sel, 1, szFileName[0].c_str());
 
@@ -620,6 +622,7 @@ void SoundDialog::DeleteSound()
             ListView_GetItem(hSoundList, &lvitem);
             VPX::Sound *const pps = (VPX::Sound *)lvitem.lParam;
             ListView_DeleteItem(hSoundList, sel);
+            m_audioPlayer->ReleaseSound(pps); // The dialog's own players decode the sound's data
             pt->RemoveSound(pps);
 
             // The previous selection is now deleted, so look again from the top of the list
