@@ -44,6 +44,10 @@ public:
    const uint8_t* GetFileRaw() const { return m_data.data(); }
    void SetFromFileData(const std::filesystem::path& filename, vector<uint8_t> filedata);
 
+   // Incremented each time the file data is replaced. The audio player uses it to drop
+   // cached players whose decoder still references a previously owned (now freed) buffer.
+   unsigned int GetDataVersion() const { return m_dataVersion; }
+
    bool SaveToFile(const std::filesystem::path& filename) const;
    void SaveToStream(InMemStream* pstm) const;
 
@@ -77,6 +81,7 @@ private:
    string m_name;
    std::filesystem::path m_path; // Original file import path
    vector<uint8_t> m_data; // Undecoded data from original file
+   unsigned int m_dataVersion = 0;
    int m_volume = 0;
    int m_pan = 0;
    int m_frontRearFade = 0;

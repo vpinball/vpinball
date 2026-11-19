@@ -232,6 +232,7 @@ void Sound::SetFromFileData(const std::filesystem::path& filename, vector<uint8_
 {
    m_path = filename;
    m_data = std::move(filedata);
+   m_dataVersion++;
 }
 
 bool Sound::SaveToFile(const std::filesystem::path& filename) const

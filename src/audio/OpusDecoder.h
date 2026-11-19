@@ -12,4 +12,7 @@ namespace VPX
 // Adds the Opus decoding backend to a decoder configuration
 void AddOpusDecoder(ma_decoder_config& config);
 
+// True when an initialized decoder's source is handled by the registered Opus
+// backend (the file is Ogg Opus, whatever its name or minor container quirks)
+bool IsOpusBackend(const ma_decoder& decoder);
 }

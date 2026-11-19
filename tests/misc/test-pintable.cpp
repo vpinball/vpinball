@@ -7,16 +7,66 @@
 #include "parts/pintable.h"
 #include "core/pinundo.h"
 #include "core/TableAudit.h"
+#include "audio/AudioPlayer.h"
 #include "parts/light.h"
 #include "parts/timer.h"
 #include "parts/bumper.h"
 #include "parts/flasher.h"
 #include "parts/Collection.h"
 #include "parts/Material.h"
+#include "parts/Sound.h"
 #include "parts/surface.h"
 #include "renderer/Texture.h"
 
+#include <fstream>
+
 #include "doctest.h"
+
+namespace
+{
+
+// Builds a stereo 16 bit PCM WAV file holding durationS seconds of a sine wave
+vector<uint8_t> MakeStereoSineWav(float durationS, int sampleRate = 44100)
+{
+   const auto append32 = [](vector<uint8_t>& out, uint32_t v)
+   {
+      out.push_back(static_cast<uint8_t>(v & 0xFF));
+      out.push_back(static_cast<uint8_t>((v >> 8) & 0xFF));
+      out.push_back(static_cast<uint8_t>((v >> 16) & 0xFF));
+      out.push_back(static_cast<uint8_t>((v >> 24) & 0xFF));
+   };
+   const auto append16 = [](vector<uint8_t>& out, uint16_t v)
+   {
+      out.push_back(static_cast<uint8_t>(v & 0xFF));
+      out.push_back(static_cast<uint8_t>((v >> 8) & 0xFF));
+   };
+   vector<uint8_t> samples;
+   const int nFrames = static_cast<int>(sampleRate * durationS);
+   samples.reserve(nFrames * 4);
+   for (int i = 0; i < nFrames; ++i)
+   {
+      const int16_t sample = static_cast<int16_t>(8000.0 * sin(2.0 * M_PI * 440.0 * i / sampleRate));
+      append16(samples, static_cast<uint16_t>(sample));
+      append16(samples, static_cast<uint16_t>(sample));
+   }
+   vector<uint8_t> wav;
+   wav.insert(wav.end(), { 'R', 'I', 'F', 'F' });
+   append32(wav, static_cast<uint32_t>(36 + samples.size()));
+   wav.insert(wav.end(), { 'W', 'A', 'V', 'E', 'f', 'm', 't', ' ' });
+   append32(wav, 16); // fmt chunk size
+   append16(wav, 1); // PCM
+   append16(wav, 2); // Stereo
+   append32(wav, static_cast<uint32_t>(sampleRate));
+   append32(wav, static_cast<uint32_t>(sampleRate * 2 * 2));
+   append16(wav, 4); // Block align
+   append16(wav, 16); // Bits per sample
+   wav.insert(wav.end(), { 'd', 'a', 't', 'a' });
+   append32(wav, static_cast<uint32_t>(samples.size()));
+   wav.insert(wav.end(), samples.begin(), samples.end());
+   return wav;
+}
+
+}
 
 TEST_CASE("PinTable part")
 {
@@ -371,6 +421,123 @@ TEST_CASE("PinTable part")
 
       undo.Undo(); // The creation is undone: the timer is removed from the table
       CHECK(table->GetElementByName("PinMAMETimer") == nullptr);
+
+      table->Release();
+   }
+
+   SUBCASE("audit re-encodes a stereo playfield sound to mono Ogg Opus")
+   {
+      PinTable* const table = CreateTestTable();
+      PinUndo undo(table);
+
+      // 22kHz stereo: the Opus fix encodes at 24kHz, the codec rate covering the source bandwidth
+      VPX::Sound* const sound = new VPX::Sound("Snd1", "snd1.wav", MakeStereoSineWav(0.1f, 22050));
+      sound->SetOutputTarget(VPX::SNDOUT_TABLE);
+      table->m_vsound.push_back(sound);
+      const size_t wavSize = sound->GetFileSize();
+
+      const TableAudit audit = TableAudit::Run(*table);
+      const auto findItem = [&audit](const string& needle)
+      {
+         const auto it = std::ranges::find_if(audit.items, [&needle](const TableAuditItem& item) { return item.summary.find(needle) != string::npos; });
+         return it != audit.items.end() ? &*it : nullptr;
+      };
+      const TableAuditItem* const monoItem = findItem("multiple channels");
+      REQUIRE(monoItem != nullptr);
+      CHECK(monoItem->severity == TableAuditItem::Severity::Error);
+      CHECK(monoItem->sound == sound);
+      REQUIRE(monoItem->fix != nullptr);
+      REQUIRE(findItem("Ogg Opus") != nullptr); // The WAV is also reported as not optimally encoded
+
+      undo.BeginUndo();
+      monoItem->fix(*table, undo);
+      undo.EndUndo();
+
+      CHECK(sound->GetImportPath().extension() == ".opus");
+      CHECK(memcmp(sound->GetFileRaw(), "OggS", 4) == 0);
+      VPX::AudioPlayer player(""s, ""s, VPX::SNDCFG_SND3D2CH, VPX::SNDCFG_BG2CH, ""s, VPX::SNDCFG_SND3D2CH);
+      const VPX::SoundSpec specs = player.GetSoundInformations(sound);
+      CHECK(specs.nChannels == 1);
+      CHECK(specs.lengthInSeconds == doctest::Approx(0.1).epsilon(0.3));
+
+      undo.Undo(); // The original WAV data and path are restored
+      CHECK(sound->GetFileSize() == wavSize);
+      CHECK(memcmp(sound->GetFileRaw(), "RIFF", 4) == 0);
+      CHECK(sound->GetImportPath() == "snd1.wav");
+
+      table->Release();
+   }
+
+   SUBCASE("audit re-encodes a Vorbis sound to Ogg Opus")
+   {
+      PinTable* const table = CreateTestTable();
+      PinUndo undo(table);
+
+      // The default table's 'ballrelease' sound: mono 44.1kHz Ogg Vorbis
+      vector<uint8_t> oggData;
+      {
+         std::ifstream file(GetAssetPath() / "ballrelease.ogg", std::ios::binary);
+         REQUIRE(file.is_open());
+         oggData = vector<uint8_t>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+      }
+      VPX::Sound* const sound = new VPX::Sound("ballrelease", "ballrelease.ogg", oggData);
+      sound->SetOutputTarget(VPX::SNDOUT_TABLE);
+      table->m_vsound.push_back(sound);
+      const size_t oggSize = sound->GetFileSize();
+
+      const TableAudit audit = TableAudit::Run(*table);
+      const auto it = std::ranges::find_if(audit.items, [](const TableAuditItem& item) { return item.summary.find("Ogg Opus") != string::npos; });
+      REQUIRE(it != audit.items.end());
+      CHECK(it->severity == TableAuditItem::Severity::Info);
+      CHECK(it->sound == sound);
+      REQUIRE(it->fix != nullptr);
+
+      undo.BeginUndo();
+      it->fix(*table, undo);
+      undo.EndUndo();
+
+      CHECK(sound->GetImportPath().extension() == ".opus");
+      CHECK(memcmp(sound->GetFileRaw(), "OggS", 4) == 0);
+      VPX::AudioPlayer player(""s, ""s, VPX::SNDCFG_SND3D2CH, VPX::SNDCFG_BG2CH, ""s, VPX::SNDCFG_SND3D2CH);
+      const VPX::SoundSpec specs = player.GetSoundInformations(sound);
+      CHECK(specs.nChannels == 1);
+      CHECK(specs.lengthInSeconds == doctest::Approx(0.53).epsilon(0.3));
+
+      undo.Undo(); // The original Vorbis data and path are restored
+      CHECK(sound->GetFileSize() == oggSize);
+      CHECK(sound->GetImportPath() == "ballrelease.ogg");
+
+      table->Release();
+   }
+
+   SUBCASE("audit re-encodes a non-WebP image")
+   {
+      PinTable* const table = CreateTestTable();
+      PinUndo undo(table);
+
+      // A WebP image relabeled as a PNG: the audit flags stored formats by their file extension
+      Texture* const image = table->ImportImage(GetAssetPath() / "test000-default-table-Ref.webp", "auditimg"s);
+      REQUIRE(image != nullptr);
+      const vector<uint8_t> webpData(image->GetFileRaw(), image->GetFileRaw() + image->GetFileSize());
+      image->SetFromFileData("auditimg.png", webpData);
+
+      const TableAudit audit = TableAudit::Run(*table);
+      const auto it = std::ranges::find_if(audit.items, [](const TableAuditItem& item) { return item.summary.find("'WebP'") != string::npos; });
+      REQUIRE(it != audit.items.end());
+      CHECK(it->severity == TableAuditItem::Severity::Info);
+      CHECK(it->image == image);
+      REQUIRE(it->fix != nullptr);
+
+      undo.BeginUndo();
+      it->fix(*table, undo);
+      undo.EndUndo();
+      CHECK(image->GetFilePath().extension() == ".webp");
+      CHECK(memcmp(image->GetFileRaw(), "RIFF", 4) == 0); // WebP is RIFF containered
+      CHECK(memcmp(image->GetFileRaw() + 8, "WEBP", 4) == 0);
+
+      undo.Undo(); // The original blob and path are restored
+      CHECK(image->GetFilePath().extension() == ".png");
+      CHECK(image->GetFileSize() == webpData.size());
 
       table->Release();
    }

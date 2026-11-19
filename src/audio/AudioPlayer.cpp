@@ -56,6 +56,7 @@ void AddOpusDecoder(ma_decoder_config& config)
    config.customBackendCount = static_cast<ma_uint32>(std::size(g_customBackends));
 }
 
+bool IsOpusBackend(const ma_decoder& decoder) { return decoder.pBackendVTable == &g_opusBackend; }
 }
 
 // Simple SDL3 backend for miniaudio, derived from miniaudio's backend example
@@ -703,12 +704,16 @@ void AudioPlayer::PlaySoundInternal(Sound* sound, float volume, const float rand
    vector<std::unique_ptr<SoundPlayer>>& players = m_soundPlayers[sound];
    const SoundOutTypes target = sound->GetOutputTarget();
 
-   // Drop players created for a former output target (changed in the sound editor), keeping the haptic mirror of playfield sounds
+   // Drop players created for a former output target (changed in the sound editor) or bound to a
+   // previous version of the file data (re-encoded/re-imported since the player was created: its
+   // decoder references the Sound's buffer in place, which the replacement freed), while keeping
+   // the haptic mirror of playfield sounds
    std::erase_if(players,
-      [target](const auto& soundPlayer)
+      [sound, target](const auto& soundPlayer)
       {
          const SoundOutTypes playerTarget = soundPlayer->GetOutputTarget();
-         return playerTarget != target && !(target == SoundOutTypes::SNDOUT_TABLE && playerTarget == SoundOutTypes::SNDOUT_HAPTIC);
+         return soundPlayer->GetDataVersion() != sound->GetDataVersion()
+            || (playerTarget != target && !(target == SoundOutTypes::SNDOUT_TABLE && playerTarget == SoundOutTypes::SNDOUT_HAPTIC));
       });
 
    // Until 10.8, implementation would:
@@ -769,6 +774,7 @@ SoundSpec AudioPlayer::GetSoundInformations(const Sound* const sound) const
       return specs;
    specs.nChannels = decoder.outputChannels;
    specs.sampleFrequency = decoder.outputSampleRate;
+   specs.isOpus = IsOpusBackend(decoder);
 
    ma_engine* const engine = GetEngine(sound->GetOutputTarget()) ? GetEngine(sound->GetOutputTarget()) : (m_backglassEngine ? m_backglassEngine.get() : m_playfieldEngine.get());
    if (engine == nullptr)

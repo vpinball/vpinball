@@ -4,6 +4,8 @@
 #include "core/TableAudit.h"
 
 #include "audio/AudioPlayer.h"
+#include "miniaudio/miniaudio.h" // Must precede OpusDecoder.h
+#include "audio/OpusDecoder.h"
 #include "core/editablereg.h"
 #include "core/pinundo.h"
 #include "parts/light.h"
@@ -15,6 +17,13 @@
 #include "parts/timer.h"
 #include "renderer/Texture.h"
 
+#include "FreeImage.h"
+#include "ogg/ogg.h"
+#include "opus.h"
+
+#include <algorithm>
+#include <array>
+#include <cstring>
 #include <sstream>
 
 namespace
@@ -73,6 +82,242 @@ template <typename TPart, typename TData, typename TField> std::function<IEditab
    };
 }
 
+// Re-encodes a sound's file data as an Ogg Opus stream. 'channels' is the output channel
+// count: 1 to downmix to mono, 0 to keep the source count. The data is decoded to float
+// by the same miniaudio + Opus decoder stack as the audio player, resampled to the smallest
+// Opus rate covering the source (the codec only accepts 8/12/16/24/48kHz input, so e.g. a
+// 22kHz sound is encoded at 24kHz without wasting bits on ultrasonics), downmixing with its
+// 'simple' (averaging) channel mixer when 'channels' is below the source count. When
+// downmixing to mono, samples are scaled by the source channel count: this is the audio
+// player's own loudness compensation (averaging loses energy, see
+// SoundPlayer::m_monoCompensation), so the mono stream stays as loud as the stereo source.
+vector<uint8_t> EncodeSoundToOggOpus(const VPX::Sound &sound, const int targetChannels)
+{
+   // Probe the source channel count and sample rate with a native decoder
+   ma_decoder_config probeConfig = ma_decoder_config_init(ma_format_f32, 0, 0);
+   VPX::AddOpusDecoder(probeConfig);
+   ma_decoder probe;
+   if (ma_decoder_init_memory(sound.GetFileRaw(), sound.GetFileSize(), &probeConfig, &probe) != MA_SUCCESS)
+      return {};
+   const int sourceChannels = static_cast<int>(probe.outputChannels);
+   const int sourceRate = static_cast<int>(probe.outputSampleRate);
+   ma_decoder_uninit(&probe);
+
+   // Opus' simple channel mapping only supports mono/stereo: downmix anything above
+   const int channels = std::clamp(targetChannels > 0 ? targetChannels : sourceChannels, 1, 2);
+   // The codec input must be 8/12/16/24/48kHz: the smallest rate covering the source bandwidth
+   const int rate = sourceRate <= 8000 ? 8000 : sourceRate <= 12000 ? 12000 : sourceRate <= 16000 ? 16000 : sourceRate <= 24000 ? 24000 : 48000;
+   ma_decoder_config decoderConfig = ma_decoder_config_init(ma_format_f32, channels, rate);
+   decoderConfig.channelMixMode = ma_channel_mix_mode_simple;
+   VPX::AddOpusDecoder(decoderConfig);
+   ma_decoder decoder;
+   if (ma_decoder_init_memory(sound.GetFileRaw(), sound.GetFileSize(), &decoderConfig, &decoder) != MA_SUCCESS)
+      return {};
+   vector<float> pcm;
+   float frames[960 * 2];
+   for (;;)
+   {
+      ma_uint64 read = 0;
+      const ma_result result = ma_decoder_read_pcm_frames(&decoder, frames, std::size(frames) / channels, &read);
+      pcm.insert(pcm.end(), frames, frames + read * channels);
+      if (result != MA_SUCCESS || read == 0)
+         break;
+   }
+   ma_decoder_uninit(&decoder);
+   if (pcm.empty())
+      return {};
+   if (channels == 1 && sourceChannels > 1)
+      for (float &sample : pcm)
+         sample = std::clamp(sample * static_cast<float>(sourceChannels), -1.f, 1.f);
+
+   int err = 0;
+   OpusEncoder *const encoder = opus_encoder_create(rate, channels, OPUS_APPLICATION_AUDIO, &err);
+   if (encoder == nullptr || err != OPUS_OK)
+      return {};
+   opus_encoder_ctl(encoder, OPUS_SET_BITRATE(channels == 1 ? 64000 : 96000));
+   int lookahead = 0;
+   opus_encoder_ctl(encoder, OPUS_GET_LOOKAHEAD(&lookahead));
+   // Pre-skip and granulepos are counted in 48kHz samples, the fixed Opus decode rate (RFC 7845):
+   // converting the encoder lookahead (in 'rate' units) is exact for every supported rate
+   const int to48k = 48000 / rate;
+
+   ogg_stream_state stream;
+   ogg_stream_init(&stream, 0x56505853); // Arbitrary stream serial
+   vector<uint8_t> out;
+   const auto writePages = [&stream, &out](const bool flush)
+   {
+      ogg_page page;
+      while ((flush ? ogg_stream_flush : ogg_stream_pageout)(&stream, &page))
+      {
+         out.insert(out.end(), page.header, page.header + page.header_len);
+         out.insert(out.end(), page.body, page.body + page.body_len);
+      }
+   };
+
+   // Opus identification header (RFC 7845), on its own BOS page
+   {
+      uint8_t head[19];
+      memcpy(head, "OpusHead", 8);
+      head[8] = 1; // Version
+      head[9] = static_cast<uint8_t>(channels);
+      head[10] = static_cast<uint8_t>((lookahead * to48k) & 0xFF);
+      head[11] = static_cast<uint8_t>(((lookahead * to48k) >> 8) & 0xFF);
+      head[12] = static_cast<uint8_t>(sourceRate & 0xFF); // Original rate (informational only, playback is always 48kHz)
+      head[13] = static_cast<uint8_t>((sourceRate >> 8) & 0xFF);
+      head[14] = static_cast<uint8_t>((sourceRate >> 16) & 0xFF);
+      head[15] = static_cast<uint8_t>((sourceRate >> 24) & 0xFF);
+      head[16] = head[17] = 0; // Output gain
+      head[18] = 0; // Channel mapping family 0 (mono/stereo)
+      ogg_packet packet { head, 19, 1, 0, 0, 0 };
+      ogg_stream_packetin(&stream, &packet);
+   }
+   // Comment header (OpusTags), on its own page
+   {
+      static constexpr char vendor[] = "VPinball";
+      uint8_t tags[8 + 4 + sizeof(vendor) - 1 + 4] = {};
+      memcpy(tags, "OpusTags", 8);
+      constexpr uint32_t vendorLength = sizeof(vendor) - 1;
+      tags[8] = vendorLength & 0xFF;
+      tags[9] = (vendorLength >> 8) & 0xFF;
+      tags[10] = (vendorLength >> 16) & 0xFF;
+      tags[11] = (vendorLength >> 24) & 0xFF;
+      memcpy(tags + 12, vendor, vendorLength); // Zero user comments
+      ogg_packet packet { tags, static_cast<long>(sizeof(tags)), 0, 0, 0, 1 };
+      ogg_stream_packetin(&stream, &packet);
+   }
+   writePages(true);
+
+   // Audio packets, 20ms frames (960 samples @48kHz, down to 160 @8kHz). granulepos counts
+   // the decoded samples in 48kHz units plus the pre-skip lookahead: decoders drop pre-skip
+   // samples and report the real length.
+   const int frameSamples = rate / 50;
+   std::array<uint8_t, 8192> packetData;
+   std::array<float, 960 * 2> input;
+   int64_t granulepos = lookahead * to48k;
+   int64_t packetNo = 2;
+   for (size_t pos = 0; pos < pcm.size();)
+   {
+      const size_t count = std::min(pcm.size() - pos, static_cast<size_t>(frameSamples * channels));
+      const int frameSize = static_cast<int>(count / channels);
+      input.fill(0.f);
+      memcpy(input.data(), pcm.data() + pos, count * sizeof(float));
+      pos += count;
+      granulepos += static_cast<int64_t>(frameSize) * to48k;
+      const int length = opus_encode_float(encoder, input.data(), frameSamples, packetData.data(), static_cast<opus_int32>(packetData.size()));
+      if (length <= 0)
+      {
+         ogg_stream_clear(&stream);
+         opus_encoder_destroy(encoder);
+         return {};
+      }
+      ogg_packet packet { packetData.data(), length, 0, pos >= pcm.size() ? 1 : 0, granulepos, packetNo++ };
+      ogg_stream_packetin(&stream, &packet);
+      writePages(false);
+   }
+   writePages(true);
+   ogg_stream_clear(&stream);
+   opus_encoder_destroy(encoder);
+
+   // Reject what the playback decoder cannot open instead of storing an invalid stream
+   ma_decoder_config checkConfig = ma_decoder_config_init(ma_format_f32, 0, 0);
+   VPX::AddOpusDecoder(checkConfig);
+   ma_decoder check;
+   const bool valid = ma_decoder_init_memory(out.data(), out.size(), &checkConfig, &check) == MA_SUCCESS;
+   if (valid)
+      ma_decoder_uninit(&check);
+   return valid ? out : vector<uint8_t> {};
+}
+
+// Re-encodes an image's file data to another image format with FreeImage
+vector<uint8_t> EncodeImage(Texture &image, const FREE_IMAGE_FORMAT format, const int saveFlags)
+{
+   FIMEMORY *const src = FreeImage_OpenMemory(const_cast<BYTE *>(image.GetFileRaw()), static_cast<DWORD>(image.GetFileSize()));
+   if (src == nullptr)
+      return {};
+   const FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(src);
+   FIBITMAP *const bitmap = fif != FIF_UNKNOWN && FreeImage_FIFSupportsReading(fif)
+      ? FreeImage_LoadFromMemory(fif, src, (fif == FIF_PNG ? PNG_IGNOREGAMMA : 0) | (fif == FIF_EXR ? EXR_ALLOW_FOR_FP16 : 0))
+      : nullptr;
+   FreeImage_CloseMemory(src);
+   if (bitmap == nullptr)
+      return {};
+   vector<uint8_t> out;
+   FIMEMORY *const dst = FreeImage_OpenMemory();
+   if (dst != nullptr)
+   {
+      if (FreeImage_SaveToMemory(format, bitmap, dst, saveFlags))
+      {
+         out.resize(FreeImage_TellMemory(dst));
+         FreeImage_SeekMemory(dst, 0, SEEK_SET);
+         FreeImage_ReadMemory(out.data(), 1, static_cast<unsigned int>(out.size()), dst);
+      }
+      FreeImage_CloseMemory(dst);
+   }
+   FreeImage_Unload(bitmap);
+   if (out.empty())
+      return {};
+
+   // Reject what FreeImage cannot decode back instead of storing an invalid file
+   FIMEMORY *const check = FreeImage_OpenMemory(out.data(), static_cast<DWORD>(out.size()));
+   const FREE_IMAGE_FORMAT checkFif = check != nullptr ? FreeImage_GetFileTypeFromMemory(check) : FIF_UNKNOWN;
+   FIBITMAP *const checkBitmap = checkFif != FIF_UNKNOWN ? FreeImage_LoadFromMemory(checkFif, check, checkFif == FIF_EXR ? EXR_ALLOW_FOR_FP16 : 0) : nullptr;
+   if (check != nullptr)
+      FreeImage_CloseMemory(check);
+   if (checkBitmap != nullptr)
+      FreeImage_Unload(checkBitmap);
+   return checkBitmap != nullptr ? out : vector<uint8_t> {};
+}
+
+// 'path' with its extension replaced, or built from the asset name if empty
+std::filesystem::path PathWithExtension(const std::filesystem::path &path, const string &name, const char *extension)
+{
+   if (path.empty())
+      return PathFromUTF8(name + extension);
+   std::filesystem::path renamed = path;
+   renamed.replace_extension(extension);
+   return renamed;
+}
+
+// Undoable re-encoding of a sound's file data as Ogg Opus (see EncodeSoundToOggOpus)
+std::function<IEditable *(PinTable &table, PinUndo &undo)> ReencodeSoundFix(VPX::Sound *sound, const int channels)
+{
+   return [sound, channels](PinTable &, PinUndo &undo) -> IEditable *
+   {
+      vector<uint8_t> data = EncodeSoundToOggOpus(*sound, channels);
+      if (data.empty())
+      {
+         PLOGE << "Failed to re-encode sound '" << sound->GetName() << "' to Ogg Opus";
+         return nullptr;
+      }
+      undo.MarkForAction([sound, path = sound->GetImportPath(), data = vector<uint8_t>(sound->GetFileRaw(), sound->GetFileRaw() + sound->GetFileSize())]()
+         { sound->SetFromFileData(path, data); },
+         [sound]() -> std::function<void()>
+         {
+            return [sound, path = sound->GetImportPath(), data = vector<uint8_t>(sound->GetFileRaw(), sound->GetFileRaw() + sound->GetFileSize())]() { sound->SetFromFileData(path, data); };
+         });
+      sound->SetFromFileData(PathWithExtension(sound->GetImportPath(), sound->GetName(), ".opus"), std::move(data));
+      return nullptr;
+   };
+}
+
+// Undoable re-encoding of an image's file data to another format (see EncodeImage)
+std::function<IEditable *(PinTable &table, PinUndo &undo)> ReencodeImageFix(Texture *image, const FREE_IMAGE_FORMAT format, const int saveFlags, const char *extension)
+{
+   return [image, format, saveFlags, extension](PinTable &, PinUndo &undo) -> IEditable *
+   {
+      vector<uint8_t> data = EncodeImage(*image, format, saveFlags);
+      if (data.empty())
+      {
+         PLOGE << "Failed to re-encode image '" << image->m_name << "'";
+         return nullptr;
+      }
+      undo.MarkForAction([image, path = image->GetFilePath(), data = vector<uint8_t>(image->GetFileRaw(), image->GetFileRaw() + image->GetFileSize())]()
+         { image->SetFromFileData(path, data); }, [image]() -> std::function<void()>
+         { return [image, path = image->GetFilePath(), data = vector<uint8_t>(image->GetFileRaw(), image->GetFileRaw() + image->GetFileSize())]() { image->SetFromFileData(path, data); }; });
+      image->SetFromFileData(PathWithExtension(image->GetFilePath(), image->m_name, extension), std::move(data));
+      return nullptr;
+   };
+}
 }
 
 TableAudit TableAudit::Run(PinTable &table)
@@ -289,10 +534,51 @@ TableAudit TableAudit::Run(PinTable &table)
    for (const auto sound : table.m_vsound)
    {
       auto specs = audioPlayer->GetSoundInformations(sound);
+      if (specs.nChannels == 0)
+      {
+         addItem(TableAuditItem::Severity::Error, "sound '" + sound->GetName() + "' could not be decoded (invalid or unsupported file)").sound = sound;
+         continue; // An undecodable sound cannot be checked or re-encoded
+      }
       if (specs.nChannels > 1 && sound->GetOutputTarget() == VPX::SNDOUT_TABLE)
-         addItem(TableAuditItem::Severity::Error, "sound '" + sound->GetName() + "' is used for playfield physical sound but has multiple channels (not mono).").sound = sound;
+      {
+         TableAuditItem &item = addItem(TableAuditItem::Severity::Error, "sound '" + sound->GetName() + "' is used for playfield physical sound but has multiple channels (not mono).");
+         item.sound = sound;
+         item.fix = ReencodeSoundFix(sound, 1);
+         item.fixLabel = "Re-encode as mono Ogg Opus";
+      }
+      if (!specs.isOpus)
+      {
+         TableAuditItem &item = addItem(TableAuditItem::Severity::Info, "sound '" + sound->GetName() + "' is not stored in the compact 'Ogg Opus' format");
+         item.sound = sound;
+         item.fix = ReencodeSoundFix(sound, std::min<int>(static_cast<int>(specs.nChannels), 2)); // Opus' simple channel mapping only supports mono/stereo
+         item.fixLabel = "Re-encode as Ogg Opus";
+      }
    }
    audioPlayer = nullptr;
+
+   for (Texture *const image : table.m_vimage)
+   {
+      if (table.GetImageLink(image))
+         continue; // Linked (shared) images are managed outside of the table: do not re-encode them
+      const string extension = lowerCase(PathToUTF8(image->GetFilePath().extension()));
+      if (image->IsHDR())
+      {
+         if (extension != ".exr")
+         {
+            TableAuditItem &item = addItem(TableAuditItem::Severity::Info, "HDR image '" + image->m_name + "' is stored in the '" + extension + "' format instead of the more compact 'EXR'");
+            item.image = image;
+            item.fix = ReencodeImageFix(image, FIF_EXR, EXR_DEFAULT, ".exr");
+            item.fixLabel = "Re-encode as EXR";
+         }
+      }
+      else if (extension != ".webp")
+      {
+         TableAuditItem &item = addItem(TableAuditItem::Severity::Info, "Image '" + image->m_name + "' is stored in the '" + extension + "' format instead of the more compact 'WebP'");
+         item.image = image;
+         item.fix = ReencodeImageFix(image, FIF_WEBP, WBMP_DEFAULT, ".webp");
+         item.fixLabel = "Re-encode as WebP";
+      }
+   }
 
    const bool issueFound = std::ranges::any_of(items, [](const TableAuditItem &item) { return item.severity != TableAuditItem::Severity::Info; });
    if (!issueFound)

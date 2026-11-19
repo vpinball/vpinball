@@ -174,6 +174,15 @@ public:
    const std::filesystem::path& GetFilePath() const { return m_ppb->m_path; }
    bool SaveFile(const std::filesystem::path &filename) const { return m_ppb->WriteToFile(filename); }
 
+   // Replaces the stored file blob (e.g. after re-encoding to another format): the decoded image is
+   // unchanged so the cached bitmap stays valid, only the stored data and its path change
+   void SetFromFileData(const std::filesystem::path &filename, vector<uint8_t> filedata)
+   {
+      m_ppb->m_path = filename;
+      m_ppb->m_buffer = std::move(filedata);
+      m_isContentHashDirty = true;
+   }
+
    uint64_t GetContentHash() const; // Hash (XXH3) of the image file data, computed when first needed
    // Same image file data, exactly: file sizes, then hashes (computing them if needed) and, when both match, the whole file data
    // byte by byte. Matches are rare, so the full comparison mostly runs on actual duplicates

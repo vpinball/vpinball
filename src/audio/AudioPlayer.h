@@ -78,6 +78,7 @@ struct SoundSpec
    float lengthInSeconds;
    unsigned int sampleFrequency;
    unsigned int nChannels;
+   bool isOpus; // The file is decoded by the Opus backend (Ogg Opus)
 };
 
 // Audio playback system, supporting:
