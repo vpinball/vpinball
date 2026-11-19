@@ -118,6 +118,8 @@
     <ClCompile Include="../../tests/plugins/plugins/test-resuriresolver.cpp" />
     <ClCompile Include="../../tests/plugins/upscaledmd/test-upscalers.cpp" />
     <ClCompile Include="../../tests/render/test-base-render.cpp" />
+    <ClCompile Include="../../tests/render/test-ball-lights-render.cpp" />
+    <ClCompile Include="../../tests/render/test-envmap-render.cpp" />
     <ClCompile Include="../../tests/render/test-mirror-render.cpp" />
     <ClCompile Include="../../tests/render/test-multiview-render.cpp" />
     <ClCompile Include="../../tests/render/test-normalmap-render.cpp" />

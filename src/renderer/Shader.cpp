@@ -227,8 +227,6 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[static_cast<unsigned int>(Shad
    SHADER_TECHNIQUE(Stereo_sRGBDynDesatAnaglyph),
    SHADER_TECHNIQUE(Stereo_GammaDynDesatAnaglyph),
    SHADER_TECHNIQUE(Stereo_DeghostAnaglyph),
-
-   SHADER_TECHNIQUE(irradiance),
 };
 #undef SHADER_TECHNIQUE
 
@@ -300,8 +298,8 @@ ShaderUniformDef ShaderUniformDef::coreUniforms[static_cast<unsigned int>(Shader
    SHADER_UNIFORM(ShaderUniformType::Float4v, ballLightPos, 10), // OpenGL & BGFX only
    SHADER_UNIFORM(ShaderUniformType::Bool, is_metal, 1), // OpenGL & BGFX only
    SHADER_UNIFORM(ShaderUniformType::Bool, doNormalMapping, 1), // OpenGL & BGFX only
-   SHADER_UNIFORM(ShaderUniformType::Float4v, basicPackedLights, 3), // DX9 only
-   SHADER_UNIFORM(ShaderUniformType::Float4v, ballPackedLights, 15), // DX9 only
+   SHADER_UNIFORM(ShaderUniformType::Float4v, basicPackedLights, 4), // DX9 only
+   SHADER_UNIFORM(ShaderUniformType::Float4v, ballPackedLights, 20), // DX9 only
    SHADER_UNIFORM(ShaderUniformType::Float4, Roughness_WrapL_Edge_Thickness, 1),
    SHADER_UNIFORM(ShaderUniformType::Float4, cBase_Alpha, 1),
    SHADER_UNIFORM(ShaderUniformType::Float2, fDisableLighting_top_below, 1),
@@ -1425,7 +1423,7 @@ void Shader::Load()
       // Screen Space post-processes
       BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_filter), BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_nofilter), BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_display), BGFX_EMBEDDED_SHADER_ST(fs_pp_ssao),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_bloom), BGFX_EMBEDDED_SHADER_ST(fs_pp_mirror), BGFX_EMBEDDED_SHADER_ST(fs_pp_copy), BGFX_EMBEDDED_SHADER_ST(fs_pp_ssr),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_irradiance), BGFX_EMBEDDED_SHADER_ST(fs_pp_copy_depth), BGFX_EMBEDDED_SHADER(fs_pp_passthrough),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_copy_depth), BGFX_EMBEDDED_SHADER(fs_pp_passthrough),
       // Motion Blur as post-processes
       BGFX_EMBEDDED_SHADER_ST(fs_pp_motionblur),
       // Anti-Aliasing as post-processes
@@ -1575,7 +1573,6 @@ void Shader::Load()
       loadProgram(embeddedShaders, ShaderTechnique::fb_mirror, STEREO(vs_postprocess), STEREO(fs_pp_mirror));
       loadProgram(embeddedShaders, ShaderTechnique::fb_copy, STEREO(vs_postprocess), STEREO(fs_pp_copy));
       loadProgram(embeddedShaders, ShaderTechnique::SSReflection, STEREO(vs_postprocess), STEREO(fs_pp_ssr));
-      loadProgram(embeddedShaders, ShaderTechnique::irradiance, STEREO(vs_postprocess), STEREO(fs_pp_irradiance));
       loadProgram(embeddedShaders, ShaderTechnique::fb_copy_depth, STEREO(vs_postprocess), STEREO(fs_pp_copy_depth));
 
       // Postprocessed motion blur

@@ -199,39 +199,26 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
          envTex = envTex->Convert(BaseTexture::RGBA_FP16);
    }
 #endif
-   m_envSampler = std::make_shared<Sampler>(m_renderDevice, "Table Env"s, envTex, false);
-
-   PLOGI << "Computing environment map radiance"; // For profiling
-
-   const unsigned int envTexHeight = min(envTex->height(), 256u) / 8;
-   const unsigned int envTexWidth = envTexHeight * 2;
-// DirectX 9 does not support bitwise operation in shader, so radical_inverse is not implemented, and therefore we use the slow CPU path instead of GPU
-// OpenGL ES does not support features used in the irradiance shader, so we use the CPU path for it as well
-// There is a bug when using the Metal shader, so we use the CPU path for it as well (also on the web, where WebGPU may run on Metal and the shader hangs the GPU)
-// On Android VR (Quest), the VR init path leaves m_framePending=true before SubmitRenderFrame can run, so use the CPU path there too.
-#if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__) || defined(__EMSCRIPTEN__) || (defined(__ANDROID__) && defined(ENABLE_XR))
-   m_envRadianceTexture = EnvmapPrecalc(envTex, envTexWidth, envTexHeight);
+   PLOGI << "Computing environment map mipmaps and irradiance"; // For profiling
+   const unsigned int irradianceHeight = max(1u, min(envTex->height(), 256u) / 8);
+   EnvmapPrecalcResult envPrecalc = EnvmapPrecalc(envTex, 2 * irradianceHeight, irradianceHeight);
+   if (!envPrecalc.glossyMips.empty())
+      m_envSampler = std::make_shared<Sampler>(m_renderDevice, "Table Env"s, envPrecalc.glossyMips);
+   else // Not readable on the CPU (not expected): GPU mipmaps (2x2 averages, so the glossy lookup is sharper than intended), no diffuse lighting
+   {
+      PLOGE << "Failed to compute the environment map mipmaps and irradiance";
+      m_envSampler = std::make_shared<Sampler>(m_renderDevice, "Table Env"s, envTex, false);
+      envPrecalc.irradiance = BaseTexture::Create(1, 1, BaseTexture::SRGBA);
+      if (envPrecalc.irradiance)
+         memset(envPrecalc.irradiance->data(), 0, 4);
+   }
+   m_envRadianceTexture = std::move(envPrecalc.irradiance);
+   envPrecalc.glossyMips.clear();
    m_renderDevice->m_texMan.SetDirty(m_envRadianceTexture.get());
    m_renderDevice->m_basicShader->SetTexture(ShaderUniform::tex_diffuse_env, m_envRadianceTexture.get());
    m_renderDevice->m_ballShader->SetTexture(ShaderUniform::tex_diffuse_env, m_envRadianceTexture.get());
-#else // Compute radiance on the GPU
-   const colorFormat rad_format = envTex->m_format == BaseTexture::RGB_FP32 ? colorFormat::RGBA32F : colorFormat::RGBA16F;
-   m_envRadianceTexture
-      = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "Irradiance"s, envTexWidth, envTexHeight, rad_format, false, 1, "Failed to create irradiance render target");
-   m_renderDevice->ResetRenderState();
-   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   m_renderDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);
-   m_renderDevice->m_FBShader->SetTechnique(ShaderTechnique::irradiance);
-   m_renderDevice->m_FBShader->SetTexture(ShaderUniform::tex_env, m_envSampler);
-   //m_renderDevice->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / m_envSampler->GetWidth()), (float)(1.0 / m_envSampler->GetHeight()), 1.0f, 1.0f);
-   m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
-   m_renderDevice->SubmitRenderFrame(); // Force submission as result users do not explicitly declare the dependency on this pass
-   m_renderDevice->m_basicShader->SetTexture(ShaderUniform::tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
-   m_renderDevice->m_ballShader->SetTexture(ShaderUniform::tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
-#endif
    envTex.reset();
-   PLOGI << "Environment map radiance computed"; // For profiling
+   PLOGI << "Environment map mipmaps and irradiance computed"; // For profiling
 
    const bool lowDetailBall = (m_table->GetDetailLevel() < 10);
    std::shared_ptr<IndexBuffer> ballIndexBuffer
@@ -408,11 +395,7 @@ Renderer::~Renderer()
    delete m_tonemapLUT;
    for (int window = 0; window <= VPXWindowId::VPXWINDOW_Topper; window++)
       m_ancillaryWndHdrRT[window] = nullptr;
-#if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__) || defined(__EMSCRIPTEN__) || (defined(__ANDROID__) && defined(ENABLE_XR))
    m_envRadianceTexture.reset();
-#else
-   delete m_envRadianceTexture;
-#endif
    m_ballEnvSampler = nullptr;
    m_envSampler = nullptr;
    m_aoDitherSampler = nullptr;
@@ -496,392 +479,351 @@ void Renderer::DisableBallLighting(bool disableLightingForBalls)
    m_renderDevice->m_ballShader->SetVector(ShaderUniform::w_h_disableLighting, prev.x, prev.y, disableLightingForBalls ? 1.f : 0.f, prev.w);
 }
 
-std::shared_ptr<BaseTexture> Renderer::EnvmapPrecalc(const std::shared_ptr<const BaseTexture>& envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
+namespace
 {
-   const void* __restrict envmap = envTex->datac();
-   const unsigned int env_xres = envTex->width();
-   const unsigned int env_yres = envTex->height();
-   BaseTexture::Format env_format = envTex->m_format;
-   assert(env_format != BaseTexture::BW && env_format != BaseTexture::SRGB565); // Unsupported by the sampling below, not expected for environment images
-   // Float result for HDR environments (alpha dropped), sRGB for LDR ones
-   const BaseTexture::Format rad_format = (env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGBA_FP16) ? BaseTexture::RGB_FP16
-      : (env_format == BaseTexture::RGB_FP32 || env_format == BaseTexture::RGBA_FP32)                                   ? BaseTexture::RGB_FP32
-                                                                                                                        : BaseTexture::SRGB;
-   std::shared_ptr<BaseTexture> radTex = BaseTexture::Create(rad_env_xres, rad_env_yres, rad_format);
-   uint8_t* const __restrict rad_envmap = static_cast<uint8_t*>(radTex->data());
-   bool free_envmap = false;
+// One level of the environment map mip chain while it is computed: linear RGB floats, equirectangular (texel (x, y) of a w x h
+// level looks in the direction of longitude (x + 0.5) / w * 2 PI + PI and colatitude (y + 0.5) / h * PI, see ray_to_equirectangular_uv)
+struct EnvLevel
+{
+   unsigned int w = 0, h = 0;
+   vector<float> rgb;
+};
 
-#define PREFILTER_ENVMAP_DIFFUSE
-#ifdef PREFILTER_ENVMAP_DIFFUSE
-   // pre-filter envmap with a gauss (separable/two passes: x and y)
-   //!!! not correct to pre-filter like this, but barely visible in the end, and helps to keep number of samples low (otherwise one would have to use >64k samples instead of 4k!)
-   if ((env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGB_FP32 || env_format == BaseTexture::RGBA_FP16 || env_format == BaseTexture::RGBA_FP32) && env_xres > 64)
+// Decodes row y of an image to linear RGB floats
+void DecodeEnvRow(const BaseTexture& tex, const unsigned int y, float* const __restrict out)
+{
+   const unsigned int w = tex.width();
+   const uint8_t* const __restrict row = static_cast<const uint8_t*>(tex.datac()) + static_cast<size_t>(y) * tex.pitch();
+   const uint16_t* const __restrict row16 = reinterpret_cast<const uint16_t*>(row);
+   const float* const __restrict row32 = reinterpret_cast<const float*>(row);
+   const unsigned int stride = (tex.m_format == BaseTexture::RGBA || tex.m_format == BaseTexture::SRGBA || tex.m_format == BaseTexture::RGBA_FP16 || tex.m_format == BaseTexture::RGBA_FP32) ? 4 : 3;
+   for (unsigned int x = 0; x < w; ++x)
    {
-      const unsigned int env_stride = (env_format == BaseTexture::RGBA_FP16 || env_format == BaseTexture::RGBA_FP32) ? 4 : 3; // Alpha is skipped, the filtered result is RGB_FP32
-      const bool env_fp16 = (env_format == BaseTexture::RGB_FP16 || env_format == BaseTexture::RGBA_FP16);
-      const float scale_factor = (float)env_xres * (float)(1.0 / 64.);
-      const int xs = (int)(scale_factor * 0.5f + 0.5f);
-      void* const __restrict envmap2 = malloc(env_xres * env_yres * (3 * 4));
-      void* const __restrict envmap3 = malloc(env_xres * env_yres * (3 * 4));
-      const float sigma = (scale_factor - 1.f) * 0.25f;
-      float* const __restrict weights = (float*)malloc((xs * 2 + 1) * 4);
-      for (int x = 0; x < (xs * 2 + 1); ++x)
-         weights[x] = (1.f / sqrtf((float)(2. * M_PI) * sigma * sigma)) * expf(-(float)((x - xs) * (x - xs)) / (2.f * sigma * sigma));
-
-      // x-pass:
-
-      for (int y = 0; y < (int)env_yres; ++y)
+      float* const __restrict o = out + x * 3;
+      switch (tex.m_format)
       {
-         const int yoffs = y * env_xres * env_stride;
-         for (int x = 0; x < (int)env_xres; ++x)
-         {
-            float sum_r = 0.f, sum_g = 0.f, sum_b = 0.f, sum_w = 0.f;
-            for (int xt2 = 0; xt2 <= xs * 2; ++xt2)
-            {
-               int xt = xt2 + (x - xs);
-               if (xt < 0)
-                  xt += env_xres;
-               else if (xt >= (int)env_xres)
-                  xt -= env_xres;
-               const float w = weights[xt2];
-               const unsigned int offs = xt * env_stride + yoffs;
-               if (env_fp16)
-               {
-                  sum_r += half2float(((const uint16_t*)envmap)[offs]) * w;
-                  sum_g += half2float(((const uint16_t*)envmap)[offs + 1]) * w;
-                  sum_b += half2float(((const uint16_t*)envmap)[offs + 2]) * w;
-               }
-               else
-               {
-                  sum_r += ((const float*)envmap)[offs] * w;
-                  sum_g += ((const float*)envmap)[offs + 1] * w;
-                  sum_b += ((const float*)envmap)[offs + 2] * w;
-               }
-               sum_w += w;
-            }
-
-            const unsigned int offs = (x + y * env_xres) * 3;
-            const float inv_sum = 1.0f / sum_w;
-            ((float*)envmap2)[offs] = sum_r * inv_sum;
-            ((float*)envmap2)[offs + 1] = sum_g * inv_sum;
-            ((float*)envmap2)[offs + 2] = sum_b * inv_sum;
-         }
+      case BaseTexture::BW: o[0] = o[1] = o[2] = static_cast<float>(row[x]) * (float)(1.0 / 255.0); break;
+      case BaseTexture::BW_FP32: o[0] = o[1] = o[2] = row32[x]; break;
+      case BaseTexture::RGB:
+      case BaseTexture::RGBA:
+         for (unsigned int c = 0; c < 3; ++c)
+            o[c] = static_cast<float>(row[x * stride + c]) * (float)(1.0 / 255.0);
+         break;
+      case BaseTexture::SRGB:
+      case BaseTexture::SRGBA:
+         for (unsigned int c = 0; c < 3; ++c)
+            o[c] = InvsRGB8(row[x * stride + c]);
+         break;
+      case BaseTexture::SRGB565:
+      {
+         const unsigned int v = row16[x], r = v >> 11, g = (v >> 5) & 63u, b = v & 31u;
+         o[0] = InvsRGB8(static_cast<uint8_t>((r << 3) | (r >> 2)));
+         o[1] = InvsRGB8(static_cast<uint8_t>((g << 2) | (g >> 4)));
+         o[2] = InvsRGB8(static_cast<uint8_t>((b << 3) | (b >> 2)));
+         break;
       }
-
-      // y-pass:
-
-      for (int y = 0; y < (int)env_yres; ++y)
-         for (int x = 0; x < (int)env_xres; ++x)
-         {
-            float sum_r = 0.f, sum_g = 0.f, sum_b = 0.f, sum_w = 0.f;
-            const int yt_end = min(y + xs, (int)env_yres - 1) - (y - xs);
-            int offs = x * 3 + max(y - xs, 0) * (env_xres * 3);
-            for (int yt = max(y - xs, 0) - (y - xs); yt <= yt_end; ++yt, offs += env_xres * 3)
-            {
-               const float w = weights[yt];
-               sum_r += ((float*)envmap2)[offs] * w;
-               sum_g += ((float*)envmap2)[offs + 1] * w;
-               sum_b += ((float*)envmap2)[offs + 2] * w;
-               sum_w += w;
-            }
-
-            offs = (x + y * env_xres) * 3;
-            const float inv_sum = 1.0f / sum_w;
-            ((float*)envmap3)[offs] = sum_r * inv_sum;
-            ((float*)envmap3)[offs + 1] = sum_g * inv_sum;
-            ((float*)envmap3)[offs + 2] = sum_b * inv_sum;
-         }
-
-      envmap = envmap3;
-      env_format = BaseTexture::RGB_FP32;
-      free(envmap2);
-      free(weights);
-      free_envmap = true;
+      case BaseTexture::RGB_FP16:
+      case BaseTexture::RGBA_FP16:
+         for (unsigned int c = 0; c < 3; ++c)
+            o[c] = half2float(row16[x * stride + c]);
+         break;
+      case BaseTexture::RGB_FP32:
+      case BaseTexture::RGBA_FP32:
+         for (unsigned int c = 0; c < 3; ++c)
+            o[c] = row32[x * stride + c];
+         break;
+      default: assert(!"unknown format"); o[0] = o[1] = o[2] = 0.f; break;
+      }
    }
-#endif
+}
 
-   // brute force sampling over hemisphere for each normal direction of the to-be-(ir)radiance-baked environment
-   // not the fastest solution, could do a "cosine convolution" over the picture instead (where also just 1024 or x samples could be used per pixel)
-   //!! (note though that even 4096 samples can be too low if very bright spots (i.e. sun) in the image! see Delta_2k.hdr -> thus pre-filter enabled above!)
-   // but with this implementation one can also have custom maps/LUTs for glossy, etc. later-on
+// Encodes a row of linear RGB floats to RGBA, SRGBA, RGBA_FP16 or RGBA_FP32 (opaque)
+void EncodeEnvRow(const float* const __restrict in, const unsigned int w, const BaseTexture::Format format, uint8_t* const __restrict out)
+{
+   for (unsigned int x = 0; x < w; ++x)
    {
-      progschj::ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
-
-      for (unsigned int y = 0; y < rad_env_yres; ++y)
+      const float* const __restrict i = in + x * 3;
+      switch (format)
       {
-         pool.enqueue_block(
-            [y, rad_envmap, rad_format, rad_env_xres, rad_env_yres, envmap, env_format, env_xres, env_yres]
+      case BaseTexture::RGBA:
+         for (unsigned int c = 0; c < 3; ++c)
+            out[x * 4 + c] = static_cast<uint8_t>(clamp(i[c] * 255.f + 0.5f, 0.f, 255.f));
+         out[x * 4 + 3] = 255;
+         break;
+      case BaseTexture::SRGBA:
+         for (unsigned int c = 0; c < 3; ++c)
+            out[x * 4 + c] = sRGB8(clamp(i[c], 0.f, 1.f));
+         out[x * 4 + 3] = 255;
+         break;
+      case BaseTexture::RGBA_FP16:
+         for (unsigned int c = 0; c < 3; ++c)
+            reinterpret_cast<uint16_t*>(out)[x * 4 + c] = float2half_noLUT(i[c]);
+         reinterpret_cast<uint16_t*>(out)[x * 4 + 3] = float2half_noLUT(1.f);
+         break;
+      case BaseTexture::RGBA_FP32:
+         for (unsigned int c = 0; c < 3; ++c)
+            reinterpret_cast<float*>(out)[x * 4 + c] = i[c];
+         reinterpret_cast<float*>(out)[x * 4 + 3] = 1.f;
+         break;
+      default: assert(!"unsupported format"); break;
+      }
+   }
+}
+
+std::shared_ptr<BaseTexture> EncodeEnvLevel(const EnvLevel& level, const BaseTexture::Format format)
+{
+   std::shared_ptr<BaseTexture> tex = BaseTexture::Create(level.w, level.h, format);
+   if (tex == nullptr)
+      return nullptr;
+   for (unsigned int y = 0; y < level.h; ++y)
+      EncodeEnvRow(level.rgb.data() + static_cast<size_t>(y) * level.w * 3, level.w, format, static_cast<uint8_t*>(tex->data()) + static_cast<size_t>(y) * tex->pitch());
+   return tex;
+}
+
+// 2x2 average (size rounded down, at least 1, as the GPU mip chains)
+EnvLevel DownsampleEnvLevel(const EnvLevel& src)
+{
+   EnvLevel dst;
+   dst.w = max(1u, src.w / 2);
+   dst.h = max(1u, src.h / 2);
+   dst.rgb.resize(static_cast<size_t>(dst.w) * dst.h * 3);
+   for (unsigned int y = 0; y < dst.h; ++y)
+   {
+      const float* const r0 = src.rgb.data() + static_cast<size_t>(min(2 * y, src.h - 1)) * src.w * 3;
+      const float* const r1 = src.rgb.data() + static_cast<size_t>(min(2 * y + 1, src.h - 1)) * src.w * 3;
+      for (unsigned int x = 0; x < dst.w; ++x)
+      {
+         const unsigned int x0 = min(2 * x, src.w - 1) * 3, x1 = min(2 * x + 1, src.w - 1) * 3;
+         for (unsigned int c = 0; c < 3; ++c)
+            dst.rgb[(static_cast<size_t>(y) * dst.w + x) * 3 + c] = 0.25f * (r0[x0 + c] + r0[x1 + c] + r1[x0 + c] + r1[x1 + c]);
+      }
+   }
+   return dst;
+}
+
+// Integrates src over a Phong lobe of the given power, cos(angle to the lobe axis)^power, around the direction of each texel of dst.
+// The integral is over directions (texels weighted by their solid angle), so the result is right over the whole sphere, poles included.
+void PrefilterEnvLevel(const EnvLevel& src, EnvLevel& dst, const float power, progschj::ThreadPool& pool)
+{
+   vector<float> rowSin(src.h), rowCos(src.h), colSin(src.w), colCos(src.w);
+   for (unsigned int j = 0; j < src.h; ++j)
+   {
+      const float theta = ((float)j + 0.5f) / (float)src.h * (float)M_PI;
+      rowSin[j] = sinf(theta);
+      rowCos[j] = cosf(theta);
+   }
+   for (unsigned int i = 0; i < src.w; ++i)
+   {
+      const float phi = ((float)i + 0.5f) / (float)src.w * (float)(2.0 * M_PI) + (float)M_PI;
+      colSin[i] = sinf(phi);
+      colCos[i] = cosf(phi);
+   }
+   // Directions whose weight is below 1e-3 are skipped: they are further than alpha from the lobe axis
+   const float cosAlpha = expf(logf(1e-3f) / power);
+   const float alpha = acosf(cosAlpha);
+   for (unsigned int y = 0; y < dst.h; ++y)
+   {
+      pool.enqueue_block(
+         [&src, &dst, &rowSin, &rowCos, &colSin, &colCos, power, cosAlpha, alpha, y]
+         {
+            set_denormals_flush_to_zero_once();
+            const float theta = ((float)y + 0.5f) / (float)dst.h * (float)M_PI;
+            const float sT = sinf(theta), cT = cosf(theta);
+            const int j0 = max(0, static_cast<int>(floorf((theta - alpha) * ((float)src.h / (float)M_PI) - 0.5f)));
+            const int j1 = min(static_cast<int>(src.h) - 1, static_cast<int>(ceilf((theta + alpha) * ((float)src.h / (float)M_PI) - 0.5f)));
+            for (unsigned int x = 0; x < dst.w; ++x)
             {
-               set_denormals_flush_to_zero_once(); // to avoid slowdown due to denormals
-               for (unsigned int x = 0; x < rad_env_xres; ++x)
+               const float phi = ((float)x + 0.5f) / (float)dst.w * (float)(2.0 * M_PI) + (float)M_PI;
+               const float rx = sT * cosf(phi), ry = sT * sinf(phi), rz = cT;
+               const float center = ((float)x + 0.5f) * (float)src.w / (float)dst.w - 0.5f; // Source column of the lobe axis
+               float sum_r = 0.f, sum_g = 0.f, sum_b = 0.f, sum_w = 0.f;
+               for (int j = j0; j <= j1; ++j)
                {
-                  // transfo from envmap to normal direction, at the texel center where the shaders look it up
-                  const float phi = ((float)x + 0.5f) / (float)rad_env_xres * (float)(2.0 * M_PI) + (float)M_PI;
-                  const float theta = ((float)y + 0.5f) / (float)rad_env_yres * (float)M_PI;
-                  const Vertex3Ds n(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
-
-                  // draw x samples over hemisphere and collect cosine weighted environment map samples
-                  float sum_r = 0.f, sum_g = 0.f, sum_b = 0.f;
-
-                  constexpr unsigned int num_samples = 4096;
-                  for (unsigned int s = 0; s < num_samples; ++s)
+                  const float sj = rowSin[j], cj = rowCos[j];
+                  // Columns of row j within alpha of the axis: cos(longitude difference) >= (cos(alpha) - cj cT) / (sj sT)
+                  int i0 = 0, i1 = static_cast<int>(src.w) - 1;
+                  const float den = sj * sT;
+                  if (den > 1e-6f)
                   {
-                  //!! discard directions pointing below the playfield?? or give them another "average playfield" color??
-#define USE_ENVMAP_PRECALC_COSINE
-#ifndef USE_ENVMAP_PRECALC_COSINE
-                     //!! as we do not use importance sampling on the environment, just not being smart -could- be better for high frequency environments
-                     Vertex3Ds l = sphere_sample((float)s * (float)(1.0 / num_samples), radical_inverse(s)); // QMC hammersley point set
-                     float NdotL = l.Dot(n);
-                     if (NdotL < 0.0f) // flip if on backside of hemisphere
+                     const float c = (cosAlpha - cj * cT) / den;
+                     if (c >= 1.f)
+                        continue;
+                     if (c > -1.f)
                      {
-                        NdotL = -NdotL;
-                        l = -l;
+                        const float half = acosf(c) * ((float)src.w / (float)(2.0 * M_PI));
+                        const int a = static_cast<int>(ceilf(center - half)), b = static_cast<int>(floorf(center + half));
+                        if (b - a + 1 < static_cast<int>(src.w))
+                        {
+                           i0 = a;
+                           i1 = b;
+                        }
                      }
-#else
-                     //Vertex3Ds cos_hemisphere_sample(const Vertex3Ds &normal, Vertex2D uv) { float theta = (float)(2.*M_PI) * uv.x; uv.y = 2.f * uv.y - 1.f; Vertex3Ds spherePoint(sqrt(1.f - uv.y * uv.y) * Vertex2D(cosf(theta), sinf(theta)), uv.y); return normalize(normal + spherePoint); }
-                     const Vertex3Ds l = rotate_to_vector_upper(cos_hemisphere_sample((float)s * (float)(1.0 / num_samples), radical_inverse(s)), n); // QMC hammersley point set
-#endif
-                     // transfo from light direction to envmap
-                     // approximations seem to be good enough!
-                     const float u = atan2_approx_div2PI(l.y, l.x) + 0.5f; //atan2f(l.y, l.x) * (float)(0.5 / M_PI) + 0.5f;
-                     const float v = acos_approx_divPI(l.z); //acosf(l.z) * (float)(1.0 / M_PI);
-
-                     float r, g, b;
-                     unsigned int offs = (int)(u * (float)env_xres) + (int)(v * (float)env_yres) * env_xres;
-                     if (offs >= env_yres * env_xres)
-                        offs = 0;
-                     switch (env_format)
-                     {
-                     case BaseTexture::RGB_FP16:
-                     {
-                        r = half2float(((const uint16_t*)envmap)[offs * 3]);
-                        g = half2float(((const uint16_t*)envmap)[offs * 3 + 1]);
-                        b = half2float(((const uint16_t*)envmap)[offs * 3 + 2]);
-                        break;
-                     }
-                     case BaseTexture::RGBA_FP16:
-                     {
-                        r = half2float(((const uint16_t*)envmap)[offs * 4]);
-                        g = half2float(((const uint16_t*)envmap)[offs * 4 + 1]);
-                        b = half2float(((const uint16_t*)envmap)[offs * 4 + 2]);
-                        break;
-                     }
-                     case BaseTexture::RGB_FP32:
-                     {
-                        r = ((const float*)envmap)[offs * 3];
-                        g = ((const float*)envmap)[offs * 3 + 1];
-                        b = ((const float*)envmap)[offs * 3 + 2];
-                        break;
-                     }
-                     case BaseTexture::RGBA_FP32:
-                     {
-                        r = ((const float*)envmap)[offs * 4];
-                        g = ((const float*)envmap)[offs * 4 + 1];
-                        b = ((const float*)envmap)[offs * 4 + 2];
-                        break;
-                     }
-                     case BaseTexture::RGB:
-                     {
-                        r = (float)((const uint8_t*)envmap)[offs * 3] * (float)(1.0 / 255.0);
-                        g = (float)((const uint8_t*)envmap)[offs * 3 + 1] * (float)(1.0 / 255.0);
-                        b = (float)((const uint8_t*)envmap)[offs * 3 + 2] * (float)(1.0 / 255.0);
-                        break;
-                     }
-                     case BaseTexture::RGBA:
-                     {
-                        const uint32_t rgb = ((const uint32_t*)envmap)[offs]; // bytes are ordered R, G, B, A
-                        r = (float)(rgb & 0x000000FF) * (float)(1.0 / 255.0);
-                        g = (float)(rgb & 0x0000FF00) * (float)(1.0 / 65280.0);
-                        b = (float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0);
-                        break;
-                     }
-                     case BaseTexture::SRGB:
-                     {
-                        r = invGammaApprox((float)((const uint8_t*)envmap)[offs * 3] * (float)(1.0 / 255.0));
-                        g = invGammaApprox((float)((const uint8_t*)envmap)[offs * 3 + 1] * (float)(1.0 / 255.0));
-                        b = invGammaApprox((float)((const uint8_t*)envmap)[offs * 3 + 2] * (float)(1.0 / 255.0));
-                        break;
-                     }
-                     case BaseTexture::SRGBA:
-                     {
-                        const uint32_t rgb = ((const uint32_t*)envmap)[offs]; // bytes are ordered R, G, B, A
-                        r = invGammaApprox((float)(rgb & 0x000000FF) * (float)(1.0 / 255.0));
-                        g = invGammaApprox((float)(rgb & 0x0000FF00) * (float)(1.0 / 65280.0));
-                        b = invGammaApprox((float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0));
-                        break;
-                     }
-                     default: assert(!"unknown env_format"); break;
-                     }
-#ifndef USE_ENVMAP_PRECALC_COSINE
-                     sum_r += r * NdotL;
-                     sum_g += g * NdotL;
-                     sum_b += b * NdotL;
-#else
-                     sum_r += r;
-                     sum_g += g;
-                     sum_b += b;
-#endif
                   }
-
-
-               // average all samples
-#ifndef USE_ENVMAP_PRECALC_COSINE
-                  sum_r *= (float)(2.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
-                  sum_g *= (float)(2.0 / num_samples);
-                  sum_b *= (float)(2.0 / num_samples);
-#else
-                  sum_r *= (float)(1.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
-                  sum_g *= (float)(1.0 / num_samples);
-                  sum_b *= (float)(1.0 / num_samples);
-#endif
-                  const unsigned int offs = (y * rad_env_xres + x) * 3;
-                  switch (rad_format)
+                  else if (cj * cT <= cosAlpha)
+                     continue;
+                  const float* const srcRow = src.rgb.data() + static_cast<size_t>(j) * src.w * 3;
+                  for (int i = i0; i <= i1; ++i)
                   {
-                  case BaseTexture::RGB_FP16:
-                  {
-                     ((uint16_t*)rad_envmap)[offs] = float2half_noLUT(sum_r);
-                     ((uint16_t*)rad_envmap)[offs + 1] = float2half_noLUT(sum_g);
-                     ((uint16_t*)rad_envmap)[offs + 2] = float2half_noLUT(sum_b);
-                     break;
-                  }
-                  case BaseTexture::RGB_FP32:
-                  {
-                     ((float*)rad_envmap)[offs] = sum_r;
-                     ((float*)rad_envmap)[offs + 1] = sum_g;
-                     ((float*)rad_envmap)[offs + 2] = sum_b;
-                     break;
-                  }
-                  case BaseTexture::SRGB:
-                  {
-                     rad_envmap[offs] = (uint8_t)clamp(gammaApprox(sum_r) * 255.f, 0.f, 255.f);
-                     rad_envmap[offs + 1] = (uint8_t)clamp(gammaApprox(sum_g) * 255.f, 0.f, 255.f);
-                     rad_envmap[offs + 2] = (uint8_t)clamp(gammaApprox(sum_b) * 255.f, 0.f, 255.f);
-                     break;
-                  }
-                  default: assert(!"unknown rad_format"); break;
+                     const int iw = i < 0 ? i + static_cast<int>(src.w) : i >= static_cast<int>(src.w) ? i - static_cast<int>(src.w) : i;
+                     const float d = sj * (colCos[iw] * rx + colSin[iw] * ry) + cj * rz;
+                     if (d <= cosAlpha)
+                        continue;
+                     const float w = (power == 1.f ? d : exp2f(power * log2f(d))) * sj; // Lobe weight times solid angle of the texel
+                     sum_r += srcRow[iw * 3 + 0] * w;
+                     sum_g += srcRow[iw * 3 + 1] * w;
+                     sum_b += srcRow[iw * 3 + 2] * w;
+                     sum_w += w;
                   }
                }
-            });
-      }
+               float* const o = dst.rgb.data() + (static_cast<size_t>(y) * dst.w + x) * 3;
+               if (sum_w > 0.f)
+               {
+                  const float inv = 1.f / sum_w;
+                  o[0] = sum_r * inv;
+                  o[1] = sum_g * inv;
+                  o[2] = sum_b * inv;
+               }
+               else // No source texel within the lobe (not expected, the lobes span more than a source texel): nearest one
+               {
+                  const unsigned int j = min(static_cast<unsigned int>(theta * ((float)src.h / (float)M_PI)), src.h - 1);
+                  const unsigned int i = static_cast<unsigned int>(center + 0.5f) % src.w;
+                  memcpy(o, src.rgb.data() + (static_cast<size_t>(j) * src.w + i) * 3, 3 * sizeof(float));
+               }
+            }
+         });
+   }
+   pool.wait_until_empty();
+   pool.wait_until_nothing_in_flight();
+}
+}
 
-      pool.wait_until_empty();
-      pool.wait_until_nothing_in_flight();
+// The glossy lookup (DoEnvmapGlossy) reads the Blinn-Phong power n at the level of height h = 2 sqrt((n+1)/3), one level finer than
+// the box filtered chain it formerly read, so the stored lobes are sampled finely enough for the bilinear lookup. Level k, of height
+// H/2^k, thus stores the lobe of power n = 0.75 (H/2^k)^2 - 1, approximated as a Phong lobe of power n/4 around the reflection vector.
+// Only the levels the lookup can reach are prefiltered (n is at most 2048, read at height ~52), the finer ones are 2x2 averages.
+// The diffuse irradiance is the same convolution with the cosine lobe (power 1, the hemisphere around the normal), from the 2x2
+// averaged level of height 32 (or the irradiance height if larger): finer details do not show through such a wide lobe.
+Renderer::EnvmapPrecalcResult Renderer::EnvmapPrecalc(const std::shared_ptr<const BaseTexture>& envTex, const unsigned int irradianceWidth, const unsigned int irradianceHeight)
+{
+   if (envTex == nullptr || envTex->datac() == nullptr || envTex->width() == 0 || envTex->height() == 0 || irradianceWidth == 0 || irradianceHeight == 0)
+      return {};
+   const BaseTexture::Format srcFormat = envTex->m_format;
+   const BaseTexture::Format format = (srcFormat == BaseTexture::RGB_FP32 || srcFormat == BaseTexture::RGBA_FP32 || srcFormat == BaseTexture::BW_FP32) ? BaseTexture::RGBA_FP32
+      : (srcFormat == BaseTexture::RGB_FP16 || srcFormat == BaseTexture::RGBA_FP16)                                                                   ? BaseTexture::RGBA_FP16
+      : BaseTexture::IsLinearFormat(srcFormat)                                                                                                       ? BaseTexture::RGBA
+                                                                                                                                                      : BaseTexture::SRGBA;
+   const unsigned int W = envTex->width(), H = envTex->height();
+   const unsigned int numLevels = static_cast<unsigned int>(std::bit_width(max(W, H)));
+   constexpr unsigned int maxPrefilteredHeight = 128;
+   // Power of the Phong lobe stored at level k (not below the one of VPX roughness 0: the lookup does not read the levels coarser than height 2)
+   const auto levelPower = [H](const unsigned int k)
+   {
+      const float h = (float)H / (float)(1u << k);
+      return max(0.75f * h * h - 1.f, 2.f) * 0.25f;
+   };
+   // 2x2 averaged level the irradiance is computed from (level heights are H >> k, at least 1)
+   unsigned int irradianceSource = 0;
+   while (irradianceSource + 1 < numLevels && max(1u, H >> irradianceSource) > max(32u, irradianceHeight))
+      ++irradianceSource;
+
+   EnvmapPrecalcResult result;
+   result.glossyMips.reserve(numLevels);
+   vector<EnvLevel> levels(numLevels); // Linear 2x2 averaged levels (level 0 only decoded if level 1 or the irradiance is computed from it)
+
+   // Level 0 is the image itself, used as is if it already has the 4 channel format of the chain (its alpha is not read), else
+   // converted to it. It is also averaged into level 1.
+   std::shared_ptr<BaseTexture> level0;
+   uint8_t* level0Data = nullptr;
+   if (srcFormat != format)
+   {
+      level0 = BaseTexture::Create(W, H, format);
+      if (level0 == nullptr)
+         return {};
+      level0Data = static_cast<uint8_t*>(level0->data());
+   }
+   const auto encodeLevel0Row = [&](const float* const row, const unsigned int y)
+   {
+      if (level0Data)
+         EncodeEnvRow(row, W, format, level0Data + static_cast<size_t>(y) * level0->pitch());
+   };
+   if (max(1u, H / 2) <= maxPrefilteredHeight || irradianceSource == 0 || numLevels == 1) // Level 0 is a source (of level 1 if prefiltered: H / 2, as odd heights like 257 round down)
+   {
+      levels[0].w = W;
+      levels[0].h = H;
+      levels[0].rgb.resize(static_cast<size_t>(W) * H * 3);
+      for (unsigned int y = 0; y < H; ++y)
+      {
+         float* const row = levels[0].rgb.data() + static_cast<size_t>(y) * W * 3;
+         DecodeEnvRow(*envTex, y, row);
+         encodeLevel0Row(row, y);
+      }
+      if (numLevels > 1)
+         levels[1] = DownsampleEnvLevel(levels[0]);
+   }
+   else // Large image: decoded 2 rows at a time
+   {
+      EnvLevel& l1 = levels[1];
+      l1.w = max(1u, W / 2);
+      l1.h = max(1u, H / 2);
+      l1.rgb.resize(static_cast<size_t>(l1.w) * l1.h * 3);
+      vector<float> r0(static_cast<size_t>(W) * 3), r1(static_cast<size_t>(W) * 3);
+      for (unsigned int y = 0; y < H; y += 2)
+      {
+         DecodeEnvRow(*envTex, y, r0.data());
+         encodeLevel0Row(r0.data(), y);
+         if (y + 1 < H)
+         {
+            DecodeEnvRow(*envTex, y + 1, r1.data());
+            encodeLevel0Row(r1.data(), y + 1);
+         }
+         if (y / 2 >= l1.h) // Last row of an odd height, dropped by the rounded down size
+            continue;
+         const float* const rb = y + 1 < H ? r1.data() : r0.data();
+         for (unsigned int x = 0; x < l1.w; ++x)
+         {
+            const unsigned int x0 = min(2 * x, W - 1) * 3, x1 = min(2 * x + 1, W - 1) * 3;
+            for (unsigned int c = 0; c < 3; ++c)
+               l1.rgb[(static_cast<size_t>(y / 2) * l1.w + x) * 3 + c] = 0.25f * (r0[x0 + c] + r0[x1 + c] + rb[x0 + c] + rb[x1 + c]);
+         }
+      }
+   }
+   if (level0)
+      result.glossyMips.push_back(std::move(level0));
+   else
+      result.glossyMips.push_back(envTex);
+   for (unsigned int k = 2; k < numLevels; ++k)
+      levels[k] = DownsampleEnvLevel(levels[k - 1]);
+
+   progschj::ThreadPool pool(g_app->GetLogicalNumberOfProcessors());
+   for (unsigned int k = 1; k < numLevels; ++k)
+   {
+      std::shared_ptr<const BaseTexture> mip;
+      if (levels[k].h <= maxPrefilteredHeight)
+      {
+         EnvLevel prefiltered;
+         prefiltered.w = levels[k].w;
+         prefiltered.h = levels[k].h;
+         prefiltered.rgb.resize(levels[k].rgb.size());
+         PrefilterEnvLevel(levels[k - 1], prefiltered, levelPower(k), pool);
+         mip = EncodeEnvLevel(prefiltered, format);
+      }
+      else
+         mip = EncodeEnvLevel(levels[k], format);
+      if (mip == nullptr)
+         return {};
+      result.glossyMips.push_back(std::move(mip));
    }
 
-   /* ///!!! QA-test above multithreading implementation.
-   //!! this is exactly the same code as above, so can be deleted at some point, as it only checks the multithreaded results with a singlethreaded implementation!
-   for (unsigned int y = 0; y < rad_env_yres; ++y)
-      for (unsigned int x = 0; x < rad_env_xres; ++x)
-      {
-         // trafo from envmap to normal direction
-         const float phi = (float)x / (float)rad_env_xres * (float)(2.0*M_PI) + (float)M_PI;
-         const float theta = (float)y / (float)rad_env_yres * (float)M_PI;
-         const Vertex3Ds n(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
-
-         // draw x samples over hemisphere and collect cosine weighted environment map samples
-         float sum[3];
-         sum[0] = sum[1] = sum[2] = 0.0f;
-
-         const unsigned int num_samples = 4096;
-         for (unsigned int s = 0; s < num_samples; ++s)
-         {
-            //!! discard directions pointing below the playfield?? or give them another "average playfield" color??
-#define USE_ENVMAP_PRECALC_COSINE
-#ifndef USE_ENVMAP_PRECALC_COSINE
-            //!! as we do not use importance sampling on the environment, just not being smart -could- be better for high frequency environments
-            Vertex3Ds l = sphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)); // QMC hammersley point set
-            float NdotL = l.Dot(n);
-            if (NdotL < 0.0f) // flip if on backside of hemisphere
-            {
-               NdotL = -NdotL;
-               l = -l;
-            }
-#else
-            //Vertex3Ds cos_hemisphere_sample(const Vertex3Ds &normal, Vertex2D uv) { float theta = (float)(2.*M_PI) * uv.x; uv.y = 2.f * uv.y - 1.f; Vertex3Ds spherePoint(sqrt(1.f - uv.y * uv.y) * Vertex2D(cosf(theta), sinf(theta)), uv.y); return normalize(normal + spherePoint); }
-            const Vertex3Ds l = rotate_to_vector_upper(cos_hemisphere_sample((float)s*(float)(1.0 / num_samples), radical_inverse(s)), n); // QMC hammersley point set
-#endif
-            // trafo from light direction to envmap
-            // approximations seem to be good enough!
-            const float u = atan2_approx_div2PI(l.y, l.x) + 0.5f; //atan2f(l.y, l.x) * (float)(0.5 / M_PI) + 0.5f;
-            const float v = acos_approx_divPI(l.z); //acosf(l.z) * (float)(1.0 / M_PI);
-
-            float r, g, b;
-            if (isHDR)
-            {
-               unsigned int offs = ((int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres) * 3;
-               if (offs >= env_yres * env_xres * 3)
-                  offs = 0;
-               r = ((float*)envmap)[offs];
-               g = ((float*)envmap)[offs + 1];
-               b = ((float*)envmap)[offs + 2];
-            }
-            else
-            {
-               unsigned int offs = (int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres;
-               if (offs >= env_yres * env_xres)
-                  offs = 0;
-               const uint32_t rgb = ((uint32_t*)envmap)[offs];
-               r = invGammaApprox((float)(rgb & 255) * (float)(1.0 / 255.0));
-               g = invGammaApprox((float)(rgb & 65280) * (float)(1.0 / 65280.0));
-               b = invGammaApprox((float)(rgb & 16711680) * (float)(1.0 / 16711680.0));
-            }
-#ifndef USE_ENVMAP_PRECALC_COSINE
-            sum[0] += r * NdotL;
-            sum[1] += g * NdotL;
-            sum[2] += b * NdotL;
-#else
-            sum[0] += r;
-            sum[1] += g;
-            sum[2] += b;
-#endif
-         }
-
-         // average all samples
-#ifndef USE_ENVMAP_PRECALC_COSINE
-         sum[0] *= (float)(2.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
-         sum[1] *= (float)(2.0 / num_samples);
-         sum[2] *= (float)(2.0 / num_samples);
-#else
-         sum[0] *= (float)(1.0 / num_samples); // pre-divides by PI for final radiance/color lookup in shader
-         sum[1] *= (float)(1.0 / num_samples);
-         sum[2] *= (float)(1.0 / num_samples);
-#endif
-         if (isHDR)
-         {
-            const unsigned int offs = (y*rad_env_xres + x) * 3;
-            if (((float*)rad_envmap)[offs] != sum[0] ||
-                ((float*)rad_envmap)[offs + 1] != sum[1] ||
-                ((float*)rad_envmap)[offs + 2] != sum[2])
-            {
-               char tmp[911];
-               sprintf(tmp, "%d %d %f=%f %f=%f %f=%f ", x, y, ((float*)rad_envmap)[offs], sum[0], ((float*)rad_envmap)[offs + 1], sum[1], ((float*)rad_envmap)[offs + 2], sum[2]);
-               ::OutputDebugString(tmp);
-            }
-         }
-         else
-         {
-            sum[0] = gammaApprox(sum[0]);
-            sum[1] = gammaApprox(sum[1]);
-            sum[2] = gammaApprox(sum[2]);
-            if (
-                ((uint32_t*)rad_envmap)[y*rad_env_xres + x] != ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16))
-                ShowError("Not OK");
-         }
-      }
-
-   ///!!! */
-
-#ifdef PREFILTER_ENVMAP_DIFFUSE
-   if (free_envmap)
-      free((void*)envmap);
-#endif
-
-#ifdef __OPENGLES__
-   if (radTex->m_format == BaseTexture::SRGB || radTex->m_format == BaseTexture::RGB_FP16)
-      radTex = radTex->NewWithAlpha();
-#endif
-
-   return radTex;
+   // Diffuse irradiance: the cosine weighted average of the envmap over the hemisphere (used as is by the shaders), sRGB for LDR envmaps
+   EnvLevel irradiance;
+   irradiance.w = irradianceWidth;
+   irradiance.h = irradianceHeight;
+   irradiance.rgb.resize(static_cast<size_t>(irradianceWidth) * irradianceHeight * 3);
+   PrefilterEnvLevel(levels[irradianceSource], irradiance, 1.f, pool);
+   result.irradiance = EncodeEnvLevel(irradiance, format == BaseTexture::RGBA ? BaseTexture::SRGBA : format);
+   if (result.irradiance == nullptr)
+      return {};
+   return result;
 }
 
 // Setup the tables camera / rotation / scale.
@@ -942,12 +884,14 @@ void Renderer::SetupShaders()
    m_renderDevice->m_basicShader->SetFloat4v(ShaderUniform::basicLightPos, (vec4*)lightPos, MAX_LIGHT_SOURCES);
    m_renderDevice->m_basicShader->SetFloat4v(ShaderUniform::basicLightEmission, (vec4*)lightEmission, MAX_LIGHT_SOURCES);
 #elif defined(ENABLE_DX9)
-   struct CLight
+   struct CLight // See CLight in Material.fxh
    {
       float vPos[3];
+      float fRadius; // 0: the table lights are points
       float vEmission[3];
+      float fPad;
    };
-   CLight l[MAX_LIGHT_SOURCES];
+   CLight l[MAX_LIGHT_SOURCES] = {};
 
    for (unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
    {

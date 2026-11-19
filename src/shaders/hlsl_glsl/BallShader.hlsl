@@ -153,7 +153,54 @@ voutTrail vsBallTrail( const in vin IN )
 
 //------------------------------------
 
-float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal)
+// Ball lights: as DoPointLight, except for the glossy highlight:
+// - lights are spheres (radius in lights[i].fRadius, 0 for the table lights): seen from the shaded point, a sphere covers a disc of
+//   angular radius a (sin a = radius / distance), whose variance a^2/4 per axis (a^2/16 around the half vector) adds to the 1/n
+//   of the Blinn-Phong lobe cos^n, the (n+1)/8 normalization keeping the energy as the lobe widens
+// - the highlight fades where the playfield reflection probe already shows the light (below the ball, like inserts), by the probe
+//   weight of the reflected direction pointing at the light (probeNormal: playfield normal, probeStrength: 0 where the probe is unused)
+float3 DoBallLight(const float3 pos, const float3 N, const float3 V, const float3 diffuse, const float3 glossy, const float edge, const float glossyPower, const int i, const bool is_metal, const float3 probeNormal, const float probeStrength)
+{
+   const float3 lightDir = mul_w1(lights[i].vPos, matView) - pos;
+   const float sqrl_lightDir = dot(lightDir,lightDir);
+   const float3 L = lightDir * rsqrt(sqrl_lightDir);
+   const float NdotL = dot(N, L);
+   float3 Out = float3(0.0,0.0,0.0);
+
+   // compute diffuse color (lambert with optional rim/wrap component)
+   if (!is_metal && (NdotL + Roughness_WrapL_Edge_Thickness.y > 0.0))
+      Out = diffuse * ((NdotL + Roughness_WrapL_Edge_Thickness.y) / sqr(1.0+Roughness_WrapL_Edge_Thickness.y));
+
+   // add glossy component, of the lobe widened by the light size
+   BRANCH if (NdotL > 0.0)
+   {
+      const float3 H = normalize(L + V); // half vector
+      const float NdotH = dot(N, H);
+      const float LdotH = dot(L, H);
+      const float VdotH = dot(V, H);
+      if ((NdotH > 0.0) && (LdotH > 0.0) && (VdotH > 0.0))
+      {
+         const float power = glossyPower / (1.0 + glossyPower * min(sqr(lights[i].fRadius) / sqrl_lightDir, 1.0) * (1.0/16.0));
+         const float probe = probeStrength * smoothstep(0.0, 0.15, -dot(probeNormal, L)); // probe weight of main, for the reflected direction L
+         Out += (1.0 - probe) * FresnelSchlick(glossy, LdotH, edge) * (((power + 1.0) / (8.0*VdotH)) * pow(NdotH, power));
+      }
+   }
+
+   float fAtten = saturate(1.0 - sqrl_lightDir*sqrl_lightDir/(cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w));
+   fAtten = fAtten*fAtten/(sqrl_lightDir + 1.0);
+
+   float3 ambient = glossy;
+   if (!is_metal)
+       ambient += diffuse;
+
+   const float3 result = Out * lights[i].vEmission * fAtten + ambient * cAmbient_LightRange.xyz;
+   if (fDisableLighting_top_below.x != 0.0)
+       return lerp(result,diffuse,fDisableLighting_top_below.x);
+   else
+       return result;
+}
+
+float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal, const float3 probeNormal, const float probeStrength)
 {
    // N and V must be already normalized by the caller
    // N = normalize(N);
@@ -176,7 +223,7 @@ float3 ballLightLoop(const float3 pos, const float3 N, const float3 V, float3 di
 
    BRANCH if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
       for(int i = 0; i < iLightPointBallsNum; i++)  
-         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
+         color += DoBallLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal, probeNormal, probeStrength); // no clearcoat needed as only pointlights so far
 
    BRANCH if(!is_metal && (diffuseMax > 0.0))
       color += DoEnvmapDiffuse(normalize(mul(matView, N).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N, 0.0), matViewInverseInverseTranspose)
@@ -307,8 +354,10 @@ float4 psBall( const in voutQuad IN, uniform bool equirectangularMap, uniform bo
     // we don't clamp sampling outside the playfield (costly and no real visual impact)
     // const float2 uv = (matWorldViewInverse * float4(playfield_hit, 1.0)).xy * invTableRes_reflection.xy;
     // && !(uv.x < 0.1 && uv.y < 0.1 && uv.x > 0.9 && uv.y > 0.9)
-    BRANCH if (!(uvp.x < 0. || uvp.x > 1. || uvp.y < 0. || uvp.y > 1.) // outside of previous render => discard (we could use sampling techniques to optimize a bit)
-            && !(t <= 0.)) // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
+    // outside of previous render => no probe (we could use sampling techniques to optimize a bit)
+    // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
+    const bool probeValid = !(uvp.x < 0. || uvp.x > 1. || uvp.y < 0. || uvp.y > 1.) && !(t <= 0.);
+    BRANCH if (probeValid)
     {
         // NdotR allows to fade between playfield (down) and environment (up)
         ballImageColor = lerp(ballImageColor, playfieldColor, smoothstep(0.0, 0.15, NdotR) * invTableRes_reflection.z);
@@ -328,7 +377,7 @@ float4 psBall( const in voutQuad IN, uniform bool equirectangularMap, uniform bo
        specular *= float3(1.,1.,1.)-decalColor; // see above
 
     float4 color;
-    color.rgb = ballLightLoop(hit_view, N, V, diffuse, glossy, specular, 1.0, false);
+    color.rgb = ballLightLoop(hit_view, N, V, diffuse, glossy, specular, 1.0, false, playfield_normal, probeValid ? invTableRes_reflection.z : 0.0);
     color.a = cBase_Alpha.a * coverage;
     return color;
 }

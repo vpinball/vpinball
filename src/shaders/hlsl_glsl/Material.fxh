@@ -29,14 +29,16 @@ uniform vec4 ballLightEmission[iLightPointBallsNum];
 struct CLight
 {
    float3 vPos;
+   float fRadius; // ball shader: radius of the light seen as a sphere (see DoBallLight), 0 for points
    float3 vEmission;
+   float fPad;
 };
 #if iLightPointBallsNum == iLightPointNum // basic shader
-const float4 basicPackedLights[3]; //!! 4x3 = NUM_LIGHTSx6
+const float4 basicPackedLights[4]; //!! 4x4 = NUM_LIGHTSx8
 static const CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])basicPackedLights;
 #define packedLights basicPackedLights
 #else // ball shader
-const float4 ballPackedLights[15]; //!! 4x15 = (NUM_LIGHTS+NUM_BALL_LIGHTS)x6
+const float4 ballPackedLights[20]; //!! 4x20 = (NUM_LIGHTS+NUM_BALL_LIGHTS)x8
 static const CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])ballPackedLights;
 #define packedLights ballPackedLights
 #endif
@@ -155,12 +157,18 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 }
 
 //!! PI?
-// very very crude approximation by abusing miplevels
-float3 DoEnvmapGlossy(const float3 N, const float3 V, const float2 Ruv, const float3 glossy, const float glossyPower)
+// Glossy environment lighting. The envmap mip levels are prefiltered at load (see Renderer::EnvmapPrecalc): the level of height h
+// holds the envmap seen through the Blinn-Phong lobe of power 0.75 h^2 - 1. Below power 11 (VPX roughness 0.25, levelHeight 2),
+// too wide for the coarsest levels, it fades into the diffuse irradiance at the normal (only read then, see lightLoop)
+float EnvmapGlossyLevelHeight(const float glossyPower)
 {
-   const float mip = min(log2(fenvEmissionScale_TexWidth.y * sqrt(3.0)) - 0.5*log2(glossyPower + 1.0), log2(fenvEmissionScale_TexWidth.y)-1.); //!! do diffuse lookup instead of this limit/min, if too low?? and blend?
-   const float3 env = tex2Dlod(tex_env, float4(Ruv, 0., mip)).xyz;
-   return glossy * env*fenvEmissionScale_TexWidth.x;
+   return 1.0 + 0.5*log2((glossyPower + 1.0) * (1.0/3.0)); // log2 of the height of the level holding this power: 2 sqrt((n+1)/3)
+}
+
+float3 DoEnvmapGlossy(const float2 Ruv, const float3 irradiance, const float3 glossy, const float levelHeight)
+{
+   const float3 env = tex2Dlod(tex_env, float4(Ruv, 0., max(log2(fenvEmissionScale_TexWidth.y) - levelHeight, 0.))).xyz;
+   return glossy * lerp(irradiance, env, saturate(levelHeight - 1.0)) * fenvEmissionScale_TexWidth.x;
 }
 
 //!! PI?
@@ -179,7 +187,7 @@ float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const floa
 //   This lighting can be 'disabled', in fact replacing it by 2 times the diffuse color (backwards compatibility bug)
 // - Apply the environment lighting with diffuse, glossy and a specular/clearcoat layer
 //   Diffuse is applied via a precomputed/'filtered' version of the envmap.
-//   Glossy is performed with a very crude approximation of the BRDF and the roughness parameter (simple mip-mapping of the envmap).
+//   Glossy is performed with an approximation of the BRDF and the roughness parameter (envmap mip levels prefiltered with the glossy lobe).
 //   Specular just does a plain lookup in the envmap.
 // - Backside (normal pointing away) is lighted as well as front facing (needed since quite a lot of tables feature wrong normals, or for transparents with 2 pass rendering)
 float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal) // input vectors (N,V) are normalized for BRDF evals
@@ -220,21 +228,25 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    }
 
    // Environment IBL
-   BRANCH if (!is_metal && (diffuseMax > 0.0))
-      // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
-      // matView is always an orthonormal matrix, so no need to normalize after transform
-      color += DoEnvmapDiffuse(/*normalize*/(mul(matView, N).xyz), diffuse); // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+   // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+   // matView is always an orthonormal matrix, so no need to normalize after transform
+   const float3 Nw = /*normalize*/(mul(matView, N).xyz);
+   const bool diffuseEnv = !is_metal && (diffuseMax > 0.0);
+   const float glossyLevelHeight = EnvmapGlossyLevelHeight(Roughness_WrapL_Edge_Thickness.x);
+   // The diffuse irradiance is read once, for the diffuse lighting and the glossy lighting of the roughest powers
+   float3 irradiance = float3(0.,0.,0.);
+   BRANCH if (diffuseEnv || ((glossyMax > 0.0) && (glossyLevelHeight < 2.0)))
+      irradiance = texNoLod(tex_diffuse_env, ray_to_equirectangular_uv(Nw)).xyz;
+   if (diffuseEnv)
+      color += diffuse * irradiance * fenvEmissionScale_TexWidth.x; // as DoEnvmapDiffuse
    BRANCH if ((glossyMax > 0.0) || (specularMax > 0.0))
    {
-	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,N);
-	   // trafo back to world for lookup into world space envmap // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
-	   // matView is always an orthonormal matrix, so no need to normalize after transform
-	   R = /*normalize*/(mul(matView, R).xyz); // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
-	   const float2 Ruv = ray_to_equirectangular_uv(R);
-	   if (glossyMax > 0.0)
-		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_Thickness.x);
-	   if (specularMax > 0.0)
-		  color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
+      const float3 R = /*normalize*/(mul(matView, ((2.0*NdotV)*N - V)).xyz); // reflect(-V,N), to world space as Nw
+      const float2 Ruv = ray_to_equirectangular_uv(R);
+      if (glossyMax > 0.0)
+         color += DoEnvmapGlossy(Ruv, irradiance, glossy, glossyLevelHeight);
+      if (specularMax > 0.0)
+         color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
    }
 
    return /*Gamma(ToneMap(*/color/*))*/;

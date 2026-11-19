@@ -1382,9 +1382,6 @@
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_fxaa.sc">
       <FileType>Document</FileType>
     </None>
-    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_irradiance.sc">
-      <FileType>Document</FileType>
-    </None>
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_mirror.sc">
       <FileType>Document</FileType>
     </None>

@@ -60,10 +60,61 @@ uniform vec4  invTableRes_reflection;
 uniform vec4  w_h_disableLighting; 
 #define disableLighting (w_h_disableLighting.z != 0.)
 
+// Ball lights: as DoPointLight, except for the glossy highlight:
+// - lights are spheres (radius in lightEmission[i].w, 0 for the table lights): seen from the shaded point, a sphere covers a disc of
+//   angular radius a (sin a = radius / distance), whose variance a^2/4 per axis (a^2/16 around the half vector) adds to the 1/n
+//   of the Blinn-Phong lobe cos^n, the (n+1)/8 normalization keeping the energy as the lobe widens
+// - the highlight fades where the playfield reflection probe already shows the light (below the ball, like inserts), by the probe
+//   weight of the reflected direction pointing at the light (probeNormal: playfield normal, probeStrength: 0 where the probe is unused)
 #ifdef STEREO
-vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, const vec3 specular, const float edge, const bool is_metal, const float v_eye)
+vec3 DoBallLight(const vec3 pos, const vec3 N, const vec3 V, const vec3 diffuse, const vec3 glossy, const float edge, const float glossyPower, const int i, const bool is_metal, const vec3 probeNormal, const float probeStrength, const float v_eye)
 #else
-vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, const vec3 specular, const float edge, const bool is_metal)
+vec3 DoBallLight(const vec3 pos, const vec3 N, const vec3 V, const vec3 diffuse, const vec3 glossy, const float edge, const float glossyPower, const int i, const bool is_metal, const vec3 probeNormal, const float probeStrength)
+#endif
+{
+   const vec3 lightDir = ( mul(mView, vec4(lightPos[i].xyz, 1.0)) ).xyz - pos;
+   const float sqrl_lightDir = dot(lightDir,lightDir);
+   const vec3 L = lightDir * inversesqrt(sqrl_lightDir);
+   const float NdotL = dot(N, L);
+   vec3 Out = vec3(0.0,0.0,0.0);
+
+   // compute diffuse color (lambert with optional rim/wrap component)
+   if (!is_metal && (NdotL + Roughness_WrapL_Edge_Thickness.y > 0.0))
+      Out = diffuse * ((NdotL + Roughness_WrapL_Edge_Thickness.y) / sqr(1.0+Roughness_WrapL_Edge_Thickness.y));
+
+   // add glossy component, of the lobe widened by the light size
+   BRANCH if (NdotL > 0.0)
+   {
+      const vec3 H = normalize(L + V); // half vector
+      const float NdotH = dot(N, H);
+      const float LdotH = dot(L, H);
+      const float VdotH = dot(V, H);
+      if ((NdotH > 0.0) && (LdotH > 0.0) && (VdotH > 0.0))
+      {
+         const float power = glossyPower / (1.0 + glossyPower * min(sqr(lightEmission[i].w) / sqrl_lightDir, 1.0) * (1.0/16.0));
+         const float probe = probeStrength * smoothstep(0.0, 0.15, -dot(probeNormal, L)); // probe weight of main, for the reflected direction L
+         Out += (1.0 - probe) * FresnelSchlick(glossy, LdotH, edge) * (((power + 1.0) / (8.0*VdotH)) * pow(NdotH, power));
+      }
+   }
+
+   float fAtten = saturate(1.0 - sqrl_lightDir*sqrl_lightDir/(cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w));
+   fAtten = fAtten*fAtten/(sqrl_lightDir + 1.0);
+
+   vec3 ambient = glossy;
+   if (!is_metal)
+       ambient += diffuse;
+
+   const vec3 result = Out * lightEmission[i].rgb * fAtten + ambient * cAmbient_LightRange.xyz;
+   if (fDisableLighting_top_below.x != 0.0)
+       return mix(result,diffuse,fDisableLighting_top_below.x);
+   else
+       return result;
+}
+
+#ifdef STEREO
+vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, const vec3 specular, const float edge, const bool is_metal, const vec3 probeNormal, const float probeStrength, const float v_eye)
+#else
+vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, const vec3 specular, const float edge, const bool is_metal, const vec3 probeNormal, const float probeStrength)
 #endif
 {
    // N and V must be already normalized by the caller
@@ -89,9 +140,9 @@ vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, co
    BRANCH if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
       for(int i = 0; i < NUM_LIGHTS + NUM_BALL_LIGHTS; i++)  
           #ifdef STEREO
-             color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal, v_eye); // no clearcoat needed as only pointlights so far
+             color += DoBallLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal, probeNormal, probeStrength, v_eye); // no clearcoat needed as only pointlights so far
           #else
-             color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal); // no clearcoat needed as only pointlights so far
+             color += DoBallLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_Thickness.x, i, is_metal, probeNormal, probeStrength); // no clearcoat needed as only pointlights so far
           #endif
 
    BRANCH if(!is_metal && (diffuseMax > 0.0))
@@ -235,8 +286,10 @@ void main()
     // we don't clamp sampling outside the playfield (costly and no real visual impact)
     // const vec2 uv = mul(mWorldViewInverse, vec4(playfield_hit, 1.0)).xy * invTableRes_reflection.xy;
     // && !(uv.x < 0.1 && uv.y < 0.1 && uv.x > 0.9 && uv.y > 0.9)
-    BRANCH if (!(uvp.x < 0. || uvp.x > 1. || uvp.y < 0. || uvp.y > 1.) // outside of previous render => discard (we could use sampling techniques to optimize a bit)
-            && !(t <= 0.)) // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
+    // outside of previous render => no probe (we could use sampling techniques to optimize a bit)
+    // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
+    const bool probeValid = !(uvp.x < 0. || uvp.x > 1. || uvp.y < 0. || uvp.y > 1.) && !(t <= 0.);
+    BRANCH if (probeValid)
     {
         // NdotR allows to fade between playfield (down) and environment (up)
         ballImageColor = mix(ballImageColor, playfieldColor, smoothstep(0.0, 0.15, NdotR) * invTableRes_reflection.z);
@@ -258,9 +311,9 @@ void main()
     #endif
 
     #ifdef STEREO
-       gl_FragColor.rgb = ballLightLoop(hit_view, N, V, diffuse, glossy, specular, 1.0, false, v_eye);
+       gl_FragColor.rgb = ballLightLoop(hit_view, N, V, diffuse, glossy, specular, 1.0, false, playfield_normal, probeValid ? invTableRes_reflection.z : 0.0, v_eye);
     #else
-       gl_FragColor.rgb = ballLightLoop(hit_view, N, V, diffuse, glossy, specular, 1.0, false);
+       gl_FragColor.rgb = ballLightLoop(hit_view, N, V, diffuse, glossy, specular, 1.0, false, playfield_normal, probeValid ? invTableRes_reflection.z : 0.0);
     #endif
     gl_FragColor.a = cBase_Alpha.a * coverage;
 }

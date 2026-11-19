@@ -105,6 +105,107 @@ Sampler::Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTextur
 #endif
 }
 
+Sampler::Sampler(RenderDevice* rd, string name, const vector<std::shared_ptr<const BaseTexture>>& mips)
+   : m_type(SurfaceType::RT_DEFAULT)
+   , m_name(std::move(name))
+   , m_ownTexture(true)
+   , m_rd(rd)
+   , m_width(mips[0]->width())
+   , m_height(mips[0]->height())
+{
+   const BaseTexture::Format format = mips[0]->m_format;
+   assert(format == BaseTexture::RGBA || format == BaseTexture::SRGBA || format == BaseTexture::RGBA_FP16 || format == BaseTexture::RGBA_FP32);
+   assert(mips.size() == static_cast<size_t>(std::bit_width(max(m_width, m_height))));
+   #ifndef NDEBUG
+   for (size_t i = 0; i < mips.size(); ++i)
+      assert(mips[i]->m_format == format && mips[i]->width() == max(1u, m_width >> i) && mips[i]->height() == max(1u, m_height >> i) && mips[i]->datac() != nullptr);
+   #endif
+   m_isSRGB = !BaseTexture::IsLinearFormat(format);
+   m_rd->m_curTextureUpdates++;
+
+#if defined(ENABLE_BGFX)
+   m_bgfx_format = UncompressedBgfxFormat(format);
+   m_isTextureUpdateLinear = !m_isSRGB;
+   size_t size = 0;
+   for (const auto& mip : mips)
+      size += static_cast<size_t>(mip->height()) * mip->pitch();
+   const bgfx::Memory* const mem = bgfx::alloc(static_cast<uint32_t>(size));
+   uint8_t* dst = mem->data;
+   for (const auto& mip : mips)
+   {
+      const size_t levelSize = static_cast<size_t>(mip->height()) * mip->pitch();
+      memcpy(dst, mip->datac(), levelSize);
+      dst += levelSize;
+   }
+   m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, m_isSRGB ? BGFX_TEXTURE_SRGB : BGFX_TEXTURE_NONE, mem);
+   bgfx::setName(m_mipsTexture, m_name.c_str());
+
+#elif defined(ENABLE_OPENGL)
+   m_texTarget = GL_TEXTURE_2D;
+   const colorFormat texFormat = format == BaseTexture::RGBA_FP32 ? colorFormat::RGBA32F
+      : format == BaseTexture::RGBA_FP16                          ? colorFormat::RGBA16F
+      : m_isSRGB                                                  ? colorFormat::SRGBA
+                                                                  : colorFormat::RGBA;
+   const GLuint col_type = format == BaseTexture::RGBA_FP32 ? GL_FLOAT : format == BaseTexture::RGBA_FP16 ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
+
+   // Update bind cache
+   auto tex_unit = m_rd->m_samplerBindings.back();
+   if (tex_unit->sampler != nullptr)
+      tex_unit->sampler->m_bindings.erase(tex_unit);
+   tex_unit->sampler = nullptr;
+   glActiveTexture(GL_TEXTURE0 + tex_unit->unit);
+
+   glGenTextures(1, &m_texture);
+   glBindTexture(m_texTarget, m_texture);
+#ifndef __OPENGLES__
+   if (m_rd->getGLVersion() >= 403)
+#endif
+      glTexStorage2D(m_texTarget, static_cast<GLsizei>(mips.size()), texFormat, m_width, m_height);
+#ifndef __OPENGLES__
+   else
+      for (size_t i = 0; i < mips.size(); ++i)
+         glTexImage2D(m_texTarget, static_cast<GLint>(i), texFormat, mips[i]->width(), mips[i]->height(), 0, GL_RGBA, col_type, nullptr);
+   if (GLAD_GL_VERSION_4_3)
+      glObjectLabel(GL_TEXTURE, m_texture, (GLsizei)m_name.length(), m_name.c_str());
+#endif
+   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+   for (size_t i = 0; i < mips.size(); ++i)
+      glTexSubImage2D(m_texTarget, static_cast<GLint>(i), 0, 0, mips[i]->width(), mips[i]->height(), GL_RGBA, col_type, mips[i]->datac());
+
+#elif defined(ENABLE_DX9)
+   // sRGB decoding is a sampler state of the effects on DX9, so 8 bit levels are uploaded as they are (A8R8G8B8: B, G, R, A in memory)
+   const colorFormat texFormat = format == BaseTexture::RGBA_FP32 ? colorFormat::RGBA32F : format == BaseTexture::RGBA_FP16 ? colorFormat::RGBA16F : colorFormat::RGBA8;
+   const UINT levels = static_cast<UINT>(mips.size());
+   IDirect3DTexture9* sysTex;
+   HRESULT hr = m_rd->GetCoreDevice()->CreateTexture(m_width, m_height, levels, 0, (D3DFORMAT)texFormat, (D3DPOOL)memoryPool::SYSTEM, &sysTex, nullptr);
+   if (FAILED(hr))
+      ReportError("Fatal Error: unable to create texture!"s, hr, __FILE__, __LINE__);
+   for (UINT i = 0; i < levels; ++i)
+   {
+      const BaseTexture& mip = *mips[i];
+      D3DLOCKED_RECT locked;
+      CHECKD3D(sysTex->LockRect(i, &locked, nullptr, 0));
+      for (unsigned int y = 0; y < mip.height(); ++y)
+      {
+         uint8_t* const dst = static_cast<uint8_t*>(locked.pBits) + static_cast<size_t>(y) * locked.Pitch;
+         const uint8_t* const src = static_cast<const uint8_t*>(mip.datac()) + static_cast<size_t>(y) * mip.pitch();
+         if (texFormat == colorFormat::RGBA8)
+            copy_bgra_rgba<false>(reinterpret_cast<unsigned int*>(dst), reinterpret_cast<const unsigned int*>(src), mip.width());
+         else
+            memcpy(dst, src, mip.pitch());
+      }
+      CHECKD3D(sysTex->UnlockRect(i));
+   }
+   hr = m_rd->GetCoreDevice()->CreateTexture(m_width, m_height, levels, 0, (D3DFORMAT)texFormat, (D3DPOOL)memoryPool::DEFAULT, &m_texture, nullptr);
+   if (FAILED(hr))
+      ReportError("Fatal Error: out of VRAM!"s, hr, __FILE__, __LINE__);
+   hr = m_rd->GetCoreDevice()->UpdateTexture(sysTex, m_texture);
+   if (FAILED(hr))
+      ReportError("Fatal Error: uploading texture failed!"s, hr, __FILE__, __LINE__);
+   SAFE_RELEASE(sysTex);
+#endif
+}
+
 #if defined(ENABLE_BGFX)
 Sampler::Sampler(RenderDevice* rd, string name, SurfaceType type, bgfx::TextureHandle bgfxTexture, bgfx::TextureFormat::Enum bgfxFormat, unsigned int width, unsigned int height, bool ownTexture)
    : m_type(type)

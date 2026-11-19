@@ -3571,9 +3571,6 @@
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_fxaa.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_irradiance.sc">
-      <Filter>shaders\bgfx</Filter>
-    </None>
     <None Include="$(SolutionDir)/../../src/shaders/bgfx/fs_pp_mirror.sc">
       <Filter>shaders\bgfx</Filter>
     </None>

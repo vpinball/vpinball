@@ -40,6 +40,9 @@ class Sampler final
 {
 public:
    Sampler(RenderDevice* rd, string name, std::shared_ptr<const BaseTexture> surf, const bool force_linear_rgb);
+   // Texture with an explicit mip chain, uploaded as given (never regenerated): level 0 first, then each level half the size of the
+   // previous one (rounded down, at least 1) down to 1x1, all in the same format: RGBA, SRGBA, RGBA_FP16 or RGBA_FP32
+   Sampler(RenderDevice* rd, string name, const vector<std::shared_ptr<const BaseTexture>>& mips);
    ~Sampler();
 
 #if defined(ENABLE_BGFX)

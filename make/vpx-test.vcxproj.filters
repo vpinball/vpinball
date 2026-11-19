@@ -251,6 +251,12 @@
     <ClCompile Include="../../tests/render/test-multiview-render.cpp">
       <Filter>render</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/render/test-ball-lights-render.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="../../tests/render/test-envmap-render.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/render/test-normalmap-render.cpp">
       <Filter>render</Filter>
     </ClCompile>

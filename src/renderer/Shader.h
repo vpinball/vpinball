@@ -236,8 +236,6 @@ enum class ShaderTechnique : unsigned int
    SHADER_TECHNIQUE(Stereo_GammaDynDesatAnaglyph),
    SHADER_TECHNIQUE(Stereo_DeghostAnaglyph),
 
-   SHADER_TECHNIQUE(irradiance),
-
    COUNT
 };
 #undef SHADER_TECHNIQUE
@@ -296,8 +294,8 @@ enum class ShaderUniform : unsigned int
    SHADER_UNIFORM(ShaderUniformType::Float4v, ballLightPos, 10), // OpenGL & BGFX only
    SHADER_UNIFORM(ShaderUniformType::Bool, is_metal, 1), // OpenGL & BGFX only
    SHADER_UNIFORM(ShaderUniformType::Bool, doNormalMapping, 1), // OpenGL & BGFX only
-   SHADER_UNIFORM(ShaderUniformType::Float4v, basicPackedLights, 3), // DX9 only
-   SHADER_UNIFORM(ShaderUniformType::Float4v, ballPackedLights, 15), // DX9 only
+   SHADER_UNIFORM(ShaderUniformType::Float4v, basicPackedLights, 4), // DX9 only
+   SHADER_UNIFORM(ShaderUniformType::Float4v, ballPackedLights, 20), // DX9 only
    SHADER_UNIFORM(ShaderUniformType::Float4, Roughness_WrapL_Edge_Thickness, 1),
    SHADER_UNIFORM(ShaderUniformType::Float4, cBase_Alpha, 1),
    SHADER_UNIFORM(ShaderUniformType::Float2, fDisableLighting_top_below, 1),

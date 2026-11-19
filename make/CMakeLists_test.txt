@@ -83,6 +83,8 @@ set(VPX_TEST_SOURCES
    tests/plugins/plugins/test-resuriresolver.cpp
    tests/plugins/upscaledmd/test-upscalers.cpp
    tests/render/test-base-render.cpp
+   tests/render/test-ball-lights-render.cpp
+   tests/render/test-envmap-render.cpp
    tests/render/test-mirror-render.cpp
    tests/render/test-multiview-render.cpp
    tests/render/test-normalmap-render.cpp

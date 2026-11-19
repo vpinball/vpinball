@@ -12,6 +12,7 @@ constexpr __forceinline float sqrf(const float x)
     return x*x;
 }
 
+// acosf(v) / PI, max absolute error ~0.002 (0.0061 rad = 0.35 degrees, largest near v = 0)
 __forceinline float acos_approx_divPI(const float v)
 {
     //return acosf(v)*(float)(1./M_PI);
@@ -21,6 +22,7 @@ __forceinline float acos_approx_divPI(const float v)
     return (v >= 0.f) ? res : 1.f - res;
 }
 
+// atan2f(y, x) / (2 PI), max absolute error ~0.0016 (0.010 rad = 0.57 degrees); 0 for (0, 0)
 __forceinline float atan2_approx_div2PI(const float y, const float x)
 {
     //return atan2f(y,x)*(float)(0.5/M_PI);

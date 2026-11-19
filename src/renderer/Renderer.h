@@ -88,9 +88,16 @@ public:
    RenderView* GetPrimaryView() const { return m_primaryView.get(); }
    RenderView* GetVRMirrorView() const { return m_vrMirrorView.get(); }
 
-   // Computes the diffuse irradiance environment map used by platforms without GPU irradiance
-   // prefiltering (DX9, OpenGL ES, Apple, wasm, Android XR). Stateless, shared by all CPU paths.
-   static std::shared_ptr<BaseTexture> EnvmapPrecalc(const std::shared_ptr<const BaseTexture>& envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
+   // Precomputed environment lighting maps (see DoEnvmapGlossy and DoEnvmapDiffuse in the material shaders)
+   struct EnvmapPrecalcResult
+   {
+      // Mip chain of the environment map: level 0 is the image, the levels the glossy lookup reads are prefiltered with the lobes it maps to them
+      vector<std::shared_ptr<const BaseTexture>> glossyMips;
+      // Diffuse irradiance map (tex_diffuse_env), same equirectangular mapping
+      std::shared_ptr<BaseTexture> irradiance;
+   };
+   // Computes the environment lighting maps on the CPU (all backends), both empty if the image can not be read. Stateless.
+   static EnvmapPrecalcResult EnvmapPrecalc(const std::shared_ptr<const BaseTexture>& envTex, const unsigned int irradianceWidth, const unsigned int irradianceHeight);
    const vector<RenderView*>& GetViews() const { return m_renderViews; }
    RenderView* CreateEditorView(); // Registers a Kind::Editor view (an editor viewport drawing to its area of a shared output)
    void ReleaseEditorView(RenderView* view); // Unregisters a view made by CreateEditorView (destroyed at the next frame's record start)
@@ -493,11 +500,7 @@ private:
 
    Texture* m_tonemapLUT = nullptr;
 
-#if defined(ENABLE_DX9) || defined(__OPENGLES__) || defined(__APPLE__) || defined(__EMSCRIPTEN__) || (defined(__ANDROID__) && defined(ENABLE_XR))
    std::shared_ptr<BaseTexture> m_envRadianceTexture = nullptr;
-#else
-   RenderTarget* m_envRadianceTexture = nullptr;
-#endif
 
    // Segment display rendering, one atlas pair per SegmentFamily and segment layout
    struct SegDisplayAtlas

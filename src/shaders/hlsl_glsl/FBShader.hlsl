@@ -900,29 +900,6 @@ float4 ps_main_fb_copy(const in VS_OUTPUT_2D IN) : COLOR
 }
 
 
-// cos_hemisphere_sample & rotate_to_vector_upper are defined in FXAAStereoAO
-float4 ps_main_fb_irradiance(const in VS_OUTPUT_2D IN) : COLOR
-{
-   // Compute sample direction
-   const float phi   = PI + IN.tex0.x * (2.0 * PI);
-   const float theta =      IN.tex0.y        * PI;
-   const float3 N = float3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
-
-   // Monte Carlo integration of hemispherical radiance -> irradiance
-   const int NumSamples = 65536; // Limit to 32768 or 65536, will fail on macOS Metal otherwise
-   const float InvNumSamples = 1.0 / float(NumSamples);
-   const float g = 25962.0 / float(NumSamples); // 25962 = matching rank-1 generator constant for 65536 samples, 15936 for 32768 samples
-   float3 irradiance = float3(0., 0., 0.);
-   [unroll(1)] for (int i=0; i<NumSamples; ++i) {
-      const float2 u = float2(float(i) * InvNumSamples, frac(float(i) * g));
-      const float3 Li = rotate_to_vector_upper(cos_hemisphere_sample(u), N);
-      const float2 uv = ray_to_equirectangular_uv(Li);
-      irradiance += texNoLod(tex_fb_unfiltered, uv).rgb * InvNumSamples;
-   }
-   return float4(irradiance, 1.0);
-}
-
-
 //
 // Techniques
 //
@@ -1245,17 +1222,6 @@ technique fb_copy
         VertexShader = compile vs_3_0 vs_main_no_trafo();
         PixelShader = compile ps_3_0 ps_main_fb_copy();
     }
-}
-
-//
-
-technique fb_irradiance
-{
-	pass P0
-	{
-		VertexShader = compile vs_3_0 vs_main_no_trafo();
-		PixelShader  = compile ps_3_0 ps_main_fb_irradiance();
-	}
 }
 
 //

@@ -309,42 +309,52 @@ void Ball::Render(const unsigned int renderMask)
       1.0f / (m_ptable->m_bottom - m_ptable->m_top), 
       saturate(m_ptable->m_ballPlayfieldReflectionStrength * m_d.m_playfieldReflectionStrength), 0.f);
 
-   // collect the x nearest lights that can reflect on balls
-   vector<Light*>& reflectedLights = m_renderer->m_ballReflectedLights;
-   // Sort the candidate lights nearest-first. -ffp-contract=fast (CMakeLists) lets the compiler contract this
-   // distance math (FMA) differently between libc++'s several inlined comparison sites, so the comparator stops
-   // being a consistent strict weak ordering and libc++'s introsort reads out of bounds -> crash (#3528;
-   // macOS/clang only, libstdc++ tolerates it). Routing each key through volatile yields one stable,
-   // identically-rounded value at every site. The non-finite clamp keeps the order total as a safety net; it
-   // uses a bit test on purpose because the GNU build adds -ffast-math, which makes std::isfinite() unreliable.
-   const auto sqDistToBall = [this](const Light* const pLight) -> float {
-      const float raw = Vertex3Ds(pLight->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, pLight->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, pLight->m_d.m_meshRadius + pLight->m_surfaceHeight - m_hitBall.m_d.m_pos.z).LengthSquared(); //!! z pos
-      volatile float vd = raw; // barrier: one stable, identically-rounded value at every inlined compare site
-      const float d = vd;
-      return ((float_as_uint(d) & 0x7F800000u) == 0x7F800000u) ? FLT_MAX : d; // exponent all-ones => Inf/NaN -> sorts last
-   };
-   std::ranges::sort(reflectedLights.begin(), reflectedLights.end(),
-      [&sqDistToBall](const Light* const pLight1, const Light* const pLight2) { return sqDistToBall(pLight1) < sqDistToBall(pLight2); });
+   // Lights reflected on the ball: the MAX_BALL_LIGHT_SOURCES with the largest estimated contribution (emission over squared distance,
+   // the shader falloff without its range window), so lights that are off never take a slot with low/no contribution. Each key is computed once and inserted
+   // into the slots: no sort comparator to keep consistency (see #3528).
+   const Light* selectedLights[MAX_BALL_LIGHT_SOURCES];
+   float selectedKeys[MAX_BALL_LIGHT_SOURCES];
+   unsigned int numSelectedLights = 0;
+   for (const Light* const light : m_renderer->m_ballReflectedLights)
+   {
+      const vec4 color = convertColor(light->m_d.m_color, 1.f);
+      const float d2 = Vertex3Ds(light->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, light->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, light->GetCurrentHeight() - m_hitBall.m_d.m_pos.z).LengthSquared();
+      const float key = map_bulblight_to_emission(light) * max(max(color.x, color.y), color.z) / (d2 + 1.f);
+      if (!(key > 0.f) || (numSelectedLights == MAX_BALL_LIGHT_SOURCES && key <= selectedKeys[MAX_BALL_LIGHT_SOURCES - 1]))
+         continue;
+      unsigned int slot = min(numSelectedLights, MAX_BALL_LIGHT_SOURCES - 1u);
+      numSelectedLights = min(numSelectedLights + 1u, static_cast<unsigned int>(MAX_BALL_LIGHT_SOURCES));
+      for (; slot > 0 && selectedKeys[slot - 1] < key; --slot)
+      {
+         selectedKeys[slot] = selectedKeys[slot - 1];
+         selectedLights[slot] = selectedLights[slot - 1];
+      }
+      selectedKeys[slot] = key;
+      selectedLights[slot] = light;
+   }
+   // Light positions, emissions and radii (lights are spheres, see DoBallLight in the ball shaders)
    #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-   float lightPos[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-   float lightEmission[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-   float *pLightPos = (float *)lightPos, *pLightEm = (float *)lightEmission;
+   float lightPos[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = {};
+   float lightEmission[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES][4] = {}; // Radius in w
+   float *pLightPos = (float *)lightPos, *pLightEm = (float *)lightEmission, *pLightRadius = (float *)lightEmission + 3;
    constexpr int lightStride = 4, lightOfs = 0;
    #elif defined(ENABLE_DX9)
-   struct CLight
+   struct CLight // See CLight in Material.fxh
    {
       float vPos[3];
+      float fRadius;
       float vEmission[3];
+      float fPad;
    };
-   CLight l[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES];
-   float *pLightPos = (float *)l, *pLightEm = (float *)l;
-   constexpr int lightStride = 6, lightOfs = 3;
+   CLight l[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES] = {};
+   float *pLightPos = (float *)l, *pLightEm = (float *)l, *pLightRadius = (float *)l + 3;
+   constexpr int lightStride = 8, lightOfs = 4;
    #endif
    vec4 emission = convertColor(m_ptable->m_Light[0].emission, 1.f);
    emission.x *= m_ptable->m_lightEmissionScale * m_renderer->m_sceneLighting.GetGlobalEmissionScale();
    emission.y *= m_ptable->m_lightEmissionScale * m_renderer->m_sceneLighting.GetGlobalEmissionScale();
    emission.z *= m_ptable->m_lightEmissionScale * m_renderer->m_sceneLighting.GetGlobalEmissionScale();
-   for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
+   for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2) // The table lights are points (radius 0)
    {
       const int pPos = i2 * lightStride, pEm = pPos + lightOfs;
       memcpy(&pLightPos[pPos], &m_ptable->m_Light[i2].pos, sizeof(float) * 3);
@@ -353,25 +363,25 @@ void Ball::Render(const unsigned int renderMask)
    for (unsigned int light_i = 0; light_i < MAX_BALL_LIGHT_SOURCES; ++light_i)
    {
       const int pPos = (light_i + MAX_LIGHT_SOURCES) * lightStride, pEm = pPos + lightOfs;
-      if (light_i < reflectedLights.size())
+      if (light_i < numSelectedLights)
       {
-         pLightPos[pPos + 0] = reflectedLights[light_i]->m_d.m_vCenter.x;
-         pLightPos[pPos + 1] = reflectedLights[light_i]->m_d.m_vCenter.y;
-         pLightPos[pPos + 2] = reflectedLights[light_i]->GetCurrentHeight();
-         const float c = map_bulblight_to_emission(reflectedLights[light_i]) * m_d.m_bulb_intensity_scale;
-         const vec4 color = convertColor(reflectedLights[light_i]->m_d.m_color, 1.f);
+         const Light* const light = selectedLights[light_i];
+         pLightPos[pPos + 0] = light->m_d.m_vCenter.x;
+         pLightPos[pPos + 1] = light->m_d.m_vCenter.y;
+         pLightPos[pPos + 2] = light->GetCurrentHeight();
+         const float c = map_bulblight_to_emission(light) * m_d.m_bulb_intensity_scale;
+         const vec4 color = convertColor(light->m_d.m_color, 1.f);
          pLightEm[pEm + 0] = color.x * c;
          pLightEm[pEm + 1] = color.y * c;
          pLightEm[pEm + 2] = color.z * c;
+         // Bulbs: the glass of the bulb mesh (radius 0.44 at scale 1); other lights (inserts,...) define no size: a small one
+         pLightRadius[pPos] = light->m_d.m_BulbLight ? 0.45f * light->m_d.m_meshRadius : 10.f;
       }
-      else //!! rather just set the max number of ball lights!?
+      else // Unused slot
       {
          pLightPos[pPos + 0] = -100000.0f;
          pLightPos[pPos + 1] = -100000.0f;
          pLightPos[pPos + 2] = -100000.0f;
-         pLightEm[pEm + 0] = 0.0f;
-         pLightEm[pEm + 1] = 0.0f;
-         pLightEm[pEm + 2] = 0.0f;
       }
    }
    #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
@@ -381,14 +391,8 @@ void Ball::Render(const unsigned int renderMask)
    m_renderer->m_renderDevice->m_ballShader->SetFloat4v(ShaderUniform::ballPackedLights, (vec4 *)l, sizeof(CLight) * (MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES) / (4 * sizeof(float)));
    #endif
 
-   // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
-   float Roughness = 0.8f;
-   if (!reflectedLights.empty())
-   {
-       const float dist = Vertex3Ds(reflectedLights[0]->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, reflectedLights[0]->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, reflectedLights[0]->m_d.m_meshRadius + reflectedLights[0]->m_surfaceHeight - m_hitBall.m_d.m_pos.z).Length(); //!! z pos
-       Roughness = min(max(dist*0.006f, 0.4f), Roughness);
-   }
-   const vec4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
+   // Ball roughness (Blinn-Phong power 512), widened per light by its size in the shader (see DoBallLight)
+   const vec4 rwem(exp2f(10.0f * 0.8f + 1.0f), 0.f, 1.f, 0.05f);
    m_renderer->m_renderDevice->m_ballShader->SetVector(ShaderUniform::Roughness_WrapL_Edge_Thickness, &rwem);
 
    // ************************* draw the ball itself ****************************
