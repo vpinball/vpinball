@@ -7,6 +7,7 @@
 #include "core/editablereg.h"
 #include "core/player.h"
 #include "core/SettingsService.h"
+#include "core/TableAudit.h"
 #include "parts/Collection.h"
 #include "parts/Material.h"
 #include "parts/Sound.h"
@@ -1254,6 +1255,29 @@ void PropertiesPanel::ImageProperties(PropertyPane &props, Texture *texture)
       ImGui::Text("Failed to load image");
    }
 
+   if (props.BeginSection("File"s))
+   {
+      ImGui::TextWrapped("%s", PathToUTF8(texture->GetFilePath()).c_str());
+      ImGui::TextDisabled("Size: %s", SizeToReadable(texture->GetFileSize()).c_str());
+      // The same re-encode fix as offered by the table audit, applied through an undo record
+      for (const TableAuditItem &fix : TableAudit::ImageFixes(*editor.m_table, *texture))
+      {
+         if (ImGui::Button(fix.fixLabel.c_str()) && !editor.m_table->IsLocked())
+         {
+            const std::filesystem::path before = texture->GetFilePath();
+            editor.m_undo.BeginUndo();
+            fix.fix(*editor.m_table, editor.m_undo);
+            editor.m_undo.SetLabel(fix.fixLabel);
+            editor.m_undo.EndUndo();
+            if (texture->GetFilePath() != before)
+               editor.Report("Re-encoded image '"s + texture->m_name + '\'');
+            else
+               editor.Report("Failed to re-encode '"s + texture->m_name + '\'');
+         }
+      }
+      props.EndSection();
+   }
+
    ImGui::EndDisabled();
 
    vector<WhereUsedInfo> whereUsed;
@@ -1502,6 +1526,29 @@ void PropertiesPanel::SoundProperties(PropertyPane &props, VPX::Sound *sound)
       ImGui::TextDisabled("Size: %s", SizeToReadable(sound->GetFileSize()).c_str()); //
       if (m_soundInfo)
          ImGui::TextDisabled("%.2f s, %u Hz, %u channel%s", m_soundInfo->lengthInSeconds, m_soundInfo->sampleFrequency, m_soundInfo->nChannels, m_soundInfo->nChannels > 1 ? "s" : "");
+      // The same re-encode fixes as offered by the table audit, applied through an undo record
+      bool firstFix = true;
+      for (const TableAuditItem &fix : TableAudit::SoundFixes(*sound, m_soundInfo ? *m_soundInfo : VPX::SoundSpec {}))
+      {
+         if (!firstFix)
+            ImGui::SameLine();
+         firstFix = false;
+         if (ImGui::Button(fix.fixLabel.c_str()) && !editor.m_table->IsLocked())
+         {
+            const std::filesystem::path before = sound->GetImportPath();
+            editor.m_undo.BeginUndo();
+            fix.fix(*editor.m_table, editor.m_undo);
+            editor.m_undo.SetLabel(fix.fixLabel);
+            editor.m_undo.EndUndo();
+            if (sound->GetImportPath() != before)
+            {
+               editor.Report("Re-encoded sound '"s + sound->GetName() + '\'');
+               m_soundInfoFor = nullptr; // Refresh the displayed specifications
+            }
+            else
+               editor.Report("Failed to re-encode '"s + sound->GetName() + '\'');
+         }
+      }
       props.EndSection();
    }
 
