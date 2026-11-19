@@ -4,6 +4,8 @@
 
 #include "imgui/imgui.h"
 
+#include <functional>
+
 #include "EditorAreaView.h"
 #include "Selection.h"
 #include "unordered_dense.h"
@@ -79,6 +81,8 @@ private:
    bool ChevronTreeNode(const char *label, ImGuiTreeNodeFlags flags = 0, const char *icon = nullptr, bool iconBadge = false);
    // Blender-style right click menu of a part row: type header, New/Copy/Paste, Delete, group content selection, Select/Deselect
    void RenderPartContextMenu(const std::shared_ptr<EditorUIPart> &part);
+   // Context menu New/Paste/Delete, run after the tree as they change the part list it iterates
+   std::function<void()> m_deferredMenuAction;
    // In place rename of a part: starts on a double click on its name or on F2 over the panel, commits on Enter, cancels on Escape/click away
    void RequestRename(const std::shared_ptr<EditorUIPart> &part);
    bool RenderRenameInput(IEditable *editable); // The name input field of the part being renamed (returns false once the edit is over)

@@ -150,6 +150,10 @@ void LayerSpaceChangeOp::Apply(const Change &change)
    }
 
    // Re-expression of the transforms stored in a space different from the destination's
+   // TODO the live layout includes the VR session's adjustments (custom lockbar width/height, seated tilt): converting with
+   // it during a VR session bakes the user's calibration into the stored coordinates (also in Request and RequestMove).
+   // Converting with the authored layout instead keeps the table data clean, but the converted parts then visibly move in
+   // that session.
    const SceneLayout &sceneLayout = table->GetSceneLayout();
    const Matrix3D toNew = Matrix3D::MatrixInverse(sceneLayout.GetSpaceToPlayfieldTransform(change.newSpace).m_transform);
    const auto convert = [&](const Conversion &conversion)

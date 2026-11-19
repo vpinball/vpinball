@@ -27,10 +27,22 @@ bool CurveEditOp::Register(Tool *tool)
 
 const vector<CurveEditOp::Tool *> &CurveEditOp::GetTools() { return Tools(); }
 
+// Label of a tool shortcut, with the platform modifier key name (ImGui names ImGuiMod_Ctrl "Ctrl", which is Cmd on macOS)
+static string ShortcutLabel(const ImGuiKeyChord shortcut)
+{
+   string label = ImGui::GetKeyChordName(shortcut);
+   if (label.starts_with("Ctrl+"))
+      label.replace(0, 4, StatusModKey);
+   return label;
+}
+
 bool CurveEditOp::IsClosed(const EditorUIPart &part) { return part.GetEditable()->GetItemType() != eItemRamp; }
 
 bool CurveEditOp::CanApply(const EditorUI &ed)
 {
+   // TODO the tools are meant for walls (see the Arc tooltip) but apply to any drag point curve: ramps, rubbers, lights,
+   // flashers, triggers. Nothing breaks (ramp ends are kept, 2-point curves skipped), but Arc inserts sharp points between
+   // smooth ones, reshaping smooth splines (rubbers, lights), and Bevel skips smooth corners. Walls only (eItemSurface), or per tool?
    if (ed.m_pointEditPart == nullptr || ed.m_pointEditCenter || ed.m_table->IsLocked() || ed.IsInspectMode() || ed.m_pointEditPart->GetEditable()->IsUILocked()
       || ed.m_pointEditPart->GetDragPointCurve() == nullptr || ed.IsDragInProgress())
       return false;
@@ -120,7 +132,8 @@ void CurveEditOp::RenderMenuItems(EditorUI &ed, const bool iconColumn)
    {
       ImGui::PushID(tool);
       const int shortcut = tool->GetShortcut();
-      if (ImGui::MenuItem("##tool", shortcut != 0 ? ImGui::GetKeyChordName(shortcut) : nullptr, false, canApply))
+      const string shortcutLabel = shortcut != 0 ? ShortcutLabel(shortcut) : string();
+      if (ImGui::MenuItem("##tool", shortcut != 0 ? shortcutLabel.c_str() : nullptr, false, canApply))
          Apply(ed, *tool);
       ImGui::SameLine(0.f, 0.f);
       ImGui::SetCursorPosX(ImGui::GetItemRectMin().x - ImGui::GetWindowPos().x + iconColumnWidth);
@@ -151,6 +164,6 @@ void CurveEditOp::AppendStatusHints(const EditorUI &ed, vector<StatusHint> &hint
       return;
    for (Tool *const tool : Tools())
       if (tool->GetShortcut() != 0)
-         hints.push_back({ ImGui::GetKeyChordName(tool->GetShortcut()), tool->GetName() });
+         hints.push_back({ ShortcutLabel(tool->GetShortcut()), tool->GetName() });
 }
 }

@@ -405,8 +405,9 @@ void OutlinerPanel::RenderPartContextMenu(const std::shared_ptr<EditorUIPart> &p
    ImGui::MenuItem(header.c_str(), nullptr, false, false); // Blender-style type header
    ImGui::Separator();
    const bool canEdit = editor.m_table->m_liveBaseTable == nullptr && !editor.m_table->IsLocked();
+   // New, Paste and Delete change the editor part list the tree is iterating: they run after it
    if (isGroup && ImGui::MenuItem(ICON_LC_PLUS " New", nullptr, false, canEdit))
-      editor.CreatePartGroup(static_cast<PartGroup *>(editable));
+      m_deferredMenuAction = [&editor, group = static_cast<PartGroup *>(editable)] { editor.CreatePartGroup(group); };
    if (ImGui::MenuItem(ICON_LC_COPY " Copy"))
    {
       vector<IEditable *> parts;
@@ -419,14 +420,14 @@ void OutlinerPanel::RenderPartContextMenu(const std::shared_ptr<EditorUIPart> &p
       VPX::EditorClipboard::CopyParts(parts);
    }
    if (ImGui::MenuItem(ICON_LC_CLIPBOARD_PASTE " Paste", nullptr, false, canEdit && VPX::EditorClipboard::HasParts()))
-      editor.PasteSelection(nullptr, isGroup ? static_cast<PartGroup *>(editable) : editable->GetPartGroup());
+      m_deferredMenuAction = [&editor, group = isGroup ? static_cast<PartGroup *>(editable) : editable->GetPartGroup()] { editor.PasteSelection(nullptr, group); };
    ImGui::Separator();
    if (ImGui::MenuItem(ICON_LC_TRASH_2 " Delete", nullptr, false, canEdit))
    {
       if (inSelection)
-         editor.DeleteSelection();
+         m_deferredMenuAction = [&editor] { editor.DeleteSelection(); };
       else
-         editor.DeleteParts({ editable });
+         m_deferredMenuAction = [&editor, editable] { editor.DeleteParts({ editable }); };
    }
    ImGui::Separator();
    if (isGroup)
@@ -1118,6 +1119,12 @@ void OutlinerPanel::RenderPane(const AreaRect &rect, const int leafId)
             editor.m_multiSel.assign(std::min(anchorIt, targetIt), std::max(anchorIt, targetIt) + 1);
             editor.m_selection = Selection(rangeTarget);
          }
+      }
+      if (m_deferredMenuAction)
+      {
+         const std::function<void()> action = std::move(m_deferredMenuAction);
+         m_deferredMenuAction = nullptr;
+         action();
       }
    }
    else

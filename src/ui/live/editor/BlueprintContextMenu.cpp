@@ -47,8 +47,14 @@ void BlueprintPane::RenderContextMenu()
       // drag point handle. The commands apply to the clicked point, or to the whole point selection
       // when the clicked point belongs to it (drag point edit mode)
       const std::shared_ptr<EditorUIPart> ownerPart = Resolve(m_menuPointPart);
-      if (ownerPart == nullptr)
+      DragPointCurve* const curve = ownerPart ? ownerPart->GetDragPointCurve() : nullptr;
+      // The clicked point may be gone while the menu is open: its curve rebuilt by a point edit tool shortcut (Ctrl+B,...), or by
+      // an undo/redo. The menu is then closed rather than reading the deleted point
+      if (ownerPart == nullptr
+         || (curve != nullptr && std::ranges::none_of(curve->GetPoints(), [this](const auto& point) { return point.get() == m_menuPoint; })))
       {
+         m_menuPoint = nullptr;
+         ImGui::CloseCurrentPopup();
          ImGui::EndPopup();
          return;
       }
@@ -59,7 +65,6 @@ void BlueprintPane::RenderContextMenu()
       else
          targets.push_back(clickedPoint);
       IEditable* const owner = ownerPart->GetEditable();
-      DragPointCurve* const curve = ownerPart->GetDragPointCurve();
       const auto pointOp = [this, &editor, owner, curve, &targets](const std::function<void(DragPoint*)>& op)
       {
          editor.m_undo.BeginUndo();
