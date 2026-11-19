@@ -17,6 +17,9 @@
 #include "parts/timer.h"
 #include "renderer/Texture.h"
 
+#ifdef __STANDALONE__
+#define _WINDOWS_
+#endif
 #include "FreeImage.h"
 #include "ogg/ogg.h"
 #include "opus.h"
