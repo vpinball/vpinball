@@ -62,6 +62,8 @@ set(VPX_SOURCES
    src/core/Settings.h
    src/core/SettingsService.cpp
    src/core/SettingsService.h
+   src/core/TableAudit.cpp
+   src/core/TableAudit.h
    src/core/TableDB.cpp
    src/core/TableDB.h
    src/core/TournamentFile.cpp
@@ -314,6 +316,8 @@ set(VPX_SOURCES
    src/ui/live/editor/ops/ArcOp.cpp
    src/ui/live/editor/AreaLayout.h
    src/ui/live/editor/AreaLayout.cpp
+   src/ui/live/editor/AuditDialog.h
+   src/ui/live/editor/AuditDialog.cpp
    src/ui/live/editor/BlueprintContextMenu.cpp
    src/ui/live/editor/BlueprintPane.h
    src/ui/live/editor/BlueprintPane.cpp

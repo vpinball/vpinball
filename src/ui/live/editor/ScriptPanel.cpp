@@ -234,6 +234,12 @@ void ScriptPanel::JumpToLine(const size_t line)
    m_te.SetFocus();
 }
 
+void ScriptPanel::ShowLine(const int line)
+{
+   Show();
+   JumpToLine(static_cast<size_t>(std::max(line - 1, 0))); // The text editor's DocPos is 0-based
+}
+
 void ScriptPanel::GoToDefinition(const TextEditor::DocPos pos)
 {
    const std::string ctx = m_te.GetContext(pos, [](ImWchar c) { return VbsLex::IsIdentChar(c) || c == '.'; });

@@ -72,6 +72,7 @@ EditorUI::EditorUI(LiveUI &liveUI)
    , m_player(g_pplayer)
    , m_renderer(m_player->m_renderer)
    , m_chrome(*this)
+   , m_auditDialog(*this)
    , m_inspectionModal(*this)
    , m_partLibrary(*this)
    , m_scriptPanel(*this)
@@ -192,6 +193,7 @@ void EditorUI::Close()
       }
    ExitPointEditMode(false);
    RestorePartsVisibility();
+   m_auditDialog.Close();
    m_inspectionModal.Close();
    m_partLibrary.CancelPlacement(); // Drops a pending pack placement; the part library and script areas stay in the layout
    SaveAreaLayoutSettings(); // The layout and the view setups survive the session end
@@ -231,6 +233,7 @@ void EditorUI::SetTable(PinTable *const table)
    m_lastUndoPart = nullptr;
    m_addPartType = eItemInvalid;
    m_partLibrary.CancelPlacement();
+   m_auditDialog.OnTableSwitch(); // Its findings reference the previous table's parts and assets
 }
 
 void EditorUI::OnScriptError(const ScriptInterpreter::ErrorType type, const int line, const int column, const string &description, const vector<string> &stackDump)
@@ -850,6 +853,7 @@ void EditorUI::RenderUI()
          if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
             vp->SetRendering(false);
    }
+   m_auditDialog.Render();
    m_inspectionModal.Render();
    m_partLibrary.Update();
    m_scriptPanel.Update();

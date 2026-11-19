@@ -5,6 +5,9 @@
 
 #include "core/ScriptInterpreter.h"
 #include "parts/pintable.h"
+#include "core/pinundo.h"
+#include "core/TableAudit.h"
+#include "parts/light.h"
 #include "parts/timer.h"
 #include "parts/bumper.h"
 #include "parts/flasher.h"
@@ -289,6 +292,85 @@ TEST_CASE("PinTable part")
 
       table->m_script_text = "Sub Table1_Init\nEnd Sub\n";
       CHECK(table->AuditTable(false).find("VideoCap") == string::npos);
+
+      table->Release();
+   }
+
+   SUBCASE("audit items carry subjects and undoable fixes")
+   {
+      PinTable* const table = CreateTestTable();
+      PinUndo undo(table);
+
+      // Fixable error: negative light intensity clamps back to 0
+      Light* const light = Light::COMCreate();
+      light->Init(0.f, 0.f, false);
+      light->SetName("Light1");
+      light->m_d.m_intensity = -5.f;
+      table->AddPart(light);
+      light->Release();
+
+      // Fixable warning: glass bottom above glass top
+      table->m_glassBottomHeight = 300.f;
+      table->m_glassTopHeight = 200.f;
+
+      const TableAudit audit = TableAudit::Run(*table);
+      const auto findItem = [&audit](const string& needle)
+      {
+         const auto it = std::ranges::find_if(audit.items, [&needle](const TableAuditItem& item) { return item.summary.find(needle) != string::npos; });
+         return it != audit.items.end() ? &*it : nullptr;
+      };
+
+      const TableAuditItem* const lightItem = findItem("negative intensity");
+      REQUIRE(lightItem != nullptr);
+      CHECK(lightItem->severity == TableAuditItem::Severity::Error);
+      CHECK(lightItem->part == light);
+      CHECK(lightItem->details.length() >= lightItem->summary.length());
+      REQUIRE(lightItem->fix != nullptr);
+
+      const TableAuditItem* const glassItem = findItem("Glass height");
+      REQUIRE(glassItem != nullptr);
+      CHECK(glassItem->severity == TableAuditItem::Severity::Warning);
+      CHECK(glassItem->part == static_cast<IEditable*>(table));
+      REQUIRE(glassItem->fix != nullptr);
+
+      undo.BeginUndo();
+      lightItem->fix(*table, undo);
+      undo.EndUndo();
+      CHECK(light->m_d.m_intensity == doctest::Approx(0.f));
+
+      undo.BeginUndo();
+      glassItem->fix(*table, undo);
+      undo.EndUndo();
+      CHECK(table->m_glassBottomHeight == doctest::Approx(table->m_glassTopHeight));
+
+      undo.Undo();
+      CHECK(table->m_glassBottomHeight == doctest::Approx(300.f));
+      undo.Undo();
+      CHECK(light->m_d.m_intensity == doctest::Approx(-5.f));
+
+      table->Release();
+   }
+
+   SUBCASE("audit creates a missing PinMAMETimer timer")
+   {
+      PinTable* const table = CreateTestTable();
+      PinUndo undo(table);
+
+      table->m_script_text = "Sub Table1_Init\nLoadVPM \"x\", \"y\", 0\nvpmInit Me\nEnd Sub\n";
+      const TableAudit audit = TableAudit::Run(*table);
+      const auto it = std::ranges::find_if(audit.items, [](const TableAuditItem& item) { return item.summary.find("PinMAMETimer") != string::npos; });
+      REQUIRE(it != audit.items.end());
+      REQUIRE(it->fix != nullptr); // The name is free: the fix is offered
+
+      undo.BeginUndo();
+      IEditable* const created = it->fix(*table, undo);
+      undo.EndUndo();
+      REQUIRE(created != nullptr);
+      CHECK(created->GetItemType() == eItemTimer);
+      CHECK(table->GetElementByName("PinMAMETimer") == created);
+
+      undo.Undo(); // The creation is undone: the timer is removed from the table
+      CHECK(table->GetElementByName("PinMAMETimer") == nullptr);
 
       table->Release();
    }

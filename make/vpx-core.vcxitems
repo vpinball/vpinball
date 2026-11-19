@@ -857,6 +857,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/core/ScriptInterpreter.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/Settings.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/SettingsService.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/core/TableAudit.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/TableDB.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/TournamentFile.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.cpp" />
@@ -957,6 +958,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/ArcMath.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ops/ArcOp.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/AreaLayout.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/AuditDialog.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/BlueprintContextMenu.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/BlueprintPane.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/BlueprintRenderContext.cpp" />
@@ -1790,6 +1792,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/core/Settings.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/Settings_properties.inl" />
     <ClInclude Include="$(SolutionDir)/../../src/core/SettingsService.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/core/TableAudit.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/TableDB.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/TournamentFile.h" />
     <ClInclude Include="$(SolutionDir)/../../src/core/VPXPluginAPIImpl.h" />
@@ -1940,6 +1943,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/ArcMath.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ops/ArcOp.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/AreaLayout.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/AuditDialog.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/BlueprintPane.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/BlueprintRenderContext.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/BallUIPart.h" />

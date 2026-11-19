@@ -8,6 +8,7 @@
 #include "imguizmo/ImGuizmo.h"
 #include "imgui_markdown/imgui_markdown.h"
 #include "editor/AreaLayout.h"
+#include "editor/AuditDialog.h"
 #include "editor/EditorAreaView.h"
 #include "editor/parts/EditorUIPart.h"
 #include "editor/Selection.h"
@@ -61,6 +62,7 @@ class EditorUI final
 {
    // The editor's UI is split between sub components which, for the time being, access
    // the shared editor state directly (to be refined as domain objects are extracted)
+   friend class AuditDialog;
    friend class EditorChrome;
    friend class OutlinerPanel;
    friend class PropertiesPanel;
@@ -132,6 +134,7 @@ private:
 
    // Sub components (UI panels & modals)
    EditorChrome m_chrome;
+   AuditDialog m_auditDialog;
    RendererInspectionModal m_inspectionModal;
    PartLibraryPanel m_partLibrary;
    ScriptPanel m_scriptPanel;
