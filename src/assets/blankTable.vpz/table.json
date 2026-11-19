@@ -176,8 +176,8 @@
   "blurb": "",
   "description": "Press C to enable manual Ball Control via the arrow keys and B",
   "rules": "",
-  "date_saved": "Sun Nov 15 22:45:53 2026",
-  "save_rev": 207,
+  "date_saved": "Thu Nov 19 15:30:16 2026",
+  "save_rev": 208,
   "parts": [
     "Plastics",
     "Visuals",
@@ -190,7 +190,6 @@
     "VRFeet",
     "StockAssets",
     "DTBlades",
-    "DTCabinet",
     "FlipperRSh",
     "FlipperLSh",
     "RSling2",

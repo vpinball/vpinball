@@ -1,6 +1,6 @@
 {
   "$type": "sound",
-  "import_path": "C:\\Users\\vcbou\\Desktop\\BlankTable\\ogg\\fx_ballrolling6.ogg",
+  "import_path": "C:\\Users\\vcbou\\Desktop\\BlankTable\\ogg\\fx_ballrolling6.opus",
   "output_target": "playfield",
   "volume_offset": 0,
   "left_right_offset": 0,
