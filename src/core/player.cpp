@@ -1016,7 +1016,7 @@ void Player::InitTableSession(const bool isInitial)
    // Apply cabinet autofit (after script startup as the script may change what is visible and therefore taken in account, like a VR cabinet model)
    SetCabinetAutoFitMode(m_ptable->GetSettings().GetPlayer_CabinetAutofitMode());
    SetCabinetAutoFitPos(m_ptable->GetSettings().GetPlayer_CabinetAutofitPos());
-   m_renderer->InitLayout();
+   m_renderer->InvalidateLayout();
 
    // Initialize stereo rendering
    m_renderer->UpdateStereoShaderState();

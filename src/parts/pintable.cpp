@@ -81,6 +81,14 @@ static inline std::from_chars_result my_from_chars(const char* first, const char
 #define my_from_chars std::from_chars
 #endif
 
+// The rendered camera derives from the table's view setups lazily: notify the renderer's
+// views (if a game is running) that their layout is stale after a view setup / mode change
+static void InvalidatePlayerViewLayout()
+{
+   if (g_pplayer != nullptr && g_pplayer->m_renderer != nullptr)
+      g_pplayer->m_renderer->InvalidateLayout();
+}
+
 PinTable::PinTable()
    : m_settings(&(g_settingsService.GetAppSettings()))
 {
@@ -4788,7 +4796,10 @@ void PinTable::ImportBackdropPOV(const std::filesystem::path &filename, const bo
 
    // update properties UI
    if (!toUserSettings)
+   {
       SetNonUndoableDirty(SaveDirtyState::Dirty);
+      InvalidatePlayerViewLayout();
+   }
    if (m_tableEditor)
       m_tableEditor->RefreshProperties();
 }
@@ -6418,6 +6429,7 @@ void PinTable::UpdateCurrentBGSet()
       case 2: m_viewMode = BG_DESKTOP; break; // Desktop mode with FSS disabled (forced desktop)
       }
    }
+   InvalidatePlayerViewLayout();
 }
 
 STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
@@ -7832,6 +7844,7 @@ STDMETHODIMP PinTable::put_FieldOfView(float newVal)
 {
    PLOGW << "FieldOfView is deprecated";
    mViewSetups[m_viewMode].mFOV = newVal;
+   InvalidatePlayerViewLayout();
    return S_OK;
 }
 
@@ -7846,6 +7859,7 @@ STDMETHODIMP PinTable::put_Inclination(float newVal)
 {
    PLOGW << "Inclination is deprecated";
    mViewSetups[m_viewMode].mLookAt = newVal;
+   InvalidatePlayerViewLayout();
    return S_OK;
 }
 
@@ -7860,6 +7874,7 @@ STDMETHODIMP PinTable::put_Layback(float newVal)
 {
    PLOGW << "Layback is deprecated";
    mViewSetups[m_viewMode].mLayback = newVal;
+   InvalidatePlayerViewLayout();
    return S_OK;
 }
 
@@ -7874,6 +7889,7 @@ STDMETHODIMP PinTable::put_Rotation(float newVal)
 {
    PLOGW << "Rotation is deprecated";
    mViewSetups[m_viewMode].mViewportRotation = newVal;
+   InvalidatePlayerViewLayout();
    return S_OK;
 }
 
@@ -7888,6 +7904,7 @@ STDMETHODIMP PinTable::put_Scalex(float newVal)
 {
    PLOGW << "Scalex is deprecated";
    mViewSetups[m_viewMode].mSceneScaleX = newVal;
+   InvalidatePlayerViewLayout();
    return S_OK;
 }
 
@@ -7902,6 +7919,7 @@ STDMETHODIMP PinTable::put_Scaley(float newVal)
 {
    PLOGW << "Scaley is deprecated";
    mViewSetups[m_viewMode].mSceneScaleY = newVal;
+   InvalidatePlayerViewLayout();
    return S_OK;
 }
 
@@ -7916,6 +7934,7 @@ STDMETHODIMP PinTable::put_Scalez(float newVal)
 {
    PLOGW << "Scalez is deprecated";
    mViewSetups[m_viewMode].mSceneScaleZ = newVal;
+   InvalidatePlayerViewLayout();
    return S_OK;
 }
 
@@ -7930,6 +7949,7 @@ STDMETHODIMP PinTable::put_Xlatex(float newVal)
 {
    PLOGW << "Xlatex is deprecated";
    mViewSetups[m_viewMode].mViewX = newVal;
+   InvalidatePlayerViewLayout();
    return S_OK;
 }
 
@@ -7944,6 +7964,7 @@ STDMETHODIMP PinTable::put_Xlatey(float newVal)
 {
    PLOGW << "Xlatey is deprecated";
    mViewSetups[m_viewMode].mViewY = newVal;
+   InvalidatePlayerViewLayout();
    return S_OK;
 }
 
@@ -7958,5 +7979,6 @@ STDMETHODIMP PinTable::put_Xlatez(float newVal)
 {
    PLOGW << "Xlatez is deprecated";
    mViewSetups[m_viewMode].mViewZ = newVal;
+   InvalidatePlayerViewLayout();
    return S_OK;
 }

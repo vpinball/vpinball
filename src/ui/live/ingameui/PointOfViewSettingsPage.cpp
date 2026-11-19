@@ -95,7 +95,7 @@ void PointOfViewSettingsPage::OnPointOfViewChanged()
       m_player->m_renderer->DisableStaticPrePass(true);
       m_staticPrepassDisabled = true;
    }
-   m_player->m_renderer->InitLayout();
+   m_player->m_renderer->InvalidateLayout();
 }
 
 VPX::Properties::PropertyRegistry::PropId PointOfViewSettingsPage::SelectProp(

@@ -227,13 +227,9 @@ void RenderView::ResizeRenderTargets()
    rd->m_ballShader->SetVector(
       ShaderUniform::w_h_disableLighting, 1.5f / (float)GetPreviousBackBufferTexture()->GetWidth(), 1.5f / (float)GetPreviousBackBufferTexture()->GetHeight(), 0.f, 0.f);
    r->DisableBallLighting(r->m_table->GetSettings().GetPlayer_DisableLightingForBalls());
-   // Views with an externally driven camera (editor panes push it through SetViewProj) keep it across the layout
-   // reset which would otherwise restore the default view setup camera
-   const Matrix3D customView = m_initialMVP.GetView(0);
-   const Matrix3D customProj = m_initialMVP.GetProj(0);
-   InitLayout();
-   if (m_customViewProj)
-      SetViewProj(customView, customProj);
+   // The new targets may change the output aspect the camera layout derives from (views with an
+   // externally driven camera keep it: EnsureLayout skips them, the pane re-pushes it each frame)
+   InvalidateLayout();
 }
 
 void RenderView::SwapBackBufferRenderTargets()
@@ -346,14 +342,20 @@ int RenderView::GetDisplayHeight() const
 
 float RenderView::GetDisplayAspectRatio() const { return (float)((double)GetDisplayWidth() / (double)GetDisplayHeight()); }
 
-// Setup the tables camera / rotation / scale (see InitLayout in Renderer.cpp for the layout modes description)
-void RenderView::InitLayout()
+// Lazily recomputes the tables camera / rotation / scale when its inputs (view setup, view mode,
+// stereo mode, output aspect, fly camera offsets) have been invalidated since the last evaluation
+void RenderView::EnsureLayout()
 {
    // The VR headset view's camera is driven by the head pose (its MVP is never laid out): only its
-   // desktop display mirror, which shows a cabinet view of the scene, lays out a camera in VR mode
+   // desktop display mirror, which shows a cabinet view of the scene, lays out a camera in VR mode.
+   // Views with an externally driven camera (editor panes push it through SetViewProj) own their MVP.
+   // In both cases the dirty flag is kept, so the layout is computed when the view leaves the state.
    Renderer* const r = m_renderer;
-   if (r->m_stereo3D == STEREO_VR && !IsMirror())
+   if (m_customViewProj || (r->m_stereo3D == STEREO_VR && !IsMirror()))
       return;
+   if (!m_layoutDirty)
+      return;
+   m_layoutDirty = false;
    TRACE_FUNCTION();
    // The layout follows the view's own mode when one is forced (editor preview panes), else the table's mode
    const ViewSetupID mode = m_viewModeOverride != BG_INVALID ? m_viewModeOverride : r->m_table->GetViewMode();
@@ -386,9 +388,20 @@ void RenderView::ApplyViewJitter(const float xpixoff, const float ypixoff)
 void RenderView::SetFlip(ModelViewProj::FlipMode flipMode)
 {
    assert(m_renderer->m_stereo3D != STEREO_VR);
-   // Set on the current MVP: InitLayout recomputes it, then copies it to the initial MVP (which resets the current MVP each frame)
+   // Set on the current MVP: EnsureLayout recomputes it, then copies it to the initial MVP (which resets the current MVP each frame)
    m_mvp.SetFlip(flipMode);
-   InitLayout();
+   m_initialMVP.SetFlip(flipMode);
+   InvalidateLayout();
+}
+
+void RenderView::SetViewModeOverride(const ViewSetupID mode)
+{
+   if (m_viewModeOverride == mode)
+      return;
+   m_viewModeOverride = mode;
+   // The mode alters both the camera layout and the backdrop/visibility mask baked into the static prepass
+   m_isStaticPrepassDirty = true;
+   InvalidateLayout();
 }
 
 void RenderView::SetReflection(const Matrix3D& reflectionMatrix)
@@ -408,9 +421,10 @@ void RenderView::SetViewProj(const Matrix3D& view, const Matrix3D& proj)
    m_initialMVP.SetProj(1, proj);
 }
 
-Vertex3Ds RenderView::Unproject(const int width, const int height, const Vertex3Ds& point) const
+Vertex3Ds RenderView::Unproject(const int width, const int height, const Vertex3Ds& point)
 {
    assert(m_renderer->m_stereo3D != STEREO_VR);
+   EnsureLayout();
    Matrix3D invMVP = m_initialMVP.GetModelViewProj(0);
    invMVP.Invert();
    const Vertex3Ds p(2.0f * point.x / static_cast<float>(width) - 1.0f, 1.0f - 2.0f * point.y / static_cast<float>(height), (point.z - 0.f /* MinZ */) / (1.f /* MaxZ */ - 0.f /* MinZ */));
@@ -429,8 +443,9 @@ Vertex3Ds RenderView::Get3DPointFrom2D(const int width, const int height, const 
    return { wx, wy, wz };
 }
 
-Vertex2D RenderView::BackdropToClip(const Vertex2D& pos) const
+Vertex2D RenderView::BackdropToClip(const Vertex2D& pos)
 {
+   EnsureLayout();
    if (m_editorBackdropEdit)
    {
       // The live editor setup its own backdrop ortho MVP to allow pan & zoom
@@ -653,6 +668,7 @@ void RenderView::UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool 
 // all the space switches of the render (the layout may lazily recompute between renders).
 void RenderView::SetupSpaceViews()
 {
+   EnsureLayout();
    m_viewJitter = Vertex2D(0.f, 0.f);
    const SceneLayout& sceneLayout = g_pplayer->m_ptable->GetSceneLayout();
 #if defined(ENABLE_XR)
@@ -675,7 +691,7 @@ void RenderView::SetupSpaceViews()
 #endif
    {
       // Desktop / editor / VR desktop display: the camera is the laid out playfield view
-      // (the mirror's "cabinet" view is also laid out in InitLayout, see Render)
+      // (the mirror's "cabinet" view is also laid out in EnsureLayout, see Render)
       m_mvp = m_initialMVP;
       for (int space = 0; space < 3; space++)
       {
@@ -2084,7 +2100,6 @@ void RenderView::Render()
       // when stereo is enabled), but it does not need the playfield's MSAA.
       SetupTargets(m_renderWidth, m_renderHeight, primary->GetBackBufferTexture()->m_type, primary->GetBackBufferTexture()->GetColorFormat(),
          IsMirror() ? 1 : primary->GetMSAABackBufferTexture()->GetMSAASamples());
-      InitLayout();
    }
 
    ResizeRenderTargets();

@@ -52,7 +52,14 @@ public:
    RenderTarget* m_sharedOutputRT = nullptr;
    std::unique_ptr<RenderTarget> m_ownedOutputRT;
    vec4 m_outputArea = vec4(0.f, 0.f, 1.f, 1.f); // Normalized [left, top, right, bottom] area of the output this view draws to
-   void SetOutputArea(const vec4& area) { m_outputArea = area; }
+   void SetOutputArea(const vec4& area)
+   {
+      if (!(m_outputArea == area))
+      {
+         m_outputArea = area;
+         InvalidateLayout();
+      }
+   }
    bool m_deferResize = false; // Keep the current render targets when the output area resizes (e.g. splitter drag): the render is stretched to the new area until the resize is applied
    RenderTarget* GetOutput() const;
    bool IsFullOutputArea() const { return m_outputArea.x <= 0.f && m_outputArea.y <= 0.f && m_outputArea.z >= 1.f && m_outputArea.w >= 1.f; }
@@ -90,27 +97,39 @@ public:
    // Per view editor state, replacing the global LiveUI mode queries (several editor views may coexist with different setups)
    bool m_editorView = false; // Rendered for the live editor: disables the static prepass and applies the editor backdrop rules
    ViewSetupID m_viewModeOverride = BG_INVALID; // Per-view backdrop mode override (editor preview panes), BG_INVALID = table's mode
+   void SetViewModeOverride(ViewSetupID mode); // Mode override changes also dirty the camera layout and the static prepass
    bool m_editorBackdropEdit = false; // The view shows the desktop backdrop edit mode
 
    // Camera state
    ModelViewProj m_mvp; // Active Model / View / Projection (includes visual nudge)
    PartGroupData::SpaceReference m_mvpSpaceReference = PartGroupData::SpaceReference::Playfield;
    ModelViewProj m_initialMVP; // Base playfield MVP in desktop mode (unused in VR)
-   bool m_customViewProj = false; // The camera is driven through SetViewProj (editor panes): InitLayout keeps it instead of the default view setup
+   bool m_customViewProj = false; // The camera is driven through SetViewProj (editor panes): it owns the MVP, layout recomputes are skipped
+   bool m_layoutDirty = true; // The camera layout inputs (view setup, mode, stereo, output aspect, fly camera) changed since the last EnsureLayout
    Vertex2D m_screenOffset = Vertex2D(0.f, 0.f); // Screen shake effect during nudge
-   const ModelViewProj& GetMVP() const { return m_mvp; }
-   void InitLayout(); // Reset both the base and the current MVP to the default view setup
+   const ModelViewProj& GetMVP()
+   {
+      EnsureLayout();
+      return m_mvp;
+   }
+   void InvalidateLayout() { m_layoutDirty = true; } // Mark the default view setup camera as stale: recomputed lazily by EnsureLayout
+   void EnsureLayout(); // Recompute both the base and the current MVP from the default view setup, when dirty
    void SetFlip(ModelViewProj::FlipMode flipMode); // Flip the rendered image horizontally and/or vertically (e.g. for rear projection setups), applied to base MVP
    void SetViewProj(const Matrix3D& view, const Matrix3D& proj); // Override the MVP, applied to the base MVP
+   void ClearViewProj()
+   {
+      m_customViewProj = false;
+      InvalidateLayout();
+   } // Drop the SetViewProj override, back to the default view setup camera
    void SetReflection(const Matrix3D& reflectionMatrix); // Set a reflection matrix to be applied to the view matrix, used for mirror reflections, applied to current MVP, NOT the base MVP
    void ApplyViewJitter(const float xpixoff, const float ypixoff); // Add a sub pixel offset to the projection, kept across space switches (undone by the opposite offset)
    void SetSpaceReference(PartGroupData::SpaceReference spaceReference, bool force);
    // Clip plane in playfield space (nullptr to clear), applied in the reference space of the parts rendered next (see SetSpaceReference)
    void SetClipPlane(const vec4* playfieldPlane);
    void SetScreenOffset(const float x, const float y); // Set render offset in screen coordinates, e.g., for the nudge shake
-   Vertex3Ds Unproject(const int width, const int height, const Vertex3Ds& point) const;
+   Vertex3Ds Unproject(const int width, const int height, const Vertex3Ds& point);
    Vertex3Ds Get3DPointFrom2D(const int width, const int height, const Vertex2D& p, float z);
-   Vertex2D BackdropToClip(const Vertex2D& pos) const; // Maps a point in desktop backdrop coordinates (0..EDITOR_BG_WIDTH, 0..EDITOR_BG_HEIGHT) to clip space
+   Vertex2D BackdropToClip(const Vertex2D& pos); // Maps a point in desktop backdrop coordinates (0..EDITOR_BG_WIDTH, 0..EDITOR_BG_HEIGHT) to clip space
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
    void UpdateBallShaderMatrix();
    void UpdateDesktopBackdropShaderMatrix(bool basic, bool light, bool flasherDMD);

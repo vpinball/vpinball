@@ -331,34 +331,68 @@ void InGameUI::HandleLegacyFlyOver()
    if (!g_settingsService.GetActiveSettings().GetPlayer_EnableCameraModeFlyAround())
       return;
 
+   bool moved = false;
    if (!ImGui::IsKeyDown(ImGuiKey_LeftAlt) && !ImGui::IsKeyDown(ImGuiKey_RightAlt))
    {
       if (ImGui::IsKeyDown(ImGuiKey_LeftArrow))
+      {
          m_player->m_renderer->m_cam.x += 10.0f;
+         moved = true;
+      }
       if (ImGui::IsKeyDown(ImGuiKey_RightArrow))
+      {
          m_player->m_renderer->m_cam.x -= 10.0f;
+         moved = true;
+      }
       if (ImGui::IsKeyDown(ImGuiKey_UpArrow))
+      {
          m_player->m_renderer->m_cam.y += 10.0f;
+         moved = true;
+      }
       if (ImGui::IsKeyDown(ImGuiKey_DownArrow))
+      {
          m_player->m_renderer->m_cam.y -= 10.0f;
+         moved = true;
+      }
    }
    else
    {
       if (ImGui::IsKeyDown(ImGuiKey_UpArrow))
+      {
          m_player->m_renderer->m_cam.z += 10.0f;
+         moved = true;
+      }
       if (ImGui::IsKeyDown(ImGuiKey_DownArrow))
+      {
          m_player->m_renderer->m_cam.z -= 10.0f;
+         moved = true;
+      }
       if (ImGui::IsKeyDown(ImGuiKey_LeftArrow))
+      {
          m_player->m_renderer->m_inc += 0.01f;
+         moved = true;
+      }
       if (ImGui::IsKeyDown(ImGuiKey_RightArrow))
+      {
          m_player->m_renderer->m_inc -= 0.01f;
+         moved = true;
+      }
    }
 
    if (m_player->m_pininput.IsPressed(m_player->m_pininput.GetLeftNudgeActionId()))
+   {
       m_player->m_ptable->GetViewSetup().mViewportRotation -= 1.0f;
+      moved = true;
+   }
 
    if (m_player->m_pininput.IsPressed(m_player->m_pininput.GetRightNudgeActionId()))
+   {
       m_player->m_ptable->GetViewSetup().mViewportRotation += 1.0f;
+      moved = true;
+   }
+
+   if (moved)
+      m_player->m_renderer->InvalidateLayout();
 }
 
 bool InGameUI::ProposeInputLayout(const string& deviceName, const std::function<void(bool, bool)>& handler)

@@ -1323,9 +1323,7 @@ void ViewportPane::RenderPane(const AreaRect& rect, const int leafId)
    m_view->m_editorView = camMode != ViewMode::PreviewCam; // A render preview displays the game view, not an editor view
    m_view->m_editorBackdropEdit = camMode == ViewMode::DesktopBackdrop;
    const ViewSetupID modeOverride = camMode == ViewMode::PreviewCam ? m_viewMode : BG_INVALID;
-   if (m_view->m_viewModeOverride != modeOverride)
-      m_view->m_isStaticPrepassDirty = true; // A mode change alters the backdrop/visibility: the accumulated scene is stale
-   m_view->m_viewModeOverride = modeOverride;
+   m_view->SetViewModeOverride(modeOverride);
    m_view->m_shadeMode = m_shadeMode;
 }
 
@@ -1716,7 +1714,7 @@ void ViewportPane::Render3D()
    // Setup the MVP of the view being recorded with this pane's camera: the default table layout
    // for the preview camera, else the pane's stored camera converted to the renderer's left handed space
    if (m_viewType == ViewMode::PreviewCam || !m_cameraValid)
-      m_view->InitLayout();
+      m_view->InvalidateLayout();
    else
    {
       const Matrix3D RH2LH = Matrix3D::MatrixScale(1.f, 1.f, -1.f);
@@ -2180,7 +2178,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
    const Matrix3D YAxis = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
    if (m_viewType == ViewMode::PreviewCam)
    {
-      camOut->InitLayout();
+      camOut->InvalidateLayout();
       m_camView = RH2LH * camOut->GetMVP().GetView(0) * YAxis;
       m_camProj = YAxis * camOut->GetMVP().GetProj(0);
    }

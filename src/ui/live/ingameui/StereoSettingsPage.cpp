@@ -133,7 +133,7 @@ void StereoSettingsPage::OnPointOfViewChanged()
       m_staticPrepassDisabled = true;
    }
    m_player->m_renderer->UpdateStereoShaderState();
-   m_player->m_renderer->InitLayout();
+   m_player->m_renderer->InvalidateLayout();
 }
 
 void StereoSettingsPage::NotifyDirectSave()
@@ -185,7 +185,7 @@ void StereoSettingsPage::BuildPage()
       [this]() { return m_player->m_renderer->m_stereo3Denabled; }, //
       [this](bool v) {
          m_player->m_renderer->m_stereo3Denabled = v;
-         m_player->m_renderer->InitLayout();
+         m_player->m_renderer->InvalidateLayout();
          m_player->m_renderer->UpdateStereoShaderState();
          if (m_player->m_renderer->IsUsingStaticPrepass())
          {

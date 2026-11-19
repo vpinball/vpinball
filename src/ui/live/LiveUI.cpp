@@ -737,8 +737,8 @@ void LiveUI::OpenInGameUI(const string& page)
 }
 
 void LiveUI::HideUI()
-{ 
-   m_renderer->InitLayout();
+{
+   m_renderer->InvalidateLayout();
    if (m_inGameUI.IsOpened())
       m_inGameUI.Close();
    m_editorUI.Close();
