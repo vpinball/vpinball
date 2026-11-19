@@ -45,12 +45,18 @@ public:
 
    SoundOutTypes GetOutputTarget() const { return m_outputTarget; }
 
+   // Version of the Sound file data this player's decoder is bound to (decoders reference the
+   // Sound's buffer in place, without copying). Used to discard players made stale by the file
+   // data being replaced after the player was created.
+   unsigned int GetDataVersion() const { return m_dataVersion; }
+
 private:
    SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound, SoundOutTypes target);
    SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::path& filename);
 
    const class AudioPlayer* const m_audioPlayer;
    const SoundOutTypes m_outputTarget;
+   const unsigned int m_dataVersion;
 
    float m_monoCompensation = 1.f;
    float m_soundVolume = 1.f;

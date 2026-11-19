@@ -65,6 +65,7 @@ SoundPlayer* SoundPlayer::Create(const AudioPlayer* audioPlayer, const std::file
 SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::path& filename)
    : m_audioPlayer(audioPlayer)
    , m_outputTarget(SoundOutTypes::SNDOUT_BACKGLASS)
+   , m_dataVersion(0) // Music: file data is read from disk, not from a Sound's buffer
    , m_callbackId(""s) // Music: no callback information as there is at most one music playing
 {
    m_commandQueue->enqueue(
@@ -156,6 +157,7 @@ SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, const std::filesystem::
 SoundPlayer::SoundPlayer(const AudioPlayer* audioPlayer, Sound* sound, SoundOutTypes target)
    : m_audioPlayer(audioPlayer)
    , m_outputTarget(target)
+   , m_dataVersion(sound->GetDataVersion())
    , m_callbackId(sound->GetName())
 {
    m_commandQueue->enqueue(
