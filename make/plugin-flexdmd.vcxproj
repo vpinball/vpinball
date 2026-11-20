@@ -151,9 +151,9 @@
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\flexdmd\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\flexdmd\"
 
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\flexdmd\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\flexdmd\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libz-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libz-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libz-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\flexdmd\"
 
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\flexdmd\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\flexdmd\"
@@ -204,9 +204,9 @@
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\flexdmd\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libiconv-2.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\flexdmd\"
 
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\flexdmd\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\flexdmd\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zlib1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libz-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libz-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\flexdmd\"
+			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libz-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\flexdmd\"
 
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\flexdmd\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\flexdmd\"
