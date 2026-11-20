@@ -23,7 +23,7 @@ defaults:
 jobs:
   context:
     name: Context
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       is_pr: ${{ steps.context.outputs.is_pr }}
       checkout_ref: ${{ steps.context.outputs.checkout_ref }}
@@ -43,7 +43,7 @@ jobs:
 
   version:
     name: Version
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [ context ]
     outputs:
       revision: ${{ steps.version.outputs.revision }}
@@ -78,7 +78,7 @@ jobs:
 
   matrix:
     name: Matrix
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [ context ]
     outputs:
       desktop: ${{ steps.matrix.outputs.desktop }}
@@ -95,13 +95,13 @@ jobs:
               {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows-mingw","arch":"x64","config":"Release"},
               {"os":"macos-15","type":"BGFX","platform":"macos","arch":"arm64","config":"Release"},
               {"os":"macos-15","type":"BGFX","platform":"macos","arch":"x64","config":"Release"},
-              {"os":"ubuntu-24.04","type":"BGFX","platform":"linux","arch":"x64","config":"Release"},
+              {"os":"ubuntu-26.04","type":"BGFX","platform":"linux","arch":"x64","config":"Release"},
               {"os":"windows-2025-vs2026","type":"GL","platform":"windows","arch":"x64","config":"Release"},
               {"os":"windows-2025-vs2026","type":"GL","platform":"windows","arch":"x86","config":"Release"}
             ]}'
             SBC='{"include":[
-              {"os":"ubuntu-24.04-arm","type":"BGFX","board":"rpi","platform":"linux","arch":"aarch64","config":"Release"},
-              {"os":"ubuntu-24.04-arm","type":"BGFX","board":"rk3588","platform":"linux","arch":"aarch64","config":"Release"}
+              {"os":"ubuntu-26.04-arm","type":"BGFX","board":"rpi","platform":"linux","arch":"aarch64","config":"Release"},
+              {"os":"ubuntu-26.04-arm","type":"BGFX","board":"rk3588","platform":"linux","arch":"aarch64","config":"Release"}
             ]}'
             DX='{"include":[
               {"platform":"windows","arch":"x64","config":"Release"},
@@ -113,10 +113,10 @@ jobs:
               {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows","arch":"x64","config":"Release"},
               {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows-mingw","arch":"x64","config":"Release"},
               {"os":"macos-15","type":"BGFX","platform":"macos","arch":"arm64","config":"Release"},
-              {"os":"ubuntu-24.04","type":"BGFX","platform":"linux","arch":"x64","config":"Release"}
+              {"os":"ubuntu-26.04","type":"BGFX","platform":"linux","arch":"x64","config":"Release"}
             ]}'
             SBC='{"include":[
-              {"os":"ubuntu-24.04-arm","type":"BGFX","board":"rpi","platform":"linux","arch":"aarch64","config":"Release"}
+              {"os":"ubuntu-26.04-arm","type":"BGFX","board":"rpi","platform":"linux","arch":"aarch64","config":"Release"}
             ]}'
             DX='{"include":[
               {"platform":"windows","arch":"x64","config":"Release"}
@@ -553,7 +553,7 @@ jobs:
 
   build-android:
     name: Build VPinballX_BGFX-android-${{ matrix.flavor }}-${{ matrix.config }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [ context, version, matrix ]
     strategy:
       fail-fast: false
@@ -566,6 +566,7 @@ jobs:
       ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/29.0.14206865
     steps:
       - run: |
+          sudo apt-get update
           sudo apt install bison libx11-dev libgl1-mesa-dev libglu1-mesa-dev
       - uses: actions/setup-java@v5
         with:
@@ -683,7 +684,7 @@ jobs:
 
   build-wasm:
     name: Build VPinballX_BGFX-wasm-${{ matrix.config }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [ context, version ]
     strategy:
       fail-fast: false
@@ -691,6 +692,7 @@ jobs:
         config: [ Release ]
     steps:
       - run: |
+          sudo apt-get update
           sudo apt install bison libx11-dev libgl1-mesa-dev libglu1-mesa-dev
           git clone --depth 1 https://github.com/emscripten-core/emsdk.git ${{ runner.temp }}/emsdk
           ${{ runner.temp }}/emsdk/emsdk install 6.0.13
@@ -762,7 +764,7 @@ jobs:
   deploy-wasm:
     name: Deploy VPinballX_BGFX-wasm to GitHub Pages
     if: github.event_name == 'push' && vars.DEPLOY_WASM_PAGES == 'true' && github.ref_name == github.event.repository.default_branch
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [ build-wasm ]
     permissions:
       pages: write

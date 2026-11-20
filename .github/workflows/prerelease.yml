@@ -12,7 +12,7 @@ env:
 
 jobs:
   version:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       sha: ${{ steps.sha.outputs.sha }}
       tag: ${{ steps.version.outputs.tag }}
@@ -36,7 +36,7 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   prerelease:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [ version ]
     steps:
       - name: Find build run
