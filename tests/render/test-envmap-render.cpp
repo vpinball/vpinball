@@ -22,6 +22,8 @@ using namespace MsgPI;
 // reflection) must sharpen steadily with the roughness: their contrast is checked not to decrease towards the sharper ones. The
 // plastic spheres (white diffuse base under the 8% dielectric glossy layer) are only rendered. The renders are kept
 // (test000-envmap-*-Test.webp) for a visual review: stepping between roughnesses, blockiness, pole artifacts.
+// Two more sharp dielectric spheres, alike but for their Edge (1, then 0), check the Fresnel of the glossy reflection: their rims
+// must differ, their centers not.
 // Point lights, ambient and bloom are disabled so the spheres only show the environment lighting.
 
 namespace
@@ -32,6 +34,7 @@ constexpr int numSpheres = 11; // Roughness 0, 0.1, ..., 1
 constexpr int spheresPerLine = 6; // Roughness 0 to 0.5 on the first line of a material, 0.6 to 1 on the second
 constexpr float sphereRadius = 55.f, sphereSpacing = 140.f, sphereLeft = 150.f, sphereZ = sphereRadius + 2.f;
 constexpr float materialY[2] = { 760.f, 1060.f }; // Metal, plastic
+constexpr float edgeSphereY = 1360.f, edgeSphereX[2] = { sphereLeft + 2.f * sphereSpacing, sphereLeft + 3.f * sphereSpacing }; // Edge 1, Edge 0
 
 string s_backend; // BGFX backend to render with (empty for the default one)
 #ifdef ENABLE_BGFX
@@ -178,6 +181,8 @@ struct SphereCapture
    std::shared_ptr<BaseTexture> image;
    float center[2][numSpheres][2]; // Screen position of the sphere centers (metal, plastic), normalized
    float radius[2][numSpheres]; // Screen radius, normalized to the image width
+   float edgeCenter[2][2]; // Same for the Edge 1 and Edge 0 spheres
+   float edgeRadius[2];
 };
 
 SphereCapture CaptureSpheres(const string& screenshot, const bool hdr)
@@ -213,6 +218,13 @@ SphereCapture CaptureSpheres(const string& screenshot, const bool hdr)
       AddSphere(table, "EnvSphereMetal" + std::to_string(i), metal->m_name, metalPos.x, metalPos.y);
       AddSphere(table, "EnvSpherePlastic" + std::to_string(i), plastic->m_name, plasticPos.x, plasticPos.y);
    }
+   for (int i = 0; i < 2; i++)
+   {
+      Material* const dielectric = new Material(Material::BASIC, 0.f, 1.f, 1.f, 0.05f, i == 0 ? 1.f : 0.f, 1.f, 1.f, RGB(20, 20, 20), RGB(30, 30, 30), RGB(0, 0, 0), false, 0.f, 0.f, 0.f, 0.f, RGB(255, 255, 255));
+      dielectric->m_name = "EnvEdge" + std::to_string(i);
+      table->AddMaterial(dielectric);
+      AddSphere(table, "EnvSphereEdge" + std::to_string(i), dielectric->m_name, edgeSphereX[i], edgeSphereY);
+   }
 
    struct CaptureState
    {
@@ -241,6 +253,14 @@ SphereCapture CaptureSpheres(const string& screenshot, const bool hdr)
             state->capture->center[row][i][1] = 0.5f - 0.5f * c.y;
             state->capture->radius[row][i] = 0.5f * fabsf(e.x - c.x);
          }
+      for (int i = 0; i < 2; i++)
+      {
+         const Vertex3Ds c = mvp * Vertex3Ds(edgeSphereX[i], edgeSphereY, sphereZ);
+         const Vertex3Ds e = mvp * Vertex3Ds(edgeSphereX[i] + sphereRadius, edgeSphereY, sphereZ);
+         state->capture->edgeCenter[i][0] = 0.5f + 0.5f * c.x;
+         state->capture->edgeCenter[i][1] = 0.5f - 0.5f * c.y;
+         state->capture->edgeRadius[i] = 0.5f * fabsf(e.x - c.x);
+      }
       g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot({ g_pplayer->m_playfieldWnd }, { state->path },
          [](bool success)
          {
@@ -267,21 +287,23 @@ SphereCapture CaptureSpheres(const string& screenshot, const bool hdr)
    return capture;
 }
 
-// Standard deviation of the luminance (sRGB 8 bit values) over the inner part of a sphere (away from its silhouette)
-double SphereContrast(const SphereCapture& capture, const int row, const int i)
+// Mean and standard deviation of the luminance (sRGB 8 bit values) over the ring between rInner and rOuter (fractions of the sphere
+// radius) of a sphere of normalized center and radius
+std::pair<double, double> SphereLuminance(const SphereCapture& capture, const float center[2], const float radius, const float rInner, const float rOuter)
 {
    const BaseTexture& image = *capture.image;
    REQUIRE((image.m_format == BaseTexture::SRGB || image.m_format == BaseTexture::SRGBA));
    const unsigned int bpp = image.pitch() / image.width();
    const float w = (float)image.width(), h = (float)image.height();
-   const float cx = capture.center[row][i][0] * w, cy = capture.center[row][i][1] * h, r = 0.8f * capture.radius[row][i] * w;
-   REQUIRE(r > 8.f);
+   const float cx = center[0] * w, cy = center[1] * h, r0 = rInner * radius * w, r1 = rOuter * radius * w;
+   REQUIRE(radius * w > 10.f);
    double sum = 0., sum2 = 0.;
    size_t n = 0;
-   for (int y = max(0, (int)(cy - r)); y < min((int)h, (int)(cy + r) + 1); y++)
-      for (int x = max(0, (int)(cx - r)); x < min((int)w, (int)(cx + r) + 1); x++)
+   for (int y = max(0, (int)(cy - r1)); y < min((int)h, (int)(cy + r1) + 1); y++)
+      for (int x = max(0, (int)(cx - r1)); x < min((int)w, (int)(cx + r1) + 1); x++)
       {
-         if (((float)x - cx) * ((float)x - cx) + ((float)y - cy) * ((float)y - cy) > r * r)
+         const float d2 = ((float)x - cx) * ((float)x - cx) + ((float)y - cy) * ((float)y - cy);
+         if (d2 > r1 * r1 || d2 < r0 * r0)
             continue;
          const uint8_t* const texel = static_cast<const uint8_t*>(image.datac()) + y * image.pitch() + x * bpp;
          const double l = 0.2126 * texel[0] + 0.7152 * texel[1] + 0.0722 * texel[2];
@@ -289,9 +311,15 @@ double SphereContrast(const SphereCapture& capture, const int row, const int i)
          sum2 += l * l;
          n++;
       }
-   REQUIRE(n > 100);
+   REQUIRE(n > 50);
    const double mean = sum / (double)n;
-   return sqrt(max(0., sum2 / (double)n - mean * mean));
+   return { mean, sqrt(max(0., sum2 / (double)n - mean * mean)) };
+}
+
+// Standard deviation of the luminance over the inner part of a sphere (away from its silhouette)
+double SphereContrast(const SphereCapture& capture, const int row, const int i)
+{
+   return SphereLuminance(capture, capture.center[row][i], capture.radius[row][i], 0.f, 0.8f).second;
 }
 
 void CheckEnvironmentRoughness(const string& prefix, const bool hdr)
@@ -315,6 +343,17 @@ void CheckEnvironmentRoughness(const string& prefix, const bool hdr)
          CHECK(contrast[i] >= 0.9 * contrast[i - 1] - 0.5);
       CHECK(contrast[numSpheres - 1] > 2.0 * contrast[0]); // The roughness must have a visible effect for the check to be meaningful
    }
+
+   // Fresnel: towards the silhouette, the glossy reflection rises to the Edge value (1) or falls to it (0); head on, it is the glossy color
+   double rim[2], center[2];
+   for (int i = 0; i < 2; i++)
+   {
+      rim[i] = SphereLuminance(capture, capture.edgeCenter[i], capture.edgeRadius[i], 0.85f, 0.95f).first;
+      center[i] = SphereLuminance(capture, capture.edgeCenter[i], capture.edgeRadius[i], 0.f, 0.4f).first;
+   }
+   MESSAGE(prefix, (hdr ? " HDR"s : " LDR"s), " Edge 1 / Edge 0 sphere rim: ", rim[0], " / ", rim[1], ", center: ", center[0], " / ", center[1]);
+   CHECK(rim[0] > rim[1] + 3.0); // The diffuse base dominates the rim: +7 (LDR) and +6 (HDR) with the Fresnel, +0 without
+   CHECK(fabs(center[0] - center[1]) < 0.15 * max(center[0], center[1]) + 2.0);
 }
 }
 

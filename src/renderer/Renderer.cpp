@@ -592,7 +592,7 @@ EnvLevel DownsampleEnvLevel(const EnvLevel& src)
       {
          const unsigned int x0 = min(2 * x, src.w - 1) * 3, x1 = min(2 * x + 1, src.w - 1) * 3;
          for (unsigned int c = 0; c < 3; ++c)
-            dst.rgb[(static_cast<size_t>(y) * dst.w + x) * 3 + c] = 0.25f * (r0[x0 + c] + r0[x1 + c] + r1[x0 + c] + r1[x1 + c]);
+            dst.rgb[(static_cast<size_t>(y) * dst.w + x) * 3 + c] = 0.25f * ((r0[x0 + c] + r0[x1 + c]) + (r1[x0 + c] + r1[x1 + c]));
       }
    }
    return dst;
@@ -626,8 +626,8 @@ void PrefilterEnvLevel(const EnvLevel& src, EnvLevel& dst, const float power, pr
             set_denormals_flush_to_zero_once();
             const float theta = ((float)y + 0.5f) / (float)dst.h * (float)M_PI;
             const float sT = sinf(theta), cT = cosf(theta);
-            const int j0 = max(0, static_cast<int>(floorf((theta - alpha) * ((float)src.h / (float)M_PI) - 0.5f)));
-            const int j1 = min(static_cast<int>(src.h) - 1, static_cast<int>(ceilf((theta + alpha) * ((float)src.h / (float)M_PI) - 0.5f)));
+            const int j0 = max(0, static_cast<int>(floorf((theta - alpha) * ((float)src.h * (float)(1.0/M_PI)) - 0.5f)));
+            const int j1 = min(static_cast<int>(src.h) - 1, static_cast<int>(ceilf((theta + alpha) * ((float)src.h * (float)(1.0/M_PI)) - 0.5f)));
             for (unsigned int x = 0; x < dst.w; ++x)
             {
                const float phi = ((float)x + 0.5f) / (float)dst.w * (float)(2.0 * M_PI) + (float)M_PI;
@@ -647,7 +647,7 @@ void PrefilterEnvLevel(const EnvLevel& src, EnvLevel& dst, const float power, pr
                         continue;
                      if (c > -1.f)
                      {
-                        const float half = acosf(c) * ((float)src.w / (float)(2.0 * M_PI));
+                        const float half = acosf(c) * ((float)src.w * (float)(1.0/(2.0 * M_PI)));
                         const int a = static_cast<int>(ceilf(center - half)), b = static_cast<int>(floorf(center + half));
                         if (b - a + 1 < static_cast<int>(src.w))
                         {
@@ -682,7 +682,7 @@ void PrefilterEnvLevel(const EnvLevel& src, EnvLevel& dst, const float power, pr
                }
                else // No source texel within the lobe (not expected, the lobes span more than a source texel): nearest one
                {
-                  const unsigned int j = min(static_cast<unsigned int>(theta * ((float)src.h / (float)M_PI)), src.h - 1);
+                  const unsigned int j = min(static_cast<unsigned int>(theta * ((float)src.h * (float)(1.0/M_PI))), src.h - 1);
                   const unsigned int i = static_cast<unsigned int>(center + 0.5f) % src.w;
                   memcpy(o, src.rgb.data() + (static_cast<size_t>(j) * src.w + i) * 3, 3 * sizeof(float));
                }
@@ -1796,7 +1796,7 @@ RenderTarget* Renderer::SetupAncillaryRenderTarget(
 
       // Embedded window coordinates are logical units of the container window, while the embed
       // render target is sized in its output pixels (including full scene antialiasing upscaling)
-      const float displayScaleX = static_cast<float>(outputRT->GetWidth()) / static_cast<float>(containerWnd->GetWidth());
+      const float displayScaleX = static_cast<float>(outputRT->GetWidth())  / static_cast<float>(containerWnd->GetWidth());
       const float displayScaleY = static_cast<float>(outputRT->GetHeight()) / static_cast<float>(containerWnd->GetHeight());
 
       const int wndW = output.GetEmbeddedWindow()->GetWidth();
@@ -1905,7 +1905,7 @@ void Renderer::DrawEmbeddedQuad(RenderTarget* outputRT, int x, int y, int w, int
    const float sy = 1.f / static_cast<float>(outputRT->GetHeight());
    for (unsigned int i = 0; i < 4; ++i)
    {
-      vertices[i].x = sx * (vertices[i].x * static_cast<float>(w) + static_cast<float>(x)) * 2.0f - 1.0f;
+      vertices[i].x =        sx * (vertices[i].x * static_cast<float>(w) + static_cast<float>(x)) * 2.0f - 1.0f;
       vertices[i].y = 1.0f - sy * (vertices[i].y * static_cast<float>(h) + static_cast<float>(y)) * 2.0f;
    }
    RenderDevice* const rd = m_renderDevice;

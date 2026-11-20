@@ -133,16 +133,21 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 //!! PI?
 // Glossy environment lighting. The envmap mip levels are prefiltered at load (see Renderer::EnvmapPrecalc): the level of height h
 // holds the envmap seen through the Blinn-Phong lobe of power 0.75 h^2 - 1. Below power 11 (VPX roughness 0.25, levelHeight 2),
-// too wide for the coarsest levels, it fades into the diffuse irradiance at the normal (only read then, see lightLoop)
+// too wide for the coarsest levels, it fades into the diffuse irradiance at the normal (only read then, see lightLoop).
+// Like the point lights' glossy term, it rises towards 'edge' at grazing angles (Fresnel), weighted by how much of the lobe sees
+// grazing half vectors: from 0.3 for the widest lobe (VPX roughness 0) to 1 for a mirror. The weight follows the point light Fresnel
+// averaged over its lobe within 0.1 for NdotV <= 0.3, slightly below it for mid roughness
 float EnvmapGlossyLevelHeight(const float glossyPower)
 {
    return 1.0 + 0.5*log2((glossyPower + 1.0) * (1.0/3.0)); // log2 of the height of the level holding this power: 2 sqrt((n+1)/3)
 }
 
-float3 DoEnvmapGlossy(const float2 Ruv, const float3 irradiance, const float3 glossy, const float levelHeight)
+float3 DoEnvmapGlossy(const float2 Ruv, const float3 irradiance, const float3 glossy, const float levelHeight, const float NdotV, const float edge, const float glossyPower)
 {
    const float3 env = textureLod(tex_env, Ruv, max(log2(fenvEmissionScale_TexWidth.y) - levelHeight, 0.)).xyz;
-   return glossy * lerp(irradiance, env, saturate(levelHeight - 1.0)) * fenvEmissionScale_TexWidth.x;
+   const float fresnelWeight = 0.3 + 0.7 * saturate(0.1 * log2(glossyPower) - 0.1); // VPX roughness (0..1 maps to power 2..2048)
+   const float3 glossyF = glossy + (float3(edge) - glossy) * (fresnelWeight * pow(1.0 - NdotV, 5.));
+   return glossyF * lerp(irradiance, env, saturate(levelHeight - 1.0)) * fenvEmissionScale_TexWidth.x;
 }
 
 //!! PI?
@@ -218,7 +223,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
       const float3 R = /*normalize*/((float4(((2.0*NdotV)*N - V),0.0) * matView[int(eye)]).xyz); // reflect(-V,N), to world space as Nw
       const float2 Ruv = ray_to_equirectangular_uv(R);
       if (glossyMax > 0.0)
-         color += DoEnvmapGlossy(Ruv, irradiance, glossy, glossyLevelHeight);
+         color += DoEnvmapGlossy(Ruv, irradiance, glossy, glossyLevelHeight, NdotV, edge, Roughness_WrapL_Edge_Thickness.x);
       if (specularMax > 0.0)
          color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
    }

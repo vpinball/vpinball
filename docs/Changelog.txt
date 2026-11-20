@@ -56,8 +56,9 @@ FEATURES:
   and a 'pixelated' texture sampling mode (sharp pixels when magnified, anisotropic filtering when minified)
 
 - improved environment and light reflections: glossy materials now blur the environment correctly over the whole roughness range (blending with the diffuse
-  lighting for the roughest ones); the diffuse environment lighting is now computed exactly (no more issues with bright HDR suns plus faster table loading);
-  the balls now reflect lights according to their bulb size and distance, picks the brightest nearby lights (lights that are off are ignored), and no longer doubles the inserts already reflected from the playfield
+  lighting for the roughest ones); the diffuse environment lighting pre-computation step is now computed exactly (no more issues with bright HDR suns plus faster table loading);
+  glossy materials now also feature the missing edge term for the environment lighting (matching point lights);
+  and the balls now reflect lights according to their bulb size and distance, picks the brightest nearby lights (lights that are off are ignored), and no longer doubles the inserts already reflected from the playfield
 
 - balls can now be created and edited directly from the editor like all other parts, and not only from the script
 - the movement of the ball is now slightly extrapolated/predicted to (ideally) reduce the display/visual latency to 0
