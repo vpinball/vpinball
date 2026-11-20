@@ -103,7 +103,9 @@ public:
    void RayCastParts(const ImVec2& mousePos, vector<HitTestResult>& vhoHit); // Pick the colliders under the mouse (filtered by pickability)
    void HitTestMarkers(const ImVec2& mousePos, vector<std::pair<float, std::shared_ptr<EditorUIPart>>>& hits)
       const; // Pick the parts the collider ray cast cannot hit (collider-less parts, edge-on flat colliders) by screen space, sorted by depth along the pick ray
-   Vertex2D UnprojectToPlane(const ImVec2& mousePos, float z) const; // Display px -> table plane point at the given Z
+   Vertex2D UnprojectToPlane(const ImVec2& mousePos, float z) const; // Display px -> point of the plane at the given Z of the view's current reference space
+   // Display px -> point of the plane at the given Z of another reference space (viewToSpace maps the view's current space to it)
+   Vertex2D UnprojectToPlane(const ImVec2& mousePos, float z, const Matrix3D& viewToSpace) const;
    // Reference spaces of the overlays & picking: the pane's view keeps the space reference of the
    // last part recorded into it (see RenderView::SetSpaceReference), so coordinates expressed in a
    // part's own reference space must be re-expressed to project at their true position

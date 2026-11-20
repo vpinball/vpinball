@@ -226,8 +226,8 @@ private:
    vector<std::shared_ptr<EditorUIPart>> m_savedMultiSel;
    bool m_pointDragPending = false; // Left button is down on a selected point (drag not started yet)
    bool m_pointDragActive = false; // Left button drag is moving the selected points
-   float m_pointDragZ = 0.f; // Table Z coordinate of the plane in which points are dragged
-   Vertex2D m_pointDragPos; // Last drag position in table coordinates
+   float m_pointDragZ = 0.f; // Z coordinate of the plane in which points are dragged, in the edited part's reference space
+   Vertex2D m_pointDragPos; // Last drag position in the edited part's coordinates
    bool CanEnterPointEdit() const;
    void EnterPointEditMode();
    void ExitPointEditMode(bool restoreSelection);
@@ -660,9 +660,10 @@ private:
    // viewport shortcuts — on their own camera definition (see ViewportPane::RenderUI):
    // the pane under the mouse, or the one holding an in-progress drag (captured pane)
    ViewportPane *m_hoverVp = nullptr; // Viewport pane whose image is hovered this frame
+   ViewportPane *m_lastHoverVp = nullptr; // Last hovered viewport pane: target of the viewport actions while none is hovered (e.g. View menu)
    ViewportPane *m_captureVp = nullptr; // Viewport pane holding an in-progress mouse interaction
    ViewportPane *HoveredViewportPane() const;
-   ViewportPane *GetTargetViewport() const; // Pane owning viewport actions: flying > dragged > hovered > first
+   ViewportPane *GetTargetViewport() const; // Pane owning viewport actions: flying > dragged > hovered > last hovered > first
 
    // Blueprint panes process their own 2D canvas interactions the same way (see
    // BlueprintPane::RenderUI): the pane under the mouse, or the one capturing a drag

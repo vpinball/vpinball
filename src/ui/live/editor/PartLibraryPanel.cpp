@@ -630,15 +630,9 @@ void PartLibraryPanel::UpdatePlacement(const ImVec2 &mousePos)
    }
 
    // Project the pointed point on the playfield XY plane (the blueprint maps it directly, the 3D view
-   // projects on the playfield plane), then drop a vertical ray on it: the parts rest on the topmost
-   // surface it hits (the UI quadtree holds all parts, collidable or not)
-   Vertex2D pos = (bp != nullptr) ? bp->Unproject(mousePos) : vp->UnprojectToPlane(mousePos, 0.f);
-   if (vp != nullptr)
-   {
-      // The pane unprojects in the reference space its view currently renders in: re-express in the playfield space the quadtree works in
-      const Vertex3Ds pf = vp->ViewSpaceTransform() * Vertex3Ds(pos.x, pos.y, 0.f);
-      pos = Vertex2D(pf.x, pf.y);
-   }
+   // projects on the playfield plane, whatever reference space it renders in), then drop a vertical ray on it:
+   // the parts rest on the topmost surface it hits (the UI quadtree holds all parts, collidable or not)
+   const Vertex2D pos = (bp != nullptr) ? bp->Unproject(mousePos) : vp->UnprojectToPlane(mousePos, 0.f, vp->ViewSpaceTransform());
    const float zTop = m_editor.m_table->m_glassTopHeight + 500.f;
    const float zBottom = -500.f;
    vector<HitTestResult> hits;

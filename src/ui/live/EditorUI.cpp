@@ -3166,10 +3166,8 @@ void EditorUI::AddPointOnNearestSegment()
       ViewportPane *const vp = GetTargetViewport();
       if (vp == nullptr)
          return;
-      // The pane unprojects in the reference space its view currently renders in: re-express in the edited part's space
-      const Vertex2D p = vp->UnprojectToPlane(ImGui::GetMousePos(), z);
-      const Vertex3Ds a = Matrix3D::MatrixInverse(vp->PartSpaceToView(m_pointEditPart->GetEditable())) * Vertex3Ds(p.x, p.y, z);
-      pos = Vertex2D(a.x, a.y);
+      // Plane at z of the edited part's reference space (the pane's view may render in another one)
+      pos = vp->UnprojectToPlane(ImGui::GetMousePos(), z, Matrix3D::MatrixInverse(vp->PartSpaceToView(m_pointEditPart->GetEditable())));
    }
    m_undo.BeginUndo();
    m_undo.MarkForUndo(m_pointEditPart->GetEditable());
@@ -3465,6 +3463,7 @@ void EditorUI::LoadAreaLayoutSettings()
    m_hoverLeaf = -1;
    CancelAreaInteraction(false);
    m_hoverVp = nullptr;
+   m_lastHoverVp = nullptr;
    m_captureVp = nullptr;
    if (settings.GetEditor_AlwaysViewScript() && !m_layout.IsHosted(AreaType::Script))
       ShowAreaEditor(AreaType::Script); // The editor option keeps a script area open
@@ -3763,9 +3762,13 @@ void EditorUI::RenderAreas()
       {
          vp->SetRendering(shown[id]);
          if (!shown[id])
+         {
             vp->m_hovered = vp->m_active = false; // A pane that is not drawn must not keep stale item state
+            if (m_lastHoverVp == vp)
+               m_lastHoverVp = nullptr;
+         }
          else if (vp->m_hovered || vp->IsSidebarHovered())
-            m_hoverVp = vp; // The sidebar counts as a pane hover for key routing (N and friends still target it)
+            m_hoverVp = m_lastHoverVp = vp; // The sidebar counts as a pane hover for key routing (N and friends still target it)
       }
       else if (auto *const bp = dynamic_cast<BlueprintPane *>(view.get()))
       {
@@ -4363,10 +4366,8 @@ Vertex2D EditorUI::TablePosAt(const ImVec2 &pos) const
             return bp->Unproject(pos);
          if (const auto *const vp = dynamic_cast<ViewportPane *>(it->second.get()); vp != nullptr)
          {
-            // The pane unprojects in the reference space its view currently renders in: re-express in the playfield space
-            const Vertex2D p = vp->UnprojectToPlane(pos, 0.f);
-            const Vertex3Ds pf = vp->ViewSpaceTransform() * Vertex3Ds(p.x, p.y, 0.f);
-            return Vertex2D(pf.x, pf.y);
+            // Playfield plane (the pane's view may render in another reference space)
+            return vp->UnprojectToPlane(pos, 0.f, vp->ViewSpaceTransform());
          }
       }
    }
@@ -4376,7 +4377,8 @@ Vertex2D EditorUI::TablePosAt(const ImVec2 &pos) const
 ViewportPane *EditorUI::GetTargetViewport() const
 {
    // The pane that owns viewport actions: the flying pane (its view covers the window), else the
-   // one captured by an in-progress mouse drag, else the one under the mouse, else the first one.
+   // one captured by an in-progress mouse drag, else the one under the mouse, else the last hovered
+   // one (the mouse is over the menu bar or another area), else the first one.
    // A Render Preview pane is display-only: it is never the target.
    for (const auto &[id, view] : m_areaViews)
       if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->m_viewType != ViewMode::PreviewCam && vp->m_flyMode)
@@ -4389,6 +4391,8 @@ ViewportPane *EditorUI::GetTargetViewport() const
       return m_captureVp;
    if (m_hoverVp != nullptr && m_hoverVp->m_viewType != ViewMode::PreviewCam)
       return m_hoverVp;
+   if (m_lastHoverVp != nullptr && m_lastHoverVp->m_viewType != ViewMode::PreviewCam)
+      return m_lastHoverVp;
    for (const auto &[id, view] : m_areaViews)
       if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()); vp != nullptr && vp->m_viewType != ViewMode::PreviewCam)
          return vp;

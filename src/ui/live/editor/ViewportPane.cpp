@@ -78,6 +78,8 @@ void ViewportPane::OnUnhosted()
       m_editor.m_captureVp = nullptr;
    if (m_editor.m_hoverVp == this)
       m_editor.m_hoverVp = nullptr;
+   if (m_editor.m_lastHoverVp == this)
+      m_editor.m_lastHoverVp = nullptr;
    CancelGizmoDrag();
    if (m_view != nullptr)
    {
@@ -2057,10 +2059,17 @@ void ViewportPane::HitTestMarkers(const ImVec2& mousePos, vector<std::pair<float
 
 Vertex2D ViewportPane::UnprojectToPlane(const ImVec2& mousePos, float z) const
 {
-   // Compute this pane's mouse ray and intersect it with the table plane at the given Z coordinate
+   return UnprojectToPlane(mousePos, z, Matrix3D::MatrixIdentity());
+}
+
+Vertex2D ViewportPane::UnprojectToPlane(const ImVec2& mousePos, float z, const Matrix3D& viewToSpace) const
+{
+   // Intersect this pane's mouse ray, re-expressed in the target space, with the plane at the given Z of that space
    Vertex3Ds v3d, v3d2;
    if (!PickRay(mousePos, v3d, v3d2))
       return Vertex2D(0.f, 0.f);
+   v3d  = viewToSpace * v3d;
+   v3d2 = viewToSpace * v3d2;
    const float dz = v3d2.z - v3d.z;
    const float t = (fabsf(dz) > 1e-10f) ? (z - v3d.z) / dz : 0.f;
    return Vertex2D(v3d.x + t * (v3d2.x - v3d.x), v3d.y + t * (v3d2.y - v3d.y));
@@ -2462,7 +2471,9 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       // Measure mode: the click-drag line, with its length in the selected units at its middle
       if (m_measureMode && m_measureValid)
       {
+         ctx.SetSpaceTransform(PartSpaceToView(nullptr)); // The measure points are in playfield space
          const ImVec2 p0 = ctx.Project(m_measureFrom), p1 = ctx.Project(m_measureTo);
+         ctx.SetSpaceTransform(Matrix3D::MatrixIdentity());
          if (p0.x != FLT_MAX && p1.x != FLT_MAX)
          {
             const float d = sqrtf((m_measureTo.x - m_measureFrom.x) * (m_measureTo.x - m_measureFrom.x) + (m_measureTo.y - m_measureFrom.y) * (m_measureTo.y - m_measureFrom.y));
@@ -2768,7 +2779,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                m_measureAxis = m_measureAxis == 1 ? -1 : 1;
             if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
             {
-               const Vertex2D p = UnprojectToPlane(ImGui::GetMousePos(), 0.f);
+               const Vertex2D p = UnprojectToPlane(ImGui::GetMousePos(), 0.f, Matrix3D::MatrixInverse(PartSpaceToView(nullptr)));
                m_measureTo = Vertex3Ds(m_measureAxis == 1 ? m_measureFrom.x : p.x, m_measureAxis == 0 ? m_measureFrom.y : p.y, 0.f);
                m_measureValid = true;
             }
@@ -2777,7 +2788,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          }
          else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !m_viewGizmoHover)
          {
-            const Vertex2D p = UnprojectToPlane(ImGui::GetMousePos(), 0.f);
+            const Vertex2D p = UnprojectToPlane(ImGui::GetMousePos(), 0.f, Matrix3D::MatrixInverse(PartSpaceToView(nullptr)));
             m_measureFrom = m_measureTo = Vertex3Ds(p.x, p.y, 0.f);
             m_measureValid = false;
             m_measureAxis = -1;
@@ -2795,12 +2806,12 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
          }
          else if (m_editor.m_addPartType != eItemInvalid)
          {
-            // Add part mode: create the pending part at the picked point of the playfield XY plane
+            // Add part mode: create the pending part at the picked point of the XY plane of its group's reference space
+            // (the room floor for a room group), the desktop backdrop parts on the playfield plane
             const ItemTypeEnum type = m_editor.m_addPartType;
             m_editor.m_addPartType = eItemInvalid;
-            const Vertex2D pos = UnprojectToPlane(m_boxSelectStart, 0.f);
-            const Vertex3Ds pfPos = ViewSpaceTransform() * Vertex3Ds(pos.x, pos.y, 0.f);
-            m_editor.CreatePart(type, Vertex2D(pfPos.x, pfPos.y));
+            const IEditable* const group = m_editor.IsBackdropEditMode() ? nullptr : m_editor.GetPartGroupForNewPart();
+            m_editor.CreatePart(type, UnprojectToPlane(m_boxSelectStart, 0.f, Matrix3D::MatrixInverse(PartSpaceToView(group))));
          }
          else if (m_editor.m_pointEditPart != nullptr && m_editor.m_pointEditCenter)
          {
@@ -2813,7 +2824,7 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                   m_editor.m_centerSelected = true;
                m_editor.m_pointDragPending = m_editor.m_centerSelected && !m_editor.m_pointEditPart->GetEditable()->IsUILocked();
                m_editor.m_pointDragZ = m_editor.m_pointEditPart->GetEditCenter().z;
-               m_editor.m_pointDragPos = UnprojectToPlane(m_boxSelectStart, m_editor.m_pointDragZ);
+               m_editor.m_pointDragPos = UnprojectToPlane(m_boxSelectStart, m_editor.m_pointDragZ, Matrix3D::MatrixInverse(PartSpaceToView(m_editor.m_pointEditPart->GetEditable())));
             }
             else
                m_boxSelectActive = true;
@@ -2832,17 +2843,16 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
                }
                m_editor.m_pointDragPending = m_editor.IsPointSelected(hitPoint) && !hitPoint->m_uiLocked && !m_editor.m_pointEditPart->GetEditable()->IsUILocked();
                m_editor.m_pointDragZ = m_editor.m_pointEditPart->GetDragPointZ(hitPoint);
-               m_editor.m_pointDragPos = UnprojectToPlane(m_boxSelectStart, m_editor.m_pointDragZ);
+               m_editor.m_pointDragPos = UnprojectToPlane(m_boxSelectStart, m_editor.m_pointDragZ, Matrix3D::MatrixInverse(PartSpaceToView(m_editor.m_pointEditPart->GetEditable())));
             }
             else
                m_boxSelectActive = true;
          }
       }
       {
-         // Radius of a round wall being placed, in the playfield space its center was placed in (as add part mode above)
-         const Vertex2D mouse = UnprojectToPlane(ImGui::GetMousePos(), 0.f);
-         const Vertex3Ds mousePf = ViewSpaceTransform() * Vertex3Ds(mouse.x, mouse.y, 0.f);
-         CircleWallOp::Drag(m_editor, Vertex2D(mousePf.x, mousePf.y));
+         // Radius of a round wall being placed, on the plane and in the space its center was placed in (as add part mode above)
+         const IEditable* const group = m_editor.IsBackdropEditMode() ? nullptr : m_editor.GetPartGroupForNewPart();
+         CircleWallOp::Drag(m_editor, UnprojectToPlane(ImGui::GetMousePos(), 0.f, Matrix3D::MatrixInverse(PartSpaceToView(group))));
       }
       if (!modalMouse && m_boxSelectActive)
       {
@@ -2931,12 +2941,9 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       {
          if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
          {
-            const Vertex2D pos = UnprojectToPlane(ImGui::GetMousePos(), m_editor.m_pointDragZ);
-            // The unprojected points are in the space the pane's view renders in: re-express the drag
-            // delta in the edited part's reference space (as a direction, the translation does not apply)
-            const Matrix3D viewToPart = Matrix3D::MatrixInverse(PartSpaceToView(m_editor.m_pointEditPart->GetEditable()));
-            const Vertex3Ds d3 = viewToPart.MultiplyVectorNoTranslate(Vertex3Ds(pos.x - m_editor.m_pointDragPos.x, pos.y - m_editor.m_pointDragPos.y, 0.f));
-            const Vertex2D delta(d3.x, d3.y);
+            // Dragged in the plane at the drag Z of the edited part's reference space (the pane's view may render in another one)
+            const Vertex2D pos = UnprojectToPlane(ImGui::GetMousePos(), m_editor.m_pointDragZ, Matrix3D::MatrixInverse(PartSpaceToView(m_editor.m_pointEditPart->GetEditable())));
+            const Vertex2D delta(pos.x - m_editor.m_pointDragPos.x, pos.y - m_editor.m_pointDragPos.y);
             if (m_editor.m_pointDragPending)
             {
                const ImVec2 dragDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
