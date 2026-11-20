@@ -225,6 +225,8 @@ int main(int argc, const char** argv)
    const char* args[] = { "vpx-test", "-ini", iniPath.c_str() };
    cmdLine.ProcessCommandLine(3, args);
    vpx.InitInstance();
+   // Renders must not depend on the desktop: a playfield window losing the focus would pause the game and draw the pause overlay
+   Player::s_ignoreWndFocus = true;
 
    // Initialize the doctest framework and run the tests
    doctest::Context context;

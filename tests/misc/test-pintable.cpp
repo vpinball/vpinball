@@ -990,7 +990,7 @@ TEST_CASE("PinTable part")
       table->Release();
    }
 
-   SUBCASE("scene layout room to playfield transform matches the space transforms")
+   SUBCASE("scene layout room to playfield transform matches the authored cabinet geometry")
    {
       PinTable* const table = CreateTestTable();
       table->m_bottom = 2000.f;
@@ -998,15 +998,15 @@ TEST_CASE("PinTable part")
       table->m_groundToLockbarHeight = 900.f;
       table->m_angletiltMin = table->m_angletiltMax = 6.f;
 
-      const SceneLayout& layout = table->GetSceneLayout();
-
-      // Room -> scene root -> playfield
-      const Matrix3D vrRoomToPf
-         = layout.GetSpaceTransform(VPX::SpaceReference::Room).m_transform * Matrix3D::MatrixInverse(layout.GetSpaceTransform(VPX::SpaceReference::Playfield).m_transform);
-      const Matrix3D toPf = layout.GetSpaceToPlayfieldTransform(VPX::SpaceReference::Room).m_transform;
+      // Authored layout, written independently of SceneLayout: the playfield is inclined by the authored slope around the
+      // lockbar line, at the authored lockbar height above the ground, and lies the glass distance below it, perpendicular
+      // to the playfield
+      const Matrix3D authoredRoomToPf = Matrix3D::MatrixTranslate(0.f, -table->m_bottom, -table->m_groundToLockbarHeight)
+         * Matrix3D::MatrixRotateX(ANGTORAD(table->GetPlayfieldSlope())) * Matrix3D::MatrixTranslate(0.f, table->m_bottom, table->m_glassBottomHeight);
+      const Matrix3D toPf = table->GetSceneLayout().GetSpaceToPlayfieldTransform(VPX::SpaceReference::Room).m_transform;
       for (const Vertex3Ds& p : { Vertex3Ds(0.f, 0.f, 0.f), Vertex3Ds(100.f, table->m_bottom, table->m_groundToLockbarHeight), Vertex3Ds(-300.f, 500.f, 1200.f) })
       {
-         const Vertex3Ds a = vrRoomToPf * p;
+         const Vertex3Ds a = authoredRoomToPf * p;
          const Vertex3Ds b = toPf * p;
          CHECK(a.x == doctest::Approx(b.x).epsilon(1e-3));
          CHECK(a.y == doctest::Approx(b.y).epsilon(1e-3));
