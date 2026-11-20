@@ -101,11 +101,31 @@
         .matrix-list-item.switch-list-item:active {
             opacity: 0.8;
         }
-    </style>
-</head>
+            .conn-status { font-size: 0.4em; font-weight: bold; margin-left: 16px; padding: 3px 10px; border-radius: 10px; vertical-align: middle; color: #fff; background: #7f1d1d; }
+            .conn-status.connected { background: #2e7d32; }
+            .conn-error { color: #ff8a80; font-family: 'Consolas', 'Menlo', 'Courier New', monospace; }
+            .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+            .tab-btn { background: #222; color: #ccc; border: 1px solid #333; border-radius: 4px; padding: 6px 14px; cursor: pointer; }
+            .tab-btn.active { background: #2196F3; color: #fff; border-color: #2196F3; }
+            .grid-section { margin-bottom: 16px; }
+            .grid-title { margin: 8px 0 6px 0; font-weight: bold; }
+            .grid-title.ctrl { color: #2196F3; font-size: 1.1em; }
+            .grid-title.grp { color: #FF9800; }
+            .grid-cells { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 3px; max-width: 900px; }
+            .grid-cell { font-family: 'Consolas', 'Menlo', 'Courier New', monospace; font-size: 0.75em; text-align: center; padding: 6px 0; border-radius: 3px; color: #fff; background: #7f1d1d; user-select: none; }
+            .grid-cell.on { background: #2e7d32; }
+            .grid-cell[switch-state-id] { cursor: pointer; }
+            .grid-cell[switch-state-id]:hover { outline: 1px solid #fff; }
+        </style>
+    </head>
 <body>
-    <h1>VPX Inspector</h1>
+    <h1>VPX Inspector<span id="conn-status" class="conn-status">Disconnected</span></h1>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="tree">Tree</button>
+        <button class="tab-btn" data-tab="grid">Grid</button>
+    </div>
     <div id="tree">Loading...</div>
+    <div id="grid" style="display:none"></div>
     <script src="/display-stream.js"></script>
     <script>
         const MATRIX_COLUMNS = 8;
@@ -175,8 +195,72 @@
 			el.textContent = state;
         }
 
+        let activeTab = 'tree';
+        let lastStates = new Map();
+        let treeCache = new Map();
+        let gridCache = new Map();
+
+        function indexElements(root, attr) {
+            const map = new Map();
+            root.querySelectorAll(`[${attr}]`).forEach(el => {
+                const id = el.getAttribute(attr);
+                const list = map.get(id);
+                if (list) list.push(el); else map.set(id, [el]);
+            });
+            return map;
+        }
+
+        function updateGridCell(cell, item) {
+            const on = item.format === 'float' ? item.state > 0.5 : item.state != 0;
+            cell.classList.toggle('on', on);
+        }
+
+        function paintState(item) {
+            if (activeTab === 'tree') {
+                const els = treeCache.get(item.id);
+                if (els) els.forEach(el => updateVisualState(el, item.format, item.type, item.state));
+            } else {
+                const cells = gridCache.get(item.id);
+                if (cells) cells.forEach(c => updateGridCell(c, item));
+            }
+        }
+
         function updateState(item) {
-            document.querySelectorAll(`[data-state-id="${item.id}"]`).forEach(el => updateVisualState(el, item.format, item.type, item.state));
+            const prev = lastStates.get(item.id);
+            lastStates.set(item.id, item);
+            if (prev && prev.state === item.state)
+                return;
+            paintState(item);
+        }
+
+        function buildGrid(tree) {
+            let html = '';
+            for (const ctrl of (Array.isArray(tree) ? tree : [])) {
+                const groups = (ctrl.children || []).filter(g => g.type === 'stategroup' && g.children && g.children.length);
+                if (!groups.length)
+                    continue;
+                html += `<div class="grid-section"><div class="grid-title ctrl">${escapeHtml(ctrl.name)}</div>`;
+                for (const g of groups) {
+                    html += `<div class="grid-title grp">${escapeHtml(g.name)} (${g.children.length})</div><div class="grid-cells">`;
+                    for (const c of g.children) {
+                        const sw = c.outputType === 1 ? ` switch-state-id="${c.id}"` : '';
+                        html += `<div class="grid-cell" data-grid-id="${c.id}"${sw} title="${escapeHtml(c.name)}">${escapeHtml(c.mapping)}</div>`;
+                    }
+                    html += '</div>';
+                }
+                html += '</div>';
+            }
+            return html || '<em>No states</em>';
+        }
+
+        function setTab(name) {
+            activeTab = name;
+            document.getElementById('tree').style.display = name === 'tree' ? '' : 'none';
+            document.getElementById('grid').style.display = name === 'grid' ? '' : 'none';
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+            lastStates.forEach(paintState);
+            if (name === 'tree')
+                updateMatrixListHeights();
         }
 
 		let displayStreams = [];
@@ -364,27 +448,71 @@
 			return buildListGroup(node);
         }
 
+        function detailsKey(d) {
+            const parts = [];
+            for (let el = d; el; el = el.parentElement?.closest('details'))
+                parts.unshift(el.querySelector(':scope > summary')?.textContent.replace(/\(.*$/, '').trim());
+            return parts.join('/');
+        }
+
+        function saveOpenState() {
+            const state = {};
+            document.querySelectorAll('#tree details').forEach(d => { state[detailsKey(d)] = d.open; });
+            return state;
+        }
+
+        function restoreOpenState(state) {
+            document.querySelectorAll('#tree details').forEach(d => {
+                const key = detailsKey(d);
+                if (key in state)
+                    d.open = state[key];
+            });
+        }
+
+        function setConnected(connected) {
+            const el = document.getElementById('conn-status');
+            el.textContent = connected ? 'Connected' : 'Disconnected';
+            el.classList.toggle('connected', connected);
+        }
+
+        function describeError(err) {
+            if (err && err.name === 'AbortError')
+                return 'request timed out';
+            return String(err);
+        }
+
         function fetchTree() {
             fetchWithTimeout('/api/tree', {}, 1000)
-                .then(res => res.json())
-                .then(data => {
+				.then(res => {
+					if (!res.ok) throw new Error(`HTTP ${res.status}`);
+					return res.json();
+				})
+				.then(data => {
+					setConnected(true);
 					currentTreeId = data.treeId;
 					if (data.tree) {
+						const openState = saveOpenState();
 						document.getElementById('tree').innerHTML = `<ul class="tree-root">${buildNode(data.tree)}</ul>`;
+						restoreOpenState(openState);
+						document.getElementById('grid').innerHTML = buildGrid(data.tree);
+						treeCache = indexElements(document.getElementById('tree'), 'data-state-id');
+						gridCache = indexElements(document.getElementById('grid'), 'data-grid-id');
+						lastStates.clear();
 						updateMatrixListHeights();
 						attachDisplayStreams();
 						fetchStates();
 					}
 				})
-                .catch(err => {
-					if (err.name === 'AbortError') {
-						document.getElementById('tree').innerHTML = `Failed to connect to VPX. Retrying...`;
-					}
-					else {
-						document.getElementById('tree').innerHTML = `Error loading tree: ${err}`;
-					}
+				.catch(err => {
+					setConnected(false);
+					const msg = `<span class="conn-error">Unable to load, disconnected (${escapeHtml(describeError(err))}). Retrying...</span>`;
+					document.getElementById('tree').innerHTML = msg;
+					document.getElementById('grid').innerHTML = msg;
+					treeCache = new Map();
+					gridCache = new Map();
+					lastStates.clear();
 					setTimeout(fetchTree, 1000);
-                });
+				});
         }
 
         async function toggleSwitchState(stateId) {
@@ -407,12 +535,14 @@
             }
         }
 
-        document.getElementById('tree').addEventListener('click', (e) => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+
+        const switchClickHandler = (e) => {
             if (e.target.closest('summary')) {
                 return;
             }
 
-            const target = e.target.closest('.switch-cell, .switch-node, .switch-list-item');
+            const target = e.target.closest('.switch-cell, .switch-node, .switch-list-item, .grid-cell[switch-state-id]');
             if (!target) {
                 return;
             }
@@ -421,7 +551,9 @@
             if (stateId) {
                 toggleSwitchState(stateId);
             }
-        });
+        };
+        document.getElementById('tree').addEventListener('click', switchClickHandler);
+        document.getElementById('grid').addEventListener('click', switchClickHandler);
 
         // Initial load
         fetchTree();
