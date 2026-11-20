@@ -722,7 +722,10 @@ void EditorUI::Render3D()
          break;
       }
 
-   m_partLibrary.Render3D();
+   // The pack placement ghosts are editor aids like the other overlays: keep them out of the
+   // render inspected by the renderer inspection dialog
+   if (!m_inspectionModal.IsVisible())
+      m_partLibrary.Render3D();
 }
 
 void EditorUI::RenderUI()
@@ -942,8 +945,10 @@ void EditorUI::RenderUI()
    for (const auto &[id, view] : m_areaViews)
    {
       // A pane whose leaf is not shown (hidden, or behind a maximized area) does not draw nor take
-      // input: its image rect and item state are stale from the last frame it was drawn
-      if (FindLeafRect(id) == nullptr)
+      // input: its image rect and item state are stale from the last frame it was drawn. The same
+      // applies while the renderer inspection owns the frame: the inspected render stays clean of
+      // the editor overlays (part markers, selection, gizmos) and the modal drives the camera itself
+      if (FindLeafRect(id) == nullptr || m_inspectionModal.IsVisible())
          continue;
       if (auto *const vp = dynamic_cast<ViewportPane *>(view.get()))
          vp->RenderUI(overlayDrawList);
