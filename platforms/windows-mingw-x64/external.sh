@@ -538,7 +538,7 @@ fi
 # build ffmpeg
 #
 
-FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_001"
+FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_002"
 FFMPEG_FOUND_SHA="$([ -f ffmpeg/cache.txt ] && cat ffmpeg/cache.txt || echo "")"
 
 if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
@@ -877,7 +877,7 @@ for LIB in avcodec avformat avutil swresample swscale; do
 done
 
 UCRT64_BIN="${MINGW_PREFIX}/bin"
-cp "${UCRT64_BIN}/zlib1.dll" ../../../third-party/runtime-libs/windows-mingw-x64
+cp "${UCRT64_BIN}/libz-1.dll" ../../../third-party/runtime-libs/windows-mingw-x64
 cp "${UCRT64_BIN}/libiconv-2.dll" ../../../third-party/runtime-libs/windows-mingw-x64
 cp "${UCRT64_BIN}/libwinpthread-1.dll" ../../../third-party/runtime-libs/windows-mingw-x64
 cp "${UCRT64_BIN}/liblzma-5.dll" ../../../third-party/runtime-libs/windows-mingw-x64

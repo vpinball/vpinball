@@ -507,7 +507,7 @@ fi
 # build ffmpeg
 #
 
-FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_001"
+FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_002"
 FFMPEG_FOUND_SHA="$([ -f ffmpeg/cache.txt ] && cat ffmpeg/cache.txt || echo "")"
 
 if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
@@ -878,7 +878,7 @@ mkdir -p ../../../third-party/include/spatialaudio
 cp -r libspatialaudio/libspatialaudio/include/*.h libspatialaudio/libspatialaudio/include/{adm,dsp,hrtf,kiss_fft} ../../../third-party/include/spatialaudio
 cp libspatialaudio/libspatialaudio/build/include/SpatialaudioConfig.h ../../../third-party/include/spatialaudio
 
-cp "${MSYS2_PATH}/ucrt64/bin/zlib1.dll" ../../../third-party/runtime-libs/windows-x64
+cp "${MSYS2_PATH}/ucrt64/bin/libz-1.dll" ../../../third-party/runtime-libs/windows-x64
 cp "${MSYS2_PATH}/ucrt64/bin/libiconv-2.dll" ../../../third-party/runtime-libs/windows-x64
 cp "${MSYS2_PATH}/ucrt64/bin/libwinpthread-1.dll" ../../../third-party/runtime-libs/windows-x64
 cp "${MSYS2_PATH}/ucrt64/bin/liblzma-5.dll" ../../../third-party/runtime-libs/windows-x64
