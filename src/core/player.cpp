@@ -1553,6 +1553,7 @@ Player::~Player()
 
    SDL_QuitSubSystem(SDL_INIT_VIDEO); // Balances the init done in the constructor
 
+   m_pininput.LogFlipLatencySummary();
    m_logicProfiler.LogWorstFrame();
    if (&m_logicProfiler != m_renderProfiler)
    {

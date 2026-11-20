@@ -199,6 +199,11 @@ public:
 
    int m_leftFlipperLastChangePollDelay = 0;
 
+   // Flipper key to flipper latency log (diagnostics for late flips). A flipper solenoid turning on (Flipper::RotateToEnd) is
+   // matched with the last flipper key press, if not older than 500 ms. Late flips are logged as they happen, a summary at exit
+   void OnFlipperRotateToEnd(const string& flipperName);
+   void LogFlipLatencySummary();
+
    // Used to add/remove the OpenXR input handler
    void AddInputHandler(std::unique_ptr<InputHandler> handler);
    std::unique_ptr<InputHandler> RemoveInputHandler(InputHandler* handler);
@@ -210,6 +215,23 @@ public:
 private:
    class Player* m_player;
    Settings& m_appSettings; // Input configuration is an application wide setting (not overridable per table)
+
+   // Flip latency log, see OnFlipperRotateToEnd
+   uint64_t m_lastButtonEventNs = 0; // SDL timestamp of the input event being processed
+   struct FlipPress
+   {
+      bool valid = false;
+      bool left = false;
+      uint64_t eventUs = 0;       // When the input device reported the press (usec() time base)
+      uint64_t processedUs = 0;   // When VPX processed it (fired the KeyDown)
+      int64_t gameUs = 0;         // Game time matching eventUs
+      unsigned int pollGapUs = 0; // Gap between the input processing that saw the press and the previous one
+   };
+   FlipPress m_flipPress;
+   bool m_inFlipperKeyDispatch = false; // Firing a flipper key event: a flipper turning on now is driven by the script, not by the ROM
+   unsigned int m_flipCount = 0, m_lateFlipCount = 0;
+   int64_t m_flipGameLatencySumUs = 0, m_flipGameLatencyMaxUs = INT64_MIN, m_flipRealLatencyMaxUs = 0;
+   void OnFlipperKeyPressed(const bool left);
 
    void CreateInputActions();
    InputAction* AddAction(std::unique_ptr<InputAction>&& action);

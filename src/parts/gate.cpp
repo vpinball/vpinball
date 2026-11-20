@@ -254,9 +254,9 @@ void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             const GateMoverObject &mv = m_phitgate->m_gateMover;
             const Vertex2D normal(-tangent.y, tangent.x);
             const Vertex2D c = m_d.m_vCenter - normal * (mv.m_lamina.m_alongMax * sinf(m_d.m_angleMin));
-            const float halfSpan = mv.m_lamina.m_halfSpan + (float)PHYS_SKIN; // oversize by the ball's radius to prevent clipping through
-            rgv[0] = c + halfSpan * tangent;
-            rgv[1] = c - halfSpan * tangent;
+            // The hit test accepts the ball radius past the ends (m_ballRadiusEndTolerance), to prevent clipping through
+            rgv[0] = c + mv.m_lamina.m_halfSpan * tangent;
+            rgv[1] = c - mv.m_lamina.m_halfSpan * tangent;
          }
          else
          {
@@ -264,6 +264,7 @@ void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             rgv[1] = m_d.m_vCenter - (halflength + (float)PHYS_SKIN) * tangent;
          }
          m_plineseg = new LineSeg(this, rgv[0], rgv[1], height, height + (float)(2.0 * PHYS_SKIN)); //!! = ball diameter
+         m_plineseg->m_ballRadiusEndTolerance = profile109;
          m_plineseg->m_elasticity = m_d.m_elasticity;
          m_plineseg->SetFriction(m_d.m_friction);
          m_plineseg->m_scatter = ANGTORAD(m_d.m_scatter);

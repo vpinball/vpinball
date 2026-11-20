@@ -178,7 +178,7 @@ void Spinner::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       m_d.m_angleMin = angleMin;
       m_d.m_angleMax = angleMax;
 
-      m_phitspinner = new HitSpinner(this, height);
+      m_phitspinner = new HitSpinner(this, height, physics->GetPhysicProfile());
 
       AddHitObject(physics, m_phitspinner, isUI);
 

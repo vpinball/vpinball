@@ -128,8 +128,9 @@ class HitSpinner;
 // under the 10.9 physics profile and the ball-tracking animation under all profiles
 struct SwingLamina
 {
-   // True when the ball may touch the lamina inside its sweep zone.
-   bool IsInsideZone(const BallS& ball) const;
+   // True when the ball may touch the lamina inside its sweep zone. ballSized (V10_9): the margin around the swept lamina is the
+   // ball radius (plus the lamina half thickness and the contact slack), else the legacy zone (PHYS_SKIN margin, legacy z window)
+   bool IsInsideZone(const BallS& ball, const bool ballSized) const;
    // Solves the lamina applied angle matching the contact at a given swing-plane
    // position (s along m_normal, h below the pivot axis, u along the axis),
    // picking the reachable root closest to curApplied, and the normal from the
@@ -154,9 +155,11 @@ struct SwingLamina
    // Time at which the ball's straight motion reaches contact of the lamina
    // frozen at curApplied, or -1 (returns the swing-plane position in s, h, u)
    float HitTestContact(const BallS& ball, const float dtime, const float curApplied, float& s, float& h, float& u) const;
-   // Recomputes the interaction zone extents along m_normal: the lamina tip
-   // sweep over the applied angle range plus a ball radius margin
+   // Recomputes the lamina tip sweep extents along m_normal over the applied angle range (IsInsideZone adds the margin)
    void UpdateZone(const float appliedMin, const float appliedMax);
+   // Height range swept by the lamina (any angle)
+   float GetSweepZLow()  const { return m_pivotZ - max(fabsf(m_alongMin), fabsf(m_alongMax)); }
+   float GetSweepZHigh() const { return m_pivotZ + max(fabsf(m_alongMin), fabsf(m_alongMax)); }
 
    Vertex2D m_tangent = Vertex2D(1.f, 0.f); // axis direction
    Vertex2D m_normal  = Vertex2D(0.f, 1.f); // direction the lamina tips toward for positive applied angles
@@ -165,8 +168,8 @@ struct SwingLamina
    float m_halfSpan = 0.f; // extent of the lamina along the axis
    float m_alongMin = 0.f, m_alongMax = 0.f; // lamina extent along the rod direction (0 = pivot, + = hanging)
    float m_halfThick= 0.f; // wire section radius / plate half thickness
-   float m_zoneSMin = 0.f, m_zoneSMax = 0.f; // interaction zone extents along m_normal
-   float m_zoneZLow = 0.f, m_zoneZHigh = 0.f;
+   float m_sweepSMin = 0.f, m_sweepSMax = 0.f; // lamina tip sweep extents along m_normal (no margin)
+   float m_zoneZLow = 0.f, m_zoneZHigh = 0.f;  // legacy interaction zone z window (V10_8, and the gate's legacy axis segment footprint)
 };
 
 class SpinnerMoverObject final : public MoverObject
@@ -197,7 +200,7 @@ public:
 class HitSpinner final : public HitObject
 {
 public:
-   HitSpinner(Spinner* const pspinner, const float height);
+   HitSpinner(Spinner* const pspinner, const float height, PhysicProfile profile = PhysicProfile::V10_8);
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return eSpinner; }
@@ -256,7 +259,7 @@ public:
    // length): drives the ball-tracking animation under all profiles and the
    // contact collider model under the 10.9 profile
    SwingLamina m_lamina;
-   float m_axisHalfSpan = 0.f; // legacy axis segment extent along the axis (crossing Hit events, 10.9)
+   float m_axisHalfSpan = 0.f; // axis segment half length, the ball radius is added (crossing Hit events, 10.9)
    vector<HitBall*> m_balls;   // balls inside the crossing region (10.9 only)
    vector<float> m_ballS;      // their last seen s position along m_normal
    bool m_atLimit = false;     // the wire/plate stays at its max angle (EOS fired once per stay)

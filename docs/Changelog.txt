@@ -330,6 +330,10 @@ FIXES:
     cannot follow (closed side of a one-way gate, or pushed against an angle limit), giving more accurate pass-through and
     bounce behavior; a wire/plate swinging back into a following ball is stopped by it instead of bouncing it. Hit events
     keep their previous behavior (one per axis plane crossing, open direction only for one-way gates)
+  . trigger and kicker volume edges moved the ball forward by a bit of travel on each Hit/Unhit event
+  . non-legacy kickers on raised surfaces practically never captured a slow ball (the capture height was scaled with the surface height)
+  . gate and spinner edges and contact zones assumed the default ball size (25), so bigger balls clipped through their ends and
+    smaller ones hit beyond them
 
 - the gate wire/plate is now pushed by the ball contact under all physics profiles (the ball pushes the wire/plate
   as it passes, instead of the wire/plate lagging the axis hit and clipping through the ball), without changing ball
@@ -355,7 +359,7 @@ FIXES:
   . friction is no longer capped at 1 (only negative values are clamped to 0), also the maximum friction clamp of kickers, balls and flippers was broken for a long time
   . the glass collider now uses the authored elasticity (before, it was implicitly overridden)
 
-- improve flipper latency reporting in the performance UI
+- improve flipper latency reporting in the performance UI, and log late flips (flipper key to flipper move over 10ms) with their timing breakdown
 
 - fix the Ultracade U-Shock knocker and plunger outputs only working in the first game after starting VPX, and (potentially) support them on Linux and macOS too
 - improve gamepad rumble on flipper/ball/plunger hits and on nudge, scaled by the impact strength, with a strength setting per source (bumper, slingshot, plunger, flipper, nudge), and overlapping pulses are now mixed

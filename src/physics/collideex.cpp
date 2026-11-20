@@ -176,7 +176,7 @@ HitGate::HitGate(Gate* const pgate, const float height, PhysicProfile profile)
    lm.m_halfThick = halfThick * pgate->m_d.m_length;
    lm.m_zoneZLow = height;
    lm.m_zoneZHigh = height + (float)(2.0 * PHYS_SKIN);
-   mv.m_axisHalfSpan = pgate->m_d.m_length * 0.5f + (float)PHYS_SKIN; // legacy axis segment extent (crossing Hit events)
+   mv.m_axisHalfSpan = pgate->m_d.m_length * 0.5f; // legacy axis segment extent without its PHYS_SKIN extension (crossing Hit events)
 
    if (profile != PhysicProfile::V10_9)
    {
@@ -227,17 +227,20 @@ HitGate::HitGate(Gate* const pgate, const float height, PhysicProfile profile)
 // lamina around the axis: a lamina point at distance "along" from the pivot
 // sits at (s = along·sin(applied), h = -along·cos(applied)).
 
-bool SwingLamina::IsInsideZone(const BallS& ball) const
+bool SwingLamina::IsInsideZone(const BallS& ball, const bool ballSized) const
 {
    const float u = (ball.m_pos.x - m_center.x) * m_tangent.x + (ball.m_pos.y - m_center.y) * m_tangent.y;
    const float s = (ball.m_pos.x - m_center.x) * m_normal.x  + (ball.m_pos.y - m_center.y) * m_normal.y;
-   return fabsf(u) <= m_halfSpan + (float)PHYS_SKIN && s >= m_zoneSMin && s <= m_zoneSMax && ball.m_pos.z >= m_zoneZLow && ball.m_pos.z <= m_zoneZHigh;
+   if (!ballSized) // V10_8: a fixed PHYS_SKIN margin (the default ball radius) and the legacy z window
+      return fabsf(u) <= m_halfSpan + (float)PHYS_SKIN && s >= m_sweepSMin - (float)PHYS_SKIN && s <= m_sweepSMax + (float)PHYS_SKIN && ball.m_pos.z >= m_zoneZLow && ball.m_pos.z <= m_zoneZHigh;
+   // Everything the ball can touch: ball radius, lamina half thickness and the contact slack of EvalContact
+   const float margin = ball.m_radius + m_halfThick + 2.f;
+   return fabsf(u) <= m_halfSpan + margin && s >= m_sweepSMin - margin && s <= m_sweepSMax + margin && ball.m_pos.z >= GetSweepZLow() - margin && ball.m_pos.z <= GetSweepZHigh() + margin;
 }
 
 void SwingLamina::UpdateZone(const float appliedMin, const float appliedMax)
 {
-   // The zone covers the lamina end sweep over the applied angle range, plus a
-   // ball radius margin on every side
+   // The lamina end sweep over the applied angle range (IsInsideZone adds the ball margin)
    const float e = max(fabsf(m_alongMin), fabsf(m_alongMax));
    float sMin = e * sinf(appliedMin);
    float sMax = e * sinf(appliedMax);
@@ -248,8 +251,8 @@ void SwingLamina::UpdateZone(const float appliedMin, const float appliedMax)
       sMax = e;
    if (appliedMax - appliedMin >= (float)(2. * M_PI) || (appliedMin <= (float)(-M_PI / 2.0) && appliedMax >= (float)(-M_PI / 2.0)))
       sMin = -e;
-   m_zoneSMin = sMin - (float)PHYS_SKIN;
-   m_zoneSMax = sMax + (float)PHYS_SKIN;
+   m_sweepSMin = sMin;
+   m_sweepSMax = sMax;
 }
 
 // True when the ball touches the lamina at its current applied angle, giving
@@ -519,7 +522,8 @@ bool GateMoverObject::IsInCrossingRegion(const BallS& ball, float& s) const
                s = (ball.m_pos.x - m_lamina.m_center.x) * m_lamina.m_normal.x  + (ball.m_pos.y - m_lamina.m_center.y) * m_lamina.m_normal.y;
    // Same footprint as the legacy axis segment: its extent along the axis and its z window
    // (the segment accepts a hit whose z stays within half a ball radius of its height range)
-   return fabsf(u) <= m_axisHalfSpan && ball.m_pos.z + ball.m_radius * 0.5f >= m_lamina.m_zoneZLow && ball.m_pos.z - ball.m_radius * 0.5f <= m_lamina.m_zoneZHigh;
+   // The legacy segment was extended by PHYS_SKIN (the default ball radius): extended by the actual ball radius here
+   return fabsf(u) <= m_axisHalfSpan + ball.m_radius && ball.m_pos.z + ball.m_radius * 0.5f >= m_lamina.m_zoneZLow && ball.m_pos.z - ball.m_radius * 0.5f <= m_lamina.m_zoneZHigh;
 }
 
 void GateMoverObject::TrackAxisCrossings()
@@ -576,7 +580,7 @@ float HitGate::HitTest(const BallS& ball, const float dtime, CollisionEvent& col
       Vertex3Ds normal;
       // Blocked contacts (wire/plate swung into the ball, e.g. falling back onto a following ball) are no rigid hits:
       // the mover stops the light wire/plate on the ball, which keeps its course
-      if (m_gateMover.m_lamina.IsInsideZone(ball) && m_gateMover.m_lamina.EvalContact(ball, curApplied, appliedAngle, blocked, normal))
+      if (m_gateMover.m_lamina.IsInsideZone(ball, true) && m_gateMover.m_lamina.EvalContact(ball, curApplied, appliedAngle, blocked, normal))
       {
          if (blocked)
             return -1.0f;
@@ -656,20 +660,22 @@ void HitGate::CalcHitBBox()
 {
    if (GetPhysicProfile() == PhysicProfile::V10_9)
    {
+      // The swept lamina (the ball's own box adds its radius), with the lamina half thickness and the contact slack (see IsInsideZone)
       const SwingLamina& lm = m_gateMover.m_lamina;
+      const float margin = lm.m_halfThick + 2.f;
       m_hitBBox.left = m_hitBBox.right = lm.m_center.x;
       m_hitBBox.top = m_hitBBox.bottom = lm.m_center.y;
       for (int i = 0; i < 4; ++i)
       {
-         const Vertex2D p
-            = lm.m_center + lm.m_tangent * ((i & 1) ? lm.m_halfSpan + (float)PHYS_SKIN : -(lm.m_halfSpan + (float)PHYS_SKIN)) + lm.m_normal * ((i & 2) ? lm.m_zoneSMax : lm.m_zoneSMin);
-         m_hitBBox.left = min(m_hitBBox.left, p.x);
-         m_hitBBox.right = max(m_hitBBox.right, p.x);
-         m_hitBBox.top = min(m_hitBBox.top, p.y);
+         const Vertex2D p = lm.m_center + lm.m_tangent * ((i & 1) ? lm.m_halfSpan + margin : -(lm.m_halfSpan + margin))
+                          + lm.m_normal * ((i & 2) ? lm.m_sweepSMax + margin : lm.m_sweepSMin - margin);
+         m_hitBBox.left   = min(m_hitBBox.left, p.x);
+         m_hitBBox.right  = max(m_hitBBox.right, p.x);
+         m_hitBBox.top    = min(m_hitBBox.top, p.y);
          m_hitBBox.bottom = max(m_hitBBox.bottom, p.y);
       }
-      m_hitBBox.zlow = lm.m_zoneZLow;
-      m_hitBBox.zhigh = lm.m_zoneZHigh;
+      m_hitBBox.zlow  = lm.GetSweepZLow()  - margin;
+      m_hitBBox.zhigh = lm.GetSweepZHigh() + margin;
       return;
    }
 
@@ -686,15 +692,18 @@ void HitGate::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* dra
          return;
       const SwingLamina& lm = m_gateMover.m_lamina;
       const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines), fCol = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
-      const float halfU = lm.m_halfSpan + (float)PHYS_SKIN;
+      // Zone of a default size ball
+      const float margin = DEFAULT_BALL_SIZE + lm.m_halfThick + 2.f;
+      const float halfU = lm.m_halfSpan + margin;
+      const float zoneSMin = lm.m_sweepSMin - margin, zoneSMax = lm.m_sweepSMax + margin;
       const Vertex2D p0
-         = project(Vertex3Ds(lm.m_center.x - lm.m_tangent.x * halfU + lm.m_normal.x * lm.m_zoneSMin, lm.m_center.y - lm.m_tangent.y * halfU + lm.m_normal.y * lm.m_zoneSMin, lm.m_zoneZLow));
+         = project(Vertex3Ds(lm.m_center.x - lm.m_tangent.x * halfU + lm.m_normal.x * zoneSMin, lm.m_center.y - lm.m_tangent.y * halfU + lm.m_normal.y * zoneSMin, lm.m_zoneZLow));
       const Vertex2D p1
-         = project(Vertex3Ds(lm.m_center.x + lm.m_tangent.x * halfU + lm.m_normal.x * lm.m_zoneSMin, lm.m_center.y + lm.m_tangent.y * halfU + lm.m_normal.y * lm.m_zoneSMin, lm.m_zoneZLow));
+         = project(Vertex3Ds(lm.m_center.x + lm.m_tangent.x * halfU + lm.m_normal.x * zoneSMin, lm.m_center.y + lm.m_tangent.y * halfU + lm.m_normal.y * zoneSMin, lm.m_zoneZLow));
       const Vertex2D p2
-         = project(Vertex3Ds(lm.m_center.x + lm.m_tangent.x * halfU + lm.m_normal.x * lm.m_zoneSMax, lm.m_center.y + lm.m_tangent.y * halfU + lm.m_normal.y * lm.m_zoneSMax, lm.m_zoneZLow));
+         = project(Vertex3Ds(lm.m_center.x + lm.m_tangent.x * halfU + lm.m_normal.x * zoneSMax, lm.m_center.y + lm.m_tangent.y * halfU + lm.m_normal.y * zoneSMax, lm.m_zoneZLow));
       const Vertex2D p3
-         = project(Vertex3Ds(lm.m_center.x - lm.m_tangent.x * halfU + lm.m_normal.x * lm.m_zoneSMax, lm.m_center.y - lm.m_tangent.y * halfU + lm.m_normal.y * lm.m_zoneSMax, lm.m_zoneZLow));
+         = project(Vertex3Ds(lm.m_center.x - lm.m_tangent.x * halfU + lm.m_normal.x * zoneSMax, lm.m_center.y - lm.m_tangent.y * halfU + lm.m_normal.y * zoneSMax, lm.m_zoneZLow));
       if (p0.x != FLT_MAX && p1.x != FLT_MAX && p2.x != FLT_MAX && p3.x != FLT_MAX)
       {
          if (fill)
@@ -730,7 +739,7 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
       if (twoWay || !m_hitDirection) // the 10.8 one-way bounce-back swings the other way: left to the legacy swing
          for (HitBall* const pball : m_physics->GetBalls())
          {
-            if (pball->m_d.m_lockedInKicker || !m_lamina.IsInsideZone(pball->m_d))
+            if (pball->m_d.m_lockedInKicker || !m_lamina.IsInsideZone(pball->m_d, profile109))
                continue;
             const float curApplied = sign * m_angle;
             float appliedAngle;
@@ -899,7 +908,7 @@ void GateMoverObject::UpdateVelocities()
 //            VisualPinball.Unity/VisualPinball.Unity/VPT/Spinner/SpinnerCollider.cs
 //            VisualPinball.Unity/VisualPinball.Unity/VPT/Spinner/SpinnerDisplacementSystem.cs
 
-HitSpinner::HitSpinner(Spinner* const pspinner, const float height)
+HitSpinner::HitSpinner(Spinner* const pspinner, const float height, PhysicProfile profile)
    : HitObject(pspinner)
    , m_lineseg { LineSeg(pspinner), LineSeg(pspinner) }
 {
@@ -919,10 +928,15 @@ HitSpinner::HitSpinner(Spinner* const pspinner, const float height)
    m_lineseg[0].m_ObjType = eSpinner;
    m_lineseg[1].m_ObjType = eSpinner;
 
-   m_lineseg[0].v2.x = pspinner->m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN); //oversize by the ball radius
-   m_lineseg[0].v2.y = pspinner->m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN); //this will prevent clipping
-   m_lineseg[0].v1.x = pspinner->m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN); //through the edge of the
-   m_lineseg[0].v1.y = pspinner->m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN); //spinner
+   // Oversize by the ball radius, this will prevent clipping through the edge of the spinner.
+   // V10_9: by the actual ball radius at hit test time, V10_8: by PHYS_SKIN (the default ball radius)
+   const bool profile109 = profile == PhysicProfile::V10_9;
+   const float extension = profile109 ? 0.f : (float)PHYS_SKIN;
+   m_lineseg[0].m_ballRadiusEndTolerance = m_lineseg[1].m_ballRadiusEndTolerance = profile109;
+   m_lineseg[0].v2.x = pspinner->m_d.m_vCenter.x + cs*(halflength + extension);
+   m_lineseg[0].v2.y = pspinner->m_d.m_vCenter.y + sn*(halflength + extension);
+   m_lineseg[0].v1.x = pspinner->m_d.m_vCenter.x - cs*(halflength + extension);
+   m_lineseg[0].v1.y = pspinner->m_d.m_vCenter.y - sn*(halflength + extension);
    m_lineseg[1].v1.x = m_lineseg[0].v2.x;
    m_lineseg[1].v1.y = m_lineseg[0].v2.y;
    m_lineseg[1].v2.x = m_lineseg[0].v1.x;
@@ -1033,7 +1047,7 @@ void SpinnerMoverObject::UpdateDisplacements(const float dtime)
       const bool profile109 = GetPhysicProfile() == PhysicProfile::V10_9;
       for (HitBall* const pball : m_physics->GetBalls())
       {
-         if (pball->m_d.m_lockedInKicker || !m_lamina.IsInsideZone(pball->m_d))
+         if (pball->m_d.m_lockedInKicker || !m_lamina.IsInsideZone(pball->m_d, profile109))
             continue;
          const float curApplied = -m_angle; // the plate renders RotateX(-m_angle)
          float appliedAngle;
@@ -1284,6 +1298,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
             (!ball.m_vpVolObjs) ||                  // temporary ball
             // if trigger, then check:
             (fabsf(bnd) >= ball.m_radius*0.5f) ||   // not too close ... nor too far away
+            (profile109 && fabsf(bnd) <= C_VOLUME_EDGE_TOL) || // V10_9: on the edge, e.g. left there by the last event
             (inside != (FindIndexOf(*(ball.m_vpVolObjs), m_obj) < 0))) // ...ball outside and hit set or ball inside and no hit set
             return -1.0f;
 
@@ -1291,7 +1306,17 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
          bUnHit = !inside; // ball on outside is UnHit, otherwise it's a Hit
       }
       else
+      {
          hittime = bnd / -bnv;
+         if (profile109 && ball.m_vpVolObjs)
+         {
+            // V10_9: only the crossing the volume state expects (leaving if the ball is in the volume, entering if not).
+            // The other one is the event just processed, the ball being still on the edge: it was skipped by moving the ball forward
+            bUnHit = (bnv > 0.f);
+            if (bUnHit == (FindIndexOf(*(ball.m_vpVolObjs), m_obj) < 0))
+               return -1.0f;
+         }
+      }
    }
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime) return -1.0f; // time is outside this frame ... no collision
@@ -1400,7 +1425,8 @@ void Hit3DPoly::Collide(const CollisionEvent& coll)
 
       if ((!coll.m_hitflag) == (i < 0)) // Hit == NotAlreadyHit
       {
-         pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel; // move ball slightly forward
+         if (GetPhysicProfile() != PhysicProfile::V10_9)       // V10_9: the hit tests do not report the edge just crossed again
+            pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel; // move ball slightly forward
 
          if (i < 0)
          {
@@ -1872,7 +1898,8 @@ void TriggerLineSeg::Collide(const CollisionEvent& coll)
 
    if ((!coll.m_hitflag) == (i < 0)) // Hit == NotAlreadyHit
    {
-      pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel; // move ball slightly forward
+      if (GetPhysicProfile() != PhysicProfile::V10_9)       // V10_9: the hit tests do not report the edge just crossed again
+         pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel; // move ball slightly forward
 
       if (i < 0)
       {
@@ -1911,7 +1938,8 @@ void TriggerHitCircle::Collide(const CollisionEvent& coll)
 
    if ((!coll.m_hitflag) == (i < 0)) // Hit == NotAlreadyHit
    {
-      pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel; // move ball slightly forward
+      if (GetPhysicProfile() != PhysicProfile::V10_9)       // V10_9: the hit tests do not report the edge just crossed again
+         pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel; // move ball slightly forward
 
       if (i < 0)
       {

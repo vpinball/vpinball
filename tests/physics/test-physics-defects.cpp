@@ -817,15 +817,50 @@ TEST_CASE("Slingshot kick does not scale with elasticity" * doctest::should_fail
 }
 
 // ---------------------------------------------------------------------------
-// KickerHitCircle::DoCollide computes the capture ceiling as
-// (zlow + ballRadius) * hitAccuracy. With the default sub-1 hit accuracy a
-// ball rolling at floor height sits above grabHeight and is deflected instead
-// of captured by a non-legacy kicker.
+// A non-legacy kicker does not capture a ball when it enters its volume: its
+// bevel (DoChangeBallVelocity) lets the ball sink, and KickerHitCircle::DoCollide
+// captures it once it sank below the grab height. That height was
+// (zlow + ballRadius) * hitAccuracy: on a raised surface the ball had to sink
+// far below anything the bevel allows (slow balls circled in the kicker
+// forever), while it is right at height 0. V10_9 uses
+// zlow + ballRadius * hitAccuracy.
 // ---------------------------------------------------------------------------
 
-TEST_CASE("A floor-height ball entering a non-legacy kicker is captured" * doctest::should_fail())
+TEST_CASE("A slow ball rolling into a raised non-legacy kicker is captured" * doctest::should_fail(!kFixPhysics))
 {
+   for (const float height : { 0.f, 50.f })
+   {
+      CAPTURE(height);
+      PhysicsTestHarness harness;
+      harness.SetGravity(0.f, GRAVITYCONST); // flat: gravity only holds the ball down
+      string surface;
+      if (height > 0.f)
+         surface = harness.AddWall({ Vertex2D(200.f, 200.f), Vertex2D(800.f, 200.f), Vertex2D(800.f, 800.f), Vertex2D(200.f, 800.f) }, 0.f, height)->GetName();
+
+      Kicker *const kicker = Kicker::COMCreate();
+      kicker->Init(500.f, 500.f, false);
+      kicker->SetName("TestKicker");
+      harness.GetTable()->AddPart(kicker);
+      kicker->Release(); // owned by the table
+      kicker->m_d.m_legacyMode = false;
+      kicker->m_d.m_fallThrough = true; // avoids the locked-ball path (which dereferences g_pplayer)
+      kicker->m_d.m_hitAccuracy = 0.5f; // default
+      kicker->m_d.m_szSurface = surface;
+
+      // Rolling slowly straight at the kicker center: captured within a few seconds on the playfield
+      Ball *const ball = harness.AddBall(400.f, 500.f, height, 1.f, 0.f, 0.f);
+      harness.Start();
+
+      // On capture a fall-through kicker moves the ball below the hole (zlow - radius - 5)
+      CHECK(harness.AdvanceUntil([&]() { return ball->m_hitBall.m_d.m_pos.z < height; }, 3000));
+   }
+}
+
+TEST_CASE("A fast ball rolling across a non-legacy kicker off its center escapes")
+{
+   // The capture is not a plain volume entry (the hit accuracy matters): the fix above must keep it so
    PhysicsTestHarness harness;
+   harness.SetGravity(0.f, GRAVITYCONST);
 
    Kicker *const kicker = Kicker::COMCreate();
    kicker->Init(500.f, 500.f, false);
@@ -833,26 +868,13 @@ TEST_CASE("A floor-height ball entering a non-legacy kicker is captured" * docte
    harness.GetTable()->AddPart(kicker);
    kicker->Release(); // owned by the table
    kicker->m_d.m_legacyMode = false;
-   kicker->m_d.m_fallThrough = true; // avoids the locked-ball path (which dereferences g_pplayer)
-   kicker->m_d.m_hitAccuracy = 0.5f; // saturated [0,1] property, default 0.5
+   kicker->m_d.m_fallThrough = true;
+   kicker->m_d.m_hitAccuracy = 0.5f;
 
-   KickerHitCircle sling(kicker, Vertex2D(500.f, 500.f), 50.f, 0.f, 100.f);
-   sling.m_pkicker = kicker;
-   sling.m_obj = static_cast<IFireEvents *>(kicker);
-   sling.CalcHitBBox();
+   Ball *const ball = harness.AddBall(400.f, 510.f, 0.f, 16.f, 0.f, 0.f);
+   harness.Start();
 
-   HitBall ball;
-   ball.m_d.m_pos = Vertex3Ds(500.f, 500.f, DEFAULT_BALL_SIZE); // resting at the kicker floor
-   ball.m_d.m_vel = Vertex3Ds(1.f, 0.f, 0.f);
-
-   // Entering the kicker volume (hitflag false = Hit, not UnHit).
-   sling.DoCollide(&ball, Vertex3Ds(0.f, 1.f, 0.f), false, false);
-
-   // grabHeight = (0 + 25) * 0.5 = 12.5 < pos.z = 25 -> !hitEvent -> deflection
-   // instead of capture. On capture a fall-through kicker teleports the ball
-   // below the hole (zlow - radius - 5) and zeroes its velocity.
-   CHECK(ball.m_d.m_pos.z == doctest::Approx(-DEFAULT_BALL_SIZE - 5.f).epsilon(0.01));
-   CHECK(ball.m_d.m_vel.LengthSquared() == doctest::Approx(0.f));
+   CHECK(!harness.AdvanceUntil([&]() { return ball->m_hitBall.m_d.m_pos.z < 0.f; }, 1000));
 }
 
 // ---------------------------------------------------------------------------
@@ -1012,7 +1034,7 @@ TEST_CASE("Flipper ball kick uses the profile's inertia")
 // exists in the Hit3DPoly volume path, TriggerHitLine and the kicker.
 // ---------------------------------------------------------------------------
 
-TEST_CASE("Entering a trigger volume does not teleport the ball" * doctest::should_fail())
+TEST_CASE("Entering a trigger volume does not teleport the ball" * doctest::should_fail(!kFixPhysics))
 {
    // No simulation needed: TriggerHitCircle::Collide only touches the ball and
    // the trigger's event bookkeeping.
@@ -1045,6 +1067,119 @@ TEST_CASE("Entering a trigger volume does not teleport the ball" * doctest::shou
    // position change outside the integrator that also shifts where the ball's
    // next hit tests run from.
    CHECK(ball.m_d.m_pos.x == doctest::Approx(500.f));
+}
+
+// The ball forward move kept the edge just crossed from being reported again (the ball sitting on it), flipping the volume
+// state back and forth at zero time. V10_9 hit tests only report the crossing the volume state expects instead.
+TEST_CASE("A trigger edge just crossed is not reported again" * doctest::should_fail(!kFixPhysics))
+{
+   PhysicsTestHarness harness;
+
+   Trigger *const trigger = Trigger::COMCreate();
+   trigger->Init(500.f, 500.f, false, false);
+   trigger->SetName("TestTrigger");
+   harness.GetTable()->AddPart(trigger);
+   trigger->Release(); // owned by the table
+
+   TriggerHitCircle triggerVolume(trigger, Vertex2D(500.f, 500.f), 50.f, 0.f, 100.f);
+   triggerVolume.m_ObjType = eTrigger;
+   triggerVolume.m_obj = static_cast<IFireEvents *>(trigger);
+   triggerVolume.CalcHitBBox();
+
+   // Like the engine: find the crossing, move the ball to it (the position rounding varies with the start), process it
+   for (const float start : { 0.f, 0.3137f, 0.7071f, 1.f / 3.f })
+      for (const bool entering : { true, false })
+      {
+         CAPTURE(start);
+         CAPTURE(entering);
+         HitBall ball;
+         ball.m_d.m_pos = Vertex3Ds(entering ? 440.f + start : 460.f - start, 500.f, DEFAULT_BALL_SIZE);
+         ball.m_d.m_vel = Vertex3Ds(entering ? 100.f : -100.f, 0.f, 0.f);
+         if (!entering)
+            ball.m_d.m_vpVolObjs->push_back(triggerVolume.m_obj); // inside, leaving through the left edge
+
+         CollisionEvent coll;
+         coll.m_ball = &ball;
+         const float hittime = triggerVolume.HitTest(ball.m_d, 2.f, coll);
+         REQUIRE(hittime >= 0.f);
+         CHECK(coll.m_hitflag == !entering);
+         ball.m_d.m_pos += hittime * ball.m_d.m_vel;
+         triggerVolume.Collide(coll);
+         REQUIRE(ball.m_d.m_vpVolObjs->size() == (entering ? 1u : 0u));
+
+         // The edge the ball is still on is done: an entered ball leaves on the far side (100 VPU away), a left one has no event
+         CollisionEvent next;
+         next.m_ball = &ball;
+         const float nextTime = triggerVolume.HitTest(ball.m_d, 2.f, next);
+         if (entering)
+         {
+            CHECK(nextTime == doctest::Approx(1.f).epsilon(0.001));
+            CHECK(next.m_hitflag);
+         }
+         else
+            CHECK(nextTime < 0.f);
+      }
+}
+
+TEST_CASE("A ball rolling across a trigger enters and leaves it once")
+{
+   // Round and polygon (line segments + lid) triggers, slow to fast: the volume state follows the ball position
+   for (const bool round : { true, false })
+      for (const float speed : { 0.1f, 1.f, 10.f, 100.f }) // VPU per 10 ms
+      {
+         CAPTURE(round);
+         CAPTURE(speed);
+         PhysicsTestHarness harness;
+         harness.SetGravity(0.f, 0.f); // floating ball, no friction: constant speed
+         harness.SetPlayfieldFloorEnabled(false);
+
+         Trigger *const trigger = Trigger::COMCreate();
+         trigger->Init(500.f, 500.f, false, false);
+         trigger->SetName("TestTrigger");
+         if (round)
+         {
+            trigger->m_d.m_shape = TriggerButton;
+            trigger->m_d.m_radius = 50.f;
+         }
+         else
+         {
+            trigger->m_d.m_shape = TriggerNone;
+            trigger->m_curve.ClearPoints();
+            for (const Vertex2D &v : { Vertex2D(450.f, 450.f), Vertex2D(450.f, 550.f), Vertex2D(550.f, 550.f), Vertex2D(550.f, 450.f) })
+               trigger->m_curve.PushPoint(std::make_unique<DragPoint>(&trigger->m_curve, v.x, v.y, 0.f, false));
+         }
+         harness.GetTable()->AddPart(trigger);
+         trigger->Release(); // owned by the table
+
+         // Start just outside, to keep the slow runs short
+         const float startX = 450.f - 0.3f * speed - 1.f;
+         Ball *const ball = harness.AddBall(startX, 510.f, 0.f, speed, 0.f, 0.f);
+         harness.Start();
+
+         // Edges along the ball path (y = 510): the round trigger has a radius of 50
+         const float halfChord = round ? sqrtf(50.f * 50.f - 10.f * 10.f) : 50.f;
+         int entries = 0, exits = 0;
+         bool wasInside = false;
+         const uint32_t maxDuration = (uint32_t)(10.f * (560.f - startX) / speed) + 50;
+         for (uint32_t t = 0; t < maxDuration && ball->m_hitBall.m_d.m_pos.x < 560.f; t++)
+         {
+            harness.Step();
+            const HitBall &b = ball->m_hitBall;
+            const bool inside = !b.m_d.m_vpVolObjs->empty();
+            entries += (inside && !wasInside) ? 1 : 0;
+            exits += (!inside && wasInside) ? 1 : 0;
+            wasInside = inside;
+            // Away from the edges (more than a step of travel), the state must match the position
+            const float x = b.m_d.m_pos.x, margin = b.m_d.m_vel.x * 0.1f + 0.5f;
+            if (x < 500.f - halfChord - margin || x > 500.f + halfChord + margin)
+               CHECK(!inside);
+            else if (x > 500.f - halfChord + margin && x < 500.f + halfChord - margin)
+               CHECK(inside);
+         }
+         CHECK(entries == 1);
+         CHECK(exits == 1);
+         CHECK(ball->m_hitBall.m_d.m_pos.x >= 560.f);
+      }
 }
 
 // ---------------------------------------------------------------------------

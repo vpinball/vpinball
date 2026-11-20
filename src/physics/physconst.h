@@ -63,6 +63,9 @@
 // Low Normal speed collison is handled as contact process rather than impulse collision
 #define C_LOWNORMVEL 0.0001f
 #define C_CONTACTVEL 0.099f
+// Trigger/kicker volumes (V10_9): a ball whose volume state does not match its side of the edge reports an event only beyond
+// this distance, so a ball the last event left on the edge (float rounding of the event position) does not flip back
+#define C_VOLUME_EDGE_TOL 0.01f
 
 // Experimental, on top of the V10_9 physics profile (constants not calibrated yet!):
 // - drops the legacy embedding/spin workarounds (C_EMBEDDED/C_EMBEDSHOT, C_EMBEDSHOT_PLANE, C_DISP_GAIN, C_BALL_SPIN_HACK)
@@ -115,6 +118,16 @@
 //   end got their height windows swapped during the subdivision, so the wall was dead wherever the floor height fell
 //   outside the swapped window (a ball on the ramp escaped through the wall on steep sections, while balls below were
 //   phantom-blocked). Walls are now the exact sloped quads (two single-sided HitTriangle faces and edge joints).
+// - Trigger and kicker volume edge events moved the ball forward by STATICTIME*vel (a displacement no velocity integrated),
+//   so that the edge it just crossed was not reported again. The volume hit tests now only report the crossing the ball's
+//   volume state expects (leaving if inside, entering if not), with C_VOLUME_EDGE_TOL against flipping back on the edge.
+// - The non-legacy kicker capture height was (zlow + ball radius) * hit accuracy, so on a raised surface the ball had to sink
+//   far below what the kicker bevel ever lets it (slow balls circled in the kicker forever). It is now zlow + ball radius * hit
+//   accuracy, unchanged on the playfield (zlow 0).
+// - Gate and spinner margins used PHYS_SKIN (25, the default ball radius) whatever the ball size: the axis/blocking segments were
+//   extended by it (a bigger ball clipped through their ends, a smaller one hit beyond them), and the wire/plate contact zone
+//   used it as margin with a fixed 0..50 height window for gates (a big ball could pass through the wire). They now use the
+//   actual ball radius (LineSeg::m_ballRadiusEndTolerance, SwingLamina::IsInsideZone) and the swept wire/plate height.
 //
 // Always enabled (new in 10.9 but not gated by the profile):
 // - Ball/ball contacts (HitBall::Contact): the contact friction uses the motion relative to the other ball, which was

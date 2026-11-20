@@ -9,6 +9,7 @@
 #include "core/VPXPluginAPIImpl.h"
 #include "input/PlungerHandler.h"
 #include "math/bbox.h"
+#include "physics/PhysicsEngine.h"
 #include "physics/cabinet/NudgeHandler.h"
 #include "renderer/VRDevice.h"
 #include "ui/live/LiveUI.h"
@@ -546,6 +547,7 @@ void InputManager::HandleSDLEvent(const SDL_Event& e) { m_sdlHandler->HandleSDLE
 
 void InputManager::PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_t timestampNs, bool isPressed)
 {
+   m_lastButtonEventNs = timestampNs;
    // Discard input events until the player has been running for a few frames to avoid triggering actions during table startup
    // (during initial table load, the loading UI is displayed and interactive, so events must flow)
    if (m_player->m_overall_frames < 5 && !m_player->m_isLoading && !m_acceptStartupEvents)
@@ -600,6 +602,7 @@ void InputManager::PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_
 
 void InputManager::PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t timestampNs, float position)
 {
+   m_lastButtonEventNs = timestampNs;
    assert(-1.f <= position && position <= 1.f);
 
    // Discard input events until the player has been running for a few frames to avoid triggering actions during table startup
@@ -752,7 +755,9 @@ void InputManager::CreateInputActions()
 
             CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
             DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+            m_inFlipperKeyDispatch = isPressed;
             m_player->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
+            m_inFlipperKeyDispatch = false;
          }));
       return newAction->GetActionId();
    };
@@ -1132,6 +1137,15 @@ void InputManager::Unregister(ButtonMapping* mapping)
 // Allow plugins to react to action event, eventually disabling local processing
 bool InputManager::OnInputActionStateChanged(InputAction* action)
 {
+   // Before the plugins, which may handle the flipper keys themselves (e.g. sent to the ROM)
+   if (action->IsPressed())
+   {
+      const unsigned int id = action->GetActionId();
+      if (id == m_leftFlipperActionId || id == m_stagedLeftFlipperActionId)
+         OnFlipperKeyPressed(true);
+      else if (id == m_rightFlipperActionId || id == m_stagedRightFlipperActionId)
+         OnFlipperKeyPressed(false);
+   }
    VPXActionEvent event { static_cast<VPXAction>(action->GetActionId()), action->IsPressed(), 1 };
    m_player->m_pluginAPI.BroadcastVPXMsg(m_onActionEventMsgId, &event);
    return event.enableVPXProcessing != 0;
@@ -1573,3 +1587,66 @@ void InputManager::AllowAccessibilityShortcutKeys(bool bAllowKeys)
    }
 }
 #endif
+
+void InputManager::OnFlipperKeyPressed(const bool left)
+{
+   if (!m_player->IsPlaying() || m_player->m_physics == nullptr)
+      return;
+   const uint64_t now = usec();
+   // Age of the input event (SDL event timestamps share the SDL_GetTicksNS time base)
+   const uint64_t nowNs = SDL_GetTicksNS();
+   const uint64_t ageUs = (m_lastButtonEventNs != 0 && m_lastButtonEventNs <= nowNs) ? min((nowNs - m_lastButtonEventNs) / 1000, (uint64_t)1000000) : 0;
+   m_flipPress.valid = true;
+   m_flipPress.left = left;
+   m_flipPress.processedUs = now;
+   m_flipPress.eventUs = now - ageUs;
+   // Game time runs as real time minus the physics start time (shifted by pauses and skipped stalls)
+   m_flipPress.gameUs = static_cast<int64_t>(m_flipPress.eventUs) - static_cast<int64_t>(m_player->m_physics->GetStartTime());
+   m_flipPress.pollGapUs = m_player->m_logicProfiler.GetPrev(FrameProfiler::ProfileSection::PROFILE_INPUT_POLL_PERIOD);
+}
+
+void InputManager::OnFlipperRotateToEnd(const string& flipperName)
+{
+   if (!m_flipPress.valid || m_player->m_physics == nullptr)
+      return;
+   const uint64_t now = usec();
+   if (now > m_flipPress.eventUs + 500000)
+   {
+      m_flipPress.valid = false; // Too old: not the press that turned this flipper on (e.g. a flip by the ROM alone)
+      return;
+   }
+   // The flipper starts moving from the current physics step
+   const int64_t flipGameUs = static_cast<int64_t>(m_player->m_physics->GetCurrentTime()) - static_cast<int64_t>(m_player->m_physics->GetStartTime());
+   // Negative: applied before the press in game time (the physics was behind real time and catches up after)
+   const int64_t gameLatencyUs = flipGameUs - m_flipPress.gameUs;
+   const int64_t realLatencyUs = static_cast<int64_t>(now - m_flipPress.eventUs);
+   m_flipCount++;
+   m_flipGameLatencySumUs += gameLatencyUs;
+   m_flipGameLatencyMaxUs = max(m_flipGameLatencyMaxUs, gameLatencyUs);
+   m_flipRealLatencyMaxUs = max(m_flipRealLatencyMaxUs, realLatencyUs);
+   constexpr int64_t lateThresholdUs = 10000;
+   if (gameLatencyUs > lateThresholdUs)
+   {
+      m_lateFlipCount++;
+      PLOGW << "Late flip: " << (m_flipPress.left ? "left" : "right") << " key -> flipper '" << flipperName << "' ("
+            << (m_inFlipperKeyDispatch ? "by the key event script" : "deferred, e.g. ROM solenoid") << ") at game time " << std::fixed << std::setprecision(3)
+            << (1e-6 * static_cast<double>(flipGameUs)) << "s: latency game time " << std::setprecision(1) << (1e-3 * static_cast<double>(gameLatencyUs))
+            << "ms, real time " << (1e-3 * static_cast<double>(realLatencyUs)) << "ms (input event to processing "
+            << (1e-3 * static_cast<double>(m_flipPress.processedUs - m_flipPress.eventUs)) << "ms, input poll gap " << (1e-3 * m_flipPress.pollGapUs)
+            << "ms, processing to flip " << (1e-3 * static_cast<double>(now - m_flipPress.processedUs)) << "ms)";
+   }
+   // A press may turn on several flippers (e.g. upper and lower): it stays valid for them until the 500 ms limit
+}
+
+void InputManager::LogFlipLatencySummary()
+{
+   if (m_flipCount == 0)
+      return;
+   PLOGI << "Flip latency (flipper key to flipper on, game time): " << m_flipCount << " flips, average " << std::fixed << std::setprecision(1)
+         << (1e-3 * static_cast<double>(m_flipGameLatencySumUs) / static_cast<double>(m_flipCount)) << "ms, max "
+         << (1e-3 * static_cast<double>(m_flipGameLatencyMaxUs)) << "ms (real time max " << (1e-3 * static_cast<double>(m_flipRealLatencyMaxUs)) << "ms), "
+         << m_lateFlipCount << " late (over 10ms, logged above)";
+   m_flipCount = m_lateFlipCount = 0;
+   m_flipGameLatencySumUs = m_flipRealLatencyMaxUs = 0;
+   m_flipGameLatencyMaxUs = INT64_MIN;
+}

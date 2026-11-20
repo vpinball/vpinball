@@ -187,6 +187,9 @@ public:
    Vertex2D v1, v2;
    Vertex2D normal;
    float length;
+   // V10_9 gate/spinner segments: a hit is accepted up to the ball radius past the segment ends
+   // (instead of the segment being extended by a fixed PHYS_SKIN, which matched the default ball size only)
+   bool m_ballRadiusEndTolerance = false;
 };
 
 class HitCircle : public HitObject

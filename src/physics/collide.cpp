@@ -94,6 +94,7 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
 
    const bool inside = (bnd <= 0.f);                        // in ball inside object volume
 
+   const bool profile109 = GetPhysicProfile() == PhysicProfile::V10_9;
    float hittime;
    if (rigid)
    {
@@ -107,7 +108,7 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
             || (bnd <= (float)(-PHYS_TOUCH)))
             hittime = 0;                                    // slow moving but embedded
          else {
-            if (GetPhysicProfile() == PhysicProfile::V10_9)
+            if (profile109)
                hittime = 0; // slow and within touch distance: contact (flagged below), not a collision in the future
             else
                hittime = bnd * (float)(1.0 / (2.0 * PHYS_TOUCH))
@@ -127,6 +128,7 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
              (!ball.m_vpVolObjs) ||
              // is a trigger, so test:
              (fabsf(bnd) >= ball.m_radius*0.5f) ||          // not too close ... nor too far away
+             (profile109 && fabsf(bnd) <= C_VOLUME_EDGE_TOL) || // V10_9: on the edge, e.g. left there by the last event
              (inside != (FindIndexOf(*(ball.m_vpVolObjs), m_obj) < 0))) // ...ball outside and hit set or ball inside and no hit set
          {
               return -1.0f;
@@ -135,7 +137,17 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
          bUnHit = !inside; // ball on outside is UnHit, otherwise it's a Hit
       }
       else
+      {
          hittime = bnd / -bnv;
+         if (profile109 && m_ObjType == eTrigger && ball.m_vpVolObjs)
+         {
+            // V10_9: only the crossing the volume state expects (leaving if the ball is in the volume, entering if not).
+            // The other one is the event just processed, the ball being still on the edge: it was skipped by moving the ball forward
+            bUnHit = (bnv > 0.f);
+            if (bUnHit == (FindIndexOf(*(ball.m_vpVolObjs), m_obj) < 0))
+               return -1.0f;
+         }
+      }
    }
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
@@ -146,7 +158,8 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
    const float btd = (ballx - v1.x)*normal.y - (bally - v1.y)*normal.x // ball tangent distance
       + btv * hittime;                                       // ball tangent distance (projection) (initial position + velocity * hitime)
 
-   if (btd < -C_TOL_ENDPNTS || btd > length + C_TOL_ENDPNTS) // is the contact off the line segment??? 
+   const float endTolerance = m_ballRadiusEndTolerance ? ball.m_radius : C_TOL_ENDPNTS;
+   if (btd < -endTolerance || btd > length + endTolerance) // is the contact off the line segment???
    {
        return -1.0f;
    }
@@ -236,6 +249,7 @@ float HitCircle::HitTestBasicRadius(const BallS& ball, const float dtime, Collis
    Vertex3Ds dv = ball.m_vel;
 
    const bool capsule3D = (!lateral && ball.m_pos.z > m_hitBBox.zhigh);
+   const bool profile109 = GetPhysicProfile() == PhysicProfile::V10_9;
 
    float targetRadius;
    if (capsule3D)
@@ -296,7 +310,10 @@ float HitCircle::HitTestBasicRadius(const BallS& ball, const float dtime, Collis
          hittime = std::max(0.0f, -bnd / bnv);
    }
    else if (m_ObjType >= eTrigger // triggers & kickers
-      && ball.m_vpVolObjs && ((bnd < 0.f) == (FindIndexOf(*(ball.m_vpVolObjs), m_obj) < 0)))
+      && ball.m_vpVolObjs
+      && (profile109 // V10_9: beyond C_VOLUME_EDGE_TOL, so that a ball the last event left on the edge does not flip back
+            ? ((FindIndexOf(*(ball.m_vpVolObjs), m_obj) < 0) ? (bnd < -C_VOLUME_EDGE_TOL) : (bnd > C_VOLUME_EDGE_TOL))
+            : ((bnd < 0.f) == (FindIndexOf(*(ball.m_vpVolObjs), m_obj) < 0))))
    { // here if ... ball inside and no hit set .... or ... ball outside and hit set
 
       if (fabsf(bnd - radius) < 0.05f) // if ball appears in center of trigger, then assumed it was gen'ed there
@@ -317,8 +334,18 @@ float HitCircle::HitTestBasicRadius(const BallS& ball, const float dtime, Collis
       if (!SolveQuadraticEq(a, 2.0f*b, bcddsq - targetRadius*targetRadius, time1, time2))
          return -1.0f;
 
-      bUnhit = (time1*time2 < 0.f);
-      hittime = bUnhit ? max(time1, time2) : min(time1, time2); // ball is inside the circle
+      if (profile109 && m_ObjType >= eTrigger && ball.m_vpVolObjs)
+      {
+         // V10_9: only the crossing the volume state expects (leaving if the ball is in the volume, entering if not).
+         // The other one is the event just processed, the ball being still on the edge: it was skipped by moving the ball forward
+         bUnhit = (FindIndexOf(*(ball.m_vpVolObjs), m_obj) >= 0);
+         hittime = bUnhit ? max(time1, time2) : min(time1, time2);
+      }
+      else
+      {
+         bUnhit = (time1*time2 < 0.f);
+         hittime = bUnhit ? max(time1, time2) : min(time1, time2); // ball is inside the circle
+      }
    }
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime)

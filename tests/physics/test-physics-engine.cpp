@@ -6,6 +6,7 @@
 
 #include "parts/ball.h"
 #include "parts/pintable.h"
+#include "parts/spinner.h"
 #include "parts/trigger.h"
 #include "physics/PhysicsEngine.h"
 #include "physics/collide.h"
@@ -652,5 +653,44 @@ TEST_CASE("PhysicsEngine: ray cast")
    {
       harness.GetEngine()->RayCast(Vertex3Ds(100.f, 100.f, 25.f), Vertex3Ds(700.f, 100.f, 25.f), false, hits);
       CHECK(hits.empty());
+   }
+}
+
+TEST_CASE("PhysicsEngine: spinner edge hits follow the ball size")
+{
+   // A ball passing beside the end of the spinner axis hits it when it overlaps it. The axis segments used to be extended
+   // by PHYS_SKIN (the default ball radius) whatever the ball size; V10_9 extends them by the actual ball radius
+   for (const float radius : { 25.f, 40.f })
+   {
+      CAPTURE(radius);
+      PhysicsTestHarness harness;
+      harness.SetGravity(0.f, 0.f); // floating ball at constant speed
+      harness.SetPlayfieldFloorEnabled(false);
+
+      Spinner *const spinner = Spinner::COMCreate();
+      spinner->Init(500.f, 500.f, false);
+      spinner->SetName("TestSpinner");
+      spinner->m_d.m_length = 80.f; // axis from x = 460 to 540
+      spinner->m_d.m_rotation = 0.f;
+      spinner->m_d.m_showBracket = false; // its posts stand right past the axis ends
+      harness.GetTable()->AddPart(spinner);
+      spinner->Release(); // owned by the table
+
+      // Crossing the axis line 30 past its end: overlaps it with a 40 radius ball, misses it by 5 with a 25 one
+      Ball *const ball = harness.AddBall(570.f, 400.f, 0.f, 0.f, 50.f, 0.f, radius);
+      harness.Start();
+
+      float maxAngle = 0.f;
+      harness.AdvanceUntil([&]()
+         {
+            float angle;
+            spinner->get_CurrentAngle(&angle);
+            maxAngle = max(maxAngle, fabsf(angle));
+            return ball->m_hitBall.m_d.m_pos.y > 600.f;
+         }, 1000);
+      if (radius > 30.f)
+         CHECK(maxAngle > 1.f);
+      else
+         CHECK(maxAngle == 0.f);
    }
 }

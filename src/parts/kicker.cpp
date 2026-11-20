@@ -1022,14 +1022,18 @@ void KickerHitCircle::DoCollide(HitBall *const pball, const Vertex3Ds &hitnormal
 
    if (newBall || ((!hitbit) == (i < 0)))            // New or (Hit && !Vol || UnHit && Vol)
    {
-      if (m_pkicker->m_d.m_legacyMode || newBall)
+      const bool profile109 = GetPhysicProfile() == PhysicProfile::V10_9;
+      if ((m_pkicker->m_d.m_legacyMode || newBall) && !profile109) // V10_9: the hit test does not report the edge just crossed again
       {
          pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel; // move ball slightly forward
       }
 
       if (i < 0) // entering Kickers volume
       {
-         const float grabHeight = (m_hitBBox.zlow + pball->m_d.m_radius) * m_pkicker->m_d.m_hitAccuracy;
+         // Non-legacy: the kicker bevel (DoChangeBallVelocity) lets the ball sink, it is captured once it sank below this height.
+         // V10_9: relative to the kicker surface (scaling it too put it out of reach on raised surfaces, same at height 0)
+         const float grabHeight = profile109 ? m_hitBBox.zlow + pball->m_d.m_radius  * m_pkicker->m_d.m_hitAccuracy
+                                            : (m_hitBBox.zlow + pball->m_d.m_radius) * m_pkicker->m_d.m_hitAccuracy;
          // early out here if the ball is slow and we are near the kicker center
          const bool hitEvent = (pball->m_d.m_pos.z < grabHeight || m_pkicker->m_d.m_legacyMode || newBall);
 
