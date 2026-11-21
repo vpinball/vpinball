@@ -344,45 +344,20 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          m_rd->m_curDrawnTriangles += m_indicesCount / 3;
          if (m_uiGeo->upload == UIListGeometry::Upload::None)
          {
-            // First draw command of the list this frame: upload the snapshot once for all its commands. The transient arena is only
-            // used if 64 KiB stay free (512 quads in the largest, PNT, format) for the textured quads (RC_DRAW_QUAD_*,
-            // RenderTarget::CopyTo), which allocate from it without checking for room
-            constexpr uint32_t reserveBytes = 64 * 1024;
-            const uint32_t reserveVertices = reserveBytes / m_rd->m_pVertexImGuiDeclaration->getStride();
-            const uint32_t numVerticesWithReserve = m_uiGeo->numVertices + reserveVertices;
-            if (bgfx::getAvailTransientVertexBuffer(numVerticesWithReserve, *m_rd->m_pVertexImGuiDeclaration) >= numVerticesWithReserve
-               && bgfx::getAvailTransientIndexBuffer(m_uiGeo->numIndices, true) >= m_uiGeo->numIndices)
-            { // Fast path: copy the geometry snapshot straight into BGFX's per-frame transient arena
+            // First draw command of the list this frame: upload the snapshot once for all its commands
+            if (bgfx::allocTransientBuffers(&m_uiGeo->tvb, *m_rd->m_pVertexImGuiDeclaration, m_uiGeo->numVertices, &m_uiGeo->tib, m_uiGeo->numIndices, true))
+            {
                m_uiGeo->upload = UIListGeometry::Upload::Transient;
-               bgfx::allocTransientVertexBuffer(&m_uiGeo->tvb, m_uiGeo->numVertices, *m_rd->m_pVertexImGuiDeclaration);
                memcpy(m_uiGeo->tvb.data, m_uiGeo->vtx.data(), m_uiGeo->vtx.size());
-               bgfx::allocTransientIndexBuffer(&m_uiGeo->tib, m_uiGeo->numIndices, true);
                memcpy(m_uiGeo->tib.data, m_uiGeo->idx.data(), m_uiGeo->idx.size());
             }
             else
-            { // Fallback: the list's persistent dynamic buffers
-               m_uiGeo->upload = UIListGeometry::Upload::Dynamic;
-               uint8_t* vdata;
-               m_mb->m_vb->Lock(vdata, 0, static_cast<unsigned int>(m_uiGeo->vtx.size()));
-               memcpy(vdata, m_uiGeo->vtx.data(), m_uiGeo->vtx.size());
-               m_mb->m_vb->Unlock();
-               uint8_t* idata;
-               m_mb->m_ib->Lock(idata, 0, static_cast<unsigned int>(m_uiGeo->idx.size()));
-               memcpy(idata, m_uiGeo->idx.data(), m_uiGeo->idx.size());
-               m_mb->m_ib->Unlock();
-            }
+               m_uiGeo->upload = UIListGeometry::Upload::Failed;
          }
-         if (m_uiGeo->upload == UIListGeometry::Upload::Transient)
-         {
-            bgfx::setVertexBuffer(0, &m_uiGeo->tvb);
-            bgfx::setIndexBuffer(&m_uiGeo->tib, m_startIndex, m_indicesCount);
-         }
-         else
-         {
-            m_mb->bind(); // Flushes the pending uploads
-            bgfx::setVertexBuffer(0, m_mb->m_vb->GetDynamicBuffer());
-            bgfx::setIndexBuffer(m_mb->m_ib->GetDynamicBuffer(), m_mb->m_ib->GetIndexOffset() + m_startIndex, m_indicesCount);
-         }
+         if (m_uiGeo->upload != UIListGeometry::Upload::Transient)
+            break;
+         bgfx::setVertexBuffer(0, &m_uiGeo->tvb);
+         bgfx::setIndexBuffer(&m_uiGeo->tib, m_startIndex, m_indicesCount);
          bgfx::setInstanceCount(nInstances);
          bgfx::setState(m_rd->m_bgfxState);
          m_rd->ApplyScissor();
@@ -460,12 +435,11 @@ void RenderCommand::SetDrawMesh(
 }
 
 #if defined(ENABLE_BGFX)
-void RenderCommand::SetDrawTransientMesh(Shader* shader, std::shared_ptr<UIListGeometry> geo, std::shared_ptr<MeshBuffer> mb, const RenderDevice::PrimitiveTypes type,
+void RenderCommand::SetDrawTransientMesh(Shader* shader, std::shared_ptr<UIListGeometry> geo, const RenderDevice::PrimitiveTypes type,
    const uint32_t startIndex, const uint32_t indexCount, const bool isTransparent, const float depth)
 {
    m_command = Command::RC_DRAW_TRANSIENT;
    m_uiGeo = std::move(geo);
-   m_mb = std::move(mb);
    m_primitiveType = type;
    m_startIndex = startIndex;
    m_indicesCount = indexCount;

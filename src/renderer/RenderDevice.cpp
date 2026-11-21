@@ -3072,11 +3072,11 @@ void RenderDevice::DrawMesh(Shader* shader, const bool isTranparentPass, const V
 }
 
 #if defined(ENABLE_BGFX)
-void RenderDevice::DrawTransientMesh(Shader* shader, const bool isTransparentPass, const float depth, std::shared_ptr<UIListGeometry> geo, std::shared_ptr<MeshBuffer> mb,
+void RenderDevice::DrawTransientMesh(Shader* shader, const bool isTransparentPass, const float depth, std::shared_ptr<UIListGeometry> geo,
    const PrimitiveTypes type, const uint32_t startIndex, const uint32_t indexCount)
 {
    RenderCommand* cmd = m_renderFrame->NewCommand();
-   cmd->SetDrawTransientMesh(shader, std::move(geo), std::move(mb), type, startIndex, indexCount, isTransparentPass, depth);
+   cmd->SetDrawTransientMesh(shader, std::move(geo), type, startIndex, indexCount, isTransparentPass, depth);
    cmd->m_dependency = m_nextRenderCommandDependency;
    m_nextRenderCommandDependency = nullptr;
    m_currentPass->Submit(cmd);
