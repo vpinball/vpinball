@@ -325,6 +325,9 @@ private:
    bool m_doAnimation = false;
    bool m_endless = false;
 
+   void DropInvalidMesh();
+   bool m_meshLoadFailed = false; // only used during loading
+
    int m_numIndices = 0;         // only used during loading
    int m_numVertices = 0;        // only used during loading
 #ifdef COMPRESS_MESHES
