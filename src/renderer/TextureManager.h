@@ -33,6 +33,9 @@ public:
    void AddPendingUpload(ITexManCacheable* memtex, std::shared_ptr<const BaseTexture> bitmap = nullptr);
    // Sampler of a texture, created on first use. markUsed is false for uploads not caused by a draw (see GetUsedTextures)
    std::shared_ptr<Sampler> LoadTexture(ITexManCacheable* const memtex, const bool force_linear_rgb, const bool markUsed = true);
+   // For the UI's font texture, never evicted nor degraded. ImGui asks for it only when it changes, so it looks unused to the LRU eviction,
+   // and it updates it in place, which a downsized or fallback texture rejects (different size): the text would stay scrambled
+   std::shared_ptr<Sampler> LoadPinnedTexture(ITexManCacheable* const memtex);
    void SetDirty(ITexManCacheable* memtex);
    void UnloadTexture(ITexManCacheable* memtex);
    void UnloadAll();
@@ -83,6 +86,7 @@ private:
       size_t gpuBytes[VARIANT_COUNT] = { 0, 0 }; // Estimated resident bytes of each variant
       size_t fullBytes[VARIANT_COUNT] = { 0, 0 }; // Estimated bytes at full size of a variant uploaded downsized or as fallback, 0 if not degraded
       uint32_t upgradeRetryFrame = 0; // Frame index before which a degraded variant is not retried at full size
+      bool pinned = false; // Never evicted nor degraded, see LoadPinnedTexture
    };
    RenderDevice& m_rd;
    std::atomic<unsigned int> m_maxTexDimension = 0;
