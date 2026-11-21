@@ -1490,13 +1490,6 @@ RenderDevice::RenderDevice(
 
    init.callback = &m_bgfxCallback;
    init.fallback = true;
-   // Live editor sessions generate a lot of UI geometry each frame: raise the transient buffer arenas
-   // used for the LiveUI uploads (player sessions keep the BGFX defaults)
-   if ((g_pplayer->m_playMode == Player::PlayMode::LiveEdit) || (g_pplayer->m_playMode == Player::PlayMode::FullEdit))
-   {
-      init.limits.maxTransientVbSize = 32 * 1024 * 1024;
-      init.limits.maxTransientIbSize = 8 * 1024 * 1024;
-   }
    init.swapChain.width = swapchainWnd->GetPixelWidth();
    init.swapChain.height = swapchainWnd->GetPixelHeight();
    init.platformData.context = nullptr;
