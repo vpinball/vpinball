@@ -15,7 +15,8 @@ public:
 
    void Open(bool isBackwardAnimation) override;
    void Close(bool isBackwardAnimation) override;
-   void Render(float elapsed) override;
+   void Update(float elapsedS) override;
+   void CollectPanes(vector<InGameUIPane>& panes) override;
 
    bool IsPlayerPauseAllowed() const override { return false; }
 
@@ -24,6 +25,7 @@ private:
 
    InputManager& GetInput() const { return m_player->m_pininput; }
    void AppendPlot();
+   void RenderPlungerPlots(const ImVec4& rect);
 
    PlotData m_positionPlot;
    PlotData m_velocityPlot;

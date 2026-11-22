@@ -14,7 +14,8 @@ public:
    StereoSettingsPage();
    void Open(bool isBackwardAnimation) override;
    void Close(bool isBackwardAnimation) override;
-   void Render(float elapsedS) override;
+   void Update(float elapsedS) override;
+   void CollectPanes(vector<InGameUIPane>& panes) override;
    void SelectNextItem() override;
    void SelectPrevItem() override;
    void AdjustItem(float direction, bool isInitialPress) override;
@@ -24,7 +25,7 @@ private:
    void BuildPage() override;
    void OnPointOfViewChanged();
 
-   void RenderAnaglyphInformations() const;
+   void RenderAnaglyphInformations(const ImVec4& rect) const;
 
    void UpdateAnaglyphCalibrationModal();
    VPX::Properties::PropertyRegistry::PropId GetCalibratedProperty() const;

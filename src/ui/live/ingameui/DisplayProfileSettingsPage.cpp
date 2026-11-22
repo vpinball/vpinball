@@ -257,25 +257,17 @@ void DisplayProfileSettingsPage::BuildAlphaPage()
       { settings.SetAlpha_ProfileUnlit(profile, (settings.GetAlpha_ProfileUnlit(profile) & 0x00FFFF) | (v << 16), isTableOverride); }));
 }
 
-void DisplayProfileSettingsPage::Render(float elapsed)
+void DisplayProfileSettingsPage::Update(float elapsedS)
 {
-   InGameUIPage::Render(elapsed);
-
-   float posx, posy;
-   float width, height;
+   InGameUIPage::Update(elapsedS);
 
    if (m_selectedProfile < 7)
    {
-      width = GetWindowSize().x;
-      height = width / 4.f;
-      posx = GetWindowPos().x;
-      posy = GetWindowPos().y - ImGui::GetStyle().ItemSpacing.y - height;
-
       memset(m_dmdTexture->data(), 0, 128 * 32 * 4);
       m_particles.resize(128);
       for (auto& particle : m_particles)
       {
-         particle.life += elapsed;
+         particle.life += elapsedS;
          if (particle.life < particle.lifespan)
          {
             static_cast<float*>(m_dmdTexture->data())[particle.pos] = saturate(1.f - 3.f * fabs(particle.life / particle.lifespan - 0.66f));
@@ -288,7 +280,40 @@ void DisplayProfileSettingsPage::Render(float elapsed)
          }
       }
       BaseTexture::Update(m_dmdTexture, 128, 32, BaseTexture::Format::BW_FP32, m_dmdTexture->data());
+   }
+}
 
+void DisplayProfileSettingsPage::CollectPanes(vector<InGameUIPane>& panes)
+{
+   InGameUIPage::CollectPanes(panes);
+
+#if !defined(ENABLE_BGFX)
+   if (m_selectedProfile >= 7)
+      return; // Segment displays are only implemented by the BGFX shaders
+#endif
+
+   InGameUIPane pane;
+   pane.id = "displayPreview"s;
+   pane.measure = [this](float availW, float availH)
+   {
+      if (m_selectedProfile < 7)
+         return ImVec2(availW, availW / 4.f);
+      else
+         return ImVec2(availW / 4.f * 96.f / 128.f, availW / 4.f);
+   };
+   pane.render = [this](const ImVec4& rect) { RenderDisplayPreview(rect); };
+   panes.push_back(std::move(pane));
+}
+
+void DisplayProfileSettingsPage::RenderDisplayPreview(const ImVec4& rect)
+{
+   const float posx = rect.x;
+   const float posy = rect.y;
+   const float width = rect.z;
+   const float height = rect.w;
+
+   if (m_selectedProfile < 7)
+   {
       m_player->m_renderer->SetupDMDRender(m_selectedProfile, true, vec3(1.f, 1.f, 1.f), m_previewBrightness, m_dmdTexture, 1.0f, 0.f, Renderer::Reinhard, nullptr, vec4(0.f, 0.f, 0.f, 0.f),
          vec3(1.f, 1.f, 1.f), 0.f, nullptr, vec4(0.f, 0.f, 1.f, 1.f), vec3(0.f, 0.f, 0.f));
    }
@@ -297,11 +322,6 @@ void DisplayProfileSettingsPage::Render(float elapsed)
       #if !defined(ENABLE_BGFX)
       return; // Segment displays are only implemented by the BGFX shaders
       #endif
-      height = GetWindowSize().x / 4.f;
-      width = height * 96.f / 128.f;
-      posx = GetWindowPos().x + (GetWindowSize().x - width) / 2.f;
-      posy = GetWindowPos().y - ImGui::GetStyle().ItemSpacing.y - height;
-
       float frame[16];
       for (int i = 0; i < 16; i++)
          frame[i] = 1.f;
@@ -371,6 +391,5 @@ void DisplayProfileSettingsPage::Render(float elapsed)
    m_player->m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
    m_player->m_renderer->UpdateBasicShaderMatrix();
 }
-
 }
 

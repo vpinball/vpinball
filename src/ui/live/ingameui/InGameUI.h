@@ -4,6 +4,7 @@
 
 #include "unordered_dense.h"
 #include "InGameUIPage.h"
+#include "InGameUIRenderer.h"
 
 class LiveUI;
 
@@ -54,6 +55,10 @@ private:
    vector<string> m_navigationHistory;
    vector<std::unique_ptr<InGameUIPage>> m_activePages;
    uint32_t m_lastRenderMs = 0;
+
+   // Renders the active pages; implementations selected per running target
+   // (mobile touch, desktop, cabinet, VR) through InGameUIRenderer::Create
+   const std::unique_ptr<InGameUIRenderer> m_renderer;
 };
 
 }

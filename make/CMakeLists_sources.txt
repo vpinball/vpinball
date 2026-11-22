@@ -440,10 +440,14 @@ set(VPX_SOURCES
    src/ui/live/ingameui/GraphicSettingsPage.cpp
    src/ui/live/ingameui/HomePage.h
    src/ui/live/ingameui/HomePage.cpp
+   src/ui/live/ingameui/InGameUIDefaultRenderer.h
+   src/ui/live/ingameui/InGameUIDefaultRenderer.cpp
    src/ui/live/ingameui/InGameUIItem.h
    src/ui/live/ingameui/InGameUIItem.cpp
    src/ui/live/ingameui/InGameUIPage.h
    src/ui/live/ingameui/InGameUIPage.cpp
+   src/ui/live/ingameui/InGameUIPane.h
+   src/ui/live/ingameui/InGameUIRenderer.h
    src/ui/live/ingameui/InputDevicePage.h
    src/ui/live/ingameui/InputDevicePage.cpp
    src/ui/live/ingameui/InputProfilePage.h

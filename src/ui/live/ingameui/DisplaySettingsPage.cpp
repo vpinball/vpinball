@@ -812,12 +812,12 @@ void DisplaySettingsPage::BuildEmbeddedPage()
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You may also drag the window to adjust its position"s));
 }
 
-void DisplaySettingsPage::Render(float elapsedS)
+void DisplaySettingsPage::Update(float elapsedS)
 {
+   InGameUIPage::Update(elapsedS);
    if (m_fitToContent)
       FitToContent();
-   InGameUIPage::Render(elapsedS);
-   if (!IsWindowHovered() // Don't drag when mouse is hovering the InGameUI
+   if (!IsWindowHovered() // Don't drag when mouse is hovering the InGameUI (previous frame's window state)
       && (SDL_GetMouseFocus() == (m_isMainWindow ? GetWindow() : m_player->m_playfieldWnd)->GetCore()) // Only apply for main window (and its embedded windows)
       && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) // Only drag with left mouse button
    {
