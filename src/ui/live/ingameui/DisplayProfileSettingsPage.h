@@ -11,13 +11,15 @@ class DisplayProfileSettingsPage final : public InGameUIPage
 {
 public:
    DisplayProfileSettingsPage();
-   void Render(float elapsed) override;
+   void Update(float elapsedS) override;
+   void CollectPanes(vector<InGameUIPane>& panes) override;
 
 private:
    void BuildPage() override;
    void BuildDMDPage();
    void BuildAlphaPage();
-   
+   void RenderDisplayPreview(const ImVec4& rect);
+
    int m_selectedProfile = 0;
    float m_previewBrightness = 1.f;
    std::shared_ptr<BaseTexture> m_dmdTexture;

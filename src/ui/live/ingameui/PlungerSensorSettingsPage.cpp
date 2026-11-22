@@ -74,28 +74,45 @@ void PlungerSensorSettingsPage::AppendPlot()
       m_velocityRawPlot.AddPoint(t, -vel->GetValue());
 }
 
-void PlungerSensorSettingsPage::Render(float elapsed)
+void PlungerSensorSettingsPage::Update(float elapsedS)
 {
-   InGameUIPage::Render(elapsed);
+   InGameUIPage::Update(elapsedS);
 
    if (m_removed)
       return;
 
+   AppendPlot();
+}
+
+void PlungerSensorSettingsPage::CollectPanes(vector<InGameUIPane>& panes)
+{
+   InGameUIPage::CollectPanes(panes);
+
+   if (m_removed)
+      return;
+
+   InGameUIPane pane;
+   pane.id = "sensorPlots"s;
+   pane.measure = [](float availW, float availH) { return ImVec2(availW, 400.f); };
+   pane.render = [this](const ImVec4& rect) { RenderSensorPlots(rect); };
+   panes.push_back(std::move(pane));
+}
+
+void PlungerSensorSettingsPage::RenderSensorPlots(const ImVec4& rect)
+{
    const ImGuiStyle& style = ImGui::GetStyle();
 
-   const ImVec2 winSize = ImVec2(GetWindowSize().x, 400.f);
+   const ImVec2 winSize = ImVec2(rect.z, rect.w);
    const float plotWidth = (winSize.x - style.WindowPadding.x * 2.f);
    const float plotHeight = (winSize.y - style.WindowPadding.y * 2.f - style.ItemSpacing.y) / 2.f;
    constexpr ImGuiWindowFlags window_flags
       = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-   ImGui::SetNextWindowPos(ImVec2(GetWindowPos().x, GetWindowPos().y - winSize.y - style.ItemSpacing.y));
+   ImGui::SetNextWindowPos(ImVec2(rect.x, rect.y));
    ImGui::SetNextWindowBgAlpha(0.666f);
    ImGui::SetNextWindowSize(winSize);
    ImGui::Begin("PlungerSensorOverlay", nullptr, window_flags);
    ImPlot::PushStyleColor(ImPlotCol_LegendBg, ImVec4(0.11f, 0.11f, 0.14f, 0.03f));
    ImGui::PushFont(nullptr, style.FontSizeBase * 0.5f); // Smaller font to keep graphics readable
-
-   AppendPlot();
 
    const float now = static_cast<float>(static_cast<double>(msec()) / 1000.);
    const float lastHitDelayMs = static_cast<float>(static_cast<double>(g_pplayer->m_time_msec - m_player->m_physics->GetLastPlungerHit()) / 1000.);
@@ -151,5 +168,4 @@ void PlungerSensorSettingsPage::Render(float elapsed)
    ImPlot::PopStyleColor();
    ImGui::End();
 }
-
 }

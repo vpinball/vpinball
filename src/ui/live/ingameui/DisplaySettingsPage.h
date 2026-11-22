@@ -24,7 +24,7 @@ class DisplaySettingsPage final : public InGameUIPage
 public:
    explicit DisplaySettingsPage(VPXWindowId wndId);
    void Close(bool isBackwardAnimation) override;
-   void Render(float elapsedS) override;
+   void Update(float elapsedS) override;
 
    void ResetToStoredValues() override;
    void ResetToDefaults() override;

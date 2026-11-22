@@ -12,7 +12,7 @@ class HomePage final : public InGameUIPage
 public:
    HomePage();
 
-   void Render(float elapsedMs) override;
+   void CollectPanes(vector<InGameUIPane>& panes) override;
 
 private:
    void BuildPage() override;

@@ -358,15 +358,11 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
             item->m_inputAction->ClearMapping();
             // Base navigation items must always be mapped (otherwise navigation ends up broken), so immediately start a mapping definition
             if (item->m_inputAction->IsNavigationAction())
-            {
-               m_defineActionPopup = true;
-               m_defineActionItem = item.get();
-            }
+               RequestInputActionPopup(*item);
          }
          else
          {
-            m_defineActionPopup = true;
-            m_defineActionItem = item.get();
+            RequestInputActionPopup(*item);
          }
       }
       break;
@@ -451,8 +447,21 @@ void InGameUIPage::ReleaseAdjustedItem()
    }
 }
 
-void InGameUIPage::Render(float elapsedS)
+void InGameUIPage::Update(float elapsedS)
 {
+   // Rebuild requests made while a slider is being dragged are held until it is released. A rebuild
+   // stops the frame at the item that requested it (see the renderer's item loop), so the page is
+   // drawn shorter: its scrollbar disappears, the content area gets wider and the slider's scale
+   // with it, and the same pointer position now maps to a slightly different value. That value
+   // change requests another rebuild on the next, full frame, and the view oscillates between the
+   // two values for as long as the slider is held (very visible on the point of view page where
+   // each change moves the camera).
+   if (m_rebuildPending && !ImGui::IsAnyItemActive())
+   {
+      m_rebuildPending = false;
+      m_needsRebuild = true;
+   }
+
    if (m_needsRebuild)
    {
       // Pages are always built here, before rendering and interaction handling, to avoid item lifecycle issues (for example when changing a setting may result in other settings being added/removed).
@@ -474,191 +483,25 @@ void InGameUIPage::Render(float elapsedS)
       m_pathSelectResult = nullptr;
    }
 
-   ImGuiIO& io = ImGui::GetIO();
-   const ImGuiStyle& style = ImGui::GetStyle();
-
-   if (m_openAnimTarget != m_openAnimPos)
-   {
-      m_openAnimElapsed += elapsedS;
-      m_openAnimPos = lerp(m_openAnimStart, m_openAnimTarget, smoothstep(0.f, 0.5f, m_openAnimElapsed));
-      if (fabsf(m_openAnimTarget - m_openAnimPos) < 0.001f)
-         m_openAnimPos = m_openAnimTarget;
-   }
-   const float animPos = m_openAnimPos;
-
-   ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.666f);
-   // Size is selected to match pinball instruction cards format which have an aspect ratio of roughly 6" x 3.25" (WPC, other varies), except for mobile where we favor size
-   constexpr float pinballCardAR = 6.f / 3.5f;
-   ImVec2 winSize;
-   if (m_player->m_vrDevice)
-   {
-      winSize.x = min(0.25f * io.DisplaySize.x, 0.25f * io.DisplaySize.y);
-      winSize.y = (1 / pinballCardAR) * winSize.x + 5.f * ImGui::GetTextLineHeightWithSpacing();
-      ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
-   }
-   else if (g_isMobile)
-   {
-      if (io.DisplaySize.x > io.DisplaySize.y)
-      { // Landscape mode
-         winSize = ImVec2(0.75f * io.DisplaySize.x, 0.8f * io.DisplaySize.y);
-         ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
-      }
-      else
-      { // Portrait mode
-         winSize = ImVec2(0.9f * io.DisplaySize.x, 0.8f * io.DisplaySize.y);
-         ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.5f * io.DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
-      }
-   }
-   else if (io.DisplaySize.x > io.DisplaySize.y)
-   { // Landscape mode, fit on height
-      winSize.y = 0.5f * io.DisplaySize.y;
-      winSize.x = pinballCardAR * (winSize.y - 5.f * ImGui::GetTextLineHeightWithSpacing());
-      ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.9f * io.DisplaySize.y), 0, ImVec2(0.5f, 1.f));
-   }
-   else
-   { // Portrait mode, fit on width
-      winSize.x = 0.8f * io.DisplaySize.x;
-      winSize.y = (1.f / pinballCardAR) * winSize.x + 5.f * ImGui::GetTextLineHeightWithSpacing();
-      ImGui::SetNextWindowPos(ImVec2((animPos + 0.5f) * io.DisplaySize.x, 0.8f * io.DisplaySize.y), 0, ImVec2(0.5f, 1.f));
-   }
-   ImGui::SetNextWindowSize(winSize);
-   ImGui::Begin(std::to_string(reinterpret_cast<size_t>(this)).c_str(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings);
-
-   ImGui::PushStyleColor(ImGuiCol_Separator, style.Colors[ImGuiCol_Text]);
-
-   const bool isAdjustable = IsAdjustable();
-   const ImU32 hoveredBackgroundColor = IM_COL32(0, 0, 128, 50);
-   const ImU32 hoveredBorderColor = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
-   //const ImU32 hoveredBorderColor = ImGui::GetColorU32(ImVec4(0.228f, 0.750f, 1.0f, 1.0f));
-   const ImU32 hoveredButtonColor = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
-
-   // Header
+   // Append the core action items: they are rendered in the header by the renderer but kept in the
+   // item list so that selection and adjustment treat them like regular items
    std::erase_if(m_items,
       [](auto& item)
       {
          using enum InGameUIItem::Type;
          return item->m_type == SaveChanges || item->m_type == ResetToDefaults || item->m_type == ResetToStoredValues || item->m_type == Back;
       });
-   ImGui::SeparatorText(m_title.c_str());
-   bool undoHovered = false;
-   bool defaultHovered = false;
-   bool saveHovered = false;
-   float buttonWidth = IconButtonInkSize(ICON_LC_REPLY).x + style.ItemSpacing.x;
-   if (isAdjustable)
+   if (IsAdjustable())
    {
-      buttonWidth += IconButtonInkSize(ICON_LC_HEART).x;
-      buttonWidth += style.ItemSpacing.x;
-      buttonWidth += IconButtonInkSize(ICON_LC_UNDO_2).x;
-      buttonWidth += style.ItemSpacing.x;
-      buttonWidth += IconButtonInkSize(ICON_LC_SAVE).x;
-      buttonWidth += style.ItemSpacing.x;
-   }
-   ImGui::SameLine(ImGui::GetWindowSize().x - buttonWidth);
-   if (isAdjustable)
-   {
-      bool highlighted = false;
-      // Reset to defaults
       if (!IsDefaults())
-      {
          m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::ResetToDefaults));
-         ImGui::BeginDisabled(false);
-         highlighted = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && (m_selectedItem == m_items.size() - 1);
-      }
-      else
-      {
-         ImGui::BeginDisabled(true);
-         highlighted = false;
-      }
-      if (highlighted)
-         ImGui::PushStyleColor(ImGuiCol_Button, hoveredButtonColor);
-      if (IconButtonInk(ICON_LC_HEART, "##ResetDefaults"))
-      {
-         m_selectedItem = static_cast<int>(m_items.size()) - 1;
-         AdjustItem(1.f, true);
-      }
-      if (highlighted)
-         ImGui::PopStyleColor();
-      defaultHovered = ImGui::IsItemHovered();
-      ImGui::EndDisabled();
-
-      // Undo changes
-      ImGui::SameLine();
       if (IsModified())
-      {
          m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::ResetToStoredValues));
-         ImGui::BeginDisabled(false);
-         highlighted = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && (m_selectedItem == (int)m_items.size() - 1);
-      }
-      else
-      {
-         ImGui::BeginDisabled(true);
-         highlighted = false;
-      }
-      if (highlighted)
-         ImGui::PushStyleColor(ImGuiCol_Button, hoveredButtonColor);
-      if (IconButtonInk(ICON_LC_UNDO_2, "##UndoChanges"))
-      {
-         m_selectedItem = static_cast<int>(m_items.size()) - 1;
-         AdjustItem(1.f, true);
-      }
-      if (highlighted)
-         ImGui::PopStyleColor();
-      undoHovered = ImGui::IsItemHovered();
-      ImGui::EndDisabled();
-
-      // Save changes
-      ImGui::SameLine();
-      if (m_saveMode == SaveMode::None)
-      {
-         ImGui::Dummy(IconButtonInkSize(ICON_LC_SAVE));
-         ImGui::SameLine();
-      }
-      else
-      {
-         if (IsModified())
-         {
-            m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::SaveChanges));
-            ImGui::BeginDisabled(false);
-            highlighted = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && (m_selectedItem == (int)m_items.size() - 1);
-         }
-         else
-         {
-            ImGui::BeginDisabled(true);
-            highlighted = false;
-         }
-         if (highlighted)
-            ImGui::PushStyleColor(ImGuiCol_Button, hoveredButtonColor);
-         if (IconButtonInk(ICON_LC_SAVE, "##SaveChanges"))
-         {
-            m_selectedItem = static_cast<int>(m_items.size()) - 1;
-            AdjustItem(1.f, true);
-         }
-         if (highlighted)
-            ImGui::PopStyleColor();
-         saveHovered = ImGui::IsItemHovered();
-         ImGui::EndDisabled();
-         ImGui::SameLine();
-      }
+      if (m_saveMode != SaveMode::None && IsModified())
+         m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::SaveChanges));
    }
-
-   // Get back to previous page or to game
-   if (m_player->m_isLoading)
-      ImGui::NewLine();
-   else
-   {
+   if (!m_player->m_isLoading)
       m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::Back));
-      const bool highlighted = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && (m_selectedItem == m_items.size() - 1);
-      if (highlighted)
-         ImGui::PushStyleColor(ImGuiCol_Button, hoveredButtonColor);
-      if (IconButtonInk(ICON_LC_REPLY, "##Back"))
-      {
-         m_selectedItem = static_cast<int>(m_items.size()) - 1;
-         AdjustItem(1.f, true);
-      }
-      if (highlighted)
-         ImGui::PopStyleColor();
-   }
-   const bool backHovered = !m_player->m_isLoading && ImGui::IsItemHovered();
 
    // As we may have changed the number of selectable items, ensure m_selectedItem is still valid and pointing to a selectable item
    if (!HasSelectableItem())
@@ -670,484 +513,24 @@ void InGameUIPage::Render(float elapsedS)
          m_selectedItem = (m_selectedItem + 1) % static_cast<int>(m_items.size());
    }
 
-   // Page items
-   // Note that items may trigger state change which in turn may trigger a rebuild of the page (changing m_items)
-   const InGameUIItem* hoveredItem = nullptr;
-   const ImVec2 itemPadding = style.ItemSpacing;
-   ImGui::BeginChild("PageItems", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - ImGui::GetTextLineHeight() * 3.f - itemPadding.y * 2.f), ImGuiChildFlags_None,
-      ImGuiWindowFlags_NoBackground);
-
-   // Indent the item content so the item highlight quads (drawn from the child's left edge) have a left padding
-   ImGui::Indent(itemPadding.x);
-
-   // Drag scroll for easier mobile navigation
-   if (g_isMobile)
+   // A navigation action must always be bound: keep requesting the binding popup until a valid
+   // mapping is defined (the popup itself is rendered by the page renderer)
+   if (!m_defineActionPopup && m_defineActionItem)
    {
-      constexpr float kDragThreshold  = 6.f;  // px before we commit to a drag
-      constexpr float kFriction       = 8.f;  // deceleration rate (higher = quicker stop)
-      constexpr float kVelocitySmooth = 0.2f; // EMA weight for velocity sampling
-
-      if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-      {
-         m_isDraggingScroll = false;
-         m_dragScrollStartPos = ImGui::GetMousePos();
-         m_dragScrollVelocity = 0.f;
-      }
-
-      const bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
-      if (mouseDown && !m_isDraggingScroll && fabsf(ImGui::GetMousePos().y - m_dragScrollStartPos.y) > kDragThreshold)
-      {
-         // Start drag after threshold is passed to avoid interfering with clicks
-         m_isDraggingScroll = true;
-      }
-      else if (mouseDown && m_isDraggingScroll)
-      {
-         // Scroll by the raw finger delta and track velocity
-         const float dy = io.MouseDelta.y;
-         ImGui::SetScrollY(ImGui::GetScrollY() - dy);
-         const float frameVel = (elapsedS > 0.f) ? (-dy / elapsedS) : 0.f;
-         m_dragScrollVelocity = m_dragScrollVelocity * (1.f - kVelocitySmooth) + frameVel * kVelocitySmooth;
-      }
-      else if (!mouseDown && fabsf(m_dragScrollVelocity) > 0.5f)
-      {
-         // Inertial glide after finger lifts
-         ImGui::SetScrollY(ImGui::GetScrollY() + m_dragScrollVelocity * elapsedS);
-         m_dragScrollVelocity *= max(0.f, 1.f - kFriction * elapsedS);
-         if (fabsf(m_dragScrollVelocity) < 0.5f)
-            m_dragScrollVelocity = 0.f;
-      }
+      assert(false); // Not supposed to happen as the only way to close the popup is to actually define a mapping which deselects the item
+      if (m_defineActionItem->m_inputAction->IsNavigationAction() && !m_defineActionItem->m_inputAction->IsMapped())
+         m_defineActionPopup = true;
+      else
+         m_defineActionItem = nullptr;
    }
 
-   float maxLabelWidth = 0.f;
-   for (const auto& item : m_items)
-      if (item->IsAdjustable())
-         maxLabelWidth = max(maxLabelWidth, ImGui::CalcTextSize(item->m_label.c_str()).x);
-   maxLabelWidth = min(maxLabelWidth, ImGui::CalcTextSize("Maximum label length before ellipsis").x);
-   const float rowStartScreenX = ImGui::GetCursorScreenPos().x;
-   const float labelEndScreenX = rowStartScreenX + maxLabelWidth + style.ItemSpacing.x * 2.0f + 30.f;
-   const float itemMarkerWidth = ImMax(ImGui::CalcTextSize(ICON_LC_PENCIL).x, ImGui::CalcTextSize(ICON_LC_CIRCLE_DOT).x);
-   const float itemEndScreenX = rowStartScreenX + ImGui::GetContentRegionAvail().x - itemMarkerWidth - style.ItemSpacing.x - itemPadding.x;
-   // Right edge of the item fields: inset by the quad's right padding (the 'modified' pencil is kept outside, in the margin)
-   const float itemFieldEndScreenX = itemEndScreenX - itemPadding.x;
-   const bool stackFields = (itemFieldEndScreenX - labelEndScreenX) < 12.f * ImGui::GetFontSize();
-   const float labelMaxWidth = stackFields ? itemFieldEndScreenX - rowStartScreenX : maxLabelWidth;
-   const float closeButtonWidth = IconButtonInkSize(ICON_LC_X).x;
-   const float circleTextWidth = IconButtonInkSize(ICON_LC_DISC).x;
-   // SameLine(offset) positions relative to the window's content origin, not to the current
-   // cursor: this goes to an absolute screen x on the current line
-   const auto sameLineToScreenX = [](float screenX)
+   if (m_openAnimTarget != m_openAnimPos)
    {
-      ImGui::SameLine(0.f, 0.f);
-      ImGui::SetCursorScreenPos(ImVec2(screenX, ImGui::GetCursorScreenPos().y));
-   };
-   // Status icon (modified / overridden) drawn in the margin right of the item quad, its ink
-   // centered on the frame-height line (a plain Text would place the Lucide glyph too high)
-   const auto itemMarker = [itemEndScreenX, itemPadding](const char* icon)
-   {
-      ImGui::SameLine(0.f, 0.f);
-      const ImVec2 linePos = ImGui::GetCursorScreenPos();
-      const ImVec2 box = ImGui::CalcTextSize(icon);
-      const ImVec4 ink = TextInkBounds(icon);
-      const float x = itemEndScreenX + (itemPadding.x + ImGui::GetStyle().ItemSpacing.x) * 0.5f;
-      ImGui::GetWindowDrawList()->AddText(
-         ImVec2(x + (box.x - (ink.z - ink.x)) * 0.5f - ink.x, linePos.y + (ImGui::GetFrameHeight() - (ink.w - ink.y)) * 0.5f - ink.y), ImGui::GetColorU32(ImGuiCol_Text), icon);
-      ImGui::SetCursorScreenPos(ImVec2(x, linePos.y));
-      ImGui::Dummy(box);
-   };
-   for (int i = 0; i < (int)m_items.size(); i++)
-   {
-      // A value change handled while rendering a previous item may have requested a page rebuild (e.g.
-      // switching a window output to embedded destroys the window that the following items query). The
-      // rebuild is deferred to the next frame, so stop here to avoid evaluating the now-stale items
-      // (their live getters would dereference freed state).
-      if (m_needsRebuild)
-         break;
-
-      using enum InGameUIItem::Type;
-      const auto& item = m_items[i];
-
-      // Skip as these items are rendered in the header
-      if (item->m_type == Back || item->m_type == SaveChanges || item->m_type == ResetToDefaults || item->m_type == ResetToStoredValues)
-         continue;
-
-      const bool isStackedItem = stackFields && item->IsAdjustable() && !(item->m_type == Property && item->m_property->m_type == VPX::Properties::PropertyDef::Type::Bool);
-      const bool navHovered = m_player->m_liveUI->m_inGameUI.IsFlipperNav() && i == m_selectedItem;
-      const ImVec2 itemScreenPos = ImGui::GetCursorScreenPos();
-      const float itemStartY = ImGui::GetCursorPosY();
-      ImDrawList* const itemDrawList = ImGui::GetWindowDrawList();
-
-      // The item's bounds are only known once rendered (wrapped text, markdown blocks, custom
-      // renders), so it is rendered in the front draw list channel and its highlight quad is
-      // drawn afterward in the back channel, on the measured bounds
-      itemDrawList->ChannelsSplit(2);
-      itemDrawList->ChannelsSetCurrent(1);
-
-      ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
-
-      // In flipper navigation, draw the highlighted item's controls in their active style
-      if (navHovered)
-      {
-         ImGui::PushStyleColor(ImGuiCol_FrameBg, style.Colors[ImGuiCol_FrameBgActive]);
-         ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, style.Colors[ImGuiCol_FrameBgActive]);
-         ImGui::PushStyleColor(ImGuiCol_SliderGrab, style.Colors[ImGuiCol_SliderGrabActive]);
-         ImGui::PushStyleColor(ImGuiCol_Button, style.Colors[ImGuiCol_ButtonActive]);
-         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonActive]);
-         ImGui::PushStyleColor(ImGuiCol_Header, style.Colors[ImGuiCol_HeaderActive]);
-         ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.Colors[ImGuiCol_HeaderActive]);
-      }
-      switch (item->m_type)
-      {
-      case Label:
-      {
-         ImGui::SetNextItemWidth(itemFieldEndScreenX - ImGui::GetCursorScreenPos().x - 60.f);
-         switch (item->m_labelType)
-         {
-         case InGameUIItem::LabelType::Info:
-            ImGui::TextWrapped("%s", item->m_label.c_str());
-            break;
-         case InGameUIItem::LabelType::Header:
-         {
-            ImGui::Text("%s", item->m_label.c_str());
-            ImVec2 min = ImGui::GetItemRectMin();
-            ImVec2 max = ImGui::GetItemRectMax();
-            min.y = max.y;
-            itemDrawList->AddLine(min, max, IM_COL32_WHITE, 1.0f);
-            break;
-         }
-         case InGameUIItem::LabelType::Markdown:
-            m_player->m_liveUI->SetMarkdownStartId(ImGui::GetItemID());
-            ImGui::Markdown(item->m_label.c_str(), item->m_label.length(), m_player->m_liveUI->GetMarkdownConfig());
-            break;
-         }
-         break;
-      }
-
-      case Navigation:
-      case Runnable:
-      {
-         // The chevron glyph ink overshoots the text layout box (drawn on the text origin it sits
-         // too high against the label): keep its layout slot, but draw its ink vertically centered,
-         // dropped a bit to sit on the text body rather than the line box
-         const ImVec4 chevronInk = TextInkBounds(ICON_LC_CHEVRONS_RIGHT);
-         const ImVec2 linePos = ImGui::GetCursorScreenPos();
-         itemDrawList->AddText(ImVec2(linePos.x, linePos.y - chevronInk.y + (ImGui::GetTextLineHeight() - (chevronInk.w - chevronInk.y)) * 0.5f + ImGui::GetTextLineHeight() * 0.1f),
-            ImGui::GetColorU32(ImGuiCol_Text), ICON_LC_CHEVRONS_RIGHT);
-         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::CalcTextSize(ICON_LC_CHEVRONS_RIGHT).x + 10.f);
-         ImGui::Text("%s", item->m_label.c_str());
-         break;
-      }
-
-      case CustomRender:
-         if (item->m_customRender)
-            item->m_customRender(i, item.get());
-         break;
-
-      case ActionInputMapping:
-      {
-         if (!isStackedItem)
-            ImGui::AlignTextToFramePadding();
-         TextWithEllipsis(item->m_label, labelMaxWidth);
-         if (item->m_inputAction->IsMapped())
-         {
-            if (!stackFields)
-               sameLineToScreenX(labelEndScreenX);
-            if (IconButtonInk(ICON_LC_X, std::format("##Item{:d}", i).c_str()))
-            {
-               item->m_inputAction->ClearMapping();
-               if (item->m_inputAction->IsNavigationAction())
-               {
-                  m_defineActionPopup = true;
-                  m_defineActionItem = item.get();
-               }
-            }
-            ImGui::SameLine();
-         }
-         else if (!stackFields)
-         {
-            sameLineToScreenX(labelEndScreenX + closeButtonWidth + style.ItemSpacing.x);
-         }
-         else
-         {
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + closeButtonWidth + style.ItemSpacing.x);
-         }
-         const string mappingLabel = item->m_inputAction->GetMappingLabel();
-         const float mapButtonWidth = itemFieldEndScreenX - ImGui::GetCursorScreenPos().x - circleTextWidth - style.ItemSpacing.x;
-         if (ImGui::Button(std::format("{}##Item{}", mappingLabel, i).c_str(), ImVec2(mapButtonWidth, 0)))
-         {
-            m_defineActionPopup = true;
-            m_defineActionItem = item.get();
-         }
-         if (ImGui::CalcTextSize(mappingLabel.c_str()).x >= mapButtonWidth - style.ItemSpacing.x * 2.f)
-            ImGui::SetItemTooltip("%s", mappingLabel.c_str());
-         {
-            string state = item->m_inputAction->IsPressed() ? ICON_LC_DISC : ICON_LC_CIRCLE;
-            sameLineToScreenX(itemFieldEndScreenX - circleTextWidth);
-            ImGui::Text("%s", state.c_str());
-         }
-         if (item->IsModified())
-         {
-            itemMarker(ICON_LC_PENCIL);
-         }
-         break;
-      }
-
-      case Property:
-         switch (item->m_property->m_type)
-         {
-         case VPX::Properties::PropertyDef::Type::Float:
-         {
-            auto prop = dynamic_cast<VPX::Properties::FloatPropertyDef*>(item->m_property.get());
-            if (!isStackedItem)
-               ImGui::AlignTextToFramePadding();
-            TextWithEllipsis(prop->m_label, labelMaxWidth);
-            if (!stackFields)
-               sameLineToScreenX(labelEndScreenX);
-            float v = item->GetFloatValue() * item->m_floatValueDisplayScale;
-            ImGui::SetNextItemWidth(itemFieldEndScreenX - ImGui::GetCursorScreenPos().x);
-            ImGui::SliderFloat(std::format("##Item{}", i).c_str(), &v, prop->m_min * item->m_floatValueDisplayScale,
-               prop->m_max * item->m_floatValueDisplayScale, item->m_format.c_str(),
-               ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
-            const bool sliderActive = ImGui::IsItemActive();
-            if (item->IsModified())
-            {
-               itemMarker(ICON_LC_PENCIL);
-            }
-            else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
-            {
-               itemMarker(ICON_LC_CIRCLE_DOT);
-            }
-            m_deferRebuild = sliderActive;
-            item->SetValue(v / item->m_floatValueDisplayScale);
-            m_deferRebuild = false;
-            break;
-         }
-
-         case VPX::Properties::PropertyDef::Type::Int:
-         {
-            auto prop = dynamic_cast<VPX::Properties::IntPropertyDef*>(item->m_property.get());
-            if (!isStackedItem)
-               ImGui::AlignTextToFramePadding();
-            TextWithEllipsis(prop->m_label, labelMaxWidth);
-            if (!stackFields)
-               sameLineToScreenX(labelEndScreenX);
-            int v = item->GetIntValue();
-            const auto id = Settings::GetRegistry().GetPropertyId(item->m_property->m_groupId, item->m_property->m_propId);
-            if (id.has_value() && (((Settings::m_propPlayer_PlayfieldWidth.index == id.value().index) || (Settings::m_propPlayer_PlayfieldHeight.index == id.value().index)) && !m_player->m_liveUI->m_inGameUI.IsFlipperNav()))
-            {
-               // Special handling for editing main window size as mouse interaction would break (since the control is moved/resized while interacted)
-               const float butWidth = IconButtonInkSize(ICON_LC_MOVE_HORIZONTAL).x;
-               ImGui::SetNextItemWidth(itemFieldEndScreenX - ImGui::GetCursorScreenPos().x - ImGui::GetStyle().ItemSpacing.x - butWidth);
-               ImGui::InputInt(std::format("##Item{}", i).c_str(), &v, 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank);
-               ImGui::SameLine();
-               if (IconButtonInk((Settings::m_propPlayer_PlayfieldWidth.index == id.value().index) ? ICON_LC_MOVE_HORIZONTAL : ICON_LC_MOVE_VERTICAL, std::format("##Item{}", i).c_str()))
-                  v = prop->m_max;
-            }
-            else
-            {
-               ImGui::SetNextItemWidth(itemFieldEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::SliderInt(std::format("##Item{}", i).c_str(), &v, prop->m_min, prop->m_max, item->m_format.c_str(), ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat);
-            }
-            const bool sliderActive = ImGui::IsItemActive();
-            if (item->IsModified())
-            {
-               itemMarker(ICON_LC_PENCIL);
-            }
-            else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
-            {
-               itemMarker(ICON_LC_CIRCLE_DOT);
-            }
-            m_deferRebuild = sliderActive;
-            item->SetValue(v);
-            m_deferRebuild = false;
-            break;
-         }
-
-         case VPX::Properties::PropertyDef::Type::Enum:
-         {
-            auto prop = dynamic_cast<VPX::Properties::EnumPropertyDef*>(item->m_property.get());
-            if (!isStackedItem)
-               ImGui::AlignTextToFramePadding();
-            TextWithEllipsis(prop->m_label, labelMaxWidth);
-            if (!stackFields)
-               sameLineToScreenX(labelEndScreenX);
-            int v = item->GetIntValue() - prop->m_min;
-            ImGui::SetNextItemWidth(itemFieldEndScreenX - ImGui::GetCursorScreenPos().x);
-            ImGui::Combo(std::format("##Item{}", i).c_str(), &v,
-               [](void* data, int idx)
-               {
-                  const auto* vec = static_cast<const vector<string>*>(data);
-                  if (idx < 0 || idx >= (int)vec->size())
-                     return "";
-                  return vec->at(idx).c_str();
-               },
-               (void*)&prop->m_values, (int)prop->m_values.size());
-            if (item->IsModified())
-            {
-               itemMarker(ICON_LC_PENCIL);
-            }
-            else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
-            {
-               itemMarker(ICON_LC_CIRCLE_DOT);
-            }
-            item->SetValue(prop->m_min + v);
-            break;
-         }
-
-         case VPX::Properties::PropertyDef::Type::Bool:
-         {
-            auto prop = dynamic_cast<VPX::Properties::BoolPropertyDef*>(item->m_property.get());
-            if (!isStackedItem)
-               ImGui::AlignTextToFramePadding();
-            TextWithEllipsis(prop->m_label, stackFields ? itemFieldEndScreenX - rowStartScreenX - ImGui::GetFrameHeight() * 1.75f - style.ItemSpacing.x : maxLabelWidth);
-            if (stackFields)
-               ImGui::SameLine();
-            else
-               sameLineToScreenX(labelEndScreenX);
-            bool v = item->GetBoolValue();
-            RenderToggle(std::format("{}##Item{}", prop->m_label, i), ImVec2(itemFieldEndScreenX - ImGui::GetCursorScreenPos().x, ImGui::GetFrameHeight()), v);
-            if (item->IsModified())
-            {
-               itemMarker(ICON_LC_PENCIL);
-            }
-            else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
-            {
-               itemMarker(ICON_LC_CIRCLE_DOT);
-            }
-            item->SetValue(v);
-            break;
-         }
-
-         case VPX::Properties::PropertyDef::Type::String:
-         {
-            auto prop = dynamic_cast<VPX::Properties::StringPropertyDef*>(item->m_property.get());
-            if (!isStackedItem)
-               ImGui::AlignTextToFramePadding();
-            TextWithEllipsis(prop->m_label, labelMaxWidth);
-            if (!stackFields)
-               sameLineToScreenX(labelEndScreenX);
-            string v = item->GetStringValue();
-            if (prop->m_pathType != VPX::Properties::StringPropertyDef::PathType::None)
-            {
-               const bool isFolder = prop->m_pathType == VPX::Properties::StringPropertyDef::PathType::Folder;
-               const char* browseIcon = isFolder ? ICON_LC_FOLDER_OPEN : ICON_LC_FILE;
-               const char* hint = isFolder ? "Select a folder..." : "Select a file...";
-               const float browseButtonWidth = IconButtonInkSize(browseIcon).x;
-               ImGui::SetNextItemWidth(itemFieldEndScreenX - ImGui::GetCursorScreenPos().x - browseButtonWidth - style.ItemSpacing.x);
-               ImGui::InputTextWithHint(std::format("##Item{}", i).c_str(), hint, &v);
-               ImGui::SameLine();
-               if (IconButtonInk(browseIcon, std::format("##Item{}", i).c_str()))
-                  BrowseForPath(*item);
-               if (ImGui::IsItemHovered())
-                  ImGui::SetTooltip("%s", hint);
-            }
-            else
-            {
-               ImGui::SetNextItemWidth(itemFieldEndScreenX - ImGui::GetCursorScreenPos().x);
-               ImGui::InputText(std::format("##Item{}", i).c_str(), &v);
-            }
-            if (item->IsModified())
-            {
-               itemMarker(ICON_LC_PENCIL);
-            }
-            else if (item->IsOverriden(g_settingsService.GetAppSettings(), g_settingsService.GetActiveSettings()))
-            {
-               itemMarker(ICON_LC_CIRCLE_DOT);
-            }
-            item->SetValue(v);
-            break;
-         }
-
-         default: assert(false); break;
-         }
-         break;
-
-      default: assert(false); break;
-      }
-      if (navHovered)
-         ImGui::PopStyleColor(7);
-      ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos() + ImVec2(0.f, itemPadding.y));
-
-      // Now that the item's bounds are known, draw its highlight quad in the back channel and
-      // evaluate mouse over/keyboard navigation on them
-      itemDrawList->ChannelsSetCurrent(0);
-      const float itemHeight = ImGui::GetCursorPosY() - itemStartY - style.ItemSpacing.y;
-      const bool isMouseOver = ImGui::IsWindowHovered() && (ImGui::GetMousePos().y >= itemScreenPos.y - itemPadding.y - 1.f) && (ImGui::GetMousePos().y <= itemScreenPos.y + itemHeight);
-      const bool hovered = navHovered || (!m_player->m_liveUI->m_inGameUI.IsFlipperNav() && isMouseOver && item->IsSelectable());
-      if (hovered)
-      {
-         hoveredItem = item.get();
-         const ImVec2 itemStartScreen(ImMax(itemScreenPos.x - itemPadding.x, ImGui::GetWindowPos().x), itemScreenPos.y);
-         const ImVec2 itemEndScreen(itemEndScreenX, itemStartScreen.y + itemHeight);
-         itemDrawList->AddRectFilled(itemStartScreen, itemEndScreen, hoveredBackgroundColor, 3.f * m_player->m_liveUI->GetDPI());
-         itemDrawList->AddRect(itemStartScreen, itemEndScreen, hoveredBorderColor, 3.f * m_player->m_liveUI->GetDPI(), 2.f * m_player->m_liveUI->GetDPI());
-         if (navHovered)
-         {
-            if (item->m_type == Label && item->m_labelType == InGameUIItem::LabelType::Markdown && itemHeight > ImGui::GetWindowHeight())
-            {
-               // Scrollable markdown item: scroll within its bounds (m_pressedItemScroll is adjusted by AdjustItem)
-               m_pressedItemScroll = clamp(m_pressedItemScroll, 0.f, itemHeight - ImGui::GetWindowHeight());
-               ImGui::SetScrollY(itemStartY + m_pressedItemScroll);
-            }
-            else if (itemStartY - ImGui::GetScrollY() < 0.f)
-               ImGui::SetScrollY(itemStartY);
-            else if (itemStartY + itemHeight - ImGui::GetScrollY() > ImGui::GetWindowHeight())
-               ImGui::SetScrollY(itemStartY + itemHeight - ImGui::GetWindowHeight());
-         }
-      }
-      else if (!m_player->m_liveUI->m_inGameUI.IsFlipperNav() && isMouseOver)
-      {
-         hoveredItem = item.get();
-      }
-      itemDrawList->ChannelsMerge();
-
-      if ((item->m_type == Navigation || item->m_type == Runnable) && isMouseOver && !m_isDraggingScroll && ImGui::IsMouseReleased(ImGuiMouseButton_::ImGuiMouseButton_Left))
-      {
-         m_selectedItem = i;
-         AdjustItem(1.f, true);
-      }
+      m_openAnimElapsed += elapsedS;
+      m_openAnimPos = lerp(m_openAnimStart, m_openAnimTarget, smoothstep(0.f, 0.5f, m_openAnimElapsed));
+      if (fabsf(m_openAnimTarget - m_openAnimPos) < 0.001f)
+         m_openAnimPos = m_openAnimTarget;
    }
-   // Rebuild requests made while a slider is being dragged are held until it is released. A rebuild
-   // stops the frame at the item that requested it (see above), so the page is drawn shorter: its
-   // scrollbar disappears, the content area gets wider and the slider's scale with it, and the same
-   // pointer position now maps to a slightly different value. That value change requests another
-   // rebuild on the next, full frame, and the view oscillates between the two values for as long as
-   // the slider is held (very visible on the point of view page where each change moves the camera).
-   if (m_rebuildPending && !ImGui::IsAnyItemActive())
-   {
-      m_rebuildPending = false;
-      m_needsRebuild = true;
-   }
-   if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && m_isDraggingScroll)
-      m_isDraggingScroll = false;
-   ImGui::Dummy(ImVec2(0, 0));
-   ImGui::EndChild();
-
-   ImGui::Separator();
-
-   ImGui::BeginChild("Info", ImVec2(), ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar);
-   if (hoveredItem && std::ranges::find_if(m_items, [hoveredItem](auto& item) { return item.get() == hoveredItem; }) != m_items.end() && !hoveredItem->m_tooltip.empty())
-      ImGui::TextWrapped("%s", hoveredItem->m_tooltip.c_str());
-   else if (undoHovered)
-      ImGui::TextWrapped("Undo changes\n[Input shortcut: Credit Button]");
-   else if (defaultHovered)
-      ImGui::TextWrapped("Reset page to defaults\n[Input shortcut: Launch Button]");
-   else if (saveHovered)
-      ImGui::TextWrapped("Save changes\n[Input shortcut: Start Button]");
-   else if (backHovered)
-      ImGui::TextWrapped("Get back\n[Input shortcut: Quit Button]");
-   else if (!m_info.empty())
-      ImGui::TextWrapped("%s", m_info.c_str());
-   ImGui::EndChild();
-
-   ImGui::PopStyleColor();
-
-   m_windowPos = ImGui::GetWindowPos();
-   m_windowSize = ImGui::GetWindowSize();
-   m_windowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
-
-   ImGui::End();
-
-   RenderInputActionPopup();
 }
 
 void InGameUIPage::BrowseForPath(const InGameUIItem& item)
@@ -1180,109 +563,6 @@ void InGameUIPage::BrowseForPath(const InGameUIItem& item)
    {
       const string location = PathToUTF8(PathFromString(item.GetStringValue())); // SDL expects UTF-8
       ShowOpenFolderDialog(callback, result, m_player->m_playfieldWnd->GetCore(), location.empty() ? nullptr : location.c_str(), false);
-   }
-}
-
-void InGameUIPage::RenderInputActionPopup()
-{
-   if (!m_defineActionPopup && m_defineActionItem)
-   {
-      assert(false); // Not supposed to happen as the only way to close the popup is to actually define a mapping which deselects the item
-      if (m_defineActionItem->m_inputAction->IsNavigationAction() && !m_defineActionItem->m_inputAction->IsMapped())
-         m_defineActionPopup = true;
-      else
-         m_defineActionItem = nullptr;
-   }
-   if (m_defineActionItem && m_defineActionPopup && !ImGui::IsPopupOpen((m_defineActionItem->m_label + " input binding").c_str()))
-   {
-      ImGui::OpenPopup((m_defineActionItem->m_label + " input binding").c_str());
-      ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
-      ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoKeyboard;
-      m_player->m_pininput.StartButtonCapture();
-   }
-   if (m_defineActionItem && ImGui::BeginPopupModal((m_defineActionItem->m_label + " input binding").c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-   {
-      ImGui::Text("Press the key/button or combination of keys/buttons\nyou want to use for the action '%s'", m_defineActionItem->m_label.c_str());
-      ImGui::Spacing();
-      ImGui::Separator();
-      ImGui::Spacing();
-      ImGui::Text("New mapping: %s", m_player->m_pininput.GetMappingLabel(m_player->m_pininput.GetButtonCapture()).c_str());
-      ImGui::Spacing();
-      ImGui::Separator();
-      if (m_player->m_pininput.IsButtonCaptureDone())
-      {
-         ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
-         ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoKeyboard;
-         m_defineActionItem->m_inputAction->AddMapping(m_player->m_pininput.GetButtonCapture());
-         if (!(m_defineActionItem->m_inputAction->IsNavigationAction() && !m_defineActionItem->m_inputAction->IsMapped()))
-         {
-            ImGui::CloseCurrentPopup();
-            m_defineActionItem = nullptr;
-         }
-      }
-      ImGui::EndPopup();
-   }
-}
-
-// Basic Toggle button, based on https://github.com/ocornut/imgui/issues/1537#issuecomment-355562097
-void InGameUIPage::RenderToggle(const string& label, const ImVec2& size, bool& v)
-{
-   ImVec2 p = ImGui::GetCursorScreenPos();
-   ImDrawList* draw_list = ImGui::GetWindowDrawList();
-
-   const float height = size.y;
-   const float width = height * 1.75f;
-   const float radius = height * 0.50f;
-   float itemEndScreenX = ImGui::GetCursorScreenPos().x + size.x;
-   p.x = itemEndScreenX - width;
-
-   ImGui::SetNextItemWidth(size.x);
-   if (ImGui::InvisibleButton(label.c_str(), size))
-      v = !v;
-   const ImU32 col_bg = ImGui::IsItemHovered() ? ImGui::GetColorU32(ImGuiCol_ButtonHovered) : ImGui::GetColorU32(ImGuiCol_Button);
-   draw_list->AddRectFilled(p, ImVec2(p.x + width, p.y + height), col_bg, height * 0.5f);
-   if (v)
-      draw_list->AddCircleFilled(ImVec2(v ? (p.x + width - radius) : (p.x + radius), p.y + radius), radius - 3.5f, IM_COL32(255, 255, 255, 255));
-   else
-      draw_list->AddCircle(ImVec2(v ? (p.x + width - radius) : (p.x + radius), p.y + radius), radius - 3.5f, IM_COL32(255, 255, 255, 255), 0, 2.f * m_player->m_liveUI->GetDPI());
-}
-
-void InGameUIPage::TextWithEllipsis(const string& textStr, float maxWidth)
-{
-   float textWidth = ImGui::CalcTextSize(textStr.c_str()).x;
-   if (textWidth > maxWidth)
-   {
-      float ellipsisWidth = ImGui::CalcTextSize("...").x;
-      if (float availableWidth = maxWidth - ellipsisWidth; availableWidth <= 0)
-      {
-         ImGui::Text("...");
-         return;
-      }
-
-      // Binary search to find the right length
-      int left = 0;
-      int right = static_cast<int>(textStr.length());
-      while (left < right)
-      {
-         int mid = (left + right + 1) / 2;
-         std::string truncated = textStr.substr(0, mid) + "...";
-         float truncatedWidth = ImGui::CalcTextSize(truncated.c_str()).x;
-         if (truncatedWidth <= maxWidth)
-         {
-            left = mid;
-         }
-         else
-         {
-            right = mid - 1;
-         }
-      }
-
-      std::string truncated = textStr.substr(0, left) + "...";
-      ImGui::Text("%s", truncated.c_str());
-   }
-   else
-   {
-      ImGui::Text("%s", textStr.c_str());
    }
 }
 

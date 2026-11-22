@@ -130,10 +130,18 @@ void HomePage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>("System Info"s, ""s, "misc/systeminfo"s));
 }
 
-void HomePage::Render(float elapsedMs)
+void HomePage::CollectPanes(vector<InGameUIPane>& panes)
 {
+   InGameUIPage::CollectPanes(panes);
+
    // Display table name, author, version, blurb and description => Move to a dedicated page ?
-   if (m_player->m_vrDevice == nullptr)
+   if (m_player->m_vrDevice != nullptr)
+      return;
+
+   InGameUIPane pane;
+   pane.placement = InGameUIPane::Placement::Backdrop;
+   pane.id = "tableInfo"s;
+   pane.render = [this](const ImVec4& rect)
    {
       std::ostringstream info;
 
@@ -163,16 +171,15 @@ void HomePage::Render(float elapsedMs)
          | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
       ImGui::SetNextWindowBgAlpha(0.666f * (1.f - fabs(GetOpenCloseAnimPos())));
       ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.666f * (1.f - fabs(GetOpenCloseAnimPos())));
-      ImGui::SetNextWindowPos(ImVec2(0, 0));
-      ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+      ImGui::SetNextWindowPos(ImVec2(rect.x, rect.y));
+      ImGui::SetNextWindowSize(ImVec2(rect.z, rect.w));
       ImGui::Begin((std::to_string(reinterpret_cast<size_t>(this)) + ".back").c_str(), nullptr, window_flags);
       m_player->m_liveUI->SetMarkdownStartId(ImGui::GetItemID());
       ImGui::Markdown(info.str().c_str(), info.str().length(), m_player->m_liveUI->GetMarkdownConfig());
       ImGui::End();
       ImGui::PopStyleVar();
-   }
-
-   InGameUIPage::Render(elapsedMs);
+   };
+   panes.push_back(std::move(pane));
 }
 
 }

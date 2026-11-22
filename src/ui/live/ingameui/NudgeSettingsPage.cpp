@@ -139,20 +139,34 @@ void NudgeSettingsPage::AppendPlot()
    m_cabYPlot.AddPoint(t, pos.y * 1000.f);
 }
 
-void NudgeSettingsPage::Render(float elapsed)
+void NudgeSettingsPage::Update(float elapsedS)
 {
-   InGameUIPage::Render(elapsed);
+   InGameUIPage::Update(elapsedS);
 
    AppendPlot();
+}
 
+void NudgeSettingsPage::CollectPanes(vector<InGameUIPane>& panes)
+{
+   InGameUIPage::CollectPanes(panes);
+
+   InGameUIPane pane;
+   pane.id = "nudgePlots"s;
+   pane.measure = [](float availW, float availH) { return ImVec2(availW, 400.f); };
+   pane.render = [this](const ImVec4& rect) { RenderNudgePlots(rect); };
+   panes.push_back(std::move(pane));
+}
+
+void NudgeSettingsPage::RenderNudgePlots(const ImVec4& rect)
+{
    const ImGuiStyle& style = ImGui::GetStyle();
 
-   const ImVec2 winSize = ImVec2(GetWindowSize().x, 400.f);
+   const ImVec2 winSize = ImVec2(rect.z, rect.w);
    const float plotWidth = (winSize.x - style.WindowPadding.x * 2.f);
    const float plotHeight = (winSize.y - style.WindowPadding.y * 2.f - style.ItemSpacing.y) / 2.f;
    constexpr ImGuiWindowFlags window_flags
       = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-   ImGui::SetNextWindowPos(ImVec2(GetWindowPos().x, GetWindowPos().y - winSize.y - style.ItemSpacing.y));
+   ImGui::SetNextWindowPos(ImVec2(rect.x, rect.y));
    ImGui::SetNextWindowBgAlpha(0.666f);
    ImGui::SetNextWindowSize(winSize);
    ImGui::Begin("NudgeOverlay", nullptr, window_flags);
@@ -197,5 +211,4 @@ void NudgeSettingsPage::Render(float elapsed)
    ImPlot::PopStyleColor();
    ImGui::End();
 }
-
 }

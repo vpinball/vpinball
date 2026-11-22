@@ -34,6 +34,7 @@ namespace VPX::InGameUI
 
 InGameUI::InGameUI(LiveUI &liveUI)
    : m_player(g_pplayer)
+   , m_renderer(InGameUIRenderer::Create(*this))
 {
    AddPage("homepage"s, []() { return std::make_unique<HomePage>(); });
    AddPage("loading"s, []() { return std::make_unique<LoadingPage>(); });
@@ -192,8 +193,10 @@ void InGameUI::Update()
    pages.reserve(m_activePages.size());
    for (const auto &page : m_activePages)
       pages.push_back(page.get());
+   // Update page models, then render them: pages declare their custom panes, the renderer lays them out
    for (const auto &page : pages)
-      page->Render(elapsed);
+      page->Update(elapsed);
+   m_renderer->RenderPages(pages, elapsed);
 }
 
 void InGameUI::OnUIUpAction()

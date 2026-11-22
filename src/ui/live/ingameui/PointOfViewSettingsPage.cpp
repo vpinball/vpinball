@@ -481,20 +481,33 @@ void PointOfViewSettingsPage::BuildPage()
    }
 }
 
-void PointOfViewSettingsPage::Render(float elapsed)
+void PointOfViewSettingsPage::Update(float elapsedS)
 {
+   InGameUIPage::Update(elapsedS);
+
    if ((m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN) && (m_player->m_ptable->GetViewSetup().mMode == VLM_WINDOW))
    {
       const float screenInclination = g_settingsService.GetActiveSettings().GetPlayer_ScreenInclination();
       m_playerPos = m_player->m_ptable->GetViewSetup().GetPlayerPositionFromViewPos(m_player->m_ptable, screenInclination);
    }
-
-   InGameUIPage::Render(elapsed);
-
-   if ((m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN) && (m_player->m_ptable->GetViewSetup().mMode == VLM_WINDOW))
-      m_cabinetRender.Render(
-         ImVec4(GetWindowPos().x, GetWindowPos().y - ImGui::GetStyle().ItemSpacing.y, GetWindowSize().x, min(GetWindowSize().x, GetWindowPos().y - 2.f * ImGui::GetStyle().ItemSpacing.y)),
-         m_player->m_ptable, m_playerPos);
 }
 
+void PointOfViewSettingsPage::CollectPanes(vector<InGameUIPane>& panes)
+{
+   InGameUIPage::CollectPanes(panes);
+
+   if ((m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN) && (m_player->m_ptable->GetViewSetup().mMode == VLM_WINDOW))
+   {
+      InGameUIPane pane;
+      pane.id = "cabinet"s;
+      pane.measure = [](float availW, float availH)
+      {
+         const float spacing = ImGui::GetStyle().ItemSpacing.y;
+         return ImVec2(availW, min(availW, availH - spacing));
+      };
+      // CabinetRender expects its rect as (x, bottomY, w, h)
+      pane.render = [this](const ImVec4& rect) { m_cabinetRender.Render(ImVec4(rect.x, rect.y + rect.w, rect.z, rect.w), m_player->m_ptable, m_playerPos); };
+      panes.push_back(std::move(pane));
+   }
+}
 }

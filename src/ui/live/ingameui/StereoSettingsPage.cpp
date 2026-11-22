@@ -29,24 +29,40 @@ void StereoSettingsPage::Close(bool isBackwardAnimation)
       m_player->m_renderer->DisableStaticPrePass(false);
 }
 
-void StereoSettingsPage::Render(float elapsedS)
+void StereoSettingsPage::Update(float elapsedS)
 {
+   InGameUIPage::Update(elapsedS);
+
    if (IsAnaglyphStereoMode(m_editedStereoMode))
-   {
       m_anaglyph.LoadSetupFromRegistry(g_settingsService.GetActiveSettings(), m_editedStereoMode - STEREO_ANAGLYPH_1);
-      if (m_calibrationStep >= 0)
-      {
-         UpdateAnaglyphCalibrationModal();
-      }
-      else
-      {
-         InGameUIPage::Render(elapsedS);
-         RenderAnaglyphInformations();
-      }
+}
+
+void StereoSettingsPage::CollectPanes(vector<InGameUIPane>& panes)
+{
+   InGameUIPage::CollectPanes(panes);
+
+   if (!IsAnaglyphStereoMode(m_editedStereoMode))
+      return;
+
+   if (m_calibrationStep >= 0)
+   {
+      InGameUIPane pane;
+      pane.placement = InGameUIPane::Placement::Modal;
+      pane.id = "calibration"s;
+      pane.render = [this](const ImVec4&) { UpdateAnaglyphCalibrationModal(); };
+      panes.push_back(std::move(pane));
    }
    else
    {
-      InGameUIPage::Render(elapsedS);
+      InGameUIPane pane;
+      pane.id = "anaglyphInfo"s;
+      pane.measure = [](float availW, float availH)
+      {
+         const ImGuiStyle& style = ImGui::GetStyle();
+         return ImVec2(availW, 9.f * (ImGui::GetTextLineHeight() + style.ItemSpacing.y) + style.ItemSpacing.y);
+      };
+      pane.render = [this](const ImVec4& rect) { RenderAnaglyphInformations(rect); };
+      panes.push_back(std::move(pane));
    }
 }
 
@@ -493,7 +509,7 @@ static vec3 Saturate(const vec3& color) { return vec3 { saturate(color.x), satur
 
 static ImU32 GreyToRGBA32(const float grey, bool isLinear) { return isLinear ? GreyToRGBA32(sRGB(grey), false) : VPX::Colors::SRGBToRGBA32(vec3 { grey, grey, grey }, 1.f); }
 
-void StereoSettingsPage::RenderAnaglyphInformations() const
+void StereoSettingsPage::RenderAnaglyphInformations(const ImVec4& rect) const
 {
    if (!IsAnaglyphStereoMode(m_editedStereoMode))
       return;
@@ -509,10 +525,10 @@ void StereoSettingsPage::RenderAnaglyphInformations() const
    const vec3 blackAnaglyph = Saturate(m_anaglyph.ComputeColor(vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f), true)); // linearRGB
 
    const float barHeight = ImGui::GetTextLineHeight();
-   const float posx = GetWindowPos().x;
-   const float height = 9.f * (barHeight + style.ItemSpacing.y) + style.ItemSpacing.y;
-   const float posy = GetWindowPos().y - style.ItemSpacing.y - height;
-   const float width = GetWindowSize().x;
+   const float posx = rect.x;
+   const float posy = rect.y;
+   const float width = rect.z;
+   const float height = rect.w;
 
    ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
    draw_list->AddRectFilled(ImVec2(posx, posy), ImVec2(posx + width, posy + height), IM_COL32(0, 0, 0, 64));

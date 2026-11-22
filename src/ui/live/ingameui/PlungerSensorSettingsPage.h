@@ -17,13 +17,15 @@ public:
 
    void Open(bool isBackwardAnimation) override;
    void Close(bool isBackwardAnimation) override;
-   void Render(float elapsed) override;
+   void Update(float elapsedS) override;
+   void CollectPanes(vector<InGameUIPane>& panes) override;
 
    bool IsPlayerPauseAllowed() const override { return false; }
 
 private:
    void BuildPage() override;
    void AppendPlot();
+   void RenderSensorPlots(const ImVec4& rect);
 
    const std::unique_ptr<PlungerSensor>& GetSensor() const { return m_player->m_pininput.m_plungerHandler->GetSensor(m_sensorIndex); }
 

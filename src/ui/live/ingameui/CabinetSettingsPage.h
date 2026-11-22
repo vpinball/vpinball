@@ -18,7 +18,7 @@ public:
 
    void Open(bool isBackwardAnimation) override;
    void Close(bool isBackwardAnimation) override;
-   void Render(float elapsed) override;
+   void CollectPanes(vector<InGameUIPane>& panes) override;
    void ResetToDefaults() override;
 
 private:

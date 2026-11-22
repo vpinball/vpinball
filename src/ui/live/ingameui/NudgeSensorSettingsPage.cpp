@@ -192,18 +192,12 @@ void NudgeSensorSettingsPage::AppendPlot()
    }
 }
 
-void NudgeSensorSettingsPage::Render(float elapsed)
+void NudgeSensorSettingsPage::Update(float elapsedS)
 {
-   InGameUIPage::Render(elapsed);
+   InGameUIPage::Update(elapsedS);
 
    if (m_removed)
       return;
-
-   const ImGuiStyle& style = ImGui::GetStyle();
-   const ImVec2 winSize = ImVec2(GetWindowSize().x, 400.f);
-   const float plotHeight = (winSize.y - style.WindowPadding.y * 2.f - style.ItemSpacing.y) / 2.f;
-   const float plumbSize = plotHeight; //m_player->m_physics->IsPlumbSimulated() ? plotHeight : 0.f;
-   const float plotWidth = (winSize.x - style.WindowPadding.x * 2.f) - style.ItemSpacing.x - plumbSize;
 
    if (const uint32_t ms = msec(); ms - m_resetTimestampMs > 2000)
    {
@@ -249,10 +243,33 @@ void NudgeSensorSettingsPage::Render(float elapsed)
    }
 
    AppendPlot();
+}
+
+void NudgeSensorSettingsPage::CollectPanes(vector<InGameUIPane>& panes)
+{
+   InGameUIPage::CollectPanes(panes);
+
+   if (m_removed)
+      return;
+
+   InGameUIPane pane;
+   pane.id = "sensorPlots"s;
+   pane.measure = [](float availW, float availH) { return ImVec2(availW, 400.f); };
+   pane.render = [this](const ImVec4& rect) { RenderSensorPlots(rect); };
+   panes.push_back(std::move(pane));
+}
+
+void NudgeSensorSettingsPage::RenderSensorPlots(const ImVec4& rect)
+{
+   const ImGuiStyle& style = ImGui::GetStyle();
+   const ImVec2 winSize = ImVec2(rect.z, rect.w);
+   const float plotHeight = (winSize.y - style.WindowPadding.y * 2.f - style.ItemSpacing.y) / 2.f;
+   const float plumbSize = plotHeight; //m_player->m_physics->IsPlumbSimulated() ? plotHeight : 0.f;
+   const float plotWidth = (winSize.x - style.WindowPadding.x * 2.f) - style.ItemSpacing.x - plumbSize;
 
    constexpr ImGuiWindowFlags window_flags
       = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-   ImGui::SetNextWindowPos(ImVec2(GetWindowPos().x, GetWindowPos().y - winSize.y - style.ItemSpacing.y));
+   ImGui::SetNextWindowPos(ImVec2(rect.x, rect.y));
    ImGui::SetNextWindowBgAlpha(0.666f);
    ImGui::SetNextWindowSize(winSize);
    ImGui::Begin("NudgeOverlay", nullptr, window_flags);
@@ -413,5 +430,4 @@ void NudgeSensorSettingsPage::Render(float elapsed)
    ImPlot::PopStyleColor();
    ImGui::End();
 }
-
 }

@@ -17,7 +17,8 @@ public:
 
    void Open(bool isBackwardAnimation) override;
    void Close(bool isBackwardAnimation) override;
-   void Render(float elapsed) override;
+   void Update(float elapsedS) override;
+   void CollectPanes(vector<InGameUIPane>& panes) override;
 
    bool IsPlayerPauseAllowed() const override { return false; }
 
@@ -25,6 +26,7 @@ public:
 
 private:
    void AppendPlot();
+   void RenderSensorPlots(const ImVec4& rect);
 
    InputManager& GetInput() const { return m_player->m_pininput; }
    const std::unique_ptr<VPX::Physics::NudgeSensor>& GetSensor() const { return m_player->m_pininput.m_nudgeHandler->GetSensor(m_sensorIndex); }
