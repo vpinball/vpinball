@@ -331,6 +331,12 @@ void InGameUI::HandlePageInput()
    }
    m_prevMousePos = ImGui::GetMousePos();
 
+   // While a VR controller points at a scrollable pane, pointer gestures
+   // (wheel/drag) own its scroll position: drop flipper navigation so the
+   // keep-focus-visible scrolling doesn't fight them (causing a flicker)
+   if (m_useFlipperNav && m_player->m_pininput.IsUIPointerScrollingActive())
+      m_useFlipperNav = false;
+
    // Allow pages to force flipper navigation (needed by anaglyph calibration)
    for (const auto &page : m_activePages)
       m_useFlipperNav |= page->IsFlipperNavNeeded();

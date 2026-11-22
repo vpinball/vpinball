@@ -127,6 +127,11 @@ public:
    void AddAxisListener(std::function<void()> listener) { m_axisListeners.push_back(std::move(listener)); }
    void ClearAxisListeners() { m_axisListeners.clear(); }
 
+   // Whether a VR controller aim pointer is currently hovering a scrollable pane
+   // of the InGame UI surface: while true, UI navigation axes scroll that pane
+   // and pointer gestures (wheel/drag) own its scroll position
+   bool IsUIPointerScrollingActive() const;
+
    void RegisterOnUpdate(InputAction* action) override;
    void UnregisterOnUpdate(InputAction* action) override;
 
@@ -283,6 +288,12 @@ private:
 
    ankerl::unordered_dense::map<uint32_t, vector<SensorMapping*>> m_sensorMappings;
    vector<std::function<void()>> m_axisListeners;
+
+   // Latest reported position per axis: while the InGame UI is open and a VR
+   // controller points at its surface, axes bound to UI navigation actions are
+   // repurposed as mouse-wheel scroll of the pointed pane (see ProcessInput)
+   ankerl::unordered_dense::map<uint32_t, float> m_axisPositions;
+   float UINavWheelForAxis(uint32_t deviceAndAxisId, float position, bool horizontal, bool& navBound) const;
 
    class DeviceDef final
    {

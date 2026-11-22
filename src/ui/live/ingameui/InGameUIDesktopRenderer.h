@@ -82,6 +82,14 @@ private:
    bool m_stackedItemRows = false; // Portrait frame: item controls are stacked under their label instead of right-aligned
    bool m_railDeployed = false; // Narrow frame: the icon-folded rail is deployed over the item pane (hovered or focused navigation level)
    float m_railDeployAnim = 0.f; // Fold-to-deployed width animation (0: folded icon column, 1: fully deployed over the item pane)
+
+   // Drag-to-scroll inside scrollable panes: press-and-hold (VR controller trigger or mouse button)
+   // inside a scrollpane then move up/down drags its content, with a short inertial glide on release
+   void UpdateDragScroll();
+   bool m_isDraggingScroll = false;
+   ImGuiID m_dragScrollPaneId = 0; // Pane that owns the current drag gesture
+   ImVec2 m_dragScrollStartPos { 0.f, 0.f };
+   float m_dragScrollVelocity = 0.f; // px/s, for the inertial glide after release
    string m_lastNavPath; // Navigation path as of the last rendered frame (level resets on change)
    struct TabNav
    {

@@ -14,6 +14,8 @@
 #include "plugins/VPXPlugin.h"
 #include "renderer/Renderer.h"
 #include "renderer/RenderCommand.h"
+#include "renderer/Sampler.h"
+#include "renderer/Texture.h"
 #include "renderer/VRDevice.h"
 
 #include "imgui/imgui.h"
@@ -253,8 +255,15 @@ void LiveUI::UpdateScale()
    float overlayScale;
    if (m_player->m_vrDevice)
    {
-      // VR headset cover full view range, so use a relative part of the full range for the DPI
+// The UI renders on a dedicated 16:9 surface in VR: scale content at 2x a
+// desktop frame for readability (fallback to eye resolution before the
+// surface is created)
+#ifdef ENABLE_XR
+      const unsigned int surfaceH = m_player->m_vrDevice->GetUISurfaceHeight();
+      m_uiScale = surfaceH != 0 ? static_cast<float>(surfaceH) / 540.f : static_cast<float>(min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight())) / 1000.f;
+#else
       m_uiScale = static_cast<float>(min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight())) / 2000.f;
+#endif
       overlayScale = m_uiScale;
    }
    else
@@ -456,6 +465,27 @@ void LiveUI::NewFrame()
       AddMousePosEvent(false, globalMouse.x - static_cast<float>(windowPos.x), globalMouse.y - static_cast<float>(windowPos.y));
    }
 
+// VR controller pointer: the aim pose raycast against the view-locked UI layer
+// is computed per frame by the VRDevice; it drives ImGui like a mouse, the
+// front trigger acting as the left button
+#ifdef ENABLE_XR
+   if (m_player->m_vrDevice != nullptr)
+   {
+      const VRDevice::UIPointer &pointer = m_player->m_vrDevice->GetUIPointer();
+      const bool pointerActive = m_uiLayerShown && pointer.valid;
+      if (pointerActive)
+         AddMousePosEvent(false, pointer.u * io.DisplaySize.x, pointer.v * io.DisplaySize.y);
+      const bool click = pointerActive && pointer.click;
+      if (click != m_vrPointerClick)
+      {
+         io.AddMouseButtonEvent(ImGuiMouseButton_Left, click);
+         m_vrPointerClick = click;
+      }
+      // No software cursor in VR: the world-space pick dot marks the hovered point
+      io.MouseDrawCursor = false;
+   }
+#endif
+
    // We implement our own keyboard navigation using flipper keys/gamepad/VR controller
    io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
 
@@ -472,6 +502,118 @@ void LiveUI::Render3D()
 {
    if (m_editorUI.IsOpened())
       m_editorUI.Render3D();
+
+// VR controller pointer ray: a gradient line from the controller to its hit
+// point on the view-locked UI layer. It is drawn in world space since the UI
+// layer is a flat quad and cannot host geometry anchored outside it
+#ifdef ENABLE_XR
+   if (m_player->m_vrDevice != nullptr && m_uiLayerShown)
+   {
+      const VRDevice::UIPointer &pointer = m_player->m_vrDevice->GetUIPointer();
+      if (pointer.valid)
+      {
+         if (m_laserSampler == nullptr)
+         {
+            // 1D alpha ramp, solid at the controller end fading out toward the UI end
+            const auto tex = BaseTexture::Create(16, 1, BaseTexture::Format::SRGBA);
+            if (tex != nullptr)
+            {
+               uint32_t *const texels = static_cast<uint32_t *>(tex->data());
+               for (unsigned int i = 0; i < 16; ++i)
+                  texels[i] = 0x00FFFFFFu | (((15u - i) * 255u / 15u) << 24u);
+               m_laserSampler = std::make_shared<Sampler>(m_rd, "UIPointerRay"s, tex, false);
+            }
+         }
+         if (m_laserDotSampler == nullptr)
+         {
+            // Filled circle with a soft edge, marking the pick point on the UI surface
+            const auto tex = BaseTexture::Create(64, 64, BaseTexture::Format::SRGBA);
+            if (tex != nullptr)
+            {
+               uint32_t *const texels = static_cast<uint32_t *>(tex->data());
+               for (unsigned int y = 0; y < 64; ++y)
+                  for (unsigned int x = 0; x < 64; ++x)
+                  {
+                     const float dx = static_cast<float>(x) - 31.5f;
+                     const float dy = static_cast<float>(y) - 31.5f;
+                     const float alpha = clamp((31.f - sqrtf(dx * dx + dy * dy)) * 4.f, 0.f, 1.f);
+                     texels[y * 64 + x] = 0x00FFFFFFu | (static_cast<uint32_t>(alpha * 255.f) << 24u);
+                  }
+               m_laserDotSampler = std::make_shared<Sampler>(m_rd, "UIPointerDot"s, tex, false);
+            }
+         }
+         if (m_laserSampler != nullptr)
+         {
+            const Vertex3Ds origin(pointer.sceneOrigin[0], pointer.sceneOrigin[1], pointer.sceneOrigin[2]);
+            const Vertex3Ds hit(pointer.sceneHit[0], pointer.sceneHit[1], pointer.sceneHit[2]);
+            const Vertex3Ds head(pointer.headScene[0], pointer.headScene[1], pointer.headScene[2]);
+            Vertex3Ds dir = hit - origin;
+            if (dir.Length() > 1e-6f)
+            {
+               dir.Normalize();
+               // Ribbon billboarding: its side axis is perpendicular to both the
+               // ray and the direction toward the head, so it faces the viewer
+               const Vertex3Ds mid = (origin + hit) * 0.5f;
+               Vertex3Ds toHead = head - mid;
+               toHead.Normalize();
+               Vertex3Ds side = CrossProduct(dir, toHead);
+               if (side.Length() > 1e-6f)
+               {
+                  side.Normalize();
+                  constexpr float halfW = 6.f; // VPU (~3mm) half-width of the ray ribbon
+                  const Vertex3Ds edge = side * halfW;
+                  const Vertex3D_NoTex2 vertices[4] = { //
+                     { origin.x + edge.x, origin.y + edge.y, origin.z + edge.z, 0.f, 0.f, 1.f, 0.f, 0.5f }, //
+                     { hit.x + edge.x, hit.y + edge.y, hit.z + edge.z, 0.f, 0.f, 1.f, 1.f, 0.5f }, //
+                     { origin.x - edge.x, origin.y - edge.y, origin.z - edge.z, 0.f, 0.f, 1.f, 0.f, 0.5f }, //
+                     { hit.x - edge.x, hit.y - edge.y, hit.z - edge.z, 0.f, 0.f, 1.f, 1.f, 0.5f }
+                  };
+                  m_rd->ResetRenderState();
+                  m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+                  m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+                  m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // Floats over the table
+                  m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+                  m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+                  m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::ONE); // Additive glow
+                  m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+                  m_rd->m_basicShader->SetTechnique(ShaderTechnique::unshaded_with_texture);
+                  m_rd->m_basicShader->SetTexture(ShaderUniform::tex_base_color, m_laserSampler, SamplerFilter::SF_BILINEAR);
+                  m_rd->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
+                  m_rd->DrawTexturedQuad(m_rd->m_basicShader, vertices, true);
+               }
+            }
+            // Pick marker: a circle billboarded over the hit point while the ray
+            // points at the UI surface (replaces the software mouse cursor)
+            if (pointer.onQuad && m_laserDotSampler != nullptr)
+            {
+               Vertex3Ds toDot = head - hit;
+               if (toDot.Length() > 1e-6f)
+               {
+                  toDot.Normalize();
+                  Vertex3Ds dotSide = CrossProduct(toDot, Vertex3Ds(0.f, 0.f, 1.f));
+                  if (dotSide.Length() < 1e-4f)
+                     dotSide = Vertex3Ds(1.f, 0.f, 0.f);
+                  else
+                     dotSide.Normalize();
+                  const Vertex3Ds dotUp = CrossProduct(dotSide, toDot);
+                  constexpr float r = 14.f; // VPU (~7mm) dot half-size
+                  const Vertex3Ds a = dotSide * r;
+                  const Vertex3Ds b = dotUp * r;
+                  const Vertex3Ds c = hit + toDot * 0.5f; // floats just in front of the surface
+                  const Vertex3D_NoTex2 vertices[4] = { //
+                     { c.x - a.x + b.x, c.y - a.y + b.y, c.z - a.z + b.z, 0.f, 0.f, 1.f, 0.f, 0.f }, //
+                     { c.x + a.x + b.x, c.y + a.y + b.y, c.z + a.z + b.z, 0.f, 0.f, 1.f, 1.f, 0.f }, //
+                     { c.x - a.x - b.x, c.y - a.y - b.y, c.z - a.z - b.z, 0.f, 0.f, 1.f, 0.f, 1.f }, //
+                     { c.x + a.x - b.x, c.y + a.y - b.y, c.z + a.z - b.z, 0.f, 0.f, 1.f, 1.f, 1.f }
+                  };
+                  m_rd->m_basicShader->SetTexture(ShaderUniform::tex_base_color, m_laserDotSampler, SamplerFilter::SF_BILINEAR);
+                  m_rd->DrawTexturedQuad(m_rd->m_basicShader, vertices, true);
+               }
+            }
+         }
+      }
+   }
+#endif
 }
 
 void LiveUI::RenderUI()
@@ -479,7 +621,7 @@ void LiveUI::RenderUI()
    if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING || m_rd->GetCurrentPass() == nullptr || m_player->m_playMode == Player::PlayMode::CaptureAttract)
       return;
 
-   const ImGuiIO& io = ImGui::GetIO();
+   const ImGuiIO &io = ImGui::GetIO();
    const bool rotated = (m_rotate == 1 || m_rotate == 3);
    const int width = static_cast<int>(rotated ? io.DisplaySize.y : io.DisplaySize.x);
    const int height = static_cast<int>(rotated ? io.DisplaySize.x : io.DisplaySize.y);
@@ -497,7 +639,8 @@ void LiveUI::RenderUI()
    if (!m_player->IsPlaying() && !m_player->m_isLoading && !m_editorUI.IsOpened())
    {
       ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 24 * m_uiScale, 4 * m_uiScale));
-      ImGui::Begin("PauseOverlay", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus // Prevent focus issues
+      ImGui::Begin("PauseOverlay", nullptr,
+         ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus // Prevent focus issues
             | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings);
       ImGui::Text(ICON_LC_PAUSE);
       ImGui::End();
@@ -574,21 +717,21 @@ void LiveUI::RenderUI()
    Matrix3D matView[2];
    matView[0] = matRotate * matTranslate * Matrix3D::MatrixOrthoOffCenterRH(0.f, right, bottom, 0.f, 0.f, 1.f);
    if (m_rd->m_nEyes == 2)
-      matView[1] = matView[0];  
+      matView[1] = matView[0];
    m_rd->m_uiShader->SetMatrix(ShaderUniform::matWorldView, &matView[0], m_rd->m_nEyes);
    // UI shader parameters: x = VR stereo offset (BGFX), y = texture is sRGB decoded (set per draw, unused on DX9), w = HDR white level (BGFX)
    vec4 uiParams(0.f, 0.f, 0.f, 0.f);
-   #if defined(ENABLE_BGFX)
-   #ifdef ENABLE_XR
+#if defined(ENABLE_BGFX)
+#ifdef ENABLE_XR
    const bool onXrUILayer = m_player->m_vrDevice && m_rd->GetCurrentPass()->m_rt == m_player->m_vrDevice->GetUIRenderTarget();
-   #else
+#else
    const bool onXrUILayer = false;
-   #endif
+#endif
    // Stereo offset for VR (fake depth), only when rendering per eye inside the stereo projection layer
    uiParams.x = (m_player->m_vrDevice && m_rd->GetCurrentPass()->m_rt->m_nLayers == 2) ? ((float)m_player->m_vrDevice->GetEyeWidth() * 0.15f) : 0.f;
    // SDR white level to place UI white at, normalized to the 10000 nits PQ encodes (the white point counts in multiples of 80 nits). 0 = no conversion (sRGB backbuffer)
    uiParams.w = (!onXrUILayer && m_player->m_playfieldWnd->IsWCGBackBuffer()) ? (m_player->m_playfieldWnd->GetSDRWhitePoint() * (float)(80. / 10000.)) : 0.f;
-   #endif
+#endif
    m_rd->ResetRenderState();
    m_rd->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RGBMASK_RGBA);
    m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
@@ -598,11 +741,11 @@ void LiveUI::RenderUI()
    m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   #ifdef ENABLE_BGFX
+#ifdef ENABLE_BGFX
    if (m_rd->GetCurrentPass()->m_rt->m_nLayers == 1)
       m_rd->m_uiShader->SetTechnique(ShaderTechnique::LiveUI_mono);
    else
-   #endif
+#endif
       m_rd->m_uiShader->SetTechnique(ShaderTechnique::LiveUI);
    if (static_cast<int>(m_meshBuffers.size()) < draw_data->CmdListsCount)
       m_meshBuffers.resize(draw_data->CmdListsCount);
@@ -610,7 +753,7 @@ void LiveUI::RenderUI()
    bool hasContent = false;
    for (int n = 0; n < draw_data->CmdListsCount; n++)
    {
-      const ImDrawList * const cmd_list = draw_data->CmdLists[n];
+      const ImDrawList *const cmd_list = draw_data->CmdLists[n];
       const unsigned int numVertices = cmd_list->VtxBuffer.size();
       const unsigned int numIndices = cmd_list->IdxBuffer.size();
       hasContent |= numIndices > 0;
@@ -673,6 +816,7 @@ void LiveUI::RenderUI()
       }
    }
 
+   m_uiLayerShown = hasContent;
    if (m_player->m_vrDevice)
       m_player->m_vrDevice->SetShowUILayer(hasContent);
 

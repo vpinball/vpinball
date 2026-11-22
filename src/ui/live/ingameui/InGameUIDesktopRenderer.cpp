@@ -457,8 +457,10 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
             tabXRight[line] -= tabGap;
          else
             tabX[line] += w + tabGap;
-         // A thin vertical bar sets the first tab (back to the game) apart
-         if (i == 0)
+         // A thin vertical bar sets the first tab (back to the game) apart —
+         // only on the single-line bar; in two-line mode GAME is already set
+         // apart on its own line and the bar would float mid-line
+         if (i == 0 && !twoLineTabs)
          {
             const float sepX = x + w + tabGap * 0.5f;
             mainDrawList->AddLine(ImVec2(sepX, lineY + lineH * 0.28f), ImVec2(sepX, lineY + lineH * 0.72f), ImGui::GetColorU32(IM_COL32(255, 255, 255, 60)), 1.f * dpi);
@@ -577,6 +579,7 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
          ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(18, 18, 26, 90));
          ImGui::BeginChild("##SubPages", ImVec2(railW, columnH), ImGuiChildFlags_None, ImGuiWindowFlags_NoScrollbar);
          ImGui::PopStyleColor();
+         UpdateDragScroll();
          ImGui::SetCursorPosY(16.f * dpi);
          renderRailRows(true);
          ImGui::Dummy(ImVec2(0.f, 0.f)); // An item must follow the leading SetCursorPosY (empty rail)
@@ -756,6 +759,7 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
       ImGui::SetCursorScreenPos(ImVec2(uiPos.x, uiPos.y + topBarH));
       ImGui::BeginChild("##SubPages", ImVec2(railAnimW, columnH), ImGuiChildFlags_None, ImGuiWindowFlags_NoScrollbar);
       ImGui::PopStyleColor();
+      UpdateDragScroll();
       ImGui::SetCursorPosY(16.f * dpi);
       renderRailRows(m_railDeployAnim > 0.f);
       ImGui::Dummy(ImVec2(0.f, 0.f));
@@ -1044,6 +1048,55 @@ bool InGameUIDesktopRenderer::NavRow(const char* icon, const char* label, bool s
    return pressed;
 }
 
+// Drag-to-scroll for scrollable panes: press inside a pane, hold and move up/down
+// to drag its content (VR controller trigger or mouse button), with a short
+// inertial glide on release. Must be called right after the pane's BeginChild.
+void InGameUIDesktopRenderer::UpdateDragScroll()
+{
+   constexpr float kDragThreshold = 6.f; // px before we commit to a drag
+   constexpr float kFriction = 8.f; // deceleration rate (higher = quicker stop)
+   constexpr float kVelocitySmooth = 0.2f; // EMA weight for velocity sampling
+   const ImGuiIO& io = ImGui::GetIO();
+   const float elapsedS = io.DeltaTime;
+   const ImGuiID paneId = ImGui::GetCurrentWindow()->ID;
+
+   if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+   {
+      m_isDraggingScroll = false;
+      m_dragScrollPaneId = paneId;
+      m_dragScrollStartPos = ImGui::GetMousePos();
+      m_dragScrollVelocity = 0.f;
+   }
+   if (paneId != m_dragScrollPaneId)
+      return;
+   if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+   {
+      // Inertial glide keeps scrolling the pane briefly after release
+      if (fabsf(m_dragScrollVelocity) > 0.5f)
+      {
+         ImGui::SetScrollY(ImGui::GetScrollY() + m_dragScrollVelocity * elapsedS);
+         m_dragScrollVelocity *= max(0.f, 1.f - kFriction * elapsedS);
+         if (fabsf(m_dragScrollVelocity) < 0.5f)
+         {
+            m_dragScrollVelocity = 0.f;
+            m_dragScrollPaneId = 0;
+         }
+      }
+      else
+         m_dragScrollPaneId = 0;
+      return;
+   }
+   if (!m_isDraggingScroll)
+      m_isDraggingScroll = fabsf(ImGui::GetMousePos().y - m_dragScrollStartPos.y) > kDragThreshold;
+   else
+   {
+      const float dy = io.MouseDelta.y;
+      ImGui::SetScrollY(ImGui::GetScrollY() - dy);
+      const float frameVel = (elapsedS > 0.f) ? (-dy / elapsedS) : 0.f;
+      m_dragScrollVelocity = m_dragScrollVelocity * (1.f - kVelocitySmooth) + frameVel * kVelocitySmooth;
+   }
+}
+
 void InGameUIDesktopRenderer::RenderContentPage(InGameUIPage& page, const vector<InGameUIPane>& panes, bool isNavSource, const string& pagePath)
 {
    const ImGuiStyle& style = ImGui::GetStyle();
@@ -1129,6 +1182,7 @@ void InGameUIDesktopRenderer::RenderContentPage(InGameUIPage& page, const vector
    // control / thin separator; the action bar sits at the bottom of the pane
    const float footerH = page.IsAdjustable() ? ImGui::GetFrameHeight() + 18.f * dpi : 0.f;
    ImGui::BeginChild("PageItems", ImVec2(0.f, -footerH), ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground);
+   UpdateDragScroll();
    RenderItems(page, panes, isNavSource);
    ImGui::Dummy(ImVec2(0.f, 0.f));
    ImGui::EndChild();

@@ -226,7 +226,12 @@ public:
    bool IsApplicationRunning() const { return true; }
 #endif
 
-   void SetShowUILayer(bool show) { m_showUILayer = show; }
+   void SetShowUILayer(bool show)
+   {
+      if (!show)
+         m_uiLayerPoseValid = false; // Re-anchor in front of the headset on next show
+      m_showUILayer = show;
+   }
 
 private:
    unsigned int m_eyeWidth = 1080;
@@ -253,6 +258,10 @@ private:
    Matrix3D m_eyeProj[2]; // Per-eye base projection, converting VPU view space to meters before projecting
 
    bool m_showUILayer = false;
+   // Room-locked pose of the UI quad layer in the tracking reference space:
+   // anchored in front of the head when the UI appears, then fixed until hidden
+   XrPosef m_uiLayerPose {};
+   bool m_uiLayerPoseValid = false;
 
 #ifdef ENABLE_XR
 public:
@@ -269,6 +278,30 @@ public:
    void PollEvents();
    void RenderFrame(class RenderDevice* rd, const std::function<void(RenderTarget* vrRenderTarget)>& submitFrame);
    RenderTarget* GetUIRenderTarget() const { return m_uiRenderTarget; } // Acquired swapchain target for the UI composition layer (or nullptr if unsupported/not acquired yet)
+   unsigned int GetUISurfaceWidth() const { return m_uiSwapchainInfo.width; }
+   unsigned int GetUISurfaceHeight() const { return m_uiSwapchainInfo.height; }
+   // Geometry of the view-locked UI quad layer in XR view space (meters): shared
+   // between the composition layer submission and the controller pointer raycast
+   static constexpr float kUILayerDistance = 0.8f; // Distance in front of the viewer
+   static constexpr float kUILayerWidth = 0.75f;
+   static constexpr float kUILayerHeight = kUILayerWidth * 9.f / 16.f; // 16:9, matching the desktop UI layout
+   // Controller pointer raycast against the UI quad layer: computed per frame on
+   // the render thread, read on the logic thread (same write/read split as
+   // m_uiRenderTarget — a frame of staleness is fine for a pointer)
+   struct UIPointer
+   {
+      float origin[3] { 0.f, 0.f, 0.f }; // Ray origin in XR tracking reference space (meters)
+      float hit[3] { 0.f, 0.f, 0.f }; // Ray/quad-plane intersection in XR tracking reference space (meters)
+      float sceneOrigin[3] { 0.f, 0.f, 0.f }; // Same endpoints in scene coordinates (VPU) for world-space rendering
+      float sceneHit[3] { 0.f, 0.f, 0.f };
+      float headScene[3] { 0.f, 0.f, 0.f }; // Head position in scene coordinates (the pointer ribbon billboards toward it)
+      float u = 0.f; // Hit position on the UI surface [0..1] (u: left to right, v: top to bottom)
+      float v = 0.f;
+      bool valid = false; // A controller aim pose is tracked and its ray meets the quad plane
+      bool onQuad = false; // The intersection lies inside the quad rect
+      bool click = false; // Front trigger state of the pointing hand
+   };
+   const UIPointer& GetUIPointer() const { return m_uiPointer; }
    void UpdateVisibilityMask(class RenderDevice* rd);
    bool UseDepthBuffer() const { return m_depthExtensionSupported; }
    bgfx::TextureFormat::Enum GetDepthFormat() const { return m_depthSwapchainInfo.format; }
@@ -336,6 +369,9 @@ private:
    bool m_controllerRecenterEnabled = false;
    XrSpace m_leftControllerSpace = XR_NULL_HANDLE;
    XrSpace m_rightControllerSpace = XR_NULL_HANDLE;
+   XrSpace m_leftAimSpace = XR_NULL_HANDLE;
+   XrSpace m_rightAimSpace = XR_NULL_HANDLE;
+   UIPointer m_uiPointer = {};
 
    struct RenderLayerInfo
    {
@@ -362,6 +398,10 @@ private:
    PFN_xrRequestDisplayRefreshRateFB m_xrRequestDisplayRefreshRateFB = nullptr;
    int m_displayRefreshRateMode = 0;
    void ApplyDisplayRefreshRate();
+   // Raycasts the active controller aim poses against the UI quad layer and
+   // fills m_uiPointer (view-space endpoints, UV, trigger state and the same
+   // endpoints converted to scene coordinates for world-space rendering)
+   void UpdateUIPointer(XrTime predictedDisplayTime, float vpuToWorldScale);
 
    Matrix3D m_nextProj[2];
 

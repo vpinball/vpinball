@@ -129,6 +129,7 @@ public:
 
    uint16_t GetDeviceId() const { return m_deviceId; }
    uint16_t GetAxisOrButtonId() const { return m_axisOrButtonId; }
+   ButtonMappingHandler* GetMappingHandler() const { return m_mappingHandler; }
    void SetAxisThreshold(float threshold) { m_axisThreshold = threshold; }
    float GetAxisThreshold() const { return m_axisThreshold; }
    void SetAxisReversed(bool reversed) { m_isAxisReversed = reversed; }
