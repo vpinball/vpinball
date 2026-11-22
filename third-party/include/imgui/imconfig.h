@@ -162,4 +162,5 @@ namespace ImGui
 */
 
 #include <memory>
+#include <type_traits>
 #define ImTextureID std::shared_ptr<class Sampler>
