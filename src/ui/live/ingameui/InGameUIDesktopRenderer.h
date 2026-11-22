@@ -12,13 +12,18 @@ class Sampler;
 namespace VPX::InGameUI
 {
 
-// Fullscreen InGameUI renderer for desktop play (mouse & keyboard, landscape):
+// Fullscreen InGameUI renderer for desktop play (mouse & keyboard):
 // a flat overlay on the table render — a darker top bar with letter-spaced
 // uppercase categories (Table / Settings / Plugins / About), a left rail of the
 // category's sub-pages (icon + large label, accent side bar on the selected one),
 // and the active page's content as two-line rows (label + info subtext, control
 // aligned right, thin separators) over a bottom input hint bar. The root page's
 // items (the homepage table of contents) feed the navigation categories.
+// On portrait frames the layout adapts: portrait FSS keeps the fullscreen layout
+// with each item's control stacked under its label, and portrait cabinet renders
+// the whole UI as a 16:11 inset "display" in the lower half of the frame. On
+// narrow frames the tab bar splits in two lines and the left rail folds to an
+// icon column, deploying over the item pane when hovered or navigated to.
 class InGameUIDesktopRenderer final : public InGameUIRenderer
 {
 public:
@@ -74,11 +79,15 @@ private:
    int m_navRailIndex = -1; // Focused rail row (-1: sync to the selected entry at next render)
    bool m_navWasActive = false; // Flipper-nav engagement as of the last rendered frame
    bool m_modalActive = false; // A modal pane replaced the whole UI on the last rendered frame (the page owns its input)
+   bool m_stackedItemRows = false; // Portrait frame: item controls are stacked under their label instead of right-aligned
+   bool m_railDeployed = false; // Narrow frame: the icon-folded rail is deployed over the item pane (hovered or focused navigation level)
+   float m_railDeployAnim = 0.f; // Fold-to-deployed width animation (0: folded icon column, 1: fully deployed over the item pane)
    string m_lastNavPath; // Navigation path as of the last rendered frame (level resets on change)
    struct TabNav
    {
       string label;
       std::function<void()> activate;
+      bool descendToItems; // The destination group's rail is empty (a single page): the activation descends straight to the page items
    };
    vector<TabNav> m_navTabs; // Top tabs in left-to-right order, rebuilt each frame
    struct RailNav

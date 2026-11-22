@@ -10,9 +10,6 @@
 
 #include "core/player.h"
 #include "core/VPApp.h"
-#include "parts/pintable.h"
-#include "renderer/ViewSetup.h"
-#include "renderer/Window.h"
 #include "ui/live/IconsLucide.h"
 #include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
@@ -25,19 +22,11 @@ namespace VPX::InGameUI
 
 std::unique_ptr<InGameUIRenderer> InGameUIRenderer::Create(InGameUI& owner)
 {
-   // The desktop renderer targets landscape play: a landscape playfield output with an
-   // unrotated view (standard desktop monitor), or a portrait output whose rotated view
-   // restores a landscape frame (LiveUI swaps the UI frame on 90/270 view rotations).
-   // Cabinet play (portrait playfield frame, e.g. landscape output with a rotated view),
-   // portrait play, mobile touch and VR keep the pinball card layout.
-   if (!g_isMobile && g_pplayer->m_vrDevice == nullptr && g_pplayer->m_playfieldWnd != nullptr)
-   {
-      const VPX::Window* const wnd = g_pplayer->m_playfieldWnd;
-      const int outW = wnd->GetPixelWidth(), outH = wnd->GetPixelHeight();
-      const int rotation = static_cast<int>(g_pplayer->m_ptable->GetViewSetup().GetRotation(outW, outH)) / 90;
-      if ((outW > outH) != (rotation == 1 || rotation == 3))
-         return std::make_unique<InGameUIDesktopRenderer>(owner);
-   }
+   // The desktop renderer covers all non-touch targets, adapting its layout to
+   // the playfield frame (landscape, portrait FSS, portrait cabinet inset).
+   // Mobile touch and VR keep the pinball card layout.
+   if (!g_isMobile && g_pplayer->m_vrDevice == nullptr)
+      return std::make_unique<InGameUIDesktopRenderer>(owner);
    return std::make_unique<InGameUIDefaultRenderer>(owner);
 }
 
