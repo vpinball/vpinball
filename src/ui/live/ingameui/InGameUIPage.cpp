@@ -500,7 +500,7 @@ void InGameUIPage::Update(float elapsedS)
       if (m_saveMode != SaveMode::None && IsModified())
          m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::SaveChanges));
    }
-   if (!m_player->m_isLoading)
+   if (!m_player->m_isLoading || IsBackAllowedWhileLoading())
       m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::Back));
 
    // As we may have changed the number of selectable items, ensure m_selectedItem is still valid and pointing to a selectable item
