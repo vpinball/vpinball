@@ -1333,6 +1333,12 @@ void Primitive::Load(IObjectReader& reader)
    reader.AsObject(
       [this](int tag, IObjectReader& reader)
       {
+         // All the errors reported below are about the mesh: it is dropped at the end of the load (see DropInvalidMesh), not used half read
+         const auto ShowError = [this](const string& message)
+         {
+            m_meshLoadFailed = true;
+            ::ShowError(message);
+         };
          switch (tag)
          {
          case FID(PIID): reader.AsInt(); break; // Deprecated (unique part id, now the name is guaranteed to be unique)
@@ -1551,6 +1557,8 @@ void Primitive::Load(IObjectReader& reader)
          return true;
       });
 
+   DropInvalidMesh();
+
    if (reader.GetVersion() < 1011) // so that old tables do the reorderForsyth on each load, new tables only on mesh import, so a simple resave of a old table will also skip this step
    {
       unsigned int *const tmp = reorderForsyth(m_mesh.m_indices, (int)m_mesh.NumVertices());
@@ -1562,6 +1570,29 @@ void Primitive::Load(IObjectReader& reader)
    }
    m_inPlayState = m_d.m_visible;
    CalculateBuiltinOriginal();
+}
+
+// A mesh which is refused or partly read leaves vertices and indices that do not match, which crashes the physics and the renderer as soon
+// as they use them. Without its mesh, the part is skipped by both.
+void Primitive::DropInvalidMesh()
+{
+   if (!m_d.m_use3DMesh)
+   {
+      m_meshLoadFailed = false;
+      return;
+   }
+   const size_t numVertices = m_mesh.NumVertices();
+   if (!m_meshLoadFailed && std::ranges::any_of(m_mesh.m_indices, [numVertices](const unsigned int index) { return index >= numVertices; }))
+   {
+      PLOGE << "Primitive '" << GetName() << "': mesh indices beyond its " << numVertices << " vertices";
+      m_meshLoadFailed = true;
+   }
+   if (m_meshLoadFailed)
+   {
+      PLOGE << "Primitive '" << GetName() << "': its mesh could not be loaded, the part is not drawn and has no collision";
+      m_mesh.Clear();
+      m_meshLoadFailed = false;
+   }
 }
 
 bool Primitive::LoadMesh(
