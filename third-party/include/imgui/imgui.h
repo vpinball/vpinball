@@ -2252,6 +2252,10 @@ template<typename T> void IM_DELETE(T* p)   { if (p) { p->~T(); ImGui::MemFree(p
 //-----------------------------------------------------------------------------
 
 IM_MSVC_RUNTIME_CHECKS_OFF
+// VPX: traits must tolerate incomplete types (e.g. ImVector<stbrp_node>); incomplete types
+// fall back to raw memory ops since their elements cannot be constructed or destructed anyway
+template<typename T, typename = void> struct ImVector_IsPOD { static constexpr bool value = true; };
+template<typename T> struct ImVector_IsPOD<T, std::void_t<decltype(sizeof(T))>> { static constexpr bool value = std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>; };
 template<typename T>
 struct ImVector
 {
@@ -2264,15 +2268,23 @@ struct ImVector
     typedef value_type*         iterator;
     typedef const value_type*   const_iterator;
 
+    // VPX: non-trivially copyable element types (e.g. ImDrawCmd holding a shared_ptr ImTextureID)
+    // need real construction/destruction, as memcpy'd shared_ptr would leak their reference count.
+    // ImVector_IsPOD is evaluated lazily inside member functions as T may be incomplete at class instantiation.
+    inline void         _destruct_range(int first, int last) { if constexpr (!ImVector_IsPOD<T>::value) for (int n = first; n < last; n++) Data[n].~T(); }
+    inline void         _copy_to(T* dst, const T& v)         { if constexpr (ImVector_IsPOD<T>::value) memcpy(dst, &v, sizeof(T)); else new (dst) T(v); }
+    inline void         _move_to(T* dst, T& v)               { if constexpr (ImVector_IsPOD<T>::value) memcpy(dst, &v, sizeof(T)); else new (dst) T(static_cast<T&&>(v)); }
+    inline void         _move_assign(T& dst, T& v)           { if constexpr (ImVector_IsPOD<T>::value) memcpy(&dst, &v, sizeof(T)); else dst = static_cast<T&&>(v); }
+
     // Constructors, destructor
     inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }
     inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }
-    inline ImVector<T>& operator=(const ImVector<T>& src)   { clear(); resize(src.Size); if (Data && src.Data) memcpy(Data, src.Data, (size_t)Size * sizeof(T)); return *this; }
-    inline ~ImVector()                                      { if (Data) IM_FREE(Data); } // Important: does not destruct anything
+    inline ImVector<T>& operator=(const ImVector<T>& src)   { clear(); resize(src.Size); if (Data && src.Data) { if constexpr (ImVector_IsPOD<T>::value) memcpy(Data, src.Data, (size_t)Size * sizeof(T)); else for (int n = 0; n < Size; n++) Data[n] = src.Data[n]; } return *this; }
+    inline ~ImVector()                                      { if (Data) { _destruct_range(0, Size); IM_FREE(Data); } }
 
-    inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }  // Important: does not destruct anything
+    inline void         clear()                             { if (Data) { _destruct_range(0, Size); Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }
     inline void         clear_delete()                      { for (int n = 0; n < Size; n++) IM_DELETE(Data[n]); clear(); }     // Important: never called automatically! always explicit.
-    inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }           // Important: never called automatically! always explicit.
+    inline void         clear_destruct()                    { clear(); }                                                        // Important: never called automatically! always explicit. clear() already destructs non-POD elements.
 
     inline bool         empty() const                       { return Size == 0; }
     inline int          size() const                        { return Size; }
@@ -2293,20 +2305,20 @@ struct ImVector
     inline void         swap(ImVector<T>& rhs)              { int rhs_size = rhs.Size; rhs.Size = Size; Size = rhs_size; int rhs_cap = rhs.Capacity; rhs.Capacity = Capacity; Capacity = rhs_cap; T* rhs_data = rhs.Data; rhs.Data = Data; Data = rhs_data; }
 
     inline int          _grow_capacity(int sz) const        { int new_capacity = Capacity ? (Capacity + Capacity / 2) : 8; return new_capacity > sz ? new_capacity : sz; }
-    inline void         resize(int new_size)                { if (new_size > Capacity) reserve(_grow_capacity(new_size)); Size = new_size; }
-    inline void         resize(int new_size, const T& v)    { if (new_size > Capacity) reserve(_grow_capacity(new_size)); if (new_size > Size) for (int n = Size; n < new_size; n++) memcpy(&Data[n], &v, sizeof(v)); Size = new_size; }
-    inline void         shrink(int new_size)                { IM_ASSERT(new_size <= Size); Size = new_size; } // Resize a vector to a smaller size, guaranteed not to cause a reallocation
-    inline void         reserve(int new_capacity)           { if (new_capacity <= Capacity) return; T* new_data = (T*)IM_ALLOC((size_t)new_capacity * sizeof(T)); if (Data) { memcpy(new_data, Data, (size_t)Size * sizeof(T)); IM_FREE(Data); } Data = new_data; Capacity = new_capacity; }
-    inline void         reserve_discard(int new_capacity)   { if (new_capacity <= Capacity) return; if (Data) IM_FREE(Data); Data = (T*)IM_ALLOC((size_t)new_capacity * sizeof(T)); Capacity = new_capacity; }
+    inline void         resize(int new_size)                { if (new_size > Capacity) reserve(_grow_capacity(new_size)); if (new_size < Size) _destruct_range(new_size, Size); else if constexpr (!ImVector_IsPOD<T>::value) for (int n = Size; n < new_size; n++) new (&Data[n]) T(); Size = new_size; }
+    inline void         resize(int new_size, const T& v)    { if (new_size > Capacity) reserve(_grow_capacity(new_size)); if (new_size < Size) _destruct_range(new_size, Size); else for (int n = Size; n < new_size; n++) _copy_to(&Data[n], v); Size = new_size; }
+    inline void         shrink(int new_size)                { IM_ASSERT(new_size <= Size); _destruct_range(new_size, Size); Size = new_size; } // Resize a vector to a smaller size, guaranteed not to cause a reallocation
+    inline void         reserve(int new_capacity)           { if (new_capacity <= Capacity) return; T* new_data = (T*)IM_ALLOC((size_t)new_capacity * sizeof(T)); if (Data) { for (int n = 0; n < Size; n++) _move_to(&new_data[n], Data[n]); _destruct_range(0, Size); IM_FREE(Data); } Data = new_data; Capacity = new_capacity; }
+    inline void         reserve_discard(int new_capacity)   { if (new_capacity <= Capacity) return; if (Data) { _destruct_range(0, Size); IM_FREE(Data); } Data = (T*)IM_ALLOC((size_t)new_capacity * sizeof(T)); Capacity = new_capacity; }
 
     // NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }
-    inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }
+    inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); _copy_to(&Data[Size], v); Size++; }
+    inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; if constexpr (!ImVector_IsPOD<T>::value) Data[Size].~T(); }
     inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }
-    inline T*           erase(const T* it)                  { IM_ASSERT(it >= Data && it < Data + Size); const ptrdiff_t off = it - Data; memmove(Data + off, Data + off + 1, ((size_t)Size - (size_t)off - 1) * sizeof(T)); Size--; return Data + off; }
-    inline T*           erase(const T* it, const T* it_last){ IM_ASSERT(it >= Data && it < Data + Size && it_last >= it && it_last <= Data + Size); const ptrdiff_t count = it_last - it; const ptrdiff_t off = it - Data; memmove(Data + off, Data + off + count, ((size_t)Size - (size_t)off - (size_t)count) * sizeof(T)); Size -= (int)count; return Data + off; }
-    inline T*           erase_unsorted(const T* it)         { IM_ASSERT(it >= Data && it < Data + Size);  const ptrdiff_t off = it - Data; if (it < Data + Size - 1) memcpy(Data + off, Data + Size - 1, sizeof(T)); Size--; return Data + off; }
-    inline T*           insert(const T* it, const T& v)     { IM_ASSERT(it >= Data && it <= Data + Size); const ptrdiff_t off = it - Data; if (Size == Capacity) reserve(_grow_capacity(Size + 1)); if (off < (int)Size) memmove(Data + off + 1, Data + off, ((size_t)Size - (size_t)off) * sizeof(T)); memcpy(&Data[off], &v, sizeof(v)); Size++; return Data + off; }
+    inline T*           erase(const T* it)                  { IM_ASSERT(it >= Data && it < Data + Size); const ptrdiff_t off = it - Data; if constexpr (ImVector_IsPOD<T>::value) memmove(Data + off, Data + off + 1, ((size_t)Size - (size_t)off - 1) * sizeof(T)); else for (int n = (int)off; n < Size - 1; n++) _move_assign(Data[n], Data[n + 1]); _destruct_range(Size - 1, Size); Size--; return Data + off; }
+    inline T*           erase(const T* it, const T* it_last){ IM_ASSERT(it >= Data && it < Data + Size && it_last >= it && it_last <= Data + Size); const ptrdiff_t count = it_last - it; const ptrdiff_t off = it - Data; if constexpr (ImVector_IsPOD<T>::value) memmove(Data + off, Data + off + count, ((size_t)Size - (size_t)off - (size_t)count) * sizeof(T)); else for (int n = (int)off; n < Size - (int)count; n++) _move_assign(Data[n], Data[n + count]); _destruct_range(Size - (int)count, Size); Size -= (int)count; return Data + off; }
+    inline T*           erase_unsorted(const T* it)         { IM_ASSERT(it >= Data && it < Data + Size);  const ptrdiff_t off = it - Data; if (it < Data + Size - 1) _move_assign(Data[off], Data[Size - 1]); _destruct_range(Size - 1, Size); Size--; return Data + off; }
+    inline T*           insert(const T* it, const T& v)     { IM_ASSERT(it >= Data && it <= Data + Size); const ptrdiff_t off = it - Data; if (Size == Capacity) reserve(_grow_capacity(Size + 1)); if constexpr (ImVector_IsPOD<T>::value) { if (off < (int)Size) memmove(Data + off + 1, Data + off, ((size_t)Size - (size_t)off) * sizeof(T)); memcpy(&Data[off], &v, sizeof(v)); } else { if (off < (int)Size) { _move_to(&Data[Size], Data[Size - 1]); for (int n = Size - 1; n > off; n--) _move_assign(Data[n], Data[n - 1]); Data[off] = v; } else _copy_to(&Data[off], v); } Size++; return Data + off; }
     inline bool         contains(const T& v) const          { const T* data = Data;  const T* data_end = Data + Size; while (data < data_end) if (*data++ == v) return true; return false; }
     inline T*           find(const T& v)                    { T* data = Data;  const T* data_end = Data + Size; while (data < data_end) if (*data == v) break; else ++data; return data; }
     inline const T*     find(const T& v) const              { const T* data = Data;  const T* data_end = Data + Size; while (data < data_end) if (*data == v) break; else ++data; return data; }

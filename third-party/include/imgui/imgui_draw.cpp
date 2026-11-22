@@ -463,7 +463,7 @@ void ImDrawList::_ResetForNewFrame()
     VtxBuffer.resize(0);
     Flags = _Data->InitialDrawFlags;
     IM_ASSERT((Flags & ~ImDrawFlags_AllowInFrameScope_) == 0);
-    memset(&_CmdHeader, 0, sizeof(_CmdHeader));
+    _CmdHeader = ImDrawCmdHeader(); // VPX: not memset, ImTextureID is a shared_ptr which must be released
     _VtxCurrentIdx = 0;
     _VtxWritePtr = NULL;
     _IdxWritePtr = NULL;
@@ -573,7 +573,7 @@ void ImDrawList::AddCallback(ImDrawCallback callback, void* userdata, size_t use
 // Compare ClipRect, TexRef and VtxOffset with a single memcmp()
 #define ImDrawCmd_HeaderSize                            (offsetof(ImDrawCmd, VtxOffset) + sizeof(unsigned int))
 #define ImDrawCmd_HeaderCompare(CMD_LHS, CMD_RHS)       (memcmp(CMD_LHS, CMD_RHS, ImDrawCmd_HeaderSize))    // Compare ClipRect, TexRef, VtxOffset
-#define ImDrawCmd_HeaderCopy(CMD_DST, CMD_SRC)          (memcpy(CMD_DST, CMD_SRC, ImDrawCmd_HeaderSize))    // Copy ClipRect, TexRef, VtxOffset
+#define ImDrawCmd_HeaderCopy(CMD_DST, CMD_SRC)          ((CMD_DST)->ClipRect = (CMD_SRC)->ClipRect, (CMD_DST)->TexRef = (CMD_SRC)->TexRef, (CMD_DST)->VtxOffset = (CMD_SRC)->VtxOffset)    // Copy ClipRect, TexRef, VtxOffset (VPX: per-field copy, TexRef is a shared_ptr which cannot be memcpy'd)
 #define ImDrawCmd_AreSequentialIdxOffset(CMD_0, CMD_1)  (CMD_0->IdxOffset + CMD_0->ElemCount == CMD_1->IdxOffset)
 
 // Try to merge two last draw commands
@@ -3453,7 +3453,7 @@ void ImDrawListSplitter::Merge(ImDrawList* draw_list)
     for (int i = 1; i < _Count; i++)
     {
         ImDrawChannel& ch = _Channels[i];
-        if (int sz = ch._CmdBuffer.Size) { memcpy(cmd_write, ch._CmdBuffer.Data, sz * sizeof(ImDrawCmd)); cmd_write += sz; }
+        if (int sz = ch._CmdBuffer.Size) { for (int cmd_n = 0; cmd_n < sz; cmd_n++) *cmd_write++ = static_cast<ImDrawCmd&&>(ch._CmdBuffer.Data[cmd_n]); } // VPX: move, ImTextureID is a shared_ptr which cannot be memcpy'd
         if (int sz = ch._IdxBuffer.Size) { memcpy(idx_write, ch._IdxBuffer.Data, sz * sizeof(ImDrawIdx)); idx_write += sz; }
     }
     draw_list->_IdxWritePtr = idx_write;
