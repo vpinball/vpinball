@@ -21,6 +21,15 @@ public:
    // entirely the implementation's choice.
    virtual void RenderPages(const vector<InGameUIPage*>& pages, float elapsedS) = 0;
 
+   // Flipper/button navigation events. The default implementation declines the
+   // event and the standard behavior applies (moving/adjusting the active page's
+   // item selection); renderers with multi-level navigation consume the events.
+   virtual bool OnUINavigatePrev(InGameUIPage* page) { return false; }
+   virtual bool OnUINavigateNext(InGameUIPage* page) { return false; }
+   virtual bool OnUIAdjust(InGameUIPage* page, float direction, bool isInitialPress) { return false; }
+   virtual bool OnUIReleaseAdjust(InGameUIPage* page) { return false; }
+   virtual bool OnUINavigateBack(InGameUIPage* page) { return false; }
+
    // Creates the renderer for the running target (mobile touch / desktop /
    // cabinet / VR). Single default implementation for now; the dispatch point
    // for per-target implementations.

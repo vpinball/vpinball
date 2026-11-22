@@ -235,7 +235,7 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
 
    // Fixed image scaling corresponding to InGameUI overlay size for an image of 1024px width
    const ImGuiIO &io = ImGui::GetIO();
-   const float imgScale = (io.DisplaySize.x > io.DisplaySize.y ? 0.35f : 0.75f) * io.DisplaySize.x / 1024.f;
+   const float imgScale = (io.DisplaySize.x > io.DisplaySize.y ? 0.7f : 1.5f) * io.DisplaySize.x / 1024.f;
    ImGui::MarkdownImageData imageData { true, false, sampler, ImVec2(static_cast<float>(sampler->GetWidth()), static_cast<float>(sampler->GetHeight())) * imgScale };
    ImVec2 const contentSize = ImGui::GetContentRegionAvail();
    if (imageData.size.x > contentSize.x)

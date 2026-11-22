@@ -24,9 +24,6 @@ public:
 private:
    void RenderPage(InGameUIPage& page, float elapsedS);
    void RenderAttachedPanes(InGameUIPage& page, const vector<InGameUIPane>& panes);
-   void RenderInputActionPopup(InGameUIPage& page);
-   void RenderToggle(const string& label, const ImVec2& size, bool& v);
-   static void TextWithEllipsis(const string& text, float maxWidth);
 
    InGameUI& m_inGameUI;
    Player* const m_player;

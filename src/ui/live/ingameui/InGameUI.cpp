@@ -80,6 +80,8 @@ void InGameUI::Navigate(const string &path, bool isBack)
    if (m_activePages.back())
    {
       m_navigationHistory.push_back(path);
+      if (m_navigationHistory.size() == 1)
+         m_rootPage = m_activePages.back().get();
       m_activePages.back()->Open(isBack);
    }
    else
@@ -88,6 +90,25 @@ void InGameUI::Navigate(const string &path, bool isBack)
       m_activePages.pop_back();
       Close();
    }
+}
+
+void InGameUI::NavigateTo(const string &path)
+{
+   if (m_navigationHistory.empty())
+   {
+      Navigate(path);
+      return;
+   }
+   if (m_navigationHistory.back() == path)
+      return;
+   // Truncate the history to the target level then re-navigate so the target page is
+   // instantiated; open pages below it are closed like on a backward navigation
+   const bool toRoot = m_navigationHistory.front() == path;
+   m_navigationHistory.resize(toRoot ? 0 : 1);
+   for (const auto &page : m_activePages)
+      if (page->IsActive())
+         page->Close(true);
+   Navigate(path, true);
 }
 
 void InGameUI::RequestRebuildAll()
@@ -151,7 +172,11 @@ void InGameUI::Update()
       for (auto it = m_activePages.begin(); it != m_activePages.end();)
       {
          if ((*it)->IsClosed())
+         {
+            if (it->get() == m_rootPage)
+               m_rootPage = nullptr; // Do not keep a dangling pointer to the erased instance
             it = m_activePages.erase(it);
+         }
          else
             ++it;
       }
@@ -210,6 +235,8 @@ void InGameUI::OnUIUpAction()
    m_flipperNavRepeatCount = 0;
    if (m_player->ShouldHideDesktopCursor())
       SDL_HideCursor();
+   if (m_renderer->OnUINavigatePrev(GetActivePage()))
+      return;
    GetActivePage()->SelectPrevItem();
    if (!wasFlipperNav)
       GetActivePage()->SelectNextItem();
@@ -226,6 +253,8 @@ void InGameUI::OnUIDownAction()
    m_flipperNavRepeatCount = 0;
    if (m_player->ShouldHideDesktopCursor())
       SDL_HideCursor();
+   if (m_renderer->OnUINavigateNext(GetActivePage()))
+      return;
    GetActivePage()->SelectNextItem();
    if (!wasFlipperNav)
       GetActivePage()->SelectPrevItem();
@@ -236,7 +265,10 @@ void InGameUI::OnUILeftAction()
    if (ImGui::IsAnyItemActive())
       return;
 
-   if (m_useFlipperNav)
+   m_useFlipperNav = true;
+   if (m_player->ShouldHideDesktopCursor())
+      SDL_HideCursor();
+   if (!m_renderer->OnUIAdjust(GetActivePage(), -1.f, true))
       GetActivePage()->AdjustItem(-1, true);
 }
 
@@ -245,7 +277,10 @@ void InGameUI::OnUIRightAction()
    if (ImGui::IsAnyItemActive())
       return;
 
-   if (m_useFlipperNav)
+   m_useFlipperNav = true;
+   if (m_player->ShouldHideDesktopCursor())
+      SDL_HideCursor();
+   if (!m_renderer->OnUIAdjust(GetActivePage(), 1.f, true))
       GetActivePage()->AdjustItem(1, true);
 }
 
@@ -278,7 +313,8 @@ void InGameUI::OnUINavigateBack()
    if (ImGui::IsAnyItemActive())
       return;
 
-   NavigateBack();
+   if (!m_renderer->OnUINavigateBack(GetActivePage()))
+      NavigateBack();
 }
 
 void InGameUI::HandlePageInput()
@@ -306,24 +342,35 @@ void InGameUI::HandlePageInput()
    {
       m_flipperNavStart = now;
       m_flipperNavRepeatCount++;
-      GetActivePage()->SelectPrevItem();
+      if (!m_renderer->OnUINavigatePrev(GetActivePage()))
+         GetActivePage()->SelectPrevItem();
    }
    else if (m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUIDownActionId()) && (now - m_flipperNavStart) > flipperNavRepeat)
    {
       m_flipperNavStart = now;
       m_flipperNavRepeatCount++;
-      GetActivePage()->SelectNextItem();
+      if (!m_renderer->OnUINavigateNext(GetActivePage()))
+         GetActivePage()->SelectNextItem();
    }
 
    // Handle continuous press item adjustment, applying remaining adjustment on release
    const bool leftPressed = m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUILeftActionId());
    const bool rightPressed = m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUIRightActionId());
    if (leftPressed)
-      GetActivePage()->AdjustItem(-1, false);
+   {
+      if (!m_renderer->OnUIAdjust(GetActivePage(), -1.f, false))
+         GetActivePage()->AdjustItem(-1, false);
+   }
    else if (rightPressed)
-      GetActivePage()->AdjustItem(1, false);
+   {
+      if (!m_renderer->OnUIAdjust(GetActivePage(), 1.f, false))
+         GetActivePage()->AdjustItem(1, false);
+   }
    else if (m_itemAdjustWasPressed)
-      GetActivePage()->ReleaseAdjustedItem();
+   {
+      if (!m_renderer->OnUIReleaseAdjust(GetActivePage()))
+         GetActivePage()->ReleaseAdjustedItem();
+   }
    m_itemAdjustWasPressed = leftPressed || rightPressed;
 }
 

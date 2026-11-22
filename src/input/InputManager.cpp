@@ -724,7 +724,7 @@ void InputManager::CreateInputActions()
                   // Somewhat hacky direct UI action mapping (inherited from legacy POV adjustment mode, could benefit from some additional cleanups)
                   else if (action.GetActionId() == m_launchBallActionId)
                      m_player->m_liveUI->m_inGameUI.OnUIResetToDefaults();
-                  else if (action.GetActionId() == m_addCreditActionId[0])
+                  else if (std::ranges::find(m_addCreditActionId, action.GetActionId()) != std::end(m_addCreditActionId)) // Any credit slot undoes
                      m_player->m_liveUI->m_inGameUI.OnUICancelChanges();
                   else if (action.GetActionId() == m_startActionId)
                      m_player->m_liveUI->m_inGameUI.OnUISaveChanges();

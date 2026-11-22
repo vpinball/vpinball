@@ -4,9 +4,15 @@
 #include "InGameUIDefaultRenderer.h"
 
 #include "InGameUI.h"
+#include "InGameUIDesktopRenderer.h"
 #include "InGameUIPage.h"
+#include "InGameUIWidgets.h"
 
+#include "core/player.h"
 #include "core/VPApp.h"
+#include "parts/pintable.h"
+#include "renderer/ViewSetup.h"
+#include "renderer/Window.h"
 #include "ui/live/IconsLucide.h"
 #include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
@@ -19,8 +25,19 @@ namespace VPX::InGameUI
 
 std::unique_ptr<InGameUIRenderer> InGameUIRenderer::Create(InGameUI& owner)
 {
-   // Default renderer for all running targets; this is the dispatch point for
-   // future per-target implementations (mobile touch, cabinet, VR, ...)
+   // The desktop renderer targets landscape play: a landscape playfield output with an
+   // unrotated view (standard desktop monitor), or a portrait output whose rotated view
+   // restores a landscape frame (LiveUI swaps the UI frame on 90/270 view rotations).
+   // Cabinet play (portrait playfield frame, e.g. landscape output with a rotated view),
+   // portrait play, mobile touch and VR keep the pinball card layout.
+   if (!g_isMobile && g_pplayer->m_vrDevice == nullptr && g_pplayer->m_playfieldWnd != nullptr)
+   {
+      const VPX::Window* const wnd = g_pplayer->m_playfieldWnd;
+      const int outW = wnd->GetPixelWidth(), outH = wnd->GetPixelHeight();
+      const int rotation = static_cast<int>(g_pplayer->m_ptable->GetViewSetup().GetRotation(outW, outH)) / 90;
+      if ((outW > outH) != (rotation == 1 || rotation == 3))
+         return std::make_unique<InGameUIDesktopRenderer>(owner);
+   }
    return std::make_unique<InGameUIDefaultRenderer>(owner);
 }
 
@@ -571,7 +588,7 @@ void InGameUIDefaultRenderer::RenderPage(InGameUIPage& page, float elapsedS)
             else
                sameLineToScreenX(labelEndScreenX);
             bool v = item->GetBoolValue();
-            RenderToggle(std::format("{}##Item{}", prop->m_label, i), ImVec2(itemFieldEndScreenX - ImGui::GetCursorScreenPos().x, ImGui::GetFrameHeight()), v);
+            RenderToggle(m_player, std::format("{}##Item{}", prop->m_label, i), ImVec2(itemFieldEndScreenX - ImGui::GetCursorScreenPos().x, ImGui::GetFrameHeight()), v);
             if (item->IsModified())
             {
                itemMarker(ICON_LC_PENCIL);
@@ -707,7 +724,7 @@ void InGameUIDefaultRenderer::RenderPage(InGameUIPage& page, float elapsedS)
 
    ImGui::End();
 
-   RenderInputActionPopup(page);
+   RenderInputActionPopup(m_player, page);
    RenderAttachedPanes(page, panes);
 }
 
@@ -726,102 +743,6 @@ void InGameUIDefaultRenderer::RenderAttachedPanes(InGameUIPage& page, const vect
       const ImVec4 rect(winPos.x + (winSize.x - paneSize.x) * 0.5f, paneBottomY - paneSize.y, paneSize.x, paneSize.y);
       pane.render(rect);
       paneBottomY = rect.y - style.ItemSpacing.y;
-   }
-}
-
-void InGameUIDefaultRenderer::RenderInputActionPopup(InGameUIPage& page)
-{
-   InGameUIItem* const item = page.GetInputActionPopupItem();
-   if (item && page.IsInputActionPopupPending() && !ImGui::IsPopupOpen((item->m_label + " input binding").c_str()))
-   {
-      ImGui::OpenPopup((item->m_label + " input binding").c_str());
-      ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
-      ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoKeyboard;
-      m_player->m_pininput.StartButtonCapture();
-   }
-   if (item && ImGui::BeginPopupModal((item->m_label + " input binding").c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-   {
-      ImGui::Text("Press the key/button or combination of keys/buttons\nyou want to use for the action '%s'", item->m_label.c_str());
-      ImGui::Spacing();
-      ImGui::Separator();
-      ImGui::Spacing();
-      ImGui::Text("New mapping: %s", m_player->m_pininput.GetMappingLabel(m_player->m_pininput.GetButtonCapture()).c_str());
-      ImGui::Spacing();
-      ImGui::Separator();
-      if (m_player->m_pininput.IsButtonCaptureDone())
-      {
-         ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
-         ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoKeyboard;
-         item->m_inputAction->AddMapping(m_player->m_pininput.GetButtonCapture());
-         if (!(item->m_inputAction->IsNavigationAction() && !item->m_inputAction->IsMapped()))
-         {
-            ImGui::CloseCurrentPopup();
-            page.CloseInputActionPopup();
-         }
-      }
-      ImGui::EndPopup();
-   }
-}
-
-// Basic Toggle button, based on https://github.com/ocornut/imgui/issues/1537#issuecomment-355562097
-void InGameUIDefaultRenderer::RenderToggle(const string& label, const ImVec2& size, bool& v)
-{
-   ImVec2 p = ImGui::GetCursorScreenPos();
-   ImDrawList* draw_list = ImGui::GetWindowDrawList();
-
-   const float height = size.y;
-   const float width = height * 1.75f;
-   const float radius = height * 0.50f;
-   float itemEndScreenX = ImGui::GetCursorScreenPos().x + size.x;
-   p.x = itemEndScreenX - width;
-
-   ImGui::SetNextItemWidth(size.x);
-   if (ImGui::InvisibleButton(label.c_str(), size))
-      v = !v;
-   const ImU32 col_bg = ImGui::IsItemHovered() ? ImGui::GetColorU32(ImGuiCol_ButtonHovered) : ImGui::GetColorU32(ImGuiCol_Button);
-   draw_list->AddRectFilled(p, ImVec2(p.x + width, p.y + height), col_bg, height * 0.5f);
-   if (v)
-      draw_list->AddCircleFilled(ImVec2(v ? (p.x + width - radius) : (p.x + radius), p.y + radius), radius - 3.5f, IM_COL32(255, 255, 255, 255));
-   else
-      draw_list->AddCircle(ImVec2(v ? (p.x + width - radius) : (p.x + radius), p.y + radius), radius - 3.5f, IM_COL32(255, 255, 255, 255), 0, 2.f * m_player->m_liveUI->GetDPI());
-}
-
-void InGameUIDefaultRenderer::TextWithEllipsis(const string& textStr, float maxWidth)
-{
-   float textWidth = ImGui::CalcTextSize(textStr.c_str()).x;
-   if (textWidth > maxWidth)
-   {
-      float ellipsisWidth = ImGui::CalcTextSize("...").x;
-      if (float availableWidth = maxWidth - ellipsisWidth; availableWidth <= 0)
-      {
-         ImGui::Text("...");
-         return;
-      }
-
-      // Binary search to find the right length
-      int left = 0;
-      int right = static_cast<int>(textStr.length());
-      while (left < right)
-      {
-         int mid = (left + right + 1) / 2;
-         std::string truncated = textStr.substr(0, mid) + "...";
-         float truncatedWidth = ImGui::CalcTextSize(truncated.c_str()).x;
-         if (truncatedWidth <= maxWidth)
-         {
-            left = mid;
-         }
-         else
-         {
-            right = mid - 1;
-         }
-      }
-
-      std::string truncated = textStr.substr(0, left) + "...";
-      ImGui::Text("%s", truncated.c_str());
-   }
-   else
-   {
-      ImGui::Text("%s", textStr.c_str());
    }
 }
 

@@ -139,7 +139,7 @@ void HomePage::CollectPanes(vector<InGameUIPane>& panes)
       return;
 
    InGameUIPane pane;
-   pane.placement = InGameUIPane::Placement::Backdrop;
+   pane.placement = InGameUIPane::Placement::Embedded;
    pane.id = "tableInfo"s;
    pane.render = [this](const ImVec4& rect)
    {
@@ -167,17 +167,9 @@ void HomePage::CollectPanes(vector<InGameUIPane>& panes)
          info << "Version: " << m_player->m_ptable->m_version;
       info << " (" << (!m_player->m_ptable->m_dateSaved.empty() ? m_player->m_ptable->m_dateSaved : "N/A"s) << " Revision " << m_player->m_ptable->m_numTimesSaved << ")\n";
 
-      constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus // Prevent focus issues
-         | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
-      ImGui::SetNextWindowBgAlpha(0.666f * (1.f - fabs(GetOpenCloseAnimPos())));
-      ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.666f * (1.f - fabs(GetOpenCloseAnimPos())));
-      ImGui::SetNextWindowPos(ImVec2(rect.x, rect.y));
-      ImGui::SetNextWindowSize(ImVec2(rect.z, rect.w));
-      ImGui::Begin((std::to_string(reinterpret_cast<size_t>(this)) + ".back").c_str(), nullptr, window_flags);
+      // Drawn inline in the page's item list (no window or background of its own)
       m_player->m_liveUI->SetMarkdownStartId(ImGui::GetItemID());
       ImGui::Markdown(info.str().c_str(), info.str().length(), m_player->m_liveUI->GetMarkdownConfig());
-      ImGui::End();
-      ImGui::PopStyleVar();
    };
    panes.push_back(std::move(pane));
 }
