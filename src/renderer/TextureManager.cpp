@@ -107,6 +107,22 @@ std::shared_ptr<Sampler> TextureManager::LoadTexture(ITexManCacheable* const mem
    return sampler;
 }
 
+std::shared_ptr<Sampler> TextureManager::LoadPinnedTexture(ITexManCacheable* const memtex)
+{
+   {
+      const std::lock_guard lock(m_mapMutex);
+      Iter it = m_map.find(memtex->GetLiveHash());
+      if (it == m_map.end())
+      {
+         MapEntry entry;
+         entry.tex = memtex;
+         it = m_map.emplace(memtex->GetLiveHash(), std::move(entry)).first;
+      }
+      it->second.pinned = true;
+   }
+   return LoadTexture(memtex, false);
+}
+
 void TextureManager::AddPendingUpload(ITexManCacheable* memtex, std::shared_ptr<const BaseTexture> bitmap)
 {
    const std::lock_guard lock(m_mapMutex);
@@ -254,7 +270,7 @@ bool TextureManager::MakeRoom(const size_t needed)
    for (Iter it = m_map.begin(); it != m_map.end(); ++it)
    {
       const MapEntry& entry = it->second;
-      if (!entry.isPlaceHolder && entry.lastUsedFrame + kEvictGraceFrames < m_statsFrame && (entry.samplers[VARIANT_SRGB] || entry.samplers[VARIANT_LINEAR]))
+      if (!entry.isPlaceHolder && !entry.pinned && entry.lastUsedFrame + kEvictGraceFrames < m_statsFrame && (entry.samplers[VARIANT_SRGB] || entry.samplers[VARIANT_LINEAR]))
          victims.emplace_back(entry.lastUsedFrame, it);
    }
    std::sort(victims.begin(), victims.end(), [](const auto& a, const auto& b) { return a.first < b.first; }); // Least recently used first
@@ -288,7 +304,7 @@ std::shared_ptr<Sampler> TextureManager::CreateSampler(MapEntry& entry, const Sa
    size_t est = bitmap->GetEstimatedGPUSize();
    entry.fullBytes[variant] = 0;
 
-   if (!MakeRoom(est))
+   if (!entry.pinned && !MakeRoom(est))
    {
       // Out of budget even after evicting: try a downsized decode before degrading to the fallback texture.
       // Half of the loaded size, not of the declared size, which is larger when capped by the max texture dimension setting
