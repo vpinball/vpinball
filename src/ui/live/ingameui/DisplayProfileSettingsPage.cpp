@@ -378,14 +378,17 @@ void DisplayProfileSettingsPage::RenderDisplayPreview(const ImVec4& rect)
    matWorldViewProj[0].SetIdentity();
    matWorldViewProj[1].SetIdentity();
    const vec4 cameraPos[2] = { { 0.f, 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f, 0.f } };
-   m_player->m_renderer->m_renderDevice->m_DMDShader->SetVector(ShaderUniform::cameraPosWorld, &cameraPos[0], m_player->m_renderer->m_renderDevice->GetCurrentRenderTarget()->m_nLayers);
-   m_player->m_renderer->m_renderDevice->m_DMDShader->SetMatrix(ShaderUniform::matRotViewProj, &matWorldViewProj[0], m_player->m_renderer->m_renderDevice->GetCurrentRenderTarget()->m_nLayers);
-   #else
+   // Uniform count must match the shader variant (stereo arrays are always declared as 2),
+   // not the layer count of the current render target (the UI surface is mono even in VR)
+   const unsigned int nEyes = m_player->m_renderer->m_renderDevice->m_nEyes;
+   m_player->m_renderer->m_renderDevice->m_DMDShader->SetVector(ShaderUniform::cameraPosWorld, &cameraPos[0], nEyes);
+   m_player->m_renderer->m_renderDevice->m_DMDShader->SetMatrix(ShaderUniform::matRotViewProj, &matWorldViewProj[0], nEyes);
+#else
    Matrix3D matWorldViewProj[2];
    matWorldViewProj[0] = Matrix3D::MatrixIdentity();
    matWorldViewProj[1] = Matrix3D::MatrixIdentity();
-   m_player->m_renderer->m_renderDevice->m_DMDShader->SetMatrix(ShaderUniform::matWorldViewProj, &matWorldViewProj[0], m_player->m_renderer->m_renderDevice->GetCurrentRenderTarget()->m_nLayers);
-   #endif
+   m_player->m_renderer->m_renderDevice->m_DMDShader->SetMatrix(ShaderUniform::matWorldViewProj, &matWorldViewProj[0], m_player->m_renderer->m_renderDevice->m_nEyes);
+#endif
    m_player->m_renderer->m_renderDevice->DrawTexturedQuad(m_player->m_renderer->m_renderDevice->m_DMDShader, vertices);
    m_player->m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
    // ImGui draw commands are submitted as transparent render commands with depth

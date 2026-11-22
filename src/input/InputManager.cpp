@@ -22,6 +22,10 @@
 
 #include "input/SDLInputHandler.h"
 
+#ifdef ENABLE_XR
+#include "imgui/imgui_internal.h"
+#endif
+
 #if !defined(__LIBVPINBALL__) && !defined(__EMSCRIPTEN__)
    #include "input/OpenPinDevHandler.h"
 #endif
@@ -436,6 +440,26 @@ void InputManager::ProcessInput()
    for (const auto& handler : m_inputHandlers)
       handler->Update();
 
+// While a VR controller points at the UI surface, axes bound to UI navigation
+// act as a mouse wheel over the pointed pane instead of their usual bindings
+#ifdef ENABLE_XR
+   if (IsUIPointerScrollingActive())
+   {
+      float wheelX = 0.f, wheelY = 0.f;
+      for (const auto& [axisId, position] : m_axisPositions)
+      {
+         if (position == 0.f)
+            continue;
+         bool navBound = false;
+         wheelY += UINavWheelForAxis(axisId, position, false, navBound);
+         wheelX += UINavWheelForAxis(axisId, position, true, navBound);
+      }
+      constexpr float scrollSpeed = 0.05f; // mouse wheel units per frame at full deflection
+      if (wheelX != 0.f || wheelY != 0.f)
+         ImGui::GetIO().AddMouseWheelEvent(wheelX * scrollSpeed, wheelY * scrollSpeed);
+   }
+#endif
+
    UpdateRumble();
 
    // Handle automatic start
@@ -600,6 +624,47 @@ void InputManager::PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_
    }
 }
 
+// Whether an InGame UI pointer (VR controller aim) is currently hovering a
+// scrollable pane of the UI surface: while active, axes bound to UI navigation
+// scroll that pane instead of triggering their usual bindings
+bool InputManager::IsUIPointerScrollingActive() const
+{
+#ifdef ENABLE_XR
+   if (m_player == nullptr || m_player->m_liveUI == nullptr || !m_player->m_liveUI->IsInGameUIOpened() || m_player->m_vrDevice == nullptr || !m_player->m_vrDevice->GetUIPointer().onQuad
+      || ImGui::GetCurrentContext() == nullptr)
+      return false;
+   // One frame stale (input runs before the UI frame update), which is fine
+   const ImGuiWindow* hovered = ImGui::GetCurrentContext()->HoveredWindow;
+   return hovered != nullptr && hovered->ScrollMax.y > 0.f;
+#else
+   return false;
+#endif
+}
+
+// Signed wheel delta contributed by an axis position toward the given direction
+// (positive = up for vertical, right for horizontal), honoring the binding's
+// polarity. navBound reports whether the axis feeds the corresponding actions.
+float InputManager::UINavWheelForAxis(uint32_t deviceAndAxisId, float position, bool horizontal, bool& navBound) const
+{
+   navBound = false;
+   float wheel = 0.f;
+   if (auto it = m_buttonMappings.find(deviceAndAxisId); it != m_buttonMappings.end())
+      for (const ButtonMapping* mapping : it->second)
+         if (const InputAction* action = static_cast<const InputAction*>(mapping->GetMappingHandler()))
+         {
+            const unsigned int actionId = action->GetActionId();
+            const unsigned int posAction = horizontal ? m_uiRightActionId : m_uiUpActionId;
+            const unsigned int negAction = horizontal ? m_uiLeftActionId : m_uiDownActionId;
+            if (actionId == posAction || actionId == negAction)
+            {
+               navBound = true;
+               const float signedPos = mapping->IsAxisReversed() ? -position : position;
+               wheel = actionId == posAction ? signedPos : -signedPos;
+            }
+         }
+   return wheel;
+}
+
 void InputManager::PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t timestampNs, float position)
 {
    m_lastButtonEventNs = timestampNs;
@@ -610,7 +675,21 @@ void InputManager::PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t ti
    if (m_player->m_overall_frames < 5 && !m_player->m_isLoading && !m_acceptStartupEvents)
       return;
 
-   uint32_t id = deviceId << 16 | axisId;
+   const uint32_t id = deviceId << 16 | axisId;
+   m_axisPositions[id] = position;
+
+   // While pointing at the UI surface, axes bound to UI navigation are fully
+   // repurposed as pane scroll: none of their bindings (nav actions, sensors,
+   // capture) receive them (capture is exempted to stay usable)
+   if (m_buttonCaptureState == 0 && IsUIPointerScrollingActive())
+   {
+      bool navBoundV = false, navBoundH = false;
+      UINavWheelForAxis(id, position, false, navBoundV);
+      UINavWheelForAxis(id, position, true, navBoundH);
+      if (navBoundV || navBoundH)
+         return;
+   }
+
    if (auto it = m_sensorMappings.find(id); it != m_sensorMappings.end())
       for (auto mapping : it->second)
          mapping->SetAxisPosition(timestampNs, position);

@@ -70,6 +70,7 @@ public:
 
          // Poses
          { "/user/hand/left/input/grip/pose"s, XR_ACTION_TYPE_POSE_INPUT }, { "/user/hand/right/input/grip/pose"s, XR_ACTION_TYPE_POSE_INPUT },
+         { "/user/hand/left/input/aim/pose"s, XR_ACTION_TYPE_POSE_INPUT }, { "/user/hand/right/input/aim/pose"s, XR_ACTION_TYPE_POSE_INPUT },
 
          { "/user/hand/left/output/haptic"s, XR_ACTION_TYPE_VIBRATION_OUTPUT }, { "/user/hand/right/output/haptic"s, XR_ACTION_TYPE_VIBRATION_OUTPUT }
       };

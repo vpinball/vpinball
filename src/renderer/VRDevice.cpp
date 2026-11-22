@@ -340,6 +340,10 @@ VRDevice::~VRDevice()
          OPENXR_CHECK(xrDestroySpace(m_leftControllerSpace), "Failed to destroy Left Controller Space.")
       if (m_rightControllerSpace != XR_NULL_HANDLE)
          OPENXR_CHECK(xrDestroySpace(m_rightControllerSpace), "Failed to destroy Right Controller Space.")
+      if (m_leftAimSpace != XR_NULL_HANDLE)
+         OPENXR_CHECK(xrDestroySpace(m_leftAimSpace), "Failed to destroy Left Aim Space.")
+      if (m_rightAimSpace != XR_NULL_HANDLE)
+         OPENXR_CHECK(xrDestroySpace(m_rightAimSpace), "Failed to destroy Right Aim Space.")
       // Destroy the reference XrSpace.
       if (m_referenceSpace != XR_NULL_HANDLE)
          OPENXR_CHECK(xrDestroySpace(m_referenceSpace), "Failed to destroy Space.")
@@ -803,8 +807,10 @@ void VRDevice::CreateSession()
    if (m_viewSpace != XR_NULL_HANDLE)
    {
       m_uiSwapchainInfo.backendFormat = m_backend->SelectColorSwapchainFormat(formats);
-      m_uiSwapchainInfo.width = m_eyeWidth;
-      m_uiSwapchainInfo.height = m_eyeHeight;
+      // 16:9 surface matching the desktop UI layout (the quad layer keeps the
+      // same ratio), sized from the eye resolution for text sharpness
+      m_uiSwapchainInfo.width = std::clamp(m_eyeWidth, 1280u, 2560u);
+      m_uiSwapchainInfo.height = m_uiSwapchainInfo.width * 9u / 16u;
       m_uiSwapchainInfo.arraySize = 1;
 
       XrSwapchainCreateInfo swapchainCreateInfo { XR_TYPE_SWAPCHAIN_CREATE_INFO };
@@ -851,6 +857,23 @@ void VRDevice::CreateSession()
       actionSpaceInfo.action = rightPoseAction;
       actionSpaceInfo.poseInActionSpace = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
       OPENXR_CHECK(xrCreateActionSpace(m_session, &actionSpaceInfo, &m_rightControllerSpace), "Failed to create Right Controller Action Space.");
+   }
+   // Aim poses drive the controller pointer against the view-locked UI quad layer
+   XrAction leftAimAction = inputHandler->GetAction("/user/hand/left/input/aim/pose");
+   if (leftAimAction != XR_NULL_HANDLE)
+   {
+      XrActionSpaceCreateInfo actionSpaceInfo { XR_TYPE_ACTION_SPACE_CREATE_INFO };
+      actionSpaceInfo.action = leftAimAction;
+      actionSpaceInfo.poseInActionSpace = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
+      OPENXR_CHECK(xrCreateActionSpace(m_session, &actionSpaceInfo, &m_leftAimSpace), "Failed to create Left Controller Aim Space.");
+   }
+   XrAction rightAimAction = inputHandler->GetAction("/user/hand/right/input/aim/pose");
+   if (rightAimAction != XR_NULL_HANDLE)
+   {
+      XrActionSpaceCreateInfo actionSpaceInfo { XR_TYPE_ACTION_SPACE_CREATE_INFO };
+      actionSpaceInfo.action = rightAimAction;
+      actionSpaceInfo.poseInActionSpace = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
+      OPENXR_CHECK(xrCreateActionSpace(m_session, &actionSpaceInfo, &m_rightAimSpace), "Failed to create Right Controller Aim Space.");
    }
    m_xrInputHandler = inputHandler.get();
    g_pplayer->m_pininput.AddInputHandler(std::move(inputHandler));
@@ -1092,6 +1115,135 @@ void VRDevice::UpdateVisibilityMask(RenderDevice* rd)
    }
 }
 
+// Raycasts the controller aim poses against the view-locked UI quad layer and
+// fills m_uiPointer. Called on the render thread once the head pose is located;
+// the result is consumed on the logic thread for mouse emulation and for
+// rendering the pointer ray in the scene.
+void VRDevice::UpdateUIPointer(XrTime predictedDisplayTime, float vpuToWorldScale)
+{
+   m_uiPointer = {};
+   if (!m_showUILayer || m_viewSpace == XR_NULL_HANDLE || m_referenceSpace == XR_NULL_HANDLE || m_uiSwapchainInfo.swapchain == XR_NULL_HANDLE)
+      return;
+
+   // The UI quad is anchored in the tracking space when it appears: placed in
+   // front of the user's head on first show, then room locked until hidden (a
+   // fixed surface is far easier to point at than a head-locked one)
+   if (!m_uiLayerPoseValid)
+   {
+      XrSpaceLocation headLocation { XR_TYPE_SPACE_LOCATION };
+      if (xrLocateSpace(m_viewSpace, m_referenceSpace, predictedDisplayTime, &headLocation) != XR_SUCCESS
+         || (headLocation.locationFlags & (XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT))
+            != (XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT))
+         return;
+      const bx::Quaternion headRot { headLocation.pose.orientation.x, headLocation.pose.orientation.y, headLocation.pose.orientation.z, headLocation.pose.orientation.w };
+      const bx::Vec3 headPos { headLocation.pose.position.x, headLocation.pose.position.y, headLocation.pose.position.z };
+      const bx::Vec3 quadOffset = bx::mul(bx::Vec3 { 0.f, -0.05f * kUILayerHeight, -kUILayerDistance }, headRot);
+      m_uiLayerPose.position = { headPos.x + quadOffset.x, headPos.y + quadOffset.y, headPos.z + quadOffset.z };
+      m_uiLayerPose.orientation = headLocation.pose.orientation;
+      m_uiLayerPoseValid = true;
+   }
+
+   // Quad frame in reference space, from the frozen layer pose (meters)
+   const bx::Quaternion quadRot { m_uiLayerPose.orientation.x, m_uiLayerPose.orientation.y, m_uiLayerPose.orientation.z, m_uiLayerPose.orientation.w };
+   const bx::Vec3 quadCenter { m_uiLayerPose.position.x, m_uiLayerPose.position.y, m_uiLayerPose.position.z };
+   const bx::Vec3 quadXAxis = bx::mul(bx::Vec3 { 1.f, 0.f, 0.f }, quadRot);
+   const bx::Vec3 quadYAxis = bx::mul(bx::Vec3 { 0.f, 1.f, 0.f }, quadRot);
+   const bx::Vec3 quadNormal = bx::mul(bx::Vec3 { 0.f, 0.f, 1.f }, quadRot);
+
+   struct HandPointer
+   {
+      XrPosef pose {};
+      float hit[3] { 0.f, 0.f, 0.f };
+      float u = 0.f, v = 0.f;
+      bool valid = false;
+      bool onQuad = false;
+   };
+   const auto locateHand = [this, predictedDisplayTime, &quadCenter, &quadXAxis, &quadYAxis, &quadNormal](XrSpace space)
+   {
+      HandPointer hand;
+      if (space == XR_NULL_HANDLE)
+         return hand;
+      XrSpaceLocation location { XR_TYPE_SPACE_LOCATION };
+      if (xrLocateSpace(space, m_referenceSpace, predictedDisplayTime, &location) != XR_SUCCESS)
+         return hand;
+      if ((location.locationFlags & (XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT))
+         != (XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT))
+         return hand;
+      hand.pose = location.pose;
+      // The aim forward axis is -Z in the aim pose's local space
+      const bx::Vec3 dir
+         = bx::mul(bx::Vec3 { 0.f, 0.f, -1.f }, bx::Quaternion { location.pose.orientation.x, location.pose.orientation.y, location.pose.orientation.z, location.pose.orientation.w });
+      const float denom = bx::dot(dir, quadNormal);
+      if (denom >= -1e-5f)
+         return hand; // The ray does not head toward the quad plane (parallel or away)
+      const bx::Vec3 origin { location.pose.position.x, location.pose.position.y, location.pose.position.z };
+      const float t = bx::dot(bx::sub(quadCenter, origin), quadNormal) / denom;
+      if (t <= 0.f)
+         return hand; // The quad plane is behind the controller
+      const bx::Vec3 hit = bx::mad(dir, t, origin);
+      hand.hit[0] = hit.x;
+      hand.hit[1] = hit.y;
+      hand.hit[2] = hit.z;
+      const bx::Vec3 rel = bx::sub(hit, quadCenter);
+      hand.u = bx::dot(rel, quadXAxis) / kUILayerWidth + 0.5f;
+      hand.v = 0.5f - bx::dot(rel, quadYAxis) / kUILayerHeight;
+      hand.valid = true;
+      hand.onQuad = hand.u >= 0.f && hand.u <= 1.f && hand.v >= 0.f && hand.v <= 1.f;
+      return hand;
+   };
+
+   // Prefer a hand actually pointing at the quad, the right hand first otherwise
+   const HandPointer hands[2] = { locateHand(m_rightAimSpace), locateHand(m_leftAimSpace) };
+   const int hand = hands[0].onQuad ? 0 : hands[1].onQuad ? 1 : hands[0].valid ? 0 : hands[1].valid ? 1 : -1;
+   if (hand < 0)
+      return;
+
+   const HandPointer& p = hands[hand];
+   m_uiPointer.valid = true;
+   m_uiPointer.onQuad = p.onQuad;
+   m_uiPointer.origin[0] = p.pose.position.x;
+   m_uiPointer.origin[1] = p.pose.position.y;
+   m_uiPointer.origin[2] = p.pose.position.z;
+   memcpy(m_uiPointer.hit, p.hit, sizeof(p.hit));
+   m_uiPointer.u = p.u;
+   m_uiPointer.v = p.v;
+
+   if (m_xrInputHandler != nullptr)
+      if (const XrAction clickAction = m_xrInputHandler->GetAction(hand == 0 ? "/user/hand/right/input/trigger/click" : "/user/hand/left/input/trigger/click"); clickAction != XR_NULL_HANDLE)
+      {
+         const XrActionStateGetInfo getInfo { XR_TYPE_ACTION_STATE_GET_INFO, nullptr, clickAction };
+         XrActionStateBoolean state { XR_TYPE_ACTION_STATE_BOOLEAN };
+         if (xrGetActionStateBoolean(m_session, &getInfo, &state) == XR_SUCCESS && state.isActive)
+            m_uiPointer.click = state.currentState;
+      }
+
+   // Convert the ray endpoints from reference-space meters to scene coordinates
+   // (VPU) for world-space rendering: reference VPU -> camera view units -> scene
+   // through the composed view inverse. The head pose cancels out (the pointer is
+   // anchored in the same tracking space as the eye views), leaving the inverse
+   // space transform applied to reference coordinates in VPU:
+   //   refToScene = scale(1/vpuToWorldScale) * eyeView * scale(1/spaceScale) * inv(composeView)
+   //            = scale(1/vpuToWorldScale) * inv(spaceTransform)
+   const SceneLayout::SpaceTransform& space = g_pplayer->m_ptable->GetSceneLayout().GetSpaceTransform(VPX::SpaceReference::Playfield);
+   const Matrix3D refToScene = Matrix3D::MatrixScale(1.f / vpuToWorldScale) * Matrix3D::MatrixInverse(space.m_transform);
+   const Vertex3Ds sceneOrigin = refToScene * Vertex3Ds(p.pose.position.x, p.pose.position.y, p.pose.position.z);
+   const Vertex3Ds sceneHit = refToScene * Vertex3Ds(p.hit[0], p.hit[1], p.hit[2]);
+   // Head position in scene coordinates: midpoint of the two eyes' camera origins
+   float projScale;
+   const Matrix3D viewToScene = Matrix3D::MatrixInverse(SceneLayout::ComposeView(space, m_eyeView[0], projScale));
+   const Matrix3D viewToSceneRight = Matrix3D::MatrixInverse(SceneLayout::ComposeView(space, m_eyeView[1], projScale));
+   const Vertex3Ds headScene = (viewToScene * Vertex3Ds(0.f, 0.f, 0.f) + viewToSceneRight * Vertex3Ds(0.f, 0.f, 0.f)) * 0.5f;
+   m_uiPointer.sceneOrigin[0] = sceneOrigin.x;
+   m_uiPointer.sceneOrigin[1] = sceneOrigin.y;
+   m_uiPointer.sceneOrigin[2] = sceneOrigin.z;
+   m_uiPointer.sceneHit[0] = sceneHit.x;
+   m_uiPointer.sceneHit[1] = sceneHit.y;
+   m_uiPointer.sceneHit[2] = sceneHit.z;
+   m_uiPointer.headScene[0] = headScene.x;
+   m_uiPointer.headScene[1] = headScene.y;
+   m_uiPointer.headScene[2] = headScene.z;
+}
+
 void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarget* vrRenderTarget)>& submitFrame)
 {
    assert(m_session);
@@ -1316,6 +1468,9 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
             m_eyeProj[eye] = vpuScale * m_nextProj[eye];
          }
 
+         // Controller pointer raycast against the view-locked UI quad layer (for LiveUI mouse emulation)
+         UpdateUIPointer(renderLayerInfo.predictedDisplayTime, vpuToWorldScale);
+
          // Feed the head tracked pose to the spatial audio listener (in table space, VPU),
          // only when the located views carry a valid pose (tracking loss would feed garbage)
          const bool headPoseValid = (viewState.viewStateFlags & (XR_VIEW_STATE_POSITION_VALID_BIT | XR_VIEW_STATE_ORIENTATION_VALID_BIT))
@@ -1486,18 +1641,16 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          // Submit the LiveUI as a separate view-locked quad layer on top of the scene. Rendering the UI inside the
          // projection layer made it shake since a head locked overlay was reprojected as world locked geometry, and the
          // fake stereo offset applied per eye made it appear unfocused.
-         if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE && m_showUILayer)
+         if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE && m_showUILayer && m_uiLayerPoseValid)
          {
-            constexpr float uiDistance = 0.5f; // meter in front of the player
-            const float uiHeight = static_cast<float>(m_uiSwapchainInfo.height) / static_cast<float>(m_uiSwapchainInfo.width);
             renderLayerInfo.layerQuad.layerFlags= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT | XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT | XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT;
-            renderLayerInfo.layerQuad.space = m_viewSpace;
+            renderLayerInfo.layerQuad.space = m_referenceSpace;
             renderLayerInfo.layerQuad.eyeVisibility = XR_EYE_VISIBILITY_BOTH;
             renderLayerInfo.layerQuad.subImage.swapchain = m_uiSwapchainInfo.swapchain;
             renderLayerInfo.layerQuad.subImage.imageRect = { { 0, 0 }, { (int32_t)m_uiSwapchainInfo.width, (int32_t)m_uiSwapchainInfo.height } };
             renderLayerInfo.layerQuad.subImage.imageArrayIndex = 0;
-            renderLayerInfo.layerQuad.pose = { { 0.f, 0.f, 0.f, 1.f }, { 0.f, -0.05f * uiHeight, -uiDistance } };
-            renderLayerInfo.layerQuad.size = { 1.f, uiHeight };
+            renderLayerInfo.layerQuad.pose = m_uiLayerPose;
+            renderLayerInfo.layerQuad.size = { kUILayerWidth, kUILayerHeight };
             renderLayerInfo.layers.push_back(reinterpret_cast<XrCompositionLayerBaseHeader*>(&renderLayerInfo.layerQuad));
          }
       }

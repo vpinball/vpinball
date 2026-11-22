@@ -23,9 +23,10 @@ namespace VPX::InGameUI
 std::unique_ptr<InGameUIRenderer> InGameUIRenderer::Create(InGameUI& owner)
 {
    // The desktop renderer covers all non-touch targets, adapting its layout to
-   // the playfield frame (landscape, portrait FSS, portrait cabinet inset).
-   // Mobile touch and VR keep the pinball card layout.
-   if (!g_isMobile && g_pplayer->m_vrDevice == nullptr)
+   // the playfield frame (landscape, portrait FSS, portrait cabinet inset). VR
+   // gets it too: the view-locked UI layer is a 16:9 surface, so the landscape
+   // layout applies there as well. Mobile touch keeps the pinball card layout.
+   if (!g_isMobile)
       return std::make_unique<InGameUIDesktopRenderer>(owner);
    return std::make_unique<InGameUIDefaultRenderer>(owner);
 }

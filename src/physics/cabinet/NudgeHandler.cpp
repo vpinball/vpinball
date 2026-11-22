@@ -4,6 +4,7 @@
 #include "NudgeHandler.h"
 
 #include "core/VPApp.h"
+#include "core/player.h"
 #include "input/PhysicsSensor.h"
 #include "math/HighPassFilter.h"
 #include "parts/pintable.h"
@@ -11,6 +12,7 @@
 #include "physics/cabinet/GamepadNudge.h"
 #include "physics/cabinet/KeyboardNudge.h"
 #include "physics/cabinet/MotionKalmanAxis.h"
+#include "ui/live/LiveUI.h"
 
 
 namespace VPX::Physics
@@ -57,6 +59,9 @@ void NudgeHandler::StepOneMillisecond()
 Vertex2D NudgeHandler::GetCabinetAcceleration() const
 {
    const auto physical = [this](const Vertex2D& v) { return m_mirrored ? Vertex2D(-v.x, v.y) : v; };
+   // Gameplay input is suspended while the InGame UI is open (it overlaps UI commands)
+   if (g_pplayer != nullptr && g_pplayer->m_liveUI != nullptr && g_pplayer->m_liveUI->IsInGameUIOpened())
+      return m_noNudge;
    if (m_externalOverride)
       return physical(m_externalAcceleration);
    if (m_keyboardNudge->IsActive())
@@ -70,6 +75,9 @@ Vertex2D NudgeHandler::GetCabinetAcceleration() const
 Vertex2D NudgeHandler::GetCabinetOffset() const
 {
    const auto physical = [this](const Vertex2D& v) { return m_mirrored ? Vertex2D(-v.x, v.y) : v; };
+   // Gameplay input is suspended while the InGame UI is open (it overlaps UI commands)
+   if (g_pplayer != nullptr && g_pplayer->m_liveUI != nullptr && g_pplayer->m_liveUI->IsInGameUIOpened())
+      return m_noNudge;
    if (m_externalOverride)
       return physical(m_externalDisplacement);
    if (m_keyboardNudge->IsActive())

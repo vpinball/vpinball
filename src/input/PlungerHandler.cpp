@@ -4,6 +4,8 @@
 #include "PlungerHandler.h"
 
 #include "core/VPApp.h"
+#include "core/player.h"
+#include "ui/live/LiveUI.h"
 
 #include <algorithm>
 
@@ -68,11 +70,17 @@ bool PlungerHandler::HasPlungerSensor() const
 
 float PlungerHandler::GetRawVelocity() const
 {
+   // Gameplay input is suspended while the InGame UI is open (it overlaps UI commands)
+   if (g_pplayer != nullptr && g_pplayer->m_liveUI != nullptr && g_pplayer->m_liveUI->IsInGameUIOpened())
+      return 0.f;
    return m_rawVelocity;
 }
 
 float PlungerHandler::GetHitVelocity(float restPos) const
 {
+   // Gameplay input is suspended while the InGame UI is open (it overlaps UI commands)
+   if (g_pplayer != nullptr && g_pplayer->m_liveUI != nullptr && g_pplayer->m_liveUI->IsInGameUIOpened())
+      return 0.f;
    // External velocity is provided in p.u./s, that is to say relative to the full plunger range, while hit velocity is
    // expressed in t.u./s, relative to the range between rest position and fully retracted (rescaled by 1 - restPos)
    if (m_externalOverride)
@@ -91,6 +99,9 @@ float PlungerHandler::GetPosition(float restPos) const
    //  0 maps to restPos
    //  1 maps to 1
    assert(restPos >= 0.f && restPos <= 1.f);
+   // Gameplay input is suspended while the InGame UI is open (it overlaps UI commands)
+   if (g_pplayer != nullptr && g_pplayer->m_liveUI != nullptr && g_pplayer->m_liveUI->IsInGameUIOpened())
+      return restPos;
    return saturate(lerp(restPos, 1.f, m_position));
 }
 

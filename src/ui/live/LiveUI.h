@@ -18,6 +18,7 @@
 #include "DebuggerUI.h"
 
 struct UIListGeometry;
+class Sampler;
 
 class LiveUI final : public UserMessageSink
 {
@@ -101,6 +102,15 @@ private:
    // Touch UI overlay
    void UpdateTouchUI();
    bool m_showTouchOverlay;
+
+   // VR: whether the last rendered frame had UI content (mirrors the state pushed
+   // to VRDevice::SetShowUILayer, gating the controller pointer and its ray)
+   bool m_uiLayerShown = false;
+   // VR controller pointer: last trigger state fed to ImGui as the left mouse
+   // button, and the 1D gradient texture of the pointer ray ribbon
+   bool m_vrPointerClick = false;
+   std::shared_ptr<Sampler> m_laserSampler;
+   std::shared_ptr<Sampler> m_laserDotSampler;
 
    // Emulated plumb overlay
    PlumbOverlay m_plumbOverlay;
