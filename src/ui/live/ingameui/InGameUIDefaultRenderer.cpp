@@ -231,7 +231,8 @@ void InGameUIDefaultRenderer::RenderPage(InGameUIPage& page, float elapsedS)
    }
 
    // Get back to previous page or to game
-   if (m_player->m_isLoading)
+   const bool suppressBack = m_player->m_isLoading && !page.IsBackAllowedWhileLoading();
+   if (suppressBack)
       ImGui::NewLine();
    else
    {
@@ -246,7 +247,7 @@ void InGameUIDefaultRenderer::RenderPage(InGameUIPage& page, float elapsedS)
       if (highlighted)
          ImGui::PopStyleColor();
    }
-   const bool backHovered = !m_player->m_isLoading && ImGui::IsItemHovered();
+   const bool backHovered = !suppressBack && ImGui::IsItemHovered();
 
    // Page items
    // Note that items may trigger state change which in turn may trigger a rebuild of the page (changing the item list)

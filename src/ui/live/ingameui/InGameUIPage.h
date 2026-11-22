@@ -57,6 +57,8 @@ public:
    InGameUIItem* GetItem(const string& label) const;
 
    virtual bool IsPlayerPauseAllowed() const { return true; }
+   // Whether the page may be left through Back while the player is loading a table (the loading screen is the navigation root and cannot be closed)
+   virtual bool IsBackAllowedWhileLoading() const { return false; }
 
    ImVec2 GetWindowPos() const { return m_windowPos; }
    ImVec2 GetWindowSize() const { return m_windowSize; }
