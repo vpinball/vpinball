@@ -3,8 +3,6 @@
 #include "AnimatedActor.h"
 #include "resources/AssetManager.h"
 
-#include "LibAv.h"
-
 namespace Flex {
 
 class Video final : public AnimatedActor
@@ -22,14 +20,13 @@ public:
 
 private:
    Video(FlexDMD* pFlexDMD, const string& name);
+   static Video* CreateBlack(FlexDMD* pFlexDMD, const string& name);
 
    std::vector<SDL_Surface*> m_frames;
    SDL_Surface* m_pActiveFrameSurface = nullptr;
    int m_pos = 0;
    float m_frameDuration = 0.0f;
    float m_length;
-
-   const LibAV::LibAV& m_libAv;
 };
 
 }

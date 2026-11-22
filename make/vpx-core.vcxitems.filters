@@ -22,6 +22,9 @@
     <Filter Include="math">
       <UniqueIdentifier>{f3961dac-131c-4ac3-3988-412398766646}</UniqueIdentifier>
     </Filter>
+    <Filter Include="media">
+      <UniqueIdentifier>{8a2f4c1d-9e3b-4a7f-b5c2-1d6e8f0a3b4c}</UniqueIdentifier>
+    </Filter>
     <Filter Include="parts">
       <UniqueIdentifier>{fc16eece-2039-4e44-bad4-378f354cdfef}</UniqueIdentifier>
     </Filter>
@@ -180,6 +183,9 @@
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/MsgPluginManager.h">
       <Filter>plugin</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../plugins/plugins/MediaPlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../plugins/plugins/MsgPlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>
@@ -308,6 +314,9 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/math/MeshGLTF.cpp">
       <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/media/MediaPlayer.cpp">
+      <Filter>media</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/parts/ball.cpp">
       <Filter>parts</Filter>
@@ -1357,6 +1366,12 @@
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/math/ModelViewProj.h">
       <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/media/LibAv.h">
+      <Filter>media</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/media/MediaPlayer.h">
+      <Filter>media</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/meshes/ballMesh.h">
       <Filter>assets\meshes</Filter>

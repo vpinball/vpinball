@@ -82,10 +82,14 @@ template <typename T> constexpr T clamp(const T x, const T mn, const T mx) { ass
 template <typename T> constexpr T lerp(const T x1, const T x2, const float alpha) { return (1.f - alpha) * x1 + alpha * x2; }
 template <typename T> constexpr T saturate(const T x) { const T c = x < T { 1 } ? x : T { 1 }; return c < T { 0 } ? T { 0 } : c; }
 
+// Media decoding provided by the VPX core (video & audio)
+extern MediaAPI *mediaApi;
+
 // Rendering provided through plugin messages
 extern VPXTexture CreateTexture(SDL_Surface* surf);
 extern VPXTextureInfo* GetTextureInfo(VPXTexture texture);
 extern void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat format, const void *image);
+extern void UpdateTextureFromFrame(Media media, MediaFrame frame, VPXTexture *texture);
 extern void DeleteTexture(VPXTexture texture);
 
 extern void UpdateAudioStream(AudioUpdateMsg *msg);

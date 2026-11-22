@@ -3,7 +3,6 @@
 #pragma once
 
 #include "PUPManager.h"
-#include "LibAv.h"
 #include "ThreadPool.h"
 
 namespace PUP {
@@ -41,9 +40,8 @@ private:
    void RenderHold(VPXRenderContext2D* const ctx, const SDL_Rect& destRect, float alpha);
    void RenderLastFrame(VPXRenderContext2D* const ctx, const SDL_Rect& destRect, float alpha);
    void Run();
-   AVCodecContext* OpenStream(AVFormatContext* pInputFormatContext, int stream);
-   void HandleAudioFrame(AVFrame* pFrame, bool sync);
-   void HandleVideoFrame(AVFrame* pFrame);
+   void HandleAudioOutput(const MediaOutput& output, bool sync);
+   void HandleVideoFrame(MediaFrame frame, double framePts);
 
    string m_name;
    SDL_Rect m_bounds = {};
@@ -66,6 +64,7 @@ private:
    bool m_loop = false;
    double m_stillDuration = 0.0;
    int m_playIndex = 0;
+   int m_lastAudioPass = -1; // Pass index of the last emitted audio chunk
    std::atomic<unsigned int> m_loopCount = 0;
    float m_volume = 100.f;
 
@@ -74,10 +73,12 @@ private:
    std::atomic<bool> m_firstRenderPending = false; // cleared by the render thread (first render) or the decoder thread (timeout)
    double m_lastDecodedPts = 0.0;
 
-   AVFormatContext* m_pFormatContext = nullptr;
+   Media m_media = nullptr;
+   bool m_hasVideo = false;
+   bool m_hasAudio = false;
+   double m_streamStartTime = 0.0; // [s] pts offset of the clock stream
+   double m_videoDuration = 0.0; // [s] video stream duration
 
-   int m_videoStream = -1;
-   AVCodecContext* m_pVideoContext = nullptr;
    bool m_videoPtsBaseValid = false;
    double m_videoPtsBase = 0.0;
    bool m_audioPtsBaseValid = false;
@@ -91,8 +92,10 @@ private:
    struct FrameInfo
    {
       bool valid = false;
-      AVFrame* frame = nullptr;
-      uint8_t* buffer = nullptr;
+      MediaFrame frame = nullptr; // Session-owned decoded frame handle (unmasked path)
+      uint8_t* pixels = nullptr; // Owned RGBA pixel copy when a mask is applied
+      unsigned int width = 0;
+      unsigned int height = 0;
       VPXTexture texture = nullptr;
       double pts = -1.0;
       bool uploaded = false;
@@ -101,27 +104,18 @@ private:
    vector<FrameInfo> m_frames;
    std::atomic<VPXTexture> m_holdTexture = nullptr;
    std::atomic<uint64_t> m_endTicks = 0;
-   SwsContext* m_swsContext = nullptr;
    uint64_t m_lastRenderTicks = 0;
    uint64_t m_playTicks = 0;
 
    std::shared_ptr<SDL_Surface> m_mask = nullptr;
    std::unique_ptr<SDL_Surface, void (*)(SDL_Surface*)> m_scaledMask;
 
-   int m_audioStream = -1;
-   AVCodecContext* m_pAudioContext = nullptr;
-   struct SwrContext* m_pAudioConversionContext = nullptr;
-   AVSampleFormat m_audioFormat = AV_SAMPLE_FMT_NONE;
-   void* m_pAudioLoop = nullptr;
-   int m_audioFreq = 0;
    uint32_t m_audioStreamId;
    static std::atomic<uint32_t> m_nextAudioStreamId;
 
    std::mutex m_mutex;
    std::thread m_thread;
    std::atomic<bool> m_running = false;
-
-   const LibAV::LibAV& m_libAv;
 
    progschj::ThreadPool m_commandQueue;
 };

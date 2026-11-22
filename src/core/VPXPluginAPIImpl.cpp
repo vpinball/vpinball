@@ -10,6 +10,7 @@
 #include "ui/live/LiveUI.h"
 #include "input/PlungerHandler.h"
 #include "physics/cabinet/NudgeHandler.h"
+#include "media/MediaPlayer.h"
 
 VPXPluginAPIImpl* VPXPluginAPIImpl::s_instance = nullptr;
 
@@ -688,6 +689,7 @@ VPXPluginAPIImpl::VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager, Setti
    , m_onGameEndMsgId(m_msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END))
    , m_getLoggingAPIMsgId(m_msgApi.GetMsgID(LOGPI_NAMESPACE, LOGPI_MSG_GET_API))
    , m_getScriptingAPIMsgId(m_msgApi.GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API))
+   , m_getMediaAPIMsgId(m_msgApi.GetMsgID(MEDIAPI_NAMESPACE, MEDIAPI_MSG_GET_API))
 {
    assert(s_instance == nullptr);
    s_instance = this;
@@ -717,12 +719,26 @@ VPXPluginAPIImpl::VPXPluginAPIImpl(MsgPI::MsgPluginManager& pluginManager, Setti
 
    m_api.RunScript = RunScript;
 
+   m_api.UpdateTextureFromFrame = MediaUpdateTextureFromFrame;
+
+   // Media decoding API
+   m_mediaApi.version = 1;
+   m_mediaApi.Open = MediaOpen;
+   m_mediaApi.GetInfo = MediaGetInfo;
+   m_mediaApi.Read = MediaRead;
+   m_mediaApi.Seek = MediaSeek;
+   m_mediaApi.SetVideoFrameSize = MediaSetVideoFrameSize;
+   m_mediaApi.ReleaseFrame = MediaReleaseFrame;
+   m_mediaApi.GetFramePixels = MediaGetFramePixels;
+   m_mediaApi.Close = MediaClose;
+
    m_vpxPlugin = pluginManager.RegisterPlugin(
       "vpx"s, "VPX"s, "Visual Pinball X"s, ""s, ""s, "https://github.com/vpinball/vpinball"s, //
       [](const uint32_t, const MsgPluginAPI*) { /* Load: nothing to do */ }, //
       []() { /* Load: nothing to do */ });
    m_vpxPlugin->Load(&m_msgApi);
    m_msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getVPXAPIMsgId, &OnGetVPXPluginAPI, this);
+   m_msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getMediaAPIMsgId, &OnGetMediaAPI, this);
 
    // Plugin settings & UI sheets APIs (MsgPlugin settings + PagedUI)
    m_pluginUI = std::make_unique<VPXPluginPagedUI>(pluginManager, m_msgApi, m_vpxPlugin->m_endpointId, settings);
@@ -771,6 +787,8 @@ VPXPluginAPIImpl::~VPXPluginAPIImpl()
 
    m_msgApi.UnsubscribeMsg(m_getVPXAPIMsgId, &OnGetVPXPluginAPI, this);
    m_msgApi.ReleaseMsgID(m_getVPXAPIMsgId);
+   m_msgApi.UnsubscribeMsg(m_getMediaAPIMsgId, &OnGetMediaAPI, this);
+   m_msgApi.ReleaseMsgID(m_getMediaAPIMsgId);
    m_msgApi.UnsubscribeMsg(m_getLoggingAPIMsgId, &OnGetLoggingPluginAPI, this);
    m_msgApi.ReleaseMsgID(m_getLoggingAPIMsgId);
    m_msgApi.UnsubscribeMsg(m_getScriptingAPIMsgId, &OnGetScriptablePluginAPI, this);
@@ -810,3 +828,82 @@ void VPXPluginAPIImpl::OnGetLoggingPluginAPI(const unsigned int msgId, void* use
    LoggingPluginAPI** pResult = static_cast<LoggingPluginAPI**>(msgData);
    *pResult = &pi.m_loggingApi;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Media decoding
+
+void VPXPluginAPIImpl::OnGetMediaAPI(const unsigned int msgId, void* userData, void* msgData)
+{
+   VPXPluginAPIImpl& pi = *static_cast<VPXPluginAPIImpl*>(userData);
+   MediaAPI** pResult = static_cast<MediaAPI**>(msgData);
+   *pResult = &pi.m_mediaApi;
+}
+
+Media MSGPIAPI VPXPluginAPIImpl::MediaOpen(const char* path, unsigned int flags)
+{
+   assert(flags == MEDIA_OPEN_DEFAULT);
+   if (path == nullptr)
+      return nullptr;
+   VPX::MediaPlayer* media = VPX::MediaPlayer::TryOpen(path);
+   if (!media->IsOpen())
+   {
+      delete media;
+      return nullptr;
+   }
+   return media;
+}
+
+void MSGPIAPI VPXPluginAPIImpl::MediaGetInfo(Media media, MediaInfo* info)
+{
+   if (media == nullptr || info == nullptr)
+      return;
+   static_cast<VPX::MediaPlayer*>(media)->GetInfo(info);
+}
+
+int MSGPIAPI VPXPluginAPIImpl::MediaRead(Media media, MediaOutput* output)
+{
+   if (media == nullptr || output == nullptr)
+      return -1;
+   return static_cast<VPX::MediaPlayer*>(media)->Read(output);
+}
+
+int MSGPIAPI VPXPluginAPIImpl::MediaSeek(Media media, double position)
+{
+   if (media == nullptr)
+      return -1;
+   return static_cast<VPX::MediaPlayer*>(media)->Seek(position);
+}
+
+void MSGPIAPI VPXPluginAPIImpl::MediaSetVideoFrameSize(Media media, unsigned int width, unsigned int height)
+{
+   if (media == nullptr)
+      return;
+   static_cast<VPX::MediaPlayer*>(media)->SetVideoFrameSize(width, height);
+}
+
+void MSGPIAPI VPXPluginAPIImpl::MediaReleaseFrame(Media media, MediaFrame frame)
+{
+   if (media == nullptr)
+      return;
+   static_cast<VPX::MediaPlayer*>(media)->ReleaseFrame(frame);
+}
+
+void MSGPIAPI VPXPluginAPIImpl::MediaUpdateTextureFromFrame(Media media, MediaFrame frame, VPXTexture* texture)
+{
+   if (media == nullptr || frame == nullptr || texture == nullptr)
+      return;
+   const uint8_t* data = nullptr;
+   unsigned int width = 0, height = 0;
+   if (static_cast<VPX::MediaPlayer*>(media)->GetFramePixels(frame, &data, &width, &height) == 0)
+      UpdateTexture(texture, width, height, VPXTextureFormat::VPXTEXFMT_sRGBA8, data);
+}
+
+int MSGPIAPI VPXPluginAPIImpl::MediaGetFramePixels(Media media, MediaFrame frame, const uint8_t** data, unsigned int* width, unsigned int* height)
+{
+   if (media == nullptr || frame == nullptr || data == nullptr || width == nullptr || height == nullptr)
+      return -1;
+   return static_cast<VPX::MediaPlayer*>(media)->GetFramePixels(frame, data, width, height);
+}
+
+void MSGPIAPI VPXPluginAPIImpl::MediaClose(Media media) { delete static_cast<VPX::MediaPlayer*>(media); }

@@ -1,4 +1,5 @@
 set(VPX_SOURCES
+   plugins/plugins/MediaPlugin.h
    plugins/plugins/MsgPlugin.h
    plugins/plugins/MsgPluginManager.h
    plugins/plugins/MsgPluginManager.cpp
@@ -110,6 +111,10 @@ set(VPX_SOURCES
    src/math/MeshGLTF.cpp
    src/math/MeshUtils.h
    src/math/ModelViewProj.h
+
+   src/media/LibAv.h
+   src/media/MediaPlayer.cpp
+   src/media/MediaPlayer.h
 
    src/meshes/ballMesh.h
    src/meshes/bulbLightMesh.h

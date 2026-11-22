@@ -9,8 +9,6 @@
 #include "PUPManager.h"
 #include "PUPPinDisplay.h"
 
-#include "LibAv.h"
-
 ///////////////////////////////////////////////////////////////////////////////
 // PinUp Player plugin
 //
@@ -47,6 +45,7 @@ namespace PUP {
 
 static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
+MediaAPI* mediaApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 static PagedUIPluginAPI* pagedUIApi = nullptr;
 static uint32_t endpointId;
@@ -132,6 +131,12 @@ void UpdateTexture(VPXTexture* texture, int width, int height, VPXTextureFormat 
       vpxApi->UpdateTexture(texture, width, height, format, image);
 }
 
+void UpdateTextureFromFrame(Media media, MediaFrame frame, VPXTexture* texture)
+{
+   if (vpxApi)
+      vpxApi->UpdateTextureFromFrame(media, frame, texture);
+}
+
 VPXTexture CreateTexture(SDL_Surface* surf)
 {
    VPXTexture texture = nullptr;
@@ -167,8 +172,7 @@ void UpdateAudioStream(AudioUpdateMsg* msg)
    if (msg->volume == 0.0f)
    {
       StopAudioStream(msg->streamId.resId);
-      if (LibAV::LibAV::GetInstance().isLoaded)
-         LibAV::LibAV::GetInstance()._av_free(msg->buffer);
+      free(msg->buffer);
    }
    else
    {
@@ -180,8 +184,7 @@ void UpdateAudioStream(AudioUpdateMsg* msg)
          {
             AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
             msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
-            if (LibAV::LibAV::GetInstance().isLoaded)
-               LibAV::LibAV::GetInstance()._av_free(msg->buffer);
+            free(msg->buffer);
             delete msg;
          },
          msg);
@@ -272,6 +275,10 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginLoad(const uint32_t sessionId, const MsgPlug
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
 
+   unsigned int getMediaApiId = msgApi->GetMsgID(MEDIAPI_NAMESPACE, MEDIAPI_MSG_GET_API);
+   msgApi->BroadcastMsg(endpointId, getMediaApiId, &mediaApi);
+   msgApi->ReleaseMsgID(getMediaApiId);
+
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), OnGameEnd, nullptr);
 
    onAudioUpdateId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_ON_UPDATE_MSG);
@@ -328,6 +335,7 @@ MSGPI_EXPORT void MSGPIAPI PUPPluginUnload()
 
    scriptApi = nullptr;
    vpxApi = nullptr;
+   mediaApi = nullptr;
    pagedUIApi = nullptr;
    msgApi = nullptr;
 

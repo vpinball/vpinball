@@ -4,7 +4,6 @@
 #include "PUPScreen.h"
 #include "PUPTrigger.h"
 #include "PUPCustomPos.h"
-#include "LibAv.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4267)
@@ -1571,7 +1570,7 @@ int PUPManager::Render(VPXRenderContext2D* const renderCtx, void* context)
    if (!isUsableRoot(rootScreen))
       return displayTarget >= 0 && me->RenderDisplays(renderCtx, displayTarget) > 0;
 
-   if (!LibAV::LibAV::GetInstance().isLoaded)
+   if (mediaApi == nullptr)
       return false;
    rootScreen->SetBounds(padLeft, padTop, static_cast<int>(renderCtx->srcWidth) - padLeft - padRight, static_cast<int>(renderCtx->srcHeight) - padTop - padBottom);
 

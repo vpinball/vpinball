@@ -316,6 +316,7 @@ PSC_CLASS_END()
 
 static const MsgPluginAPI* msgApi = nullptr;
 static VPXPluginAPI* vpxApi = nullptr;
+MediaAPI* mediaApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 static uint32_t endpointId, nextDmdId;
 static std::vector<FlexDMD*> flexDmds;
@@ -339,6 +340,10 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginLoad(const uint32_t sessionId, const Msg
    unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
    msgApi->ReleaseMsgID(getVpxApiId);
+
+   unsigned int getMediaApiId = msgApi->GetMsgID(MEDIAPI_NAMESPACE, MEDIAPI_MSG_GET_API);
+   msgApi->BroadcastMsg(endpointId, getMediaApiId, &mediaApi);
+   msgApi->ReleaseMsgID(getMediaApiId);
 
    // Contribute our API to the script engine
    const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
@@ -457,4 +462,5 @@ MSGPI_EXPORT void MSGPIAPI FlexDMDPluginUnload()
    scriptApi = nullptr;
    msgApi = nullptr;
    vpxApi = nullptr;
+   mediaApi = nullptr;
 }

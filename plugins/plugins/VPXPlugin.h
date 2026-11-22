@@ -3,6 +3,7 @@
 #pragma once
 
 #include "MsgPlugin.h"
+#include "MediaPlugin.h"
 #include "ControllerPlugin.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -307,5 +308,12 @@ typedef struct VPXPluginAPI
 
    // --- Scripting
    void(MSGPIAPI* RunScript)(const char* script);
+
+   // --- Media decoding (see the host independent MediaAPI in MediaPlugin.h)
+   // Create or update a VPXTexture (sRGBA8) from a decoded media frame, for use
+   // e.g. with VPXRenderContext2D::DrawImage. The texture must be destroyed by
+   // the caller using DeleteTexture.
+   // NOT Thread safe: must be called on the API thread, like UpdateTexture.
+   void(MSGPIAPI* UpdateTextureFromFrame)(Media media, MediaFrame frame, VPXTexture* texture);
 
 } VPXPluginAPI;

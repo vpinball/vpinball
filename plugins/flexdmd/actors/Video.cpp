@@ -2,24 +2,9 @@
 
 namespace Flex {
 
-/*
- * swscale SIMD paths may read/write past the end of image planes, so destination buffers
- * must be over-allocated. 64 matches FFmpeg's internal STRIDE_ALIGN (AVX-512 store width)
- * and Chromium's kFFmpegBufferAddressAlignment on x86.
- *
- * https://ffmpeg.org/doxygen/trunk/structAVFrame.html ("some filters and swscale can read
- * up to 16 bytes beyond the planes")
- * https://trac.ffmpeg.org/ticket/9254 (sws_scale writes out of buffer, ssse3 YUV->RGB)
- * https://trac.ffmpeg.org/ticket/10852 (sws_scale overflows buffer for some resolutions)
- * https://source.chromium.org/chromium/chromium/src/+/main:media/base/limits.h
- */
-#define FLEX_SWS_DST_PADDING 64
-
 Video::Video(FlexDMD* pFlexDMD, const string& name)
    : AnimatedActor(pFlexDMD, name)
-   , m_libAv(LibAV::LibAV::GetInstance())
 {
-   assert(m_libAv.isLoaded);
 }
 
 Video::~Video()
@@ -38,86 +23,74 @@ Video* Video::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const strin
    if (videoPath.empty())
       return nullptr;
 
-   const LibAV::LibAV& m_libAv = LibAV::LibAV::GetInstance();
-   assert(m_libAv.isLoaded);
-
-   SwsContext* m_pVideoConversionContext = nullptr;
-   AVFormatContext* m_pFormatContext = nullptr;
-   AVCodecContext* m_pCodecContext = nullptr;
-   int m_videoStreamIndex = -1;
-
-   if (m_libAv._avformat_open_input(&m_pFormatContext, PluginStrings::PathToUTF8(videoPath).c_str(), nullptr, nullptr) != 0)
-      return nullptr;
-
-   m_libAv._avformat_find_stream_info(m_pFormatContext, nullptr);
-   for (unsigned i = 0; i < m_pFormatContext->nb_streams; ++i) {
-      if (m_pFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-         m_videoStreamIndex = i;
-         break;
-      }
+   // The actual media decoding is performed by the VPX core through the MediaAPI.
+   // When decoding is not available (API not provided, or runtime libraries
+   // failing to load), degrade gracefully to a full black video.
+   if (mediaApi == nullptr)
+   {
+      LOGE("Media decoding is not available, video will be black: " + pSrc->GetPath());
+      return CreateBlack(pFlexDMD, name);
    }
 
-   if (m_videoStreamIndex < 0)
+   Media media = mediaApi->Open(PluginStrings::PathToUTF8(videoPath).c_str(), MEDIA_OPEN_DEFAULT);
+   if (media == nullptr)
+   {
+      LOGE("Media decoding failed, video will be black: " + PluginStrings::PathToUTF8(videoPath));
+      return CreateBlack(pFlexDMD, name);
+   }
+
+   MediaInfo info {};
+   mediaApi->GetInfo(media, &info);
+   if (info.videoWidth == 0)
+   {
+      mediaApi->Close(media);
       return nullptr;
+   }
 
    Video* pVideo = new Video(pFlexDMD, name);
    pVideo->SetLoop(loop);
+   pVideo->m_frameDuration = (info.frameRate > 0.) ? static_cast<float>(1.0 / info.frameRate) : 0.f;
 
-   AVStream* pStream = m_pFormatContext->streams[m_videoStreamIndex];
-   pVideo->m_frameDuration = static_cast<float>(1.0 / av_q2d(pStream->avg_frame_rate));
-   const AVCodec* codec = m_libAv._avcodec_find_decoder(pStream->codecpar->codec_id);
-   m_pCodecContext = m_libAv._avcodec_alloc_context3(codec);
-   m_libAv._avcodec_parameters_to_context(m_pCodecContext, pStream->codecpar);
-   m_libAv._avcodec_open2(m_pCodecContext, codec, nullptr);
-
-   int w = m_pCodecContext->width;
-   int h = m_pCodecContext->height;
-   AVPacket* pPacket = m_libAv._av_packet_alloc();
-   AVFrame* pFrame = m_libAv._av_frame_alloc();
-   while (m_libAv._av_read_frame(m_pFormatContext, pPacket) >= 0)
+   MediaOutput output {};
+   while (mediaApi->Read(media, &output) == 0 && output.type != MEDIA_OUT_EOF && output.type != MEDIA_OUT_ERROR)
    {
-      if (pPacket->stream_index == m_videoStreamIndex) {
-         m_libAv._avcodec_send_packet(m_pCodecContext, pPacket);
-         while (m_libAv._avcodec_receive_frame(m_pCodecContext, pFrame) >= 0)
-         {
-            if (!m_pVideoConversionContext)
-               m_pVideoConversionContext = m_libAv._sws_getCachedContext(nullptr, w, h, m_pCodecContext->pix_fmt, w, h, AV_PIX_FMT_RGBA, SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
-
-            int bufSize = m_libAv._av_image_get_buffer_size(AV_PIX_FMT_RGBA, w, h, 1);
-            uint8_t* pBuffer = (uint8_t*)m_libAv._av_malloc(bufSize + FLEX_SWS_DST_PADDING);
-            uint8_t* dst[4] = { pBuffer, nullptr, nullptr, nullptr };
-            int dstLines[4] = { 4 * w, 0, 0, 0 };
-            m_libAv._sws_scale(m_pVideoConversionContext, pFrame->data, pFrame->linesize, 0, h, dst, dstLines);
-
-            SDL_Surface* pSurface = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
-            SDL_LockSurface(pSurface);
-            memcpy(pSurface->pixels, pBuffer, bufSize);
-            SDL_UnlockSurface(pSurface);
-            m_libAv._av_free(pBuffer);
-            pVideo->m_frames.push_back(pSurface);
-         }
+      if (output.type != MEDIA_OUT_VIDEO)
+         continue;
+      const uint8_t* pixels = nullptr;
+      unsigned int w = 0;
+      unsigned int h = 0;
+      if (mediaApi->GetFramePixels(media, output.videoFrame, &pixels, &w, &h) == 0)
+      {
+         SDL_Surface* pSurface = SDL_CreateSurface(static_cast<int>(w), static_cast<int>(h), SDL_PIXELFORMAT_RGBA32);
+         SDL_LockSurface(pSurface);
+         memcpy(pSurface->pixels, pixels, static_cast<size_t>(w) * h * 4);
+         SDL_UnlockSurface(pSurface);
+         pVideo->m_frames.push_back(pSurface);
       }
-      m_libAv._av_packet_unref(pPacket);
+      mediaApi->ReleaseFrame(media, output.videoFrame);
    }
+   mediaApi->Close(media);
 
-   m_libAv._av_frame_free(&pFrame);
-   m_libAv._av_packet_free(&pPacket);
-
-   if (m_pVideoConversionContext)
-      m_libAv._sws_freeContext(m_pVideoConversionContext);
-
-   if (m_pCodecContext)
-      m_libAv._avcodec_free_context(&m_pCodecContext);
-
-   if (m_pFormatContext)
-      m_libAv._avformat_close_input(&m_pFormatContext);
-
-   pVideo->SetPrefWidth(w);
-   pVideo->SetPrefHeight(h);
+   pVideo->SetPrefWidth(static_cast<int>(info.videoWidth));
+   pVideo->SetPrefHeight(static_cast<int>(info.videoHeight));
    pVideo->m_length = (float)pVideo->m_frames.size() * pVideo->m_frameDuration;
    pVideo->Rewind();
    pVideo->Pack();
 
+   return pVideo;
+}
+
+Video* Video::CreateBlack(FlexDMD* pFlexDMD, const string& name)
+{
+   Video* pVideo = new Video(pFlexDMD, name);
+   SDL_Surface* pSurface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA32);
+   static_cast<uint32_t*>(pSurface->pixels)[0] = SDL_MapSurfaceRGBA(pSurface, 0, 0, 0, 255);
+   pVideo->m_frames.push_back(pSurface);
+   pVideo->SetPrefWidth(1);
+   pVideo->SetPrefHeight(1);
+   pVideo->m_length = 0.f;
+   pVideo->Rewind();
+   pVideo->Pack();
    return pVideo;
 }
 
