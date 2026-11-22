@@ -613,8 +613,10 @@ int Controller::GetDip(int nDipBank) const
                   continue;
                }
             }
-            // Not provided by the core (yet), use the cached state
-            if (dipSwitchNo < m_dipSwitchStates.size() && m_dipSwitchStates[dipSwitchNo])
+            // Not provided by the core yet (it comes after the machine started): use the state the script set, else the one of the machine
+            // (its defaults or its NVRAM), as core.vbs takes this value as the default of the table options, which it then writes back
+            const bool state = dipSwitchNo < m_dipSwitchStates.size() ? m_dipSwitchStates[dipSwitchNo] : (PinmameGetDIP(nDipBank) & (1 << i)) != 0;
+            if (state)
                result |= 1u << i;
          }
       });
