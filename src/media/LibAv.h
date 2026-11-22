@@ -1,24 +1,32 @@
+// license:GPLv3+
+
 #pragma once
 
-extern "C" {
-   #include "libavutil/imgutils.h"
-   #include "libavcodec/avcodec.h"
-   #include "libavformat/avformat.h"
-   #include "libswscale/swscale.h"
-   #include "libswresample/swresample.h"
+#include <mutex>
+#include <string>
+
+extern "C"
+{
+#include "libavutil/imgutils.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
 }
 
 #ifdef _WIN32
-// As LibAvCodec is fairly heavy, we only load it when used to limit startup time impact
+// As FFmpeg is fairly heavy, we only load it when used to limit startup time impact.
+// The bundled import libraries use the GNU dlltool object format which MSVC /DELAYLOAD
+// does not support, so the runtime libraries are loaded explicitly from the directory
+// of the executable (next to which they are deployed).
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <windows.h>
-#include <tchar.h>
-#define LIBAV_STR_(x) _T(#x)
+#include <Windows.h>
+#define LIBAV_STR_(x) #x
 #define LIBAV_STR(x) LIBAV_STR_(x)
 #endif
 
@@ -29,16 +37,16 @@ namespace LibAV
 #undef CDECL
 #endif
 #ifdef _WIN64
-   // Windows x64 always uses standard calling convention (implicit)
-   #define CDECL
+// Windows x64 always uses standard calling convention (implicit)
+#define CDECL
 #else
-   // Other platforms, uses C calling convention
-   #if defined(__GNUC__)
-      // TODO GCC: #define CDECL __attribute__((__cdecl))
-      #define CDECL
-   #else
-      #define CDECL __cdecl
-   #endif
+// Other platforms, uses C calling convention
+#if defined(__GNUC__)
+// TODO GCC: #define CDECL __attribute__((__cdecl))
+#define CDECL
+#else
+#define CDECL __cdecl
+#endif
 #endif
 
 class LibAV
@@ -78,20 +86,23 @@ public:
    typedef AVFrame*(CDECL* fn_av_frame_alloc)(void);
    typedef int(CDECL* fn_av_frame_copy_props)(AVFrame* dst, const AVFrame* src);
    typedef void(CDECL* fn_av_frame_free)(AVFrame** frame);
+   typedef void(CDECL* fn_av_frame_move_ref)(AVFrame* dst, AVFrame* src);
    typedef void(CDECL* fn_av_free)(void* ptr);
    typedef int(CDECL* fn_av_image_fill_arrays)(uint8_t* dst_data[4], int dst_linesize[4], const uint8_t* src, enum AVPixelFormat pix_fmt, int width, int height, int align);
    typedef int(CDECL* fn_av_image_get_buffer_size)(enum AVPixelFormat pix_fmt, int width, int height, int align);
-   typedef void*(CDECL* fn_av_malloc)(size_t size) av_alloc_size(1);
+   typedef void*(CDECL* fn_av_malloc)(size_t size)av_alloc_size(1);
    typedef int(CDECL* fn_av_samples_get_buffer_size)(int* linesize, int nb_channels, int nb_samples, enum AVSampleFormat sample_fmt, int align);
    typedef void(CDECL* fn_av_log_set_level)(int level);
 
    typedef void(CDECL* fn_swr_free)(struct SwrContext** s);
-   typedef int(CDECL* fn_swr_alloc_set_opts2)(struct SwrContext** ps, const AVChannelLayout* out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate, const AVChannelLayout* in_ch_layout, enum AVSampleFormat in_sample_fmt, int in_sample_rate, int log_offset, void* log_ctx);
+   typedef int(CDECL* fn_swr_alloc_set_opts2)(struct SwrContext** ps, const AVChannelLayout* out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate,
+      const AVChannelLayout* in_ch_layout, enum AVSampleFormat in_sample_fmt, int in_sample_rate, int log_offset, void* log_ctx);
    typedef int(CDECL* fn_swr_init)(struct SwrContext* s);
    typedef int(CDECL* fn_swr_set_compensation)(struct SwrContext* s, int sample_delta, int compensation_distance);
    typedef int(CDECL* fn_swr_convert)(struct SwrContext* s, uint8_t* const* out, int out_count, const uint8_t* const* in, int in_count);
 
-   typedef struct SwsContext*(CDECL* fn_sws_getCachedContext)(struct SwsContext* context, int srcW, int srcH, enum AVPixelFormat srcFormat, int dstW, int dstH, enum AVPixelFormat dstFormat, int flags, SwsFilter* srcFilter, SwsFilter* dstFilter, const double* param);
+   typedef struct SwsContext*(CDECL* fn_sws_getCachedContext)(struct SwsContext* context, int srcW, int srcH, enum AVPixelFormat srcFormat, int dstW, int dstH, enum AVPixelFormat dstFormat,
+      int flags, SwsFilter* srcFilter, SwsFilter* dstFilter, const double* param);
    typedef int(CDECL* fn_sws_scale)(struct SwsContext* c, const uint8_t* const srcSlice[], const int srcStride[], int srcSliceY, int srcSliceH, uint8_t* const dst[], const int dstStride[]);
    typedef void(CDECL* fn_sws_freeContext)(struct SwsContext* swsContext);
 
@@ -121,6 +132,7 @@ public:
    fn_av_frame_alloc _av_frame_alloc = nullptr;
    fn_av_frame_copy_props _av_frame_copy_props = nullptr;
    fn_av_frame_free _av_frame_free = nullptr;
+   fn_av_frame_move_ref _av_frame_move_ref = nullptr;
    fn_av_image_fill_arrays _av_image_fill_arrays = nullptr;
    fn_av_image_get_buffer_size _av_image_get_buffer_size = nullptr;
    fn_av_malloc _av_malloc = nullptr;
@@ -138,39 +150,37 @@ public:
    fn_sws_scale _sws_scale = nullptr;
 
 private:
-   LibAV() {
-   }
+   LibAV() { }
 
    void Load()
    {
-      if (isLoaded)
-         return;
+      // First use may happen on any thread (e.g. a plugin decoding thread)
+      static std::once_flag s_loadOnce;
+      std::call_once(s_loadOnce, [this]() { LoadRuntime(); });
+   }
 
+   void LoadRuntime()
+   {
       isLoaded = true;
 
-   #ifdef _WIN32
+#ifdef _WIN32
       HINSTANCE hinstLib;
-      #if (INTPTR_MAX == INT32_MAX)
-      bool x64 = false;
-      #else
-      bool x64 = true;
-      #endif
+#if (INTPTR_MAX == INT32_MAX)
+      constexpr bool x64 = false;
+#else
+      constexpr bool x64 = true;
+#endif
 
-      HMODULE hm = nullptr;
-      if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("PluginLoad"), &hm) == 0)
+      // FFmpeg runtime libraries are deployed next to the executable
+      char path[MAX_PATH];
+      if (GetModuleFileNameA(nullptr, path, MAX_PATH) == 0)
          return;
-      TCHAR path[MAX_PATH];
-      if (GetModuleFileName(hm, path, MAX_PATH) == 0)
-         return;
-      #ifdef _UNICODE
-      std::wstring basepath(path);
-      #else
       std::string basepath(path);
-      #endif
-      basepath.erase(basepath.find_last_of(_T("\\/")));
-      basepath += _T('\\');
+      basepath.erase(basepath.find_last_of("\\/"));
+      basepath += '\\';
 
-      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("avcodec64-") LIBAV_STR(LIBAVCODEC_VERSION_MAJOR) _T(".dll") : _T("avcodec-") LIBAV_STR(LIBAVCODEC_VERSION_MAJOR) _T(".dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      hinstLib = LoadLibraryExA((basepath + (x64 ? "avcodec64-" LIBAV_STR(LIBAVCODEC_VERSION_MAJOR) ".dll" : "avcodec-" LIBAV_STR(LIBAVCODEC_VERSION_MAJOR) ".dll")).c_str(), NULL,
+         LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (hinstLib)
       {
          _av_packet_alloc = reinterpret_cast<fn_av_packet_alloc>(GetProcAddress(hinstLib, "av_packet_alloc"));
@@ -189,7 +199,8 @@ private:
             && _avcodec_get_name && _avcodec_open2 && _avcodec_parameters_to_context && _avcodec_receive_frame && _avcodec_send_packet;
       }
 
-      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("avformat64-") LIBAV_STR(LIBAVFORMAT_VERSION_MAJOR) _T(".dll") : _T("avformat-") LIBAV_STR(LIBAVFORMAT_VERSION_MAJOR) _T(".dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      hinstLib = LoadLibraryExA((basepath + (x64 ? "avformat64-" LIBAV_STR(LIBAVFORMAT_VERSION_MAJOR) ".dll" : "avformat-" LIBAV_STR(LIBAVFORMAT_VERSION_MAJOR) ".dll")).c_str(), NULL,
+         LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (hinstLib)
       {
          _av_find_best_stream = reinterpret_cast<fn_av_find_best_stream>(GetProcAddress(hinstLib, "av_find_best_stream"));
@@ -201,7 +212,8 @@ private:
          isLoaded &= _av_find_best_stream && _av_read_frame && _av_seek_frame && _avformat_open_input && _avformat_close_input;
       }
 
-      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("avutil64-") LIBAV_STR(LIBAVUTIL_VERSION_MAJOR) _T(".dll") : _T("avutil-") LIBAV_STR(LIBAVUTIL_VERSION_MAJOR) _T(".dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      hinstLib = LoadLibraryExA((basepath + (x64 ? "avutil64-" LIBAV_STR(LIBAVUTIL_VERSION_MAJOR) ".dll" : "avutil-" LIBAV_STR(LIBAVUTIL_VERSION_MAJOR) ".dll")).c_str(), NULL,
+         LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (hinstLib)
       {
          _av_get_bytes_per_sample = reinterpret_cast<fn_av_get_bytes_per_sample>(GetProcAddress(hinstLib, "av_get_bytes_per_sample"));
@@ -209,16 +221,19 @@ private:
          _av_frame_alloc = reinterpret_cast<fn_av_frame_alloc>(GetProcAddress(hinstLib, "av_frame_alloc"));
          _av_frame_copy_props = reinterpret_cast<fn_av_frame_copy_props>(GetProcAddress(hinstLib, "av_frame_copy_props"));
          _av_frame_free = reinterpret_cast<fn_av_frame_free>(GetProcAddress(hinstLib, "av_frame_free"));
+         _av_frame_move_ref = reinterpret_cast<fn_av_frame_move_ref>(GetProcAddress(hinstLib, "av_frame_move_ref"));
          _av_free = reinterpret_cast<fn_av_free>(GetProcAddress(hinstLib, "av_free"));
          _av_image_fill_arrays = reinterpret_cast<fn_av_image_fill_arrays>(GetProcAddress(hinstLib, "av_image_fill_arrays"));
          _av_image_get_buffer_size = reinterpret_cast<fn_av_image_get_buffer_size>(GetProcAddress(hinstLib, "av_image_get_buffer_size"));
          _av_malloc = reinterpret_cast<fn_av_malloc>(GetProcAddress(hinstLib, "av_malloc"));
          _av_samples_get_buffer_size = reinterpret_cast<fn_av_samples_get_buffer_size>(GetProcAddress(hinstLib, "av_samples_get_buffer_size"));
          _av_log_set_level = reinterpret_cast<fn_av_log_set_level>(GetProcAddress(hinstLib, "av_log_set_level"));
-         isLoaded &= _av_get_bytes_per_sample && _av_fast_malloc && _av_frame_alloc && _av_frame_copy_props && _av_frame_free && _av_free && _av_image_fill_arrays && _av_image_get_buffer_size && _av_malloc && _av_samples_get_buffer_size;
+         isLoaded &= _av_get_bytes_per_sample && _av_fast_malloc && _av_frame_alloc && _av_frame_copy_props && _av_frame_free && _av_frame_move_ref && _av_free && _av_image_fill_arrays
+            && _av_image_get_buffer_size && _av_malloc && _av_samples_get_buffer_size;
       }
 
-      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("swresample64-") LIBAV_STR(LIBSWRESAMPLE_VERSION_MAJOR) _T(".dll") : _T("swresample-") LIBAV_STR(LIBSWRESAMPLE_VERSION_MAJOR) _T(".dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      hinstLib = LoadLibraryExA((basepath + (x64 ? "swresample64-" LIBAV_STR(LIBSWRESAMPLE_VERSION_MAJOR) ".dll" : "swresample-" LIBAV_STR(LIBSWRESAMPLE_VERSION_MAJOR) ".dll")).c_str(),
+         NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (hinstLib)
       {
          _swr_alloc_set_opts2 = reinterpret_cast<fn_swr_alloc_set_opts2>(GetProcAddress(hinstLib, "swr_alloc_set_opts2"));
@@ -229,7 +244,8 @@ private:
          isLoaded &= _swr_alloc_set_opts2 && _swr_convert && _swr_free && _swr_init && _swr_set_compensation;
       }
 
-      hinstLib = LoadLibraryEx((basepath + (x64 ? _T("swscale64-") LIBAV_STR(LIBSWSCALE_VERSION_MAJOR) _T(".dll") : _T("swscale-") LIBAV_STR(LIBSWSCALE_VERSION_MAJOR) _T(".dll"))).c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      hinstLib = LoadLibraryExA((basepath + (x64 ? "swscale64-" LIBAV_STR(LIBSWSCALE_VERSION_MAJOR) ".dll" : "swscale-" LIBAV_STR(LIBSWSCALE_VERSION_MAJOR) ".dll")).c_str(), NULL,
+         LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (hinstLib)
       {
          _sws_freeContext = reinterpret_cast<fn_sws_freeContext>(GetProcAddress(hinstLib, "sws_freeContext"));
@@ -237,7 +253,7 @@ private:
          _sws_scale = reinterpret_cast<fn_sws_scale>(GetProcAddress(hinstLib, "sws_scale"));
          isLoaded &= _sws_freeContext && _sws_getCachedContext && _sws_scale;
       }
-   #else
+#else
       _av_packet_alloc = &av_packet_alloc;
       _av_packet_free = &av_packet_free;
       _av_packet_unref = &av_packet_unref;
@@ -263,6 +279,7 @@ private:
       _av_frame_alloc = &av_frame_alloc;
       _av_frame_copy_props = &av_frame_copy_props;
       _av_frame_free = &av_frame_free;
+      _av_frame_move_ref = &av_frame_move_ref;
       _av_free = &av_free;
       _av_image_fill_arrays = &av_image_fill_arrays;
       _av_image_get_buffer_size = &av_image_get_buffer_size;
@@ -279,12 +296,11 @@ private:
       _sws_freeContext = &sws_freeContext;
       _sws_getCachedContext = &sws_getCachedContext;
       _sws_scale = &sws_scale;
-   #endif
+#endif
 
       if (_av_log_set_level)
          _av_log_set_level(AV_LOG_ERROR);
    }
-
 };
 
 }

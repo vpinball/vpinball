@@ -39,6 +39,9 @@ using std::vector;
 // Scriptable API
 #include "plugins/ScriptablePlugin.h"
 
+// VPX main API (media decoding)
+#include "plugins/VPXPlugin.h"
+
 namespace Flex
 {
 
@@ -81,6 +84,9 @@ constexpr inline char cUpper(char c)
       c ^= 32; //ASCII convention
    return c;
 }
+// Media decoding provided by the VPX core (video & audio)
+extern MediaAPI* mediaApi;
+
 string string_to_lower(string str);
 string trim_string(const string& str);
 // trims leading whitespace or similar

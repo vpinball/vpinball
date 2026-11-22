@@ -94,6 +94,20 @@ private:
 
    static void MSGPIAPI RunScript(const char* script);
 
+   // Media decoding API
+   static void MSGPIAPI OnGetMediaAPI(const unsigned int msgId, void* userData, void* msgData);
+   static Media MSGPIAPI MediaOpen(const char* path, unsigned int flags);
+   static void MSGPIAPI MediaGetInfo(Media media, MediaInfo* info);
+   static int MSGPIAPI MediaRead(Media media, MediaOutput* output);
+   static int MSGPIAPI MediaSeek(Media media, double position);
+   static void MSGPIAPI MediaSetVideoFrameSize(Media media, unsigned int width, unsigned int height);
+   static void MSGPIAPI MediaReleaseFrame(Media media, MediaFrame frame);
+   static void MSGPIAPI MediaUpdateTextureFromFrame(Media media, MediaFrame frame, VPXTexture* texture);
+   static int MSGPIAPI MediaGetFramePixels(Media media, MediaFrame frame, const uint8_t** data, unsigned int* width, unsigned int* height);
+   static void MSGPIAPI MediaClose(Media media);
+   MediaAPI m_mediaApi;
+   const unsigned int m_getMediaAPIMsgId;
+
    // Plugin settings & UI sheets implementation (MsgPlugin settings + PagedUI APIs)
    std::unique_ptr<VPXPluginPagedUI> m_pluginUI;
 
