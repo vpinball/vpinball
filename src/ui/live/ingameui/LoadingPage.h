@@ -13,6 +13,7 @@ public:
    LoadingPage();
    bool IsPlayerPauseAllowed() const override { return false; }
    void BuildPage() override;
+   void CollectPanes(vector<InGameUIPane>& panes) override;
 };
 
 }

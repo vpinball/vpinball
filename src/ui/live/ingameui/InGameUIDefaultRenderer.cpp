@@ -413,11 +413,6 @@ void InGameUIDefaultRenderer::RenderPage(InGameUIPage& page, float elapsedS)
          break;
       }
 
-      case CustomRender:
-         if (item->m_customRender)
-            item->m_customRender(i, item.get());
-         break;
-
       case ActionInputMapping:
       {
          if (!isStackedItem)
@@ -679,6 +674,12 @@ void InGameUIDefaultRenderer::RenderPage(InGameUIPage& page, float elapsedS)
    }
    if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) && m_isDraggingScroll)
       m_isDraggingScroll = false;
+
+   // Embedded panes are drawn inline at the end of the item list (e.g. loading page progress)
+   for (const InGameUIPane& pane : panes)
+      if (pane.placement == InGameUIPane::Placement::Embedded && pane.render)
+         pane.render(ImVec4(0.f, 0.f, ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y));
+
    ImGui::Dummy(ImVec2(0, 0));
    ImGui::EndChild();
 

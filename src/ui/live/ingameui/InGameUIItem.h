@@ -18,7 +18,6 @@ public:
       Navigation,
       ActionInputMapping,
       Property,
-      CustomRender,
       // Core actions
       Back,
       ResetToDefaults,
@@ -39,8 +38,6 @@ public:
    InGameUIItem(string label, string tooltip, string path);
 
    InGameUIItem(const string& label, const string& tooltip, class InputAction* inputAction);
-
-   InGameUIItem(string label, string tooltip, std::function<void(int, const InGameUIItem*)> customRender);
 
    InGameUIItem(Type type); // Core actions
 
@@ -111,9 +108,6 @@ public:
    std::unique_ptr<VPX::Properties::PropertyDef> m_property;
    const float m_floatValueDisplayScale = 1.f;
    const string m_format;
-
-   // Custom render callback for CustomRender items
-   const std::function<void(int, const InGameUIItem*)> m_customRender;
 
    // UI behavior
    bool m_excludeFromDefault = false; // If set this item is not reseted to its default value when user request a reset
