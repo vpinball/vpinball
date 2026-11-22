@@ -178,16 +178,6 @@ InGameUIItem::InGameUIItem(Type type)
 {
 }
 
-InGameUIItem::InGameUIItem(string label, string tooltip, std::function<void(int, const InGameUIItem*)> customRender)
-   : m_type(Type::CustomRender)
-   , m_label(std::move(label))
-   , m_tooltip(std::move(tooltip))
-   //, m_path(""s) // Unused
-   , m_floatValueDisplayScale(1.f)
-   , m_customRender(customRender)
-{
-}
-
 bool InGameUIItem::IsSameValue(float a, float b) const
 {
    assert(m_type == Type::Property && m_property->m_type == PropertyDef::Type::Float);

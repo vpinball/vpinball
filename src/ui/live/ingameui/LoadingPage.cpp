@@ -86,38 +86,44 @@ void LoadingPage::BuildPage()
             m_player->m_liveUI->m_inGameUI.Navigate("popup/skip_texcompress"s);
          }));
    }
-
-   AddItem(std::make_unique<InGameUIItem>("progress"s, ""s,
-      [this](int, const InGameUIItem*)
-      {
-         auto& stats = m_player->m_texLoadStats;
-         const int total = stats.nImagesTotal.load(std::memory_order_relaxed);
-         const int done = stats.nImagesDone.load(std::memory_order_relaxed);
-         const uint64_t totalPixels = stats.nPixelsTotal.load(std::memory_order_relaxed);
-         const uint64_t donePixels = stats.nPixelsDone.load(std::memory_order_relaxed);
-         ImGui::ProgressBar(totalPixels > 0 ? 0.001f * static_cast<float>(1000 * donePixels / totalPixels) : 0.f, ImVec2(-FLT_MIN, 0.f));
-         const bool discarded = stats.skipCompression.load(std::memory_order_relaxed);
-         if (discarded)
-            ImGui::TextWrapped("Loading table images: %d / %d (texture compression skip requested)", done, total);
-         else
-            ImGui::Text("Loading table images: %d / %d", done, total);
-
-         // List the images currently being processed by the worker threads
-         ImGui::NewLine();
-         vector<std::pair<const Texture*, bool>> inFlight;
-         {
-            const std::lock_guard<std::mutex> lock(stats.inFlightMutex);
-            inFlight = stats.inFlight;
-         }
-         static constexpr size_t maxListed = 10;
-         for (size_t i = 0; i < inFlight.size() && i < maxListed; ++i)
-         {
-            const Texture* const tex = inFlight[i].first;
-            ImGui::TextWrapped("%s (%ux%u %s)%s", tex->m_name.c_str(), tex->m_width.load(), tex->m_height.load(), tex->IsHDR() ? "HDR" : "LDR", inFlight[i].second ? (discarded ? " - discarded" : " - compressing") : " - pending");
-         }
-         if (inFlight.size() > maxListed)
-            ImGui::Text("... and %d more", static_cast<int>(inFlight.size() - maxListed));
-      }));
 }
 
+void LoadingPage::CollectPanes(vector<InGameUIPane>& panes)
+{
+   InGameUIPage::CollectPanes(panes);
+
+   InGameUIPane& pane = panes.emplace_back();
+   pane.placement = InGameUIPane::Placement::Embedded;
+   pane.render = [this](const ImVec4&)
+   {
+      auto& stats = m_player->m_texLoadStats;
+      const int total = stats.nImagesTotal.load(std::memory_order_relaxed);
+      const int done = stats.nImagesDone.load(std::memory_order_relaxed);
+      const uint64_t totalPixels = stats.nPixelsTotal.load(std::memory_order_relaxed);
+      const uint64_t donePixels = stats.nPixelsDone.load(std::memory_order_relaxed);
+      ImGui::ProgressBar(totalPixels > 0 ? 0.001f * static_cast<float>(1000 * donePixels / totalPixels) : 0.f, ImVec2(-FLT_MIN, 0.f));
+      const bool discarded = stats.skipCompression.load(std::memory_order_relaxed);
+      if (discarded)
+         ImGui::TextWrapped("Loading table images: %d / %d (texture compression skip requested)", done, total);
+      else
+         ImGui::Text("Loading table images: %d / %d", done, total);
+
+      // List the images currently being processed by the worker threads
+      ImGui::NewLine();
+      vector<std::pair<const Texture*, bool>> inFlight;
+      {
+         const std::lock_guard<std::mutex> lock(stats.inFlightMutex);
+         inFlight = stats.inFlight;
+      }
+      static constexpr size_t maxListed = 10;
+      for (size_t i = 0; i < inFlight.size() && i < maxListed; ++i)
+      {
+         const Texture* const tex = inFlight[i].first;
+         ImGui::TextWrapped("%s (%ux%u %s)%s", tex->m_name.c_str(), tex->m_width.load(), tex->m_height.load(), tex->IsHDR() ? "HDR" : "LDR",
+            inFlight[i].second ? (discarded ? " - discarded" : " - compressing") : " - pending");
+      }
+      if (inFlight.size() > maxListed)
+         ImGui::Text("... and %d more", static_cast<int>(inFlight.size() - maxListed));
+   };
+}
 }

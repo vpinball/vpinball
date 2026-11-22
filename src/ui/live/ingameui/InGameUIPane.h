@@ -8,17 +8,19 @@ namespace VPX::InGameUI
 {
 
 // A piece of page-owned custom UI rendered outside the standard item list (cabinet
-// diagram, sensor plots, previews, backdrop, modal). Pages declare their panes each
-// frame through CollectPanes(); the renderer measures then places them. The default
-// renderer keeps the legacy layout: backdrops fullscreen behind the page, attached
-// panes stacked above the page window, a modal pane replacing the page entirely.
+// diagram, sensor plots, previews, backdrop, modal) or embedded inside it. Pages
+// declare their panes each frame through CollectPanes(); the renderer measures then
+// places them. The default renderer keeps the legacy layout: backdrops fullscreen
+// behind the page, attached panes stacked above the page window, a modal pane
+// replacing the page entirely, embedded panes inline at the end of the item list.
 struct InGameUIPane
 {
    enum class Placement
    {
       Attached, // Bound to the page window (default renderer stacks it above it)
       Backdrop, // Fullscreen, drawn behind the page window
-      Modal // Fullscreen, replaces the page window entirely
+      Modal, // Fullscreen, replaces the page window entirely
+      Embedded // Drawn inline at the end of the page's item list (rect is the remaining item region)
    };
    Placement placement = Placement::Attached;
    string id;
