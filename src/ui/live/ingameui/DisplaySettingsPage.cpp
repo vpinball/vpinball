@@ -49,17 +49,17 @@ void DisplayHomePage::BuildPage()
    if (!g_isMobile)
    {
       m_player->m_liveUI->m_inGameUI.AddPage("settings/display_playfield"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_Playfield); });
-      AddItem(std::make_unique<InGameUIItem>(m_player->m_vrDevice ? "Desktop Display"s : "Playfield Display"s, ""s, "settings/display_playfield"s));
+      AddItem(std::make_unique<InGameUIItem>(m_player->m_vrDevice ? "Desktop Display"s : "Playfield Display"s, "Adjust the main display mode, size and position"s, "settings/display_playfield"s));
    }
 
    m_player->m_liveUI->m_inGameUI.AddPage("settings/display_backglass"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_Backglass); });
-   AddItem(std::make_unique<InGameUIItem>("Backglass Display"s, ""s, "settings/display_backglass"s));
+   AddItem(std::make_unique<InGameUIItem>("Backglass Display"s, "Adjust the backglass display mode, size and position"s, "settings/display_backglass"s));
 
    m_player->m_liveUI->m_inGameUI.AddPage("settings/display_scoreview"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_ScoreView); });
-   AddItem(std::make_unique<InGameUIItem>("ScoreView Display"s, ""s, "settings/display_scoreview"s));
+   AddItem(std::make_unique<InGameUIItem>("ScoreView Display"s, "Adjust the DMD/Score (a.k.a. ScoreView) display mode, size and position"s, "settings/display_scoreview"s));
 
    m_player->m_liveUI->m_inGameUI.AddPage("settings/display_topper"s, []() { return std::make_unique<DisplaySettingsPage>(VPXWindowId::VPXWINDOW_Topper); });
-   AddItem(std::make_unique<InGameUIItem>("Topper Display"s, ""s, "settings/display_topper"s));
+   AddItem(std::make_unique<InGameUIItem>("Topper Display"s, "Adjust the topper display mode, size and position"s, "settings/display_topper"s));
 }
 
 

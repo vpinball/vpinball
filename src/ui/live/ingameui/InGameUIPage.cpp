@@ -204,6 +204,7 @@ void InGameUIPage::SaveGlobally()
       item->Save(item->m_tableOnly ? tableSettings : appSettings, item->m_tableOnly);
    tableSettings.Save();
    appSettings.Save();
+   m_savedNotifId = m_player->m_liveUI->PushNotification("Changes saved to the global application settings"s, 5000, m_savedNotifId);
 }
 
 void InGameUIPage::SaveTableOverride()
@@ -218,6 +219,7 @@ void InGameUIPage::SaveTableOverride()
       item->Save(item->m_globalOnly ? appSettings : tableSettings, !item->m_globalOnly);
    tableSettings.Save();
    appSettings.Save();
+   m_savedNotifId = m_player->m_liveUI->PushNotification("Changes saved as a table override"s, 5000, m_savedNotifId);
 }
 
 void InGameUIPage::NotifySavedForNextStart()

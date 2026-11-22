@@ -388,7 +388,10 @@ void DisplayProfileSettingsPage::RenderDisplayPreview(const ImVec4& rect)
    #endif
    m_player->m_renderer->m_renderDevice->DrawTexturedQuad(m_player->m_renderer->m_renderDevice->m_DMDShader, vertices);
    m_player->m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
-   m_player->m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
+   // ImGui draw commands are submitted as transparent render commands with depth
+   // starting at -10000 and decreasing; drawing below all of them puts the preview
+   // on top of the UI (it is clipped to its rect, acting as an opaque overlay)
+   m_player->m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->SetDepth(-20000.f);
    m_player->m_renderer->UpdateBasicShaderMatrix();
 }
 }

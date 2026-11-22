@@ -152,6 +152,7 @@ private:
    vector<std::unique_ptr<InGameUIItem>> m_items;
    int m_selectedItem = 0;
    unsigned int m_resetNotifId = 0;
+   unsigned int m_savedNotifId = 0;
    unsigned int m_savedForNextStartNotifId = 0;
    bool m_resettingToDefaults = false;
    bool m_resettingToInitialValues = false;

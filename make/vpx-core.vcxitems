@@ -1017,8 +1017,10 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIDefaultRenderer.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIDesktopRenderer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIItem.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIWidgets.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputDevicePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputProfilePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InputSettingsPage.cpp" />
@@ -2010,10 +2012,12 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIDefaultRenderer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIDesktopRenderer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIItem.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIPane.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIRenderer.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUIWidgets.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputDevicePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputProfilePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InputSettingsPage.h" />

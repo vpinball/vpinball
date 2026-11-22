@@ -20,6 +20,7 @@
 #define ICON_LC_CODE "\xee\x82\x93" // U+E093
 #define ICON_LC_CODE_XML "\xee\x88\x86" // U+E206
 #define ICON_LC_COPY "\xee\x82\x9e" // U+E09E
+#define ICON_LC_CROWN "\xee\x87\x96" // U+E1D6
 #define ICON_LC_DISC "\xee\x82\xaf" // U+E0AF
 #define ICON_LC_DOWNLOAD "\xee\x82\xb2" // U+E0B2
 #define ICON_LC_DROPLET "\xee\x82\xb4" // U+E0B4
@@ -31,9 +32,11 @@
 #define ICON_LC_FILTER "\xee\x83\x9c" // U+E0DC
 #define ICON_LC_FOLDER "\xee\x83\x97" // U+E0D7
 #define ICON_LC_FOLDER_OPEN "\xee\x89\x87" // U+E247
+#define ICON_LC_GAMEPAD_2 "\xee\x83\x9f" // U+E0DF
 #define ICON_LC_GLOBE "\xee\x83\xa8" // U+E0E8
 #define ICON_LC_HEART "\xee\x83\xb2" // U+E0F2
 #define ICON_LC_IMAGE "\xee\x83\xb6" // U+E0F6
+#define ICON_LC_INFO "\xee\x83\xb9" // U+E0F9
 #define ICON_LC_LAYERS "\xee\x94\xa9" // U+E529
 #define ICON_LC_LENS "\xee\x9e\x9c" // U+E79C
 #define ICON_LC_LIGHTBULB "\xee\x87\x82" // U+E1C2
@@ -44,6 +47,7 @@
 #define ICON_LC_LOCK_OPEN "\xee\x84\x8c" // U+E10C
 #define ICON_LC_MAGNET "\xee\x8a\xb5" // U+E2B5
 #define ICON_LC_MINUS "\xee\x84\x9c" // U+E11C
+#define ICON_LC_MONITOR "\xee\x84\x9d" // U+E11D
 #define ICON_LC_MOUSE "\xee\x8a\x8e" // U+E28E
 #define ICON_LC_MOUSE_LEFT "\xee\x9a\xbf" // U+E6BF
 #define ICON_LC_MOUSE_POINTER_2 "\xee\x87\x83" // U+E1C3
@@ -67,6 +71,7 @@
 #define ICON_LC_SAVE "\xee\x85\x8d" // U+E14D
 #define ICON_LC_SCALE_3D "\xee\x8b\xab" // U+E2EB
 #define ICON_LC_SEARCH "\xee\x85\x91" // U+E151
+#define ICON_LC_SETTINGS "\xee\x85\x94" // U+E154
 #define ICON_LC_SKIP_FORWARD "\xee\x85\xa0" // U+E160
 #define ICON_LC_SLIDERS_HORIZONTAL "\xee\x8a\x9a" // U+E29A
 #define ICON_LC_SQUARE "\xee\x85\xa7" // U+E167
@@ -83,5 +88,6 @@
 #define ICON_LC_UPLOAD "\xee\x86\x9e" // U+E19E
 #define ICON_LC_VIDEO "\xee\x86\xa5" // U+E1A5
 #define ICON_LC_VIDEO_OFF "\xee\x86\xa6" // U+E1A6
+#define ICON_LC_VOLUME_2 "\xee\x86\xab" // U+E1AB
 #define ICON_LC_X "\xee\x86\xb2" // U+E1B2
 #define ICON_LC_ZAP "\xee\x86\xb4" // U+E1B4

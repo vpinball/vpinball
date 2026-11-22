@@ -302,13 +302,14 @@ void GraphicSettingsPage::BuildPage()
 
    //////////////////////////////////////////////////////////////////////////////////////////////////
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Miscellaneous features"s));
-
    if (m_player->m_ptable->m_enableSSR && m_player->m_ptable->m_SSRScale > 0.f && m_player->m_renderer->m_renderDevice->DepthBufferReadBackAvailable())
+   {
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Miscellaneous features"s));
       AddItem(std::make_unique<InGameUIItem>( //
          Settings::m_propPlayer_SSRefl, //
          [this]() { return m_player->m_renderer->HasAdditiveScreenSpaceReflection(); }, //
          [this](bool v) { m_player->m_renderer->EnableAdditiveScreenSpaceReflection(v); }));
+   }
 
    //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -490,5 +491,4 @@ void GraphicSettingsPage::BuildPage()
          }));
    }
 }
-
 }
