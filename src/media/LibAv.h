@@ -174,13 +174,17 @@ private:
       // FFmpeg runtime libraries are deployed next to the executable
       char path[MAX_PATH];
       if (GetModuleFileNameA(nullptr, path, MAX_PATH) == 0)
+      {
+         isLoaded = false;
          return;
+      }
       std::string basepath(path);
       basepath.erase(basepath.find_last_of("\\/"));
       basepath += '\\';
 
       hinstLib = LoadLibraryExA((basepath + (x64 ? "avcodec64-" LIBAV_STR(LIBAVCODEC_VERSION_MAJOR) ".dll" : "avcodec-" LIBAV_STR(LIBAVCODEC_VERSION_MAJOR) ".dll")).c_str(), NULL,
          LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      isLoaded &= (hinstLib != nullptr); // A missing library leaves its entry points null
       if (hinstLib)
       {
          _av_packet_alloc = reinterpret_cast<fn_av_packet_alloc>(GetProcAddress(hinstLib, "av_packet_alloc"));
@@ -201,6 +205,7 @@ private:
 
       hinstLib = LoadLibraryExA((basepath + (x64 ? "avformat64-" LIBAV_STR(LIBAVFORMAT_VERSION_MAJOR) ".dll" : "avformat-" LIBAV_STR(LIBAVFORMAT_VERSION_MAJOR) ".dll")).c_str(), NULL,
          LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      isLoaded &= (hinstLib != nullptr); // A missing library leaves its entry points null
       if (hinstLib)
       {
          _av_find_best_stream = reinterpret_cast<fn_av_find_best_stream>(GetProcAddress(hinstLib, "av_find_best_stream"));
@@ -214,6 +219,7 @@ private:
 
       hinstLib = LoadLibraryExA((basepath + (x64 ? "avutil64-" LIBAV_STR(LIBAVUTIL_VERSION_MAJOR) ".dll" : "avutil-" LIBAV_STR(LIBAVUTIL_VERSION_MAJOR) ".dll")).c_str(), NULL,
          LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      isLoaded &= (hinstLib != nullptr); // A missing library leaves its entry points null
       if (hinstLib)
       {
          _av_get_bytes_per_sample = reinterpret_cast<fn_av_get_bytes_per_sample>(GetProcAddress(hinstLib, "av_get_bytes_per_sample"));
@@ -234,6 +240,7 @@ private:
 
       hinstLib = LoadLibraryExA((basepath + (x64 ? "swresample64-" LIBAV_STR(LIBSWRESAMPLE_VERSION_MAJOR) ".dll" : "swresample-" LIBAV_STR(LIBSWRESAMPLE_VERSION_MAJOR) ".dll")).c_str(),
          NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      isLoaded &= (hinstLib != nullptr); // A missing library leaves its entry points null
       if (hinstLib)
       {
          _swr_alloc_set_opts2 = reinterpret_cast<fn_swr_alloc_set_opts2>(GetProcAddress(hinstLib, "swr_alloc_set_opts2"));
@@ -246,6 +253,7 @@ private:
 
       hinstLib = LoadLibraryExA((basepath + (x64 ? "swscale64-" LIBAV_STR(LIBSWSCALE_VERSION_MAJOR) ".dll" : "swscale-" LIBAV_STR(LIBSWSCALE_VERSION_MAJOR) ".dll")).c_str(), NULL,
          LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      isLoaded &= (hinstLib != nullptr); // A missing library leaves its entry points null
       if (hinstLib)
       {
          _sws_freeContext = reinterpret_cast<fn_sws_freeContext>(GetProcAddress(hinstLib, "sws_freeContext"));

@@ -846,6 +846,8 @@ Media MSGPIAPI VPXPluginAPIImpl::MediaOpen(const char* path, unsigned int flags)
    if (path == nullptr)
       return nullptr;
    VPX::MediaPlayer* media = VPX::MediaPlayer::TryOpen(path);
+   if (media == nullptr) // FFmpeg runtime not available
+      return nullptr;
    if (!media->IsOpen())
    {
       delete media;

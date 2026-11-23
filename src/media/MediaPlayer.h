@@ -97,6 +97,7 @@ private:
       std::unique_ptr<uint8_t[]> ownedAudio;
    };
    std::deque<QueuedOutput> m_outputs; // Decoded units pending emission by Read
+   void DropQueuedOutputs(); // Clears m_outputs, releasing the video frames it owns
    QueuedOutput m_lastOutput; // Last emitted output, keeps audio data alive until next Read
    bool m_inputEof = false; // The container reported end of file (decoders may still drain)
    double m_frameDuration = 0.; // [s], for timestamp-less frames

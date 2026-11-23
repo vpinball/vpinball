@@ -131,8 +131,8 @@ MediaPlayer::MediaPlayer(const char* path)
 
 MediaPlayer::~MediaPlayer()
 {
+   DropQueuedOutputs(); // Queued frames were never handed out: they are counted as live, release them first
    assert(m_liveFrames == 0); // The API contract requires all frames to be released before closing the session
-   m_outputs.clear();
    if (m_swsContext)
       m_libAV._sws_freeContext(m_swsContext);
    if (m_audioConversionContext)
@@ -266,8 +266,11 @@ int MediaPlayer::Seek(double position)
 {
    if (!m_formatContext)
       return -1;
-   m_outputs.clear();
-   const int ret = m_libAV._av_seek_frame(m_formatContext, -1, static_cast<int64_t>(position * AV_TIME_BASE), AVSEEK_FLAG_BACKWARD);
+   DropQueuedOutputs();
+   const int64_t timestamp = static_cast<int64_t>(position * AV_TIME_BASE);
+   int ret = m_libAV._av_seek_frame(m_formatContext, -1, timestamp, AVSEEK_FLAG_BACKWARD);
+   if (ret < 0) // No keyframe at or before the position (e.g. streams starting after 0): take the first one after it
+      ret = m_libAV._av_seek_frame(m_formatContext, -1, timestamp, 0);
    if (m_videoContext)
       m_libAV._avcodec_flush_buffers(m_videoContext);
    if (m_audioContext)
@@ -357,6 +360,14 @@ void MediaPlayer::EmitAudioFrame(AVFrame* frame)
    m_outputs.push_back(std::move(queued));
 }
 
+void MediaPlayer::DropQueuedOutputs()
+{
+   for (QueuedOutput& queued : m_outputs)
+      if (queued.output.type == MEDIA_OUT_VIDEO && queued.output.videoFrame)
+         ReleaseFrame(queued.output.videoFrame);
+   m_outputs.clear();
+}
+
 double MediaPlayer::FramePtsSeconds(const AVFrame* frame, int streamIndex)
 {
    const double timeBaseSec = (streamIndex == m_videoStream) ? m_videoTimeBaseSec : m_audioTimeBaseSec;
@@ -365,7 +376,11 @@ double MediaPlayer::FramePtsSeconds(const AVFrame* frame, int streamIndex)
       pts = frame->pts;
    double& lastPts = (streamIndex == m_videoStream) ? m_lastVideoPts : m_lastAudioPts;
    if (pts == AV_NOPTS_VALUE)
-      return lastPts + ((streamIndex == m_videoStream) ? m_frameDuration : 0.);
+   {
+      // No timestamp: continue from the previous frame (stored, so consecutive untimed frames keep advancing)
+      lastPts += (streamIndex == m_videoStream) ? m_frameDuration : 0.;
+      return lastPts;
+   }
    lastPts = static_cast<double>(pts) * timeBaseSec;
    return lastPts;
 }
