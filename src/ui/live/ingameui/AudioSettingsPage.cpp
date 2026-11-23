@@ -91,7 +91,11 @@ void AudioSettingsPage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Audio Source Levels"s));
 
    unsigned int getAudioSrcMsgId = m_player->m_pluginManager.GetMsgAPI().GetMsgID(CTLPI_NAMESPACE, CTLPI_AUDIO_GET_SRC_MSG);
-   for (const auto& audioSrc : PinballPlugin::Controller::GetCtrlItems<AudioSrcId>(&m_player->m_pluginManager.GetMsgAPI(), m_player->m_pluginAPI.GetVPXEndPointId(), getAudioSrcMsgId))
+   const vector<AudioSrcId> audioSrcs
+      = PinballPlugin::Controller::GetCtrlItems<AudioSrcId>(&m_player->m_pluginManager.GetMsgAPI(), m_player->m_pluginAPI.GetVPXEndPointId(), getAudioSrcMsgId);
+   if (audioSrcs.empty())
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "No audio source is provided by the enabled plugins."s));
+   for (const auto& audioSrc : audioSrcs)
    {
       MsgEndpointInfo info { };
       m_player->m_pluginManager.GetMsgAPI().GetEndpointInfo(audioSrc.id.endpointId, &info);

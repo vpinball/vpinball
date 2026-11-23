@@ -110,17 +110,19 @@ void GraphicSettingsPage::BuildPage()
 
    //////////////////////////////////////////////////////////////////////////////////////////////////
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Graphics backend"s));
-
 #ifdef ENABLE_BGFX
    // TODO this property is directly persisted. It does not follow the overall UI design: App/Table/Live state => Implement live state (will also enable table override)
    #if defined(ENABLE_XR) && BX_PLATFORM_ANDROID
    if (m_player->IsVR())
+   {
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Graphics backend"s));
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "The graphics backend is selected by the VR runtime: " + string(bgfx::getRendererName(bgfx::getRendererType()))));
+   }
    else
    #endif
    if (vector<string> renderers = RenderDevice::GetSelectableBackendNames(); !renderers.empty())
    {
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Graphics backend"s));
       // "Default" first: an unset or unknown GfxBackend resolves to index 0 below (max(0, -1)), so without
       // it the dialog would show the first backend as selected.
       renderers.insert(renderers.begin(), "Default"s);
