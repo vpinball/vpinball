@@ -905,19 +905,17 @@ void BaseTexture::UpdateOpaque() const
    if (m_format == RGBA || m_format == SRGBA)
    {
       // RGBA_FP16/RGBA_FP32 could be transparent but for the time being, the alpha channel is always opaque, only added for driver's texture format support
-      const uint8_t* const __restrict pdst = m_data;
-      constexpr unsigned int stride = 4;
-      for (unsigned int y = 0; y < m_height && opaque; ++y)
+      // Opaque if all alpha bytes are 255: branchless AND reduction by blocks (auto-vectorized), with an early exit per block
+      const uint32_t* const __restrict pixels = reinterpret_cast<const uint32_t*>(m_data);
+      const size_t nPixels = static_cast<size_t>(m_width) * m_height;
+      constexpr size_t blockSize = 1024;
+      for (size_t o = 0; o < nPixels && opaque; o += blockSize)
       {
-         const size_t offs = (size_t)(m_height - y - 1) * (m_width * stride);
-         for (size_t o = offs; o < m_width * stride + offs; o += stride)
-         {
-            if (pdst[o + 3] != 255)
-            {
-               opaque = false;
-               break;
-            }
-         }
+         const size_t e = min(o + blockSize, nPixels);
+         uint32_t acc = 0xFFFFFFFFu;
+         for (size_t i = o; i < e; ++i)
+            acc &= pixels[i];
+         opaque = (acc & 0xFF000000u) == 0xFF000000u;
       }
    }
    m_isOpaque = opaque;
