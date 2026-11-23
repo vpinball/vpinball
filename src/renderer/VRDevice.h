@@ -260,7 +260,9 @@ private:
    bool m_showUILayer = false;
    // Room-locked pose of the UI quad layer in the tracking reference space:
    // anchored in front of the head when the UI appears, then fixed until hidden
+#ifdef ENABLE_XR
    XrPosef m_uiLayerPose {};
+#endif
    bool m_uiLayerPoseValid = false;
 
 #ifdef ENABLE_XR
