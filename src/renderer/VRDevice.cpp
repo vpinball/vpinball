@@ -1121,20 +1121,32 @@ void VRDevice::UpdateVisibilityMask(RenderDevice* rd)
 // rendering the pointer ray in the scene.
 void VRDevice::UpdateUIPointer(XrTime predictedDisplayTime, float vpuToWorldScale)
 {
-   m_uiPointer = {};
-   if (!m_showUILayer || m_viewSpace == XR_NULL_HANDLE || m_referenceSpace == XR_NULL_HANDLE || m_uiSwapchainInfo.swapchain == XR_NULL_HANDLE)
+   // Filled locally then published at once on every exit path: the logic thread reads it concurrently (GetUIPointer)
+   UIPointer pointer;
+   struct Publish
+   {
+      VRDevice* device;
+      UIPointer& pointer;
+      ~Publish()
+      {
+         const std::lock_guard lock(device->m_uiPointerMutex);
+         device->m_uiPointer = pointer;
+      }
+   } publish { this, pointer };
+   if (!m_showUILayer || !m_uiLayerInteractive || m_viewSpace == XR_NULL_HANDLE || m_referenceSpace == XR_NULL_HANDLE || m_uiSwapchainInfo.swapchain == XR_NULL_HANDLE)
       return;
 
    // The UI quad is anchored in the tracking space when it appears: placed in
    // front of the user's head on first show, then room locked until hidden (a
    // fixed surface is far easier to point at than a head-locked one)
-   if (!m_uiLayerPoseValid)
+   if (m_uiLayerReanchor.exchange(false) || !m_uiLayerPoseValid)
    {
+      m_uiLayerPoseValid = false;
       XrSpaceLocation headLocation { XR_TYPE_SPACE_LOCATION };
       if (xrLocateSpace(m_viewSpace, m_referenceSpace, predictedDisplayTime, &headLocation) != XR_SUCCESS
          || (headLocation.locationFlags & (XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT))
             != (XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT))
-         return;
+         return; // Retried next frame (the layer stays head locked meanwhile)
       const bx::Quaternion headRot { headLocation.pose.orientation.x, headLocation.pose.orientation.y, headLocation.pose.orientation.z, headLocation.pose.orientation.w };
       const bx::Vec3 headPos { headLocation.pose.position.x, headLocation.pose.position.y, headLocation.pose.position.z };
       const bx::Vec3 quadOffset = bx::mul(bx::Vec3 { 0.f, -0.05f * kUILayerHeight, -kUILayerDistance }, headRot);
@@ -1199,23 +1211,46 @@ void VRDevice::UpdateUIPointer(XrTime predictedDisplayTime, float vpuToWorldScal
       return;
 
    const HandPointer& p = hands[hand];
-   m_uiPointer.valid = true;
-   m_uiPointer.onQuad = p.onQuad;
-   m_uiPointer.origin[0] = p.pose.position.x;
-   m_uiPointer.origin[1] = p.pose.position.y;
-   m_uiPointer.origin[2] = p.pose.position.z;
-   memcpy(m_uiPointer.hit, p.hit, sizeof(p.hit));
-   m_uiPointer.u = p.u;
-   m_uiPointer.v = p.v;
+   pointer.valid = true;
+   pointer.onQuad = p.onQuad;
+   pointer.origin[0] = p.pose.position.x;
+   pointer.origin[1] = p.pose.position.y;
+   pointer.origin[2] = p.pose.position.z;
+   memcpy(pointer.hit, p.hit, sizeof(p.hit));
+   pointer.u = p.u;
+   pointer.v = p.v;
 
+   // Click: the trigger click where the runtime binds it, else the analog trigger value (e.g. Oculus Touch has no
+   // trigger/click), else the select click (khr/simple_controller)
    if (m_xrInputHandler != nullptr)
-      if (const XrAction clickAction = m_xrInputHandler->GetAction(hand == 0 ? "/user/hand/right/input/trigger/click" : "/user/hand/left/input/trigger/click"); clickAction != XR_NULL_HANDLE)
+   {
+      const string handPath = hand == 0 ? "/user/hand/right/input/"s : "/user/hand/left/input/"s;
+      const auto getBool = [this, &handPath](const char* input, bool& value)
       {
-         const XrActionStateGetInfo getInfo { XR_TYPE_ACTION_STATE_GET_INFO, nullptr, clickAction };
+         const XrAction action = m_xrInputHandler->GetAction(handPath + input);
+         if (action == XR_NULL_HANDLE)
+            return false;
+         const XrActionStateGetInfo getInfo { XR_TYPE_ACTION_STATE_GET_INFO, nullptr, action };
          XrActionStateBoolean state { XR_TYPE_ACTION_STATE_BOOLEAN };
-         if (xrGetActionStateBoolean(m_session, &getInfo, &state) == XR_SUCCESS && state.isActive)
-            m_uiPointer.click = state.currentState;
+         if (xrGetActionStateBoolean(m_session, &getInfo, &state) != XR_SUCCESS || !state.isActive)
+            return false;
+         value = state.currentState;
+         return true;
+      };
+      bool click = false;
+      if (!getBool("trigger/click", click))
+      {
+         const XrAction valueAction = m_xrInputHandler->GetAction(handPath + "trigger/value");
+         const XrActionStateGetInfo getInfo { XR_TYPE_ACTION_STATE_GET_INFO, nullptr, valueAction };
+         XrActionStateFloat state { XR_TYPE_ACTION_STATE_FLOAT };
+         if (valueAction != XR_NULL_HANDLE && xrGetActionStateFloat(m_session, &getInfo, &state) == XR_SUCCESS && state.isActive)
+            click = state.currentState > (m_uiPointerTriggerDown ? 0.35f : 0.55f); // Hysteresis against a flickering click
+         else
+            getBool("select/click", click);
       }
+      pointer.click = click;
+   }
+   m_uiPointerTriggerDown = pointer.click;
 
    // Convert the ray endpoints from reference-space meters to scene coordinates
    // (VPU) for world-space rendering: reference VPU -> camera view units -> scene
@@ -1233,15 +1268,15 @@ void VRDevice::UpdateUIPointer(XrTime predictedDisplayTime, float vpuToWorldScal
    const Matrix3D viewToScene = Matrix3D::MatrixInverse(SceneLayout::ComposeView(space, m_eyeView[0], projScale));
    const Matrix3D viewToSceneRight = Matrix3D::MatrixInverse(SceneLayout::ComposeView(space, m_eyeView[1], projScale));
    const Vertex3Ds headScene = (viewToScene * Vertex3Ds(0.f, 0.f, 0.f) + viewToSceneRight * Vertex3Ds(0.f, 0.f, 0.f)) * 0.5f;
-   m_uiPointer.sceneOrigin[0] = sceneOrigin.x;
-   m_uiPointer.sceneOrigin[1] = sceneOrigin.y;
-   m_uiPointer.sceneOrigin[2] = sceneOrigin.z;
-   m_uiPointer.sceneHit[0] = sceneHit.x;
-   m_uiPointer.sceneHit[1] = sceneHit.y;
-   m_uiPointer.sceneHit[2] = sceneHit.z;
-   m_uiPointer.headScene[0] = headScene.x;
-   m_uiPointer.headScene[1] = headScene.y;
-   m_uiPointer.headScene[2] = headScene.z;
+   pointer.sceneOrigin[0] = sceneOrigin.x;
+   pointer.sceneOrigin[1] = sceneOrigin.y;
+   pointer.sceneOrigin[2] = sceneOrigin.z;
+   pointer.sceneHit[0] = sceneHit.x;
+   pointer.sceneHit[1] = sceneHit.y;
+   pointer.sceneHit[2] = sceneHit.z;
+   pointer.headScene[0] = headScene.x;
+   pointer.headScene[1] = headScene.y;
+   pointer.headScene[2] = headScene.z;
 }
 
 void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarget* vrRenderTarget)>& submitFrame)
@@ -1641,15 +1676,17 @@ void VRDevice::RenderFrame(RenderDevice* rd, const std::function<void(RenderTarg
          // Submit the LiveUI as a separate view-locked quad layer on top of the scene. Rendering the UI inside the
          // projection layer made it shake since a head locked overlay was reprojected as world locked geometry, and the
          // fake stereo offset applied per eye made it appear unfocused.
-         if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE && m_showUILayer && m_uiLayerPoseValid)
+         if (m_uiSwapchainInfo.swapchain != XR_NULL_HANDLE && m_showUILayer)
          {
+            // Room locked while interactive (anchored pose), head locked otherwise (overlays)
+            const bool roomLocked = m_uiLayerInteractive && m_uiLayerPoseValid;
             renderLayerInfo.layerQuad.layerFlags= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT | XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT | XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT;
-            renderLayerInfo.layerQuad.space = m_referenceSpace;
+            renderLayerInfo.layerQuad.space = roomLocked ? m_referenceSpace : m_viewSpace;
             renderLayerInfo.layerQuad.eyeVisibility = XR_EYE_VISIBILITY_BOTH;
             renderLayerInfo.layerQuad.subImage.swapchain = m_uiSwapchainInfo.swapchain;
             renderLayerInfo.layerQuad.subImage.imageRect = { { 0, 0 }, { (int32_t)m_uiSwapchainInfo.width, (int32_t)m_uiSwapchainInfo.height } };
             renderLayerInfo.layerQuad.subImage.imageArrayIndex = 0;
-            renderLayerInfo.layerQuad.pose = m_uiLayerPose;
+            renderLayerInfo.layerQuad.pose = roomLocked ? m_uiLayerPose : XrPosef { { 0.f, 0.f, 0.f, 1.f }, { 0.f, -0.05f * kUILayerHeight, -kUILayerDistance } };
             renderLayerInfo.layerQuad.size = { kUILayerWidth, kUILayerHeight };
             renderLayerInfo.layers.push_back(reinterpret_cast<XrCompositionLayerBaseHeader*>(&renderLayerInfo.layerQuad));
          }

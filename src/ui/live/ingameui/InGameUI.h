@@ -20,6 +20,9 @@ public:
    void Open(const string& page);
    bool IsOpened() const { return GetActivePage() != nullptr && GetActivePage()->IsActive(); }
    bool IsOpened(const string &page) const { return IsOpened() && m_navigationHistory.back() == page; }
+   // Gameplay analog input (plunger, nudge) is suspended while the UI is opened, as it overlaps UI commands, except on pages
+   // that keep the game running to test that input live (plunger/nudge settings, see IsPlayerPauseAllowed)
+   bool IsGameplayInputSuspended() const { return IsOpened() && GetActivePage()->IsPlayerPauseAllowed(); }
    void Update();
    void Close();
 

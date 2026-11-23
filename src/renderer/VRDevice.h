@@ -133,6 +133,7 @@
 #endif
 
 #include <atomic>
+#include <mutex>
 
 #include "math/matrix.h"
 
@@ -226,10 +227,14 @@ public:
    bool IsApplicationRunning() const { return true; }
 #endif
 
-   void SetShowUILayer(bool show)
+   // The UI layer is head locked while it only shows overlays (performance, notifications), and room locked while
+   // interactive (InGame UI opened, pointed at with the controllers): anchored in front of the headset when it becomes
+   // interactive, then fixed until it is not anymore. Called on the logic thread, consumed on the render thread
+   void SetShowUILayer(bool show, bool interactive)
    {
-      if (!show)
-         m_uiLayerPoseValid = false; // Re-anchor in front of the headset on next show
+      if (show && interactive && !m_uiLayerInteractive)
+         m_uiLayerReanchor = true;
+      m_uiLayerInteractive = show && interactive;
       m_showUILayer = show;
    }
 
@@ -257,13 +262,15 @@ private:
    Matrix3D m_eyeView[2]; // Per-eye head pose in VPU (from the latest located views)
    Matrix3D m_eyeProj[2]; // Per-eye base projection, converting VPU view space to meters before projecting
 
-   bool m_showUILayer = false;
-   // Room-locked pose of the UI quad layer in the tracking reference space:
-   // anchored in front of the head when the UI appears, then fixed until hidden
+   std::atomic<bool> m_showUILayer { false };
+   std::atomic<bool> m_uiLayerInteractive { false };
+   std::atomic<bool> m_uiLayerReanchor { true }; // Set by the logic thread, consumed by the render thread
+   // Room-locked pose of the interactive UI quad layer in the tracking reference space (render thread only)
 #ifdef ENABLE_XR
    XrPosef m_uiLayerPose {};
 #endif
    bool m_uiLayerPoseValid = false;
+   bool m_uiPointerTriggerDown = false; // Pointer click state of the last frame (analog trigger hysteresis, render thread only)
 
 #ifdef ENABLE_XR
 public:
@@ -303,7 +310,7 @@ public:
       bool onQuad = false; // The intersection lies inside the quad rect
       bool click = false; // Front trigger state of the pointing hand
    };
-   const UIPointer& GetUIPointer() const { return m_uiPointer; }
+   UIPointer GetUIPointer() const { const std::lock_guard lock(m_uiPointerMutex); return m_uiPointer; } // Copy: written on the render thread
    void UpdateVisibilityMask(class RenderDevice* rd);
    bool UseDepthBuffer() const { return m_depthExtensionSupported; }
    bgfx::TextureFormat::Enum GetDepthFormat() const { return m_depthSwapchainInfo.format; }
@@ -373,7 +380,8 @@ private:
    XrSpace m_rightControllerSpace = XR_NULL_HANDLE;
    XrSpace m_leftAimSpace = XR_NULL_HANDLE;
    XrSpace m_rightAimSpace = XR_NULL_HANDLE;
-   UIPointer m_uiPointer = {};
+   UIPointer m_uiPointer = {}; // Published by UpdateUIPointer (render thread) under m_uiPointerMutex
+   mutable std::mutex m_uiPointerMutex;
 
    struct RenderLayerInfo
    {
