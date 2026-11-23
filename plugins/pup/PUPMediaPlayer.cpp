@@ -11,6 +11,7 @@
 #include "PUPMediaPlayer.h"
 
 #include <cfloat>
+#include <climits>
 
 namespace PUP {
 
@@ -681,13 +682,13 @@ void PUPMediaPlayer::HandleVideoFrame(MediaFrame mediaFrame, double framePts)
          SDL_LockSurface(sdlMask);
          const uint8_t* __restrict maskRow = static_cast<const uint8_t*>(sdlMask->pixels);
          uint8_t* __restrict frameRow = selectedFrame.pixels;
+         const int maskW = sdlMask->w; // Invariant loop bound, for auto-vectorization
          for (int i = 0; i < sdlMask->h; i++)
          {
             const uint32_t* __restrict maskPtr = reinterpret_cast<const uint32_t*>(maskRow);
             uint32_t* __restrict frame2 = reinterpret_cast<uint32_t*>(frameRow);
-            for (int j = 0; j < sdlMask->w; j++, maskPtr++, frame2++)
-               if (!*maskPtr)
-                  *frame2 = 0x00000000u;
+            for (int j = 0; j < maskW; j++)
+               frame2[j] &= maskPtr[j] ? 0xFFFFFFFFu : 0x00000000u; // Branchless, for auto-vectorization
             maskRow += sdlMask->pitch;
             frameRow += width * 4;
          }

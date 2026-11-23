@@ -101,90 +101,123 @@ static void ApplyFilter(SDL_Surface* surf, int filterMode)
    const int w = surf->w;
    const int h = surf->h;
 
-   for (int y = 0; y < h; y++)
+   // One branchless loop per mode, so that each gets auto-vectorized
+   switch (filterMode)
    {
-      int ofs = y * pitch;
-      if (filterMode == 5) // clear
+   case 1: // invertRGB (255 - x == x ^ 255 for bytes)
+      for (int y = 0; y < h; y++)
       {
-         memset(pixels + ofs, 0, w*sizeof(uint32_t));
-         continue;
+         uint32_t* const __restrict row = pixels + static_cast<size_t>(y) * pitch;
+         for (int x = 0; x < w; x++)
+            row[x] ^= 0x00FFFFFFu;
       }
-      for (int x = 0; x < w; x++,ofs++)
-      {
-         uint32_t& px = pixels[ofs];
-         const uint8_t r = px & 0xFF;
-         const uint8_t g = (px >> 8) & 0xFF;
-         const uint8_t b = (px >> 16) & 0xFF;
-         const uint8_t a = (px >> 24) /*& 0xFF*/;
+      break;
 
-         switch (filterMode)
+   case 2: // invert (RGB + alpha)
+      for (int y = 0; y < h; y++)
+      {
+         uint32_t* const __restrict row = pixels + static_cast<size_t>(y) * pitch;
+         for (int x = 0; x < w; x++)
+            row[x] = ~row[x];
+      }
+      break;
+
+   case 3: // grayscale
+      for (int y = 0; y < h; y++)
+      {
+         uint32_t* const __restrict row = pixels + static_cast<size_t>(y) * pitch;
+         for (int x = 0; x < w; x++)
          {
-         case 1: // invertRGB
-            px = (a << 24) | ((255 - b) << 16) | ((255 - g) << 8) | (255 - r);
-            break;
-         case 2: // invert (RGB + alpha)
-            px = ((255 - a) << 24) | ((255 - b) << 16) | ((255 - g) << 8) | (255 - r);
-            break;
-         case 3: // grayscale
-         {
-            const uint8_t gray = static_cast<uint8_t>(0.299f * r + 0.587f * g + 0.114f * b);
-            px = (a << 24) | (gray << 16) | (gray << 8) | gray;
-            break;
-         }
-         case 4: // invertalpha
-            px = ((255 - a) << 24) | (b << 16) | (g << 8) | r;
-            break;
-         //case 5: // clear
-         //   px = 0;
-         //   break;
+            const uint32_t px = row[x];
+            // note: MSVC only vectorizes signed int <-> float conversions
+            const uint32_t gray = static_cast<uint32_t>(static_cast<int>(0.299f * static_cast<float>(static_cast<int>(px & 0xFF)) + 0.587f * static_cast<float>(static_cast<int>((px >> 8) & 0xFF)) + 0.114f * static_cast<float>(static_cast<int>((px >> 16) & 0xFF))));
+            row[x] = (px & 0xFF000000u) | (gray << 16) | (gray << 8) | gray;
          }
       }
-   }
-   SDL_UnlockSurface(surf);
+      break;
 
-   if (filterMode == 6)
+   case 4: // invertalpha
+      for (int y = 0; y < h; y++)
+      {
+         uint32_t* const __restrict row = pixels + static_cast<size_t>(y) * pitch;
+         for (int x = 0; x < w; x++)
+            row[x] ^= 0xFF000000u;
+      }
+      break;
+
+   case 5: // clear
+      for (int y = 0; y < h; y++)
+         memset(pixels + static_cast<size_t>(y) * pitch, 0, w * sizeof(uint32_t));
+      break;
+
+   case 6: // box blur
    {
-      // PUP filter 6 is a box blur (radius 5). Keep it simple and separable so the
-      // costly row pass is only executed once per frame.
+      // Box blur (radius 5, clamped edges) as 2 separable running-sum passes, same result as summing the 11 taps
+      if (w <= 0 || h <= 0)
+         break;
       constexpr int radius = 5;
-      SDL_LockSurface(surf);
-      uint32_t* const pixels = (uint32_t*)surf->pixels;
-      const int pitch = surf->pitch / 4;
-      vector<uint32_t> tmp(static_cast<size_t>(surf->w) * surf->h);
-      for (int y = 0; y < surf->h; y++)
+      constexpr uint32_t count = 2 * radius + 1;
+      vector<uint32_t> tmp(static_cast<size_t>(w) * h);
+
+      // Horizontal pass, sliding the window along each row
+      for (int y = 0; y < h; y++)
       {
-         for (int x = 0; x < surf->w; x++)
+         const uint32_t* const __restrict src = pixels + static_cast<size_t>(y) * pitch;
+         uint32_t* const __restrict dst = tmp.data() + static_cast<size_t>(y) * w;
+         uint32_t r = 0, g = 0, b = 0, a = 0;
+         for (int dx = -radius; dx <= radius; dx++)
          {
-            uint32_t r = 0, g = 0, b = 0, a = 0;
-            int count = 0;
-            for (int dx = -radius; dx <= radius; dx++)
-            {
-               const int sx = std::clamp(x + dx, 0, surf->w - 1);
-               const uint32_t px = pixels[y * pitch + sx];
-               r += px & 0xFF; g += (px >> 8) & 0xFF; b += (px >> 16) & 0xFF; a += (px >> 24) & 0xFF;
-               count++;
-            }
-            tmp[static_cast<size_t>(y) * surf->w + x] = ((a / count) << 24) | ((b / count) << 16) | ((g / count) << 8) | (r / count);
+            const uint32_t px = src[std::clamp(dx, 0, w - 1)];
+            r += px & 0xFF; g += (px >> 8) & 0xFF; b += (px >> 16) & 0xFF; a += px >> 24;
+         }
+         for (int x = 0; x < w; x++)
+         {
+            dst[x] = ((a / count) << 24) | ((b / count) << 16) | ((g / count) << 8) | (r / count);
+            const uint32_t out = src[std::max(x - radius, 0)];
+            const uint32_t in = src[std::min(x + radius + 1, w - 1)];
+            r += (in & 0xFF) - (out & 0xFF);
+            g += ((in >> 8) & 0xFF) - ((out >> 8) & 0xFF);
+            b += ((in >> 16) & 0xFF) - ((out >> 16) & 0xFF);
+            a += (in >> 24) - (out >> 24);
          }
       }
-      for (int y = 0; y < surf->h; y++)
+
+      // Vertical pass, with per column running sums (the loops over columns get auto-vectorized)
+      vector<uint32_t> sums(static_cast<size_t>(w) * 4, 0);
+      uint32_t* const __restrict sr = sums.data();
+      uint32_t* const __restrict sg = sr + w;
+      uint32_t* const __restrict sb = sg + w;
+      uint32_t* const __restrict sa = sb + w;
+      for (int dy = -radius; dy <= radius; dy++)
       {
-         for (int x = 0; x < surf->w; x++)
+         const uint32_t* const __restrict src = tmp.data() + static_cast<size_t>(std::clamp(dy, 0, h - 1)) * w;
+         for (int x = 0; x < w; x++)
          {
-            uint32_t r = 0, g = 0, b = 0, a = 0;
-            int count = 0;
-            for (int dy = -radius; dy <= radius; dy++)
-            {
-               const int sy = std::clamp(y + dy, 0, surf->h - 1);
-               const uint32_t px = tmp[static_cast<size_t>(sy) * surf->w + x];
-               r += px & 0xFF; g += (px >> 8) & 0xFF; b += (px >> 16) & 0xFF; a += (px >> 24) & 0xFF;
-               count++;
-            }
-            pixels[y * pitch + x] = ((a / count) << 24) | ((b / count) << 16) | ((g / count) << 8) | (r / count);
+            const uint32_t px = src[x];
+            sr[x] += px & 0xFF; sg[x] += (px >> 8) & 0xFF; sb[x] += (px >> 16) & 0xFF; sa[x] += px >> 24;
          }
       }
-      SDL_UnlockSurface(surf);
+      for (int y = 0; y < h; y++)
+      {
+         uint32_t* const __restrict dst = pixels + static_cast<size_t>(y) * pitch;
+         for (int x = 0; x < w; x++)
+            dst[x] = ((sa[x] / count) << 24) | ((sb[x] / count) << 16) | ((sg[x] / count) << 8) | (sr[x] / count);
+         const uint32_t* const __restrict out = tmp.data() + static_cast<size_t>(std::max(y - radius, 0)) * w;
+         const uint32_t* const __restrict in = tmp.data() + static_cast<size_t>(std::min(y + radius + 1, h - 1)) * w;
+         for (int x = 0; x < w; x++)
+         {
+            const uint32_t pi = in[x], po = out[x];
+            sr[x] +=  (pi        & 0xFF) -  (po        & 0xFF);
+            sg[x] += ((pi >> 8)  & 0xFF) - ((po >> 8)  & 0xFF);
+            sb[x] += ((pi >> 16) & 0xFF) - ((po >> 16) & 0xFF);
+            sa[x] +=  (pi >> 24)         -  (po >> 24);
+         }
+      }
+      break;
    }
+   }
+
+   SDL_UnlockSurface(surf);
 }
 
 #ifndef GetRValue
@@ -1575,6 +1608,7 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outWidth, int outHeight, 
       SDL_LockSurface(pTextSurface);
       uint32_t* const __restrict pixels = (uint32_t*)pTextSurface->pixels;
       const int pitch = pTextSurface->pitch / 4;
+      const int w = pTextSurface->w; // Invariant loop bound, for auto-vectorization
       const int h = pTextSurface->h;
       const int hm1 = (h > 1 ? h - 1 : 1);
       // gradstate is the percentage of the text kept at the start color before
@@ -1589,13 +1623,12 @@ PUPLabel::RenderState PUPLabel::UpdateLabelTexture(int outWidth, int outHeight, 
          const uint32_t gg = sG + gy * ((int)GetGValue(m_gradColor) - sG) / gradHeight;
          const uint32_t gb = sB + gy * ((int)GetBValue(m_gradColor) - sB) / gradHeight;
          const uint32_t g = (gb << 16) | (gg << 8) | gr;
-         size_t ofs = y*pitch;
-         for (int x = 0; x < pTextSurface->w; x++,ofs++)
+         uint32_t* const __restrict row = pixels + static_cast<size_t>(y) * pitch;
+         for (int x = 0; x < w; x++)
          {
-            uint32_t& px = pixels[ofs];
+            const uint32_t px = row[x];
             const uint32_t a = px & 0xFF000000u;
-            if (a != 0)
-               px = a | g;
+            row[x] = a ? (a | g) : px; // Branchless, for auto-vectorization
          }
       }
       SDL_UnlockSurface(pTextSurface);
