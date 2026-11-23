@@ -36,6 +36,7 @@ static uint32_t endpointId;
 static unsigned int getVpxApiId;
 static unsigned int getMachineStateId = 0;
 static unsigned int onAudioCmdId = 0;
+static unsigned int onAudioLegacyCmdId = 0;
 static unsigned int onAudioUpdateId = 0;
 static std::unique_ptr<PinballPlugin::Controller::CtrlItemConsumer<ControllerDef>> controllers;
 static std::unique_ptr<PinballPlugin::Controller::CtrlItemProvider<AudioSrcId>> altsoundAudioSrc;
@@ -88,9 +89,12 @@ static void OnGameEvent(const unsigned int eventId, void* userData, void* msgDat
 {
    if (isRunning.load(std::memory_order_relaxed))
    {
-      // The board number lets AltSound tell apart the two sound boards of System 11 machines (board 1 commands as 0x01xx)
+      // The board number lets AltSound tell apart the two sound boards of System 11 machines (board 1 commands as 0x01xx).
+      // The source and the legacy board flag let it take only the stream the pack was made for (new_sound_commands):
+      // OnAudioCmd brings the driver's commands and the data writes, OnAudioLegacyCmd the old data writes of the boards
+      // whose logging changed in PinMAME 3.7, for the old packs
       const PinMAMEChildBoardEventMsg* const msg = static_cast<const PinMAMEChildBoardEventMsg*>(msgData);
-      AltSoundProcessBoardCommand(msg->boardNo, msg->cmd, 0);
+      AltSoundProcessBoardCommandSrc(msg->boardNo, msg->cmd, static_cast<ALTSOUND_CMD_SRC>(msg->src), msg->legacyBoard != 0, 0);
    }
 }
 
@@ -236,6 +240,7 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginLoad(const uint32_t sessionId, const Ms
    controllers->Subscribe();
 
    msgApi->SubscribeMsg(endpointId, onAudioCmdId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_CMD), OnGameEvent, nullptr);
+   msgApi->SubscribeMsg(endpointId, onAudioLegacyCmdId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_AUDIO_LEGACY_CMD), OnGameEvent, nullptr);
    getMachineStateId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_GET_MACHINE_STATE);
 }
 
@@ -252,8 +257,10 @@ MSGPI_EXPORT void MSGPIAPI AltSoundPluginUnload()
    altsoundAudioSrc = nullptr;
 
    msgApi->UnsubscribeMsg(onAudioCmdId, OnGameEvent, nullptr);
+   msgApi->UnsubscribeMsg(onAudioLegacyCmdId, OnGameEvent, nullptr);
    msgApi->ReleaseMsgID(onAudioUpdateId);
    msgApi->ReleaseMsgID(onAudioCmdId);
+   msgApi->ReleaseMsgID(onAudioLegacyCmdId);
 
    msgApi->ReleaseMsgID(getMachineStateId);
 
