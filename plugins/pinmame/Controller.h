@@ -197,6 +197,7 @@ private:
    vector<unsigned int> m_switchMap;
    StateSrcId m_dipSwitches { };
    vector<bool> m_dipSwitchStates;
+   vector<bool> m_dipSwitchSet; // Whether the script set the matching m_dipSwitchStates entry (others keep the machine value)
    vector<unsigned int> m_dipSwitchMap;
    StateSrcId m_solenoids { };
    vector<unsigned int> m_solenoidMap;

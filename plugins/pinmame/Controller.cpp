@@ -474,7 +474,7 @@ void Controller::OnStateSrcChanged(const std::vector<StateSrcId>& stateSources)
                if (m_dipSwitchMap.size() < dipSwitchNo + 1)
                   m_dipSwitchMap.resize(dipSwitchNo + 1, UINT_MAX);
                m_dipSwitchMap[dipSwitchNo] = i;
-               if (dipSwitchNo < m_dipSwitchStates.size())
+               if (dipSwitchNo < m_dipSwitchStates.size() && m_dipSwitchSet[dipSwitchNo])
                {
                   // Applied cached DIP switch states that may have been defined before starting the machine
                   uint8_t bv = m_dipSwitchStates[dipSwitchNo] ? 0xFF : 0;
@@ -615,7 +615,7 @@ int Controller::GetDip(int nDipBank) const
             }
             // Not provided by the core yet (it comes after the machine started): use the state the script set, else the one of the machine
             // (its defaults or its NVRAM), as core.vbs takes this value as the default of the table options, which it then writes back
-            const bool state = dipSwitchNo < m_dipSwitchStates.size() ? m_dipSwitchStates[dipSwitchNo] : (PinmameGetDIP(nDipBank) & (1 << i)) != 0;
+            const bool state = dipSwitchNo < m_dipSwitchStates.size() && m_dipSwitchSet[dipSwitchNo] ? m_dipSwitchStates[dipSwitchNo] : (PinmameGetDIP(nDipBank) & (1 << i)) != 0;
             if (state)
                result |= 1u << i;
          }
@@ -637,8 +637,12 @@ void Controller::SetDip(int nDipBank, int byteState)
             bool state = (byteState & (1u << i)) != 0;
 
             if (m_dipSwitchStates.size() < dipSwitchNo + 1)
+            {
                m_dipSwitchStates.resize(dipSwitchNo + 1, false);
+               m_dipSwitchSet.resize(dipSwitchNo + 1, false);
+            }
             m_dipSwitchStates[dipSwitchNo] = state;
+            m_dipSwitchSet[dipSwitchNo] = true;
 
             if (dipSwitchNo < m_dipSwitchMap.size())
             {
