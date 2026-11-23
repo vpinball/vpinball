@@ -306,9 +306,6 @@ void LoadingPage::RenderLoadingScreen(const ImVec4& rect)
    DrawSpacedText(drawList, overlayFont, capSize, ImVec2(origin.x + size.x * 0.5f, barY + segH + size.y * 0.015f), capSize * 0.35f, IM_COL32(160, 160, 166, 255), "LOADING");
 
    // Bottom info bar: explains the compression process and gives access to the skip options
-   const float infoBarH = std::max(30.f, size.y * 0.05f);
-   const ImVec2 infoBarMin(origin.x, origin.y + size.y - infoBarH);
-   drawList->AddRectFilled(infoBarMin, origin + size, IM_COL32(0, 0, 0, 110));
    const bool canSkip = CanSkipCompression();
    const string info = canSkip                                ? "Compressing textures (one-time operation, results are cached for future launches).\nYou can adjust compression settings by pressing any UI button."s
       : stats.skipCompression.load(std::memory_order_relaxed) ? "Loading the remaining textures with compression skipped."s
@@ -323,7 +320,12 @@ void LoadingPage::RenderLoadingScreen(const ImVec4& rect)
    const float drawSize = fontSize * fitScale;
    const ImVec2 infoDrawSize = infoSize * fitScale;
    const ImVec2 linkDrawSize = linkSize * fitScale;
-   const float textY = infoBarMin.y + (infoBarH - drawSize) * 0.5f;
+   // The bar grows to fit the info text, which may span multiple lines
+   const float infoBarH = std::max({ 30.f, size.y * 0.05f, infoDrawSize.y + drawSize });
+   const ImVec2 infoBarMin(origin.x, origin.y + size.y - infoBarH);
+   drawList->AddRectFilled(infoBarMin, origin + size, IM_COL32(0, 0, 0, 110));
+   const float textY = infoBarMin.y + (infoBarH - infoDrawSize.y) * 0.5f;
+   const float linkY = infoBarMin.y + (infoBarH - linkDrawSize.y) * 0.5f;
    float textX = origin.x + (size.x - infoDrawSize.x - gap - linkDrawSize.x) * 0.5f;
    drawList->AddText(font, drawSize, ImVec2(textX, textY), IM_COL32(140, 140, 146, 255), info.c_str());
    textX += infoDrawSize.x + gap;
@@ -334,8 +336,8 @@ void LoadingPage::RenderLoadingScreen(const ImVec4& rect)
       ImGui::SetCursorScreenPos(ImVec2(textX, infoBarMin.y));
       ImGui::InvisibleButton("##LoadingOptions", ImVec2(linkDrawSize.x, infoBarH));
       const ImU32 linkCol = interactive && ImGui::IsItemHovered() ? IM_COL32(235, 235, 240, 255) : IM_COL32(190, 190, 198, 255);
-      drawList->AddText(font, drawSize, ImVec2(textX, textY), linkCol, link);
-      drawList->AddLine(ImVec2(textX, textY + drawSize + 1.f), ImVec2(textX + linkDrawSize.x, textY + drawSize + 1.f), linkCol);
+      drawList->AddText(font, drawSize, ImVec2(textX, linkY), linkCol, link);
+      drawList->AddLine(ImVec2(textX, linkY + drawSize + 1.f), ImVec2(textX + linkDrawSize.x, linkY + drawSize + 1.f), linkCol);
       if (interactive && ImGui::IsItemClicked())
          OpenSkipOptions();
    }
