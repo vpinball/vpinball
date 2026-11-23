@@ -14,8 +14,15 @@ public:
 
 private:
    void BuildPage() override;
-   InputManager& GetInput() const { return m_player->m_pininput; }
-
 };
 
+
+class InputMappingsPage final : public InGameUIPage
+{
+public:
+   InputMappingsPage();
+
+private:
+   void BuildPage() override;
+};
 }

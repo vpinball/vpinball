@@ -1,0 +1,1720 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 918.5 258.5"
+   width="918.5"
+   height="258.5"
+   version="1.1"
+   id="svg87"
+   sodipodi:docname="keyboard.svg"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview87"
+     pagecolor="#00009b"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:pagecheckerboard="0"
+     inkscape:zoom="1.2244834"
+     inkscape:cx="480.61084"
+     inkscape:cy="136.79238"
+     inkscape:window-width="3440"
+     inkscape:window-height="1334"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="callouts" />
+  <g
+     id="keys"
+     fill="#141414"
+     stroke="#c8c8c8"
+     stroke-width="2.5"
+     stroke-linejoin="round"
+     style="fill:none;stroke:#ffffff"
+     transform="translate(-2.75,-2.75)">
+    <rect
+       id="key0"
+       x="4"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key1"
+       x="84"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key2"
+       x="124"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key3"
+       x="164"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key4"
+       x="204"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key5"
+       x="264"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key6"
+       x="304"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key7"
+       x="344"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key8"
+       x="384"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key9"
+       x="444"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key10"
+       x="484"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key11"
+       x="524"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key12"
+       x="564"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key13"
+       x="624"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key14"
+       x="664"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key15"
+       x="704"
+       y="4"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key16"
+       x="4"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key17"
+       x="44"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key18"
+       x="84"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key19"
+       x="124"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key20"
+       x="164"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key21"
+       x="204"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key22"
+       x="244"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key23"
+       x="284"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key24"
+       x="324"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key25"
+       x="364"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key26"
+       x="404"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key27"
+       x="444"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key28"
+       x="484"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key29"
+       x="524"
+       y="64"
+       width="76"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key30"
+       x="4"
+       y="104"
+       width="56"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key31"
+       x="64"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key32"
+       x="104"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key33"
+       x="144"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key34"
+       x="184"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key35"
+       x="224"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key36"
+       x="264"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key37"
+       x="304"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key38"
+       x="344"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key39"
+       x="384"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key40"
+       x="424"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key41"
+       x="464"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key42"
+       x="504"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key43"
+       x="544"
+       y="104"
+       width="56"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key44"
+       x="4"
+       y="144"
+       width="66"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key45"
+       x="74"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key46"
+       x="114"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key47"
+       x="154"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key48"
+       x="194"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key49"
+       x="234"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key50"
+       x="274"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key51"
+       x="314"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key52"
+       x="354"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key53"
+       x="394"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key54"
+       x="434"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key55"
+       x="474"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key56"
+       x="514"
+       y="144"
+       width="86"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key57"
+       x="4"
+       y="184"
+       width="86"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key58"
+       x="94"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key59"
+       x="134"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key60"
+       x="174"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key61"
+       x="214"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key62"
+       x="254"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key63"
+       x="294"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key64"
+       x="334"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key65"
+       x="374"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key66"
+       x="414"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key67"
+       x="454"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key68"
+       x="494"
+       y="184"
+       width="106"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key69"
+       x="4"
+       y="224"
+       width="46"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key70"
+       x="54"
+       y="224"
+       width="46"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key71"
+       x="104"
+       y="224"
+       width="46"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key72"
+       x="154"
+       y="224"
+       width="246"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key73"
+       x="404"
+       y="224"
+       width="46"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key74"
+       x="454"
+       y="224"
+       width="46"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key75"
+       x="504"
+       y="224"
+       width="46"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key76"
+       x="554"
+       y="224"
+       width="46"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key77"
+       x="624"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key78"
+       x="664"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key79"
+       x="704"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key80"
+       x="624"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key81"
+       x="664"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key82"
+       x="704"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key83"
+       x="664"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key84"
+       x="624"
+       y="224"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key85"
+       x="664"
+       y="224"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key86"
+       x="704"
+       y="224"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key87"
+       x="764"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key88"
+       x="804"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key89"
+       x="844"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key90"
+       x="884"
+       y="64"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key91"
+       x="764"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key92"
+       x="804"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key93"
+       x="844"
+       y="104"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key94"
+       x="884"
+       y="104"
+       width="36"
+       height="76"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key95"
+       x="764"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key96"
+       x="804"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key97"
+       x="844"
+       y="144"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key98"
+       x="764"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key99"
+       x="804"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key100"
+       x="844"
+       y="184"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key101"
+       x="884"
+       y="184"
+       width="36"
+       height="76"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key102"
+       x="764"
+       y="224"
+       width="76"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+    <rect
+       id="key103"
+       x="844"
+       y="224"
+       width="36"
+       height="36"
+       rx="6"
+       style="fill:none;stroke:#ffffff" />
+  </g>
+  <g
+     id="anchors"
+     inkscape:groupmode="layer"
+     inkscape:label="anchors"
+     style="display:inline"
+     transform="translate(-2.75,-2.75)">
+    <rect
+       id="anchor0"
+       inkscape:label="#41|Esc"
+       x="21"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor1"
+       inkscape:label="#58|F1"
+       x="101"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor2"
+       inkscape:label="#59|F2"
+       x="141"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor3"
+       inkscape:label="#60|F3"
+       x="181"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor4"
+       inkscape:label="#61|F4"
+       x="221"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor5"
+       inkscape:label="#62|F5"
+       x="281"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor6"
+       inkscape:label="#63|F6"
+       x="321"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor7"
+       inkscape:label="#64|F7"
+       x="361"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor8"
+       inkscape:label="#65|F8"
+       x="401"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor9"
+       inkscape:label="#66|F9"
+       x="461"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor10"
+       inkscape:label="#67|F10"
+       x="501"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor11"
+       inkscape:label="#68|F11"
+       x="541"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor12"
+       inkscape:label="#69|F12"
+       x="581"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor13"
+       inkscape:label="#70|PrtSc"
+       x="641"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor14"
+       inkscape:label="#71|ScrLk"
+       x="681"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor15"
+       inkscape:label="#72|Pause"
+       x="721"
+       y="21"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor16"
+       inkscape:label="#53|`"
+       x="21"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor17"
+       inkscape:label="#30|1"
+       x="61"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor18"
+       inkscape:label="#31|2"
+       x="101"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor19"
+       inkscape:label="#32|3"
+       x="141"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor20"
+       inkscape:label="#33|4"
+       x="181"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor21"
+       inkscape:label="#34|5"
+       x="221"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor22"
+       inkscape:label="#35|6"
+       x="261"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor23"
+       inkscape:label="#36|7"
+       x="301"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor24"
+       inkscape:label="#37|8"
+       x="341"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor25"
+       inkscape:label="#38|9"
+       x="381"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor26"
+       inkscape:label="#39|0"
+       x="421"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor27"
+       inkscape:label="#45|-"
+       x="461"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor28"
+       inkscape:label="#46|="
+       x="501"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor29"
+       inkscape:label="#42|Bksp"
+       x="561"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor30"
+       inkscape:label="#43|Tab"
+       x="31"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor31"
+       inkscape:label="#20|Q"
+       x="81"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor32"
+       inkscape:label="#26|W"
+       x="121"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor33"
+       inkscape:label="#8|E"
+       x="161"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor34"
+       inkscape:label="#21|R"
+       x="201"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor35"
+       inkscape:label="#23|T"
+       x="241"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor36"
+       inkscape:label="#28|Y"
+       x="281"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor37"
+       inkscape:label="#24|U"
+       x="321"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor38"
+       inkscape:label="#12|I"
+       x="361"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor39"
+       inkscape:label="#18|O"
+       x="401"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor40"
+       inkscape:label="#19|P"
+       x="441"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor41"
+       inkscape:label="#47|["
+       x="481"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor42"
+       inkscape:label="#48|]"
+       x="521"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor43"
+       inkscape:label="#49|\"
+       x="571"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor44"
+       inkscape:label="#57|Caps"
+       x="36"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor45"
+       inkscape:label="#4|A"
+       x="91"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor46"
+       inkscape:label="#22|S"
+       x="131"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor47"
+       inkscape:label="#7|D"
+       x="171"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor48"
+       inkscape:label="#9|F"
+       x="211"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor49"
+       inkscape:label="#10|G"
+       x="251"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor50"
+       inkscape:label="#11|H"
+       x="291"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor51"
+       inkscape:label="#13|J"
+       x="331"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor52"
+       inkscape:label="#14|K"
+       x="371"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor53"
+       inkscape:label="#15|L"
+       x="411"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor54"
+       inkscape:label="#51|;"
+       x="451"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor55"
+       inkscape:label="#52|'"
+       x="491"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor56"
+       inkscape:label="#40|Enter"
+       x="556"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor57"
+       inkscape:label="#225|Shift"
+       x="46"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor58"
+       inkscape:label="#29|Z"
+       x="111"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor59"
+       inkscape:label="#27|X"
+       x="151"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor60"
+       inkscape:label="#6|C"
+       x="191"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor61"
+       inkscape:label="#25|V"
+       x="231"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor62"
+       inkscape:label="#5|B"
+       x="271"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor63"
+       inkscape:label="#17|N"
+       x="311"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor64"
+       inkscape:label="#16|M"
+       x="351"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor65"
+       inkscape:label="#54|,"
+       x="391"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor66"
+       inkscape:label="#55|."
+       x="431"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor67"
+       inkscape:label="#56|/"
+       x="471"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor68"
+       inkscape:label="#229|Shift"
+       x="546"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor69"
+       inkscape:label="#224|Ctrl"
+       x="26"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor70"
+       inkscape:label="#227|Win"
+       x="76"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor71"
+       inkscape:label="#226|Alt"
+       x="126"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor72"
+       inkscape:label="#44|Space"
+       x="276"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor73"
+       inkscape:label="#230|Alt"
+       x="426"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor74"
+       inkscape:label="#231|Win"
+       x="476"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor75"
+       inkscape:label="#118|Menu"
+       x="526"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor76"
+       inkscape:label="#228|Ctrl"
+       x="576"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor77"
+       inkscape:label="#73|Ins"
+       x="641"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor78"
+       inkscape:label="#74|Home"
+       x="681"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor79"
+       inkscape:label="#75|PgUp"
+       x="721"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor80"
+       inkscape:label="#76|Del"
+       x="641"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor81"
+       inkscape:label="#77|End"
+       x="681"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor82"
+       inkscape:label="#78|PgDn"
+       x="721"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor83"
+       inkscape:label="#82|↑"
+       x="681"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor84"
+       inkscape:label="#80|←"
+       x="641"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor85"
+       inkscape:label="#81|↓"
+       x="681"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor86"
+       inkscape:label="#79|→"
+       x="721"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor87"
+       inkscape:label="#83|Num"
+       x="781"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor88"
+       inkscape:label="#84|/"
+       x="821"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor89"
+       inkscape:label="#85|*"
+       x="861"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor90"
+       inkscape:label="#86|-"
+       x="901"
+       y="81"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor91"
+       inkscape:label="#95|7"
+       x="781"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor92"
+       inkscape:label="#96|8"
+       x="821"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor93"
+       inkscape:label="#97|9"
+       x="861"
+       y="121"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor94"
+       inkscape:label="#87|+"
+       x="901"
+       y="141"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor95"
+       inkscape:label="#92|4"
+       x="781"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor96"
+       inkscape:label="#93|5"
+       x="821"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor97"
+       inkscape:label="#94|6"
+       x="861"
+       y="161"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor98"
+       inkscape:label="#89|1"
+       x="781"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor99"
+       inkscape:label="#90|2"
+       x="821"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor100"
+       inkscape:label="#91|3"
+       x="861"
+       y="201"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor101"
+       inkscape:label="#88|Enter"
+       x="901"
+       y="221"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor102"
+       inkscape:label="#98|0"
+       x="801"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+    <rect
+       id="anchor103"
+       inkscape:label="#99|."
+       x="861"
+       y="241"
+       width="6"
+       height="6"
+       style="fill:#ff0000;fill-opacity:0.35;stroke:#ff0000;stroke-width:1" />
+  </g>
+  <g
+     id="callouts"
+     inkscape:groupmode="layer"
+     inkscape:label="callouts"
+     style="display:inline"
+     transform="translate(-2.75,-2.75)" />
+</svg>

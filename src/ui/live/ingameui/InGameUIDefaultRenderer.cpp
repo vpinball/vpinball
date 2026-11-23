@@ -266,6 +266,17 @@ void InGameUIDefaultRenderer::RenderPage(InGameUIPage& page, float elapsedS)
    // Indent the item content so the item highlight quads (drawn from the child's left edge) have a left padding
    ImGui::Indent(itemPadding.x);
 
+   // Header panes are drawn at the top of the item list (e.g. the input device diagram)
+   for (const InGameUIPane& pane : panes)
+      if (pane.placement == InGameUIPane::Placement::Header && pane.render)
+      {
+         const ImVec2 avail = ImGui::GetContentRegionAvail();
+         const ImVec2 paneSize = pane.measure ? pane.measure(avail.x, avail.y * 0.5f) : ImVec2(avail.x, avail.y * 0.4f);
+         const ImVec2 panePos = ImGui::GetCursorScreenPos();
+         pane.render(ImVec4(panePos.x, panePos.y, paneSize.x, paneSize.y));
+         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + paneSize.y + ImGui::GetStyle().ItemSpacing.y);
+      }
+
    // Drag scroll for easier mobile navigation
    if (g_isMobile)
    {

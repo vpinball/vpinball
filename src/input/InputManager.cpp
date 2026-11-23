@@ -405,7 +405,41 @@ string InputManager::GetDeviceElementName(uint16_t deviceId, uint16_t buttonOrAx
    const DeviceDef& device = m_inputDevices[deviceId];
    if (auto it = device.m_buttonOrAxisNames.find(buttonOrAxisId); it != device.m_buttonOrAxisNames.end())
       return it->second.name;
+   switch (device.m_type)
+   {
+   case DeviceType::Keyboard:
+   {
+      // SDL_GetScancodeName does not apply the active keyboard layout, therefore not corresponding to what the user expects
+      const char* const keyName = SDL_GetKeyName(SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(buttonOrAxisId), SDL_KMOD_NONE, false));
+      if (keyName != nullptr && keyName[0] != '\0')
+         return keyName;
+      break;
+   }
+   case DeviceType::Mouse:
+      switch (buttonOrAxisId)
+      {
+      case SDL_BUTTON_LEFT: return "Left Button"s;
+      case SDL_BUTTON_MIDDLE: return "Middle Button"s;
+      case SDL_BUTTON_RIGHT: return "Right Button"s;
+      case SDL_BUTTON_X1: return "X1 Button"s;
+      case SDL_BUTTON_X2: return "X2 Button"s;
+      default: break;
+      }
+      break;
+   default: break;
+   }
    return "Button #" + std::to_string(buttonOrAxisId);
+}
+
+vector<InputManager::DeviceElement> InputManager::GetDeviceElements(uint16_t deviceId) const
+{
+   assert(deviceId < m_inputDevices.size());
+   vector<DeviceElement> elements;
+   elements.reserve(m_inputDevices[deviceId].m_buttonOrAxisNames.size());
+   for (const auto& [buttonOrAxisId, def] : m_inputDevices[deviceId].m_buttonOrAxisNames)
+      elements.push_back({ buttonOrAxisId, def.isAxis, def.name });
+   std::ranges::sort(elements, [](const DeviceElement& a, const DeviceElement& b) { return a.id < b.id; });
+   return elements;
 }
 
 InputManager::DeviceType InputManager::GetDeviceType(uint16_t deviceId) const

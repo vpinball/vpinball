@@ -1183,6 +1183,20 @@ void InGameUIDesktopRenderer::RenderContentPage(InGameUIPage& page, const vector
    const float footerH = page.IsAdjustable() ? ImGui::GetFrameHeight() + 18.f * dpi : 0.f;
    ImGui::BeginChild("PageItems", ImVec2(0.f, -footerH), ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground);
    UpdateDragScroll();
+
+   // Header panes sit at the top of the item list and scroll with it (e.g. the
+   // input device diagram); they get the content width and may claim a share
+   // of the visible height
+   for (const InGameUIPane& pane : panes)
+      if (pane.placement == InGameUIPane::Placement::Header && pane.render)
+      {
+         const ImVec2 avail = ImGui::GetContentRegionAvail();
+         const ImVec2 paneSize = pane.measure ? pane.measure(avail.x, avail.y * 0.55f) : ImVec2(avail.x, avail.y * 0.5f);
+         const ImVec2 panePos = ImGui::GetCursorScreenPos();
+         pane.render(ImVec4(panePos.x, panePos.y, paneSize.x, paneSize.y));
+         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + paneSize.y + style.ItemSpacing.y);
+      }
+
    RenderItems(page, panes, isNavSource);
    ImGui::Dummy(ImVec2(0.f, 0.f));
    ImGui::EndChild();

@@ -432,6 +432,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/CabinetRender.cpp
    src/ui/live/ingameui/CabinetSettingsPage.h
    src/ui/live/ingameui/CabinetSettingsPage.cpp
+   src/ui/live/ingameui/DeviceLayouts.h
+   src/ui/live/ingameui/DeviceLayouts.cpp
    src/ui/live/ingameui/DisplayProfileSettingsPage.h
    src/ui/live/ingameui/DisplayProfileSettingsPage.cpp
    src/ui/live/ingameui/DisplaySettingsPage.h
