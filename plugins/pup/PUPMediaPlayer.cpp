@@ -11,6 +11,7 @@
 #include "PUPMediaPlayer.h"
 
 #include <cfloat>
+#include <climits>
 
 namespace PUP {
 
