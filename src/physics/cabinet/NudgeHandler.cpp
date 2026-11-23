@@ -59,8 +59,8 @@ void NudgeHandler::StepOneMillisecond()
 Vertex2D NudgeHandler::GetCabinetAcceleration() const
 {
    const auto physical = [this](const Vertex2D& v) { return m_mirrored ? Vertex2D(-v.x, v.y) : v; };
-   // Gameplay input is suspended while the InGame UI is open (it overlaps UI commands)
-   if (g_pplayer != nullptr && g_pplayer->m_liveUI != nullptr && g_pplayer->m_liveUI->IsInGameUIOpened())
+   // Suspended while the InGame UI is open (see InGameUI::IsGameplayInputSuspended)
+   if (g_pplayer != nullptr && g_pplayer->m_liveUI != nullptr && g_pplayer->m_liveUI->IsGameplayInputSuspended())
       return m_noNudge;
    if (m_externalOverride)
       return physical(m_externalAcceleration);
@@ -75,8 +75,8 @@ Vertex2D NudgeHandler::GetCabinetAcceleration() const
 Vertex2D NudgeHandler::GetCabinetOffset() const
 {
    const auto physical = [this](const Vertex2D& v) { return m_mirrored ? Vertex2D(-v.x, v.y) : v; };
-   // Gameplay input is suspended while the InGame UI is open (it overlaps UI commands)
-   if (g_pplayer != nullptr && g_pplayer->m_liveUI != nullptr && g_pplayer->m_liveUI->IsInGameUIOpened())
+   // Suspended while the InGame UI is open (see InGameUI::IsGameplayInputSuspended)
+   if (g_pplayer != nullptr && g_pplayer->m_liveUI != nullptr && g_pplayer->m_liveUI->IsGameplayInputSuspended())
       return m_noNudge;
    if (m_externalOverride)
       return physical(m_externalDisplacement);
