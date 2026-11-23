@@ -105,9 +105,6 @@ if(BUILD_SHARED)
       elseif(PLATFORM STREQUAL "windows-mingw")
          add_custom_command(TARGET AltSoundPlugin POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/altsound64.dll" "${PLUGINS_DIR}/altsound/altsound64.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/altsound/libgcc_s_seh-1.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libstdc++-6.dll" "${PLUGINS_DIR}/altsound/libstdc++-6.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libwinpthread-1.dll" "${PLUGINS_DIR}/altsound/libwinpthread-1.dll"
          )
       elseif(PLATFORM STREQUAL "linux")
          add_custom_command(TARGET AltSoundPlugin POST_BUILD

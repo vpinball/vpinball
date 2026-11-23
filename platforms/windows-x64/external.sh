@@ -545,7 +545,8 @@ fi
 
 #
 # build libwinevbs (VBScript engine of the standalone build), with MinGW like ffmpeg as Wine's code does not build with MSVC (yet).
-# Only the DLL and header are used, vpx-standalone.vcxproj makes the import library (see make/winevbs64-msvc.def)
+# Only the DLL and header are used, the MSVC standalone build (CMake BUILD_STANDALONE=ON or vpx-standalone.vcxproj)
+# makes the import library (see make/winevbs64-msvc.def)
 #
 
 LIBWINEVBS_EXPECTED_SHA="${LIBWINEVBS_SHA}-001"

@@ -76,7 +76,6 @@
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libwinpthread-1.dll" "$(TargetDir)"
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libgcc_s_seh-1.dll" "$(TargetDir)"
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libz-1.dll" "$(TargetDir)"
-          xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\zlib1.dll" "$(TargetDir)"
         ) else (
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\avcodec*.dll" "$(TargetDir)"
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\avformat*.dll" "$(TargetDir)"
@@ -89,7 +88,6 @@
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(TargetDir)"
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libgcc_s_dw2-1.dll" "$(TargetDir)"
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libz-1.dll" "$(TargetDir)"
-          xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\zlib1.dll" "$(TargetDir)"
         )
         if ".%25VPIN_DIR%25" == "." (
           echo Define VPIN_DIR env. variable if you want to deploy on build

@@ -72,14 +72,6 @@
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libftdi1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dof\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libftdi1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libftdi1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dof\"
-
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libgcc_s_dw2-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dof\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libgcc_s_dw2-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libgcc_s_dw2-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dof\"
-
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\dof\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\dof\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\dof\"
 		)
       </Command>
     </PostBuildEvent>

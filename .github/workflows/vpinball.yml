@@ -92,7 +92,7 @@ jobs:
             DESKTOP='{"include":[
               {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows","arch":"x64","config":"Release"},
               {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows","arch":"x86","config":"Release"},
-              {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows-mingw","arch":"x64","config":"Release"},
+              {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows","arch":"x64","config":"Release","standalone":true},
               {"os":"macos-15","type":"BGFX","platform":"macos","arch":"arm64","config":"Release"},
               {"os":"macos-15","type":"BGFX","platform":"macos","arch":"x64","config":"Release"},
               {"os":"ubuntu-26.04","type":"BGFX","platform":"linux","arch":"x64","config":"Release"},
@@ -111,7 +111,7 @@ jobs:
           else
             DESKTOP='{"include":[
               {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows","arch":"x64","config":"Release"},
-              {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows-mingw","arch":"x64","config":"Release"},
+              {"os":"windows-2025-vs2026","type":"BGFX","platform":"windows","arch":"x64","config":"Release","standalone":true},
               {"os":"macos-15","type":"BGFX","platform":"macos","arch":"arm64","config":"Release"},
               {"os":"ubuntu-26.04","type":"BGFX","platform":"linux","arch":"x64","config":"Release"}
             ]}'
@@ -129,9 +129,12 @@ jobs:
           echo "android_flavors=${ANDROID_FLAVORS}" >> $GITHUB_OUTPUT
 
   build-desktop:
-    name: Build VPinballX_${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
+    name: Build VPinballX_${{ matrix.type }}-${{ matrix.platform }}${{ matrix.standalone && '-standalone' || '' }}-${{ matrix.arch }}-${{ matrix.config }}
     runs-on: ${{ matrix.os }}
     needs: [ context, version, matrix ]
+    env:
+      # Package suffix of the MSVC standalone build. The MinGW one (windows-mingw) still works if added back to the matrix.
+      VARIANT: ${{ matrix.standalone && '-standalone' || '' }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.desktop) }}
@@ -191,11 +194,11 @@ jobs:
         with:
           path: external
           key: ${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.EXT_HASH }}
-      - if: ((matrix.platform == 'windows' || matrix.platform == 'windows-mingw') && matrix.type == 'BGFX')
+      - if: ((matrix.platform == 'windows' || matrix.platform == 'windows-mingw') && matrix.type == 'BGFX' && !matrix.standalone)
         name: Package third-party artifacts
         run: |
           cd third-party && 7z a -r ../VPinballX-${{ needs.version.outputs.tag }}-dev-third-party-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}.zip .
-      - if: ((matrix.platform == 'windows' || matrix.platform == 'windows-mingw') && matrix.type == 'BGFX')
+      - if: ((matrix.platform == 'windows' || matrix.platform == 'windows-mingw') && matrix.type == 'BGFX' && !matrix.standalone)
         name: Save third-party artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -209,6 +212,9 @@ jobs:
       - name: Build
         run: |
           CMAKE_ARGS="-DRENDERER=${{ matrix.type }} -DPLATFORM=${{ matrix.platform }} -DARCH=${{ matrix.arch }}"
+          if [[ "${{ matrix.standalone }}" == "true" ]]; then
+            CMAKE_ARGS="${CMAKE_ARGS} -DBUILD_STANDALONE=ON"
+          fi
           if [[ "${{ matrix.platform }}" == "windows-mingw" ]]; then
             CURRENT_DIR="$(pwd)"
             MSYSTEM=UCRT64 /c/msys64/usr/bin/bash.exe -l -c "
@@ -298,7 +304,7 @@ jobs:
             cp -r build/${{ matrix.config }}/plugins stage
             cp -r build/${{ matrix.config }}/scripts stage
             cp -r build/${{ matrix.config }}/docs stage
-            cd stage && 7z a -r ../tmp/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}.zip .
+            cd stage && 7z a -r ../tmp/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}${VARIANT}-${{ matrix.arch }}-${{ matrix.config }}.zip .
           elif [[ "${{ matrix.platform }}" == "macos" ]]; then
             cp build/${{ matrix.config }}/*.dmg tmp
           elif [[ "${{ matrix.platform }}" == "linux" ]]; then
@@ -314,7 +320,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}${{ env.VARIANT }}-${{ matrix.arch }}-${{ matrix.config }}
           path: tmp/*
           archive: false
 

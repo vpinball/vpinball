@@ -137,44 +137,19 @@ if(BUILD_SHARED AND NOT (PLATFORM STREQUAL "windows" AND NOT MSVC))
       if(PLATFORM STREQUAL "windows")
          if (ARCH STREQUAL "x64")
             add_custom_command(TARGET PUPPlugin POST_BUILD
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL364.dll" "${PLUGINS_DIR}/pup/SDL364.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3_image64.dll" "${PLUGINS_DIR}/pup/SDL3_image64.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3_ttf64.dll" "${PLUGINS_DIR}/pup/SDL3_ttf64.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libiconv-2.dll" "${PLUGINS_DIR}/pup/libiconv-2.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libbz2-1.dll" "${PLUGINS_DIR}/pup/libbz2-1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/liblzma-5.dll" "${PLUGINS_DIR}/pup/liblzma-5.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libwinpthread-1.dll" "${PLUGINS_DIR}/pup/libwinpthread-1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/pup/libgcc_s_seh-1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libz-1.dll" "${PLUGINS_DIR}/pup/libz-1.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/pupdmd64.dll" "${PLUGINS_DIR}/pup/pupdmd64.dll"
             )
          elseif (ARCH STREQUAL "x86")
             add_custom_command(TARGET PUPPlugin POST_BUILD
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3.dll" "${PLUGINS_DIR}/pup/SDL3.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3_image.dll" "${PLUGINS_DIR}/pup/SDL3_image.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3_ttf.dll" "${PLUGINS_DIR}/pup/SDL3_ttf.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libiconv-2.dll" "${PLUGINS_DIR}/pup/libiconv-2.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libbz2-1.dll" "${PLUGINS_DIR}/pup/libbz2-1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/liblzma-5.dll" "${PLUGINS_DIR}/pup/liblzma-5.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libwinpthread-1.dll" "${PLUGINS_DIR}/pup/libwinpthread-1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_dw2-1.dll" "${PLUGINS_DIR}/pup/libgcc_s_dw2-1.dll"
-               COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libz-1.dll" "${PLUGINS_DIR}/pup/libz-1.dll"
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/pupdmd.dll" "${PLUGINS_DIR}/pup/pupdmd.dll"
             )
          endif()
       elseif(PLATFORM STREQUAL "windows-mingw")
          add_custom_command(TARGET PUPPlugin POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL364.dll" "${PLUGINS_DIR}/pup/SDL364.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3_image64.dll" "${PLUGINS_DIR}/pup/SDL3_image64.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3_ttf64.dll" "${PLUGINS_DIR}/pup/SDL3_ttf64.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libiconv-2.dll" "${PLUGINS_DIR}/pup/libiconv-2.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libbz2-1.dll" "${PLUGINS_DIR}/pup/libbz2-1.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/liblzma-5.dll" "${PLUGINS_DIR}/pup/liblzma-5.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libwinpthread-1.dll" "${PLUGINS_DIR}/pup/libwinpthread-1.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libz-1.dll" "${PLUGINS_DIR}/pup/libz-1.dll"
             COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/pupdmd64.dll" "${PLUGINS_DIR}/pup/pupdmd64.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/pup/libgcc_s_seh-1.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libstdc++-6.dll" "${PLUGINS_DIR}/pup/libstdc++-6.dll"
          )
       elseif(PLATFORM STREQUAL "linux")
          add_custom_command(TARGET PUPPlugin POST_BUILD

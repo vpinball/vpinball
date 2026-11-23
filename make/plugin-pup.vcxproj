@@ -65,17 +65,10 @@
         copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\pup\"
 
 		if $(Platform) EQU x64 (
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL364.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL364.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL364.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\pup\"
-
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\pup\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\pup\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_image64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\pup\"
 
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_ttf64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_ttf64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\SDL3_ttf64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\pup\"
 
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\pupdmd64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\pup\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\pupdmd64.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\pup\"
@@ -93,17 +86,10 @@
 
 
 		) ELSE (
-			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\pup\"
-			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\pup\"
-			xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\pup\"
-
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\pup\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\pup\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_image.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\pup\"
 
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_ttf.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_ttf.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\pup\"
-			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\SDL3_ttf.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)-$(Platform)\plugins\pup\"
 
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pupdmd.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_BGFX-$(Platform)\plugins\pup\"
 			xcopy /y /d /q /f "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\pupdmd.dll" "$(SolutionDir)..\bin\vpx\$(VpxBaseConfig)_GL-$(Platform)\plugins\pup\"

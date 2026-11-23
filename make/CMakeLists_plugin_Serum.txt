@@ -101,9 +101,6 @@ if(BUILD_SHARED)
       elseif(PLATFORM STREQUAL "windows-mingw")
          add_custom_command(TARGET SerumPlugin POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/serum64.dll" "${PLUGINS_DIR}/serum/serum64.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/serum/libgcc_s_seh-1.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libstdc++-6.dll" "${PLUGINS_DIR}/serum/libstdc++-6.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libwinpthread-1.dll" "${PLUGINS_DIR}/serum/libwinpthread-1.dll"
          )
       elseif(PLATFORM STREQUAL "linux")
          add_custom_command(TARGET SerumPlugin POST_BUILD

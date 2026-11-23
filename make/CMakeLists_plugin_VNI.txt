@@ -101,8 +101,6 @@ if(BUILD_SHARED)
       elseif(PLATFORM STREQUAL "windows-mingw")
          add_custom_command(TARGET VNIPlugin POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/vni64.dll" "${PLUGINS_DIR}/vni/vni64.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/vni/libgcc_s_seh-1.dll"
-            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libstdc++-6.dll" "${PLUGINS_DIR}/vni/libstdc++-6.dll"
          )
       elseif(PLATFORM STREQUAL "linux")
          add_custom_command(TARGET VNIPlugin POST_BUILD

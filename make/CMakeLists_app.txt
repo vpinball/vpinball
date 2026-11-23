@@ -1,6 +1,9 @@
 # application CMake file to be included in main project CMakelists
 
-# Win32 Editor build (BGFX / GL / DX9)
+# Win32 build (MSVC): the editor (BGFX / GL / DX9), or with BUILD_STANDALONE the standalone player (BGFX x64)
+# The standalone player uses the same sources and options, minus the Win32 editor (src/ui/win) and its registered type
+# library. Its VBScript engine libwinevbs is built with MinGW (see platforms/windows-x64/external.sh), the import
+# library is made here from make/winevbs64-msvc.def.
 
 if(PLATFORM STREQUAL "windows")
    if(RENDERER STREQUAL "GL")
@@ -22,6 +25,7 @@ if(PLATFORM STREQUAL "windows")
       third-party/include/bc6h/basisu_bc6h.cpp
       third-party/include/bc7f/basisu_bc7f.cpp
       third-party/include/textedit/TextEditor.cpp
+      src/core/generated/vpinball_standalone_i.c
       PROPERTIES SKIP_PRECOMPILE_HEADERS ON
    )
 
@@ -74,10 +78,24 @@ if(PLATFORM STREQUAL "windows")
       )
    endif()
 
-   add_executable(vpinball WIN32
-      ${VPX_WINDOWS_SOURCES}
-      src/ui/win/res/utf8.manifest # UTF-8 process code page, merged into the application manifest
-   )
+   if(BUILD_STANDALONE)
+      set(VPX_MSVC_STANDALONE_SOURCES ${VPX_WINDOWS_SOURCES})
+      list(FILTER VPX_MSVC_STANDALONE_SOURCES EXCLUDE REGEX "^src/ui/win/")
+      list(REMOVE_ITEM VPX_MSVC_STANDALONE_SOURCES src/core/vpinball.idl)
+      # Console subsystem, as the other standalone builds
+      add_executable(vpinball
+         ${VPX_MSVC_STANDALONE_SOURCES}
+         src/core/generated/vpinball_standalone_i.c
+         src/core/generated/vpinball_standalone_i.h
+         src/core/generated/vpinball_standalone_i_proxy.cpp
+         src/ui/win/res/utf8.manifest # UTF-8 process code page, merged into the application manifest
+      )
+   else()
+      add_executable(vpinball WIN32
+         ${VPX_WINDOWS_SOURCES}
+         src/ui/win/res/utf8.manifest # UTF-8 process code page, merged into the application manifest
+      )
+   endif()
 
    target_precompile_headers(vpinball PUBLIC
       src/core/stdafx.h
@@ -86,7 +104,7 @@ if(PLATFORM STREQUAL "windows")
    # The Visual Studio generator runs MIDL on the .idl automatically (outputs go to
    # the intermediate dir). Other generators need an explicit rule emitting the same
    # files into ${_vpx_intdir}, which is already on the include path.
-   if(NOT CMAKE_GENERATOR MATCHES "Visual Studio")
+   if(NOT BUILD_STANDALONE AND NOT CMAKE_GENERATOR MATCHES "Visual Studio")
       set(_vpx_midl_dir "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>")
       add_custom_command(
          OUTPUT "${_vpx_midl_dir}/vpinball.tlb"
@@ -163,6 +181,12 @@ if(PLATFORM STREQUAL "windows")
       )
    endif()
 
+   if(BUILD_STANDALONE)
+      target_compile_definitions(vpinball PRIVATE
+         __STANDALONE__
+      )
+   endif()
+
    set(OPT_COMMON
       /Ob2
       /O2
@@ -202,6 +226,23 @@ if(PLATFORM STREQUAL "windows")
       target_link_directories(vpinball PUBLIC
          $ENV{DXSDK_DIR}/Lib/${ARCH}
          ${BUILD_LIBS_DIR}
+      )
+   endif()
+
+   if(BUILD_STANDALONE)
+      # libwinevbs import library, linked first so that its COM/OLE functions win over the system ole32/oleaut32
+      set(_vpx_winevbs_def "${CMAKE_SOURCE_DIR}/make/winevbs64-msvc.def")
+      set(_vpx_winevbs_lib "${CMAKE_CURRENT_BINARY_DIR}/winevbs64-msvc.lib")
+      add_custom_command(
+         OUTPUT "${_vpx_winevbs_lib}"
+         COMMAND "${CMAKE_AR}" /nologo "/def:${_vpx_winevbs_def}" /machine:x64 "/out:${_vpx_winevbs_lib}"
+         DEPENDS "${_vpx_winevbs_def}"
+         VERBATIM
+      )
+      add_custom_target(vpx-winevbs-importlib DEPENDS "${_vpx_winevbs_lib}")
+      add_dependencies(vpinball vpx-winevbs-importlib)
+      target_link_libraries(vpinball
+         "${_vpx_winevbs_lib}"
       )
    endif()
 
@@ -267,6 +308,16 @@ if(PLATFORM STREQUAL "windows")
       MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
    )
 
+   if(BUILD_STANDALONE)
+      # Objects created by libwinevbs must never reach the system OLE implementation (see make/winevbs64-msvc.def)
+      get_filename_component(_vpx_msvc_bin_dir "${CMAKE_LINKER}" DIRECTORY)
+      add_custom_command(TARGET vpinball POST_BUILD
+         COMMAND "${CMAKE_COMMAND}" "-DDUMPBIN=${_vpx_msvc_bin_dir}/dumpbin.exe" "-DEXE=$<TARGET_FILE:vpinball>" "-DDEF=${_vpx_winevbs_def}"
+                 -P "${CMAKE_SOURCE_DIR}/make/check_standalone_imports.cmake"
+         VERBATIM
+      )
+   endif()
+
    add_custom_command(TARGET vpinball POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/assets" "$<TARGET_FILE_DIR:vpinball>/assets"
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/src/scripts" "$<TARGET_FILE_DIR:vpinball>/scripts"
@@ -295,7 +346,7 @@ if(PLATFORM STREQUAL "windows")
             "${RUNTIME_LIBS_DIR}/swresample64-*.dll"
             "${RUNTIME_LIBS_DIR}/swscale64-*.dll"
          )
-         set(VPX_FFMPEG_DEP_DLLS libiconv-2.dll libbz2-1.dll liblzma-5.dll libwinpthread-1.dll libgcc_s_seh-1.dll libz-1.dll zlib1.dll)
+         set(VPX_FFMPEG_DEP_DLLS libiconv-2.dll libbz2-1.dll liblzma-5.dll libwinpthread-1.dll libgcc_s_seh-1.dll libz-1.dll)
       else()
          file(GLOB VPX_FFMPEG_DLLS
             "${RUNTIME_LIBS_DIR}/avcodec*.dll"
@@ -304,11 +355,10 @@ if(PLATFORM STREQUAL "windows")
             "${RUNTIME_LIBS_DIR}/swresample*.dll"
             "${RUNTIME_LIBS_DIR}/swscale*.dll"
          )
-         set(VPX_FFMPEG_DEP_DLLS libiconv-2.dll libbz2-1.dll liblzma-5.dll libwinpthread-1.dll libgcc_s_dw2-1.dll libz-1.dll zlib1.dll)
+         set(VPX_FFMPEG_DEP_DLLS libiconv-2.dll libbz2-1.dll liblzma-5.dll libwinpthread-1.dll libgcc_s_dw2-1.dll libz-1.dll)
       endif()
       add_custom_command(TARGET vpinball POST_BUILD
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,freeimage64.dll,freeimage.dll>" "$<TARGET_FILE_DIR:vpinball>"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,SciLexerVP64.dll,SciLexerVP.dll>" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,SDL364.dll,SDL3.dll>" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,SDL3_ttf64.dll,SDL3_ttf.dll>" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${VPX_FFMPEG_DLLS} "$<TARGET_FILE_DIR:vpinball>"
@@ -320,6 +370,15 @@ if(PLATFORM STREQUAL "windows")
             )
          endif()
       endforeach()
+      if(BUILD_STANDALONE)
+         add_custom_command(TARGET vpinball POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/winevbs64.dll" "$<TARGET_FILE_DIR:vpinball>"
+         )
+      else()
+         add_custom_command(TARGET vpinball POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,SciLexerVP64.dll,SciLexerVP.dll>" "$<TARGET_FILE_DIR:vpinball>"
+         )
+      endif()
       if(RENDERER STREQUAL "BGFX")
          add_custom_command(TARGET vpinball POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/$<IF:$<STREQUAL:${ARCH},x64>,openxr_loader64.dll,openxr_loader.dll>" "$<TARGET_FILE_DIR:vpinball>"
@@ -442,11 +501,6 @@ elseif(PLATFORM STREQUAL "windows-mingw")
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL364.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/SDL3_ttf64.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/freeimage64.dll" "$<TARGET_FILE_DIR:vpinball>"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/pinmame64.dll" "$<TARGET_FILE_DIR:vpinball>"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/altsound64.dll" "$<TARGET_FILE_DIR:vpinball>"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/dmdutil64.dll" "$<TARGET_FILE_DIR:vpinball>"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/dof64.dll" "$<TARGET_FILE_DIR:vpinball>"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/openxr_loader64.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/winevbs64.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libwinpthread-1.dll" "$<TARGET_FILE_DIR:vpinball>"
          COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "$<TARGET_FILE_DIR:vpinball>"
@@ -463,7 +517,7 @@ elseif(PLATFORM STREQUAL "windows-mingw")
       add_custom_command(TARGET vpinball POST_BUILD
          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${VPX_FFMPEG_DLLS} "$<TARGET_FILE_DIR:vpinball>"
       )
-      foreach(_dep libiconv-2.dll libbz2-1.dll liblzma-5.dll libz-1.dll zlib1.dll)
+      foreach(_dep libiconv-2.dll libbz2-1.dll liblzma-5.dll libz-1.dll)
          if(EXISTS "${RUNTIME_LIBS_DIR}/${_dep}")
             add_custom_command(TARGET vpinball POST_BUILD
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/${_dep}" "$<TARGET_FILE_DIR:vpinball>"

@@ -96,12 +96,6 @@ if(BUILD_SHARED)
       COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/plugins/inspector/assets" "${PLUGINS_DIR}/inspector/assets"
    )
 
-   if(POST_BUILD_COPY_EXT_LIBS AND PLATFORM STREQUAL "windows-mingw")
-      add_custom_command(TARGET InspectorPlugin POST_BUILD
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libgcc_s_seh-1.dll" "${PLUGINS_DIR}/inspector/libgcc_s_seh-1.dll"
-         COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/libstdc++-6.dll" "${PLUGINS_DIR}/inspector/libstdc++-6.dll"
-      )
-   endif()
 endif()
 
 if(BUILD_STATIC)

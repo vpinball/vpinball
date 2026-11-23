@@ -116,8 +116,8 @@
 
 // VR Support
 
-// TODO the MSVC standalone build could support XR too (its third-party package has the OpenXR loader), untested so far
-#if !defined(__STANDALONE__) && defined(ENABLE_BGFX)
+// MSVC Windows builds (editor and standalone) enable XR here, other builds through the CMake ENABLE_XR option
+#if defined(ENABLE_BGFX) && (!defined(__STANDALONE__) || defined(_MSC_VER)) && !defined(ENABLE_XR)
 #define ENABLE_XR
 #endif
 

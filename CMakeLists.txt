@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.25)
 #   RENDERER  BGFX (default), GL, DX9
 #   PLATFORM  macos, linux, windows, windows-mingw, ios, ios-simulator, android, wasm
 #   ARCH      x64, x86, arm64, aarch64, arm64-v8a, wasm64
+# With PLATFORM=windows, -DBUILD_STANDALONE=ON builds the standalone player with MSVC instead of the editor
+# (windows-mingw is the former MinGW standalone build, kept for reference)
 
 if(CMAKE_HOST_APPLE)
    set(_vpx_host_platform "macos")
@@ -88,6 +90,13 @@ option(BUILD_APP "Build the application; the plugins are always built" ON)
 message(STATUS "BUILD_APP: ${BUILD_APP}")
 
 option(POST_BUILD_COPY_EXT_LIBS "Copy external libraries to build directory" ON)
+if(PLATFORM STREQUAL "windows")
+   option(BUILD_STANDALONE "Build the standalone player (no Win32 editor, libwinevbs as VBScript engine) with MSVC instead of the editor; BGFX x64 only" OFF)
+   message(STATUS "BUILD_STANDALONE: ${BUILD_STANDALONE}")
+   if(BUILD_STANDALONE AND NOT (RENDERER STREQUAL "BGFX" AND ARCH STREQUAL "x64"))
+      message(FATAL_ERROR "BUILD_STANDALONE is only supported for RENDERER=BGFX ARCH=x64 (libwinevbs is only built for x64)")
+   endif()
+endif()
 if(PLATFORM STREQUAL "macos")
    option(ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan" OFF)
    message(STATUS "ENABLE_SANITIZERS: ${ENABLE_SANITIZERS}")
@@ -188,7 +197,7 @@ if(BUILD_APP)
    include("${CMAKE_SOURCE_DIR}/make/CMakeLists_sources.txt")
    include("${CMAKE_SOURCE_DIR}/make/CMakeLists_shaders.txt")
    include("${CMAKE_SOURCE_DIR}/make/CMakeLists_app.txt")
-   if(NOT (PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM STREQUAL "android" OR PLATFORM STREQUAL "wasm"))
+   if(NOT (PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator" OR PLATFORM STREQUAL "android" OR PLATFORM STREQUAL "wasm" OR BUILD_STANDALONE))
       include("${CMAKE_SOURCE_DIR}/make/CMakeLists_test.txt")
    endif()
 endif()
