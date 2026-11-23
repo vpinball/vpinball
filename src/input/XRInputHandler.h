@@ -75,6 +75,41 @@ public:
          { "/user/hand/left/output/haptic"s, XR_ACTION_TYPE_VIBRATION_OUTPUT }, { "/user/hand/right/output/haptic"s, XR_ACTION_TYPE_VIBRATION_OUTPUT }
       };
 
+      // Human friendly names for the input mapping UI ("/user/hand/left/input/trigger/click" -> "Left Trigger")
+      const auto friendlyName = [](const string& path)
+      {
+         static const std::pair<const char*, const char*> names[] { //
+            { "select/click", "Select" }, { "menu/click", "Menu" }, //
+            { "squeeze/click", "Grip" }, { "squeeze/value", "Grip (Analog)" }, //
+            { "trigger/click", "Trigger" }, { "trigger/value", "Trigger (Analog)" }, //
+            { "x/click", "X" }, { "y/click", "Y" }, { "a/click", "A" }, { "b/click", "B" }, //
+            { "thumbstick/click", "Thumbstick Click" }, { "thumbstick/x", "Thumbstick X" }, { "thumbstick/y", "Thumbstick Y" }, //
+            { "trackpad/click", "Trackpad Click" }, { "trackpad/x", "Trackpad X" }, { "trackpad/y", "Trackpad Y" }, //
+            { "grip/pose", "Grip Pose" }, { "aim/pose", "Aim Pose" }, { "haptic", "Haptics" }
+         };
+         string prefix;
+         string name = path;
+         if (name.starts_with("/user/hand/left/"s))
+         {
+            prefix = "Left "s;
+            name = name.substr(16);
+         }
+         else if (name.starts_with("/user/hand/right/"s))
+         {
+            prefix = "Right "s;
+            name = name.substr(17);
+         }
+         if (name.starts_with("input/"s))
+            name = name.substr(6);
+         else if (name.starts_with("output/"s))
+            name = name.substr(7);
+         for (const auto& [p, n] : names)
+            if (name == p)
+               return prefix + n;
+         std::replace(name.begin(), name.end(), '/', ' ');
+         return prefix + name;
+      };
+
       // Bind them
       uint16_t actionId = 0;
       std::vector<XrActionSuggestedBinding> bindings;
@@ -95,7 +130,7 @@ public:
          name.erase(0, 1); // remove leading underscore
 
          CopyToXrBuffer(actionInfo.actionName, name);
-         CopyToXrBuffer(actionInfo.localizedActionName, path);
+         CopyToXrBuffer(actionInfo.localizedActionName, friendlyName(path));
 
          xrCreateAction(m_actionSet, &actionInfo, &tracker.action);
 
@@ -105,7 +140,7 @@ public:
          m_trackers.push_back(tracker);
 
          if (type == XR_ACTION_TYPE_BOOLEAN_INPUT || type == XR_ACTION_TYPE_FLOAT_INPUT)
-            m_pininput.RegisterElementName(m_joyId, type == XR_ACTION_TYPE_FLOAT_INPUT, tracker.pinInputId, name);
+            m_pininput.RegisterElementName(m_joyId, type == XR_ACTION_TYPE_FLOAT_INPUT, tracker.pinInputId, friendlyName(path));
          else if (type == XR_ACTION_TYPE_VIBRATION_OUTPUT)
             m_hapticActions.push_back(tracker.action);
       }

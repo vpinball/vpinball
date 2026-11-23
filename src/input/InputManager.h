@@ -29,7 +29,7 @@ public:
    ~InputManager() override;
 
    ///// Game Actions
-   const vector<std::unique_ptr<InputAction>>& GetInputActions() { return m_inputActions; }
+   const vector<std::unique_ptr<InputAction>>& GetInputActions() const { return m_inputActions; }
    unsigned int GetLeftFlipperActionId() const { return m_leftFlipperActionId; }
    unsigned int GetRightFlipperActionId() const { return m_rightFlipperActionId; }
    unsigned int GetStagedLeftFlipperActionId() const { return m_stagedLeftFlipperActionId; }
@@ -109,6 +109,13 @@ public:
    bool IsDeviceConnected(uint16_t deviceId) const;
    bool IsDeviceMapped(uint16_t deviceId) const;
    string GetDeviceElementName(uint16_t deviceId, uint16_t buttonOrAxisId) const;
+   struct DeviceElement
+   {
+      uint16_t id;
+      bool isAxis;
+      string name;
+   };
+   vector<DeviceElement> GetDeviceElements(uint16_t deviceId) const;
    DeviceType GetDeviceType(uint16_t deviceId) const;
    uint16_t GetKeyboardDeviceId() const { return m_keyboardDeviceId; }
    uint16_t GetMouseDeviceId() const { return m_mouseDeviceId; }

@@ -1,0 +1,213 @@
+{
+ "aspect": 1.8731,
+ "anchors": [
+  {
+   "pos": [
+    0.2049,
+    0.1551
+   ],
+   "names": [
+    "Left Trigger",
+    "Left Trigger (Analog)",
+    "Left Select"
+   ],
+   "caption": "Trig",
+   "callout": [
+    0.1457,
+    0.0152,
+    0.1254,
+    0.0547
+   ]
+  },
+  {
+   "pos": [
+    0.2617,
+    0.7507
+   ],
+   "names": [
+    "Left Grip",
+    "Left Grip (Analog)"
+   ],
+   "caption": "Grip",
+   "callout": [
+    0.2976,
+    0.8336,
+    0.1254,
+    0.0547
+   ]
+  },
+  {
+   "pos": [
+    0.1564,
+    0.4037
+   ],
+   "names": [
+    "Left Thumbstick Click",
+    "Left Thumbstick X",
+    "Left Thumbstick Y",
+    "Left Trackpad Click",
+    "Left Trackpad X",
+    "Left Trackpad Y"
+   ],
+   "caption": "Stick",
+   "callout": [
+    -0.0,
+    0.3537,
+    0.0432,
+    0.0547
+   ]
+  },
+  {
+   "pos": [
+    0.2169,
+    0.4892
+   ],
+   "names": [
+    "Left X"
+   ],
+   "caption": "X",
+   "callout": [
+    0.3581,
+    0.609,
+    0.1254,
+    0.0547
+   ]
+  },
+  {
+   "pos": [
+    0.2396,
+    0.3752
+   ],
+   "names": [
+    "Left Y"
+   ],
+   "caption": "Y",
+   "callout": [
+    0.3774,
+    0.3284,
+    0.1254,
+    0.0547
+   ]
+  },
+  {
+   "pos": [
+    0.1635,
+    0.5591
+   ],
+   "names": [
+    "Left Menu"
+   ],
+   "caption": "Menu",
+   "callout": [
+    0.0277,
+    0.7838,
+    0.0311,
+    0.0547
+   ]
+  },
+  {
+   "pos": [
+    0.8067,
+    0.1585
+   ],
+   "names": [
+    "Right Trigger",
+    "Right Trigger (Analog)",
+    "Right Select"
+   ],
+   "caption": "Trig",
+   "callout": [
+    0.7464,
+    0.0,
+    0.1254,
+    0.0547
+   ]
+  },
+  {
+   "pos": [
+    0.7515,
+    0.7501
+   ],
+   "names": [
+    "Right Grip",
+    "Right Grip (Analog)"
+   ],
+   "caption": "Grip",
+   "callout": [
+    0.5716,
+    0.8443,
+    0.1254,
+    0.0547
+   ]
+  },
+  {
+   "pos": [
+    0.8608,
+    0.4014
+   ],
+   "names": [
+    "Right Thumbstick Click",
+    "Right Thumbstick X",
+    "Right Thumbstick Y",
+    "Right Trackpad Click",
+    "Right Trackpad X",
+    "Right Trackpad Y"
+   ],
+   "caption": "Stick",
+   "callout": [
+    0.9585,
+    0.3715,
+    0.0415,
+    0.0547
+   ]
+  },
+  {
+   "pos": [
+    0.797,
+    0.4869
+   ],
+   "names": [
+    "Right A"
+   ],
+   "caption": "A",
+   "callout": [
+    0.4996,
+    0.4841,
+    0.1254,
+    0.0547
+   ]
+  },
+  {
+   "pos": [
+    0.7764,
+    0.3752
+   ],
+   "names": [
+    "Right B"
+   ],
+   "caption": "B",
+   "callout": [
+    0.5174,
+    0.1939,
+    0.1254,
+    0.0547
+   ]
+  },
+  {
+   "pos": [
+    0.8524,
+    0.5568
+   ],
+   "names": [
+    "Right Menu"
+   ],
+   "caption": "Menu",
+   "callout": [
+    0.9173,
+    0.8106,
+    0.0415,
+    0.0547
+   ]
+  }
+ ]
+}

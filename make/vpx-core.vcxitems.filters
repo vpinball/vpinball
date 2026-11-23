@@ -711,6 +711,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetSettingsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DeviceLayouts.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplayProfileSettingsPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
@@ -1923,6 +1926,9 @@
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/CabinetSettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DeviceLayouts.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplayProfileSettingsPage.h">

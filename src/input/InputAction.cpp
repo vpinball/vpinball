@@ -110,6 +110,28 @@ void InputAction::UnmapDevice(uint16_t deviceId)
    }
 }
 
+void InputAction::UnmapElement(uint16_t deviceId, uint16_t axisOrButtonId, float axisThreshold, bool axisReversed, bool directOnly, bool byElementIdOnly)
+{
+   for (auto it = m_inputBindings.begin(); it != m_inputBindings.end();)
+   {
+      if (directOnly && it->buttons.size() != 1)
+      {
+         ++it;
+         continue;
+      }
+      std::erase_if(it->buttons,
+         [deviceId, axisOrButtonId, axisThreshold, axisReversed, byElementIdOnly](const ButtonMapping& mapping)
+         {
+            return mapping.GetDeviceId() == deviceId && mapping.GetAxisOrButtonId() == axisOrButtonId
+               && (byElementIdOnly || (mapping.GetAxisThreshold() == axisThreshold && mapping.IsAxisReversed() == axisReversed));
+         });
+      if (it->buttons.empty())
+         it = m_inputBindings.erase(it);
+      else
+         ++it;
+   }
+}
+
 bool InputAction::IsMappedToDevice(uint16_t deviceId) const
 {
    for (const auto& binding : m_inputBindings)

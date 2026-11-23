@@ -20,7 +20,8 @@ struct InGameUIPane
       Attached, // Bound to the page window (default renderer stacks it above it)
       Backdrop, // Fullscreen, drawn behind the page window
       Modal, // Fullscreen, replaces the page window entirely
-      Embedded // Drawn inline at the end of the page's item list (rect is the remaining item region)
+      Embedded, // Drawn inline at the end of the page's item list (rect is the remaining item region)
+      Header // Drawn at the top of the page's item list, scrolling with it (rect is offered the content width and a height share)
    };
    Placement placement = Placement::Attached;
    string id;

@@ -1,0 +1,285 @@
+{
+ "aspect": 1.703,
+ "anchors": [
+  {
+   "pos": [
+    0.3554,
+    0.144
+   ],
+   "names": [
+    "Left Trigger"
+   ],
+   "caption": "LT",
+   "callout": [
+    0.1016,
+    0.0,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.6605,
+    0.144
+   ],
+   "names": [
+    "Right Trigger"
+   ],
+   "caption": "RT",
+   "callout": [
+    0.7864,
+    0.0,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.3554,
+    0.2306
+   ],
+   "names": [
+    "Left Shoulder"
+   ],
+   "caption": "LB",
+   "callout": [
+    0.0696,
+    0.1517,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.6605,
+    0.2306
+   ],
+   "names": [
+    "Right Shoulder"
+   ],
+   "caption": "RB",
+   "callout": [
+    0.7759,
+    0.1709,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.4539,
+    0.4417
+   ],
+   "names": [
+    "Back"
+   ],
+   "caption": "Back",
+   "callout": [
+    0.3455,
+    0.0,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.508,
+    0.366
+   ],
+   "names": [
+    "Guide",
+    "Touchpad",
+    "Misc #1",
+    "Misc #2",
+    "Misc #3",
+    "Misc #4",
+    "Misc #5",
+    "Misc #6"
+   ],
+   "caption": "Guide",
+   "callout": [
+    0.3294,
+    0.7993,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.562,
+    0.4417
+   ],
+   "names": [
+    "Start"
+   ],
+   "caption": "Start",
+   "callout": [
+    0.5305,
+    0.0,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.3331,
+    0.4147
+   ],
+   "names": [
+    "Left Stick",
+    "Left Stick X",
+    "Left Stick Y"
+   ],
+   "caption": "LS",
+   "callout": [
+    0.0508,
+    0.3075,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.616,
+    0.5987
+   ],
+   "names": [
+    "Right Stick",
+    "Right Stick X",
+    "Right Stick Y"
+   ],
+   "caption": "RS",
+   "callout": [
+    0.5267,
+    0.7968,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.3999,
+    0.5987
+   ],
+   "names": [
+    "DPad Up",
+    "DPad Down",
+    "DPad Left",
+    "DPad Right"
+   ],
+   "caption": "DPad",
+   "callout": [
+    0.0,
+    0.706,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.6828,
+    0.3443
+   ],
+   "names": [
+    "Y",
+    "",
+    "North"
+   ],
+   "caption": "Y",
+   "callout": [
+    0.7864,
+    0.2746,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.6415,
+    0.4147
+   ],
+   "names": [
+    "X",
+    "",
+    "West"
+   ],
+   "caption": "X",
+   "callout": [
+    0.8411,
+    0.4817,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.7241,
+    0.4147
+   ],
+   "names": [
+    "B",
+    "",
+    "East"
+   ],
+   "caption": "B",
+   "callout": [
+    0.8176,
+    0.3775,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.6828,
+    0.4851
+   ],
+   "names": [
+    "A",
+    "",
+    "South"
+   ],
+   "caption": "A",
+   "callout": [
+    0.8563,
+    0.5872,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.2639,
+    0.7622
+   ],
+   "names": [
+    "Left Paddle 1",
+    "Left Paddle 2"
+   ],
+   "caption": "LP",
+   "callout": [
+    0.1398,
+    0.9407,
+    0.1399,
+    0.0593
+   ]
+  },
+  {
+   "pos": [
+    0.7521,
+    0.7622
+   ],
+   "names": [
+    "Right Paddle 1",
+    "Right Paddle 2"
+   ],
+   "caption": "RP",
+   "callout": [
+    0.7385,
+    0.9368,
+    0.1399,
+    0.0593
+   ]
+  }
+ ]
+}
