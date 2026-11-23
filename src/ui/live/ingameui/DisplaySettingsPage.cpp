@@ -269,28 +269,6 @@ void DisplaySettingsPage::BuildPage()
    if (GetOutput(m_wndId).GetMode() == VPX::RenderOutput::OM_WINDOW)
       GetOutput(m_wndId).GetWindow()->SetFocusable(true);
 
-   // When multiple renderers are available, a priority defined by the user is used
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Renderer priority"s));
-   const string section = m_wndId == VPXWindowId::VPXWINDOW_Backglass ? "Backglass"s : m_wndId == VPXWindowId::VPXWINDOW_ScoreView ? "ScoreView"s : "Topper"s;
-   // Sort by name so sliders keep fixed positions while adjusting priorities
-   vector<AncillaryRendererDef> renderers = m_player->m_ancillaryWndRenderers[m_wndId];
-   std::ranges::sort(renderers, [](const AncillaryRendererDef& a, const AncillaryRendererDef& b) { return lowerCase(a.name) < lowerCase(b.name); });
-   for (const auto& renderer : renderers)
-   {
-      if (std::optional<VPX::Properties::PropertyRegistry::PropId> propId = Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(renderer.id)); propId)
-      {
-         AddItem(std::make_unique<InGameUIItem>(
-                    propId.value(), "%d"s, //
-                    [this, id = renderer.id]() { return m_player->GetAncillaryRendererPriority(m_wndId, id); },
-                    [this, id = renderer.id](int, int v)
-                    {
-                       m_player->SetAncillaryRendererPriority(m_wndId, id, v);
-                       RequestRebuild();
-                    }))
-            .m_excludeFromDefault = true;
-      }
-   }
-
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Output setup"s));
    if (isSingleView)
    { // For mobile and builds without multiple viewport support, only disabled/embedded mode are supported
@@ -352,6 +330,32 @@ void DisplaySettingsPage::BuildPage()
             m_player->m_renderer->SetAncillaryWindowRotation(m_wndId, 90 * v);
             OnStaticRenderDirty();
          }));
+
+   // When multiple renderers are available, a priority defined by the user is used
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Renderer priority"s));
+   const string section = m_wndId == VPXWindowId::VPXWINDOW_Backglass ? "Backglass"s : m_wndId == VPXWindowId::VPXWINDOW_ScoreView ? "ScoreView"s : "Topper"s;
+   // Sort by name so sliders keep fixed positions while adjusting priorities
+   vector<AncillaryRendererDef> renderers = m_player->m_ancillaryWndRenderers[m_wndId];
+   std::ranges::sort(renderers, [](const AncillaryRendererDef& a, const AncillaryRendererDef& b) { return lowerCase(a.name) < lowerCase(b.name); });
+   bool hasPriorityItem = false;
+   for (const auto& renderer : renderers)
+   {
+      if (std::optional<VPX::Properties::PropertyRegistry::PropId> propId = Settings::GetRegistry().GetPropertyId(section, "Priority."s.append(renderer.id)); propId)
+      {
+         hasPriorityItem = true;
+         AddItem(std::make_unique<InGameUIItem>(
+                    propId.value(), "%d"s, //
+                    [this, id = renderer.id]() { return m_player->GetAncillaryRendererPriority(m_wndId, id); },
+                    [this, id = renderer.id](int, int v)
+                    {
+                       m_player->SetAncillaryRendererPriority(m_wndId, id, v);
+                       RequestRebuild();
+                    }))
+            .m_excludeFromDefault = true;
+      }
+   }
+   if (!hasPriorityItem)
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "No renderer priority to set up for this display."s));
 }
 
 void DisplaySettingsPage::BuildWindowPage()

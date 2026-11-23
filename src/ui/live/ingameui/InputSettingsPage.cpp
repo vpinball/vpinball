@@ -21,6 +21,7 @@ void InputSettingsPage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Input devices"s, "Devices which are either active or used in input mappings are listed here."s));
    const auto& deviceIds = m_player->m_pininput.GetAllDevices();
+   bool hasDeviceItem = false;
    for (uint16_t deviceId : deviceIds)
    {
       if (deviceId == m_player->m_pininput.GetMouseDeviceId() || deviceId == m_player->m_pininput.GetKeyboardDeviceId())
@@ -31,8 +32,9 @@ void InputSettingsPage::BuildPage()
       const string info = std::format("Device name: {}\nDevice identifier: {}", m_player->m_pininput.GetDeviceName(deviceId), m_player->m_pininput.GetDeviceSettingId(deviceId));
       m_player->m_liveUI->m_inGameUI.AddPage(url, [deviceId]() { return std::make_unique<InputDevicePage>(deviceId); });
       AddItem(std::make_unique<InGameUIItem>(m_player->m_pininput.GetDeviceName(deviceId), info, url));
+      hasDeviceItem = true;
    }
-   if (deviceIds.empty())
+   if (!hasDeviceItem)
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "No input device defined"s));
 
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Action mappings"s));
