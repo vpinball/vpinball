@@ -336,9 +336,28 @@ struct SpatialAudioSource::Impl
          encoderR.SetPosition({ azimuthR, elevationR, distanceR });
    }
 
+   bool IsSilent(const float* in, unsigned int count) const
+   {
+      if (gainL == 0.f && (inChannels == 1 || gainR == 0.f))
+         return true;
+      const unsigned int n = count * inChannels;
+      for (unsigned int i = 0; i < n; i++)
+         if (in[i] != 0.f)
+            return false;
+      return true;
+   }
+
    void Process(const float* in, unsigned int count, float* out)
    {
       UpdatePosition();
+      // Skip the ambisonic encoding of a silent block (zero gain, or zero input): most sources are idle, like the
+      // rolling and ramp loops tables keep playing at volume 0. Its output is silence, as the encoding would give
+      // (the encoder fades its position from where it was when the source sounds again)
+      if (IsSilent(in, count))
+      {
+         std::fill(out, out + count * kAmbiChannels, 0.f);
+         return;
+      }
       // Reset the B-format accumulator: GainInterp does not write channels
       // whose target gain is ~0, so without a reset they would keep stale
       // content, and worse, ProcessAccumul (stereo right channel) would keep
