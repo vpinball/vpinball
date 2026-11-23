@@ -52,7 +52,7 @@ void HomePage::BuildPage()
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
    const bool allowLiveEditor = hasKeyboard && m_player->m_renderer->m_stereo3D != STEREO_VR && m_player->m_ptable->m_liveBaseTable;
-   if (allowLiveEditor || isTouch || !hasKeyboard)
+   if (allowLiveEditor || isTouch || !hasKeyboard || (m_player->m_pininput.HasTouchInput() && !m_player->m_vrDevice))
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Misc. Actions"s));
 
    if (allowLiveEditor)
@@ -63,7 +63,7 @@ void HomePage::BuildPage()
             m_player->m_liveUI->OpenEditorUI();
          }));
 
-   if (isTouch && !m_player->m_vrDevice)
+   if ((isTouch || m_player->m_pininput.HasTouchInput()) && !m_player->m_vrDevice)
       AddItem(std::make_unique<InGameUIItem>(g_settingsService.GetAppSettings().GetPlayer_TouchOverlay() ? "Disable Touch Overlay"s : "Enable Touch Overlay"s, ""s,
          [this]()
          {
@@ -135,9 +135,7 @@ void HomePage::CollectPanes(vector<InGameUIPane>& panes)
    InGameUIPage::CollectPanes(panes);
 
    // Display table name, author, version, blurb and description => Move to a dedicated page ?
-   if (m_player->m_vrDevice != nullptr)
-      return;
-
+   // (embedded in the page content, so also shown in VR where it used to be skipped as a fullscreen backdrop)
    InGameUIPane pane;
    pane.placement = InGameUIPane::Placement::Embedded;
    pane.id = "tableInfo"s;

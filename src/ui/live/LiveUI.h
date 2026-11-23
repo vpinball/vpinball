@@ -45,11 +45,14 @@ public:
 
    void OpenInGameUI(const string& page = "homepage"s);
    bool IsInGameUIOpened() const { return m_inGameUI.IsOpened(); }
+   bool IsGameplayInputSuspended() const { return m_inGameUI.IsGameplayInputSuspended(); }
 
    void ToggleFPS() { m_perfUI.NextPerfMode(); }
    bool IsShowingFPSDetails() const { return m_perfUI.GetPerfMode() != PerfUI::PerfMode::PM_DISABLED; }
    
    void ShowTouchOverlay(bool show) { m_showTouchOverlay = show; }
+   // Show the touch overlay for a while, then fade it out, even if not enabled (presents the touch controls on first launches)
+   void ShowTouchOverlayHint(uint64_t durationMs) { m_touchOverlayHintEndMs = SDL_GetTicks() + durationMs; }
 
    unsigned int PushNotification(const string &message, const int lengthMs, const unsigned int reuseId = 0) { return m_notificationOverlay.PushNotification(message, lengthMs, reuseId); }
 
@@ -87,7 +90,8 @@ public:
 
 private:
    void SetupImGuiStyle(const bool isEditor) const;
-   
+   void ReleaseImGuiTexture(ImTextureData *tex);
+
    void NewFrame();
    void AddMousePosEvent(bool isTouch, float x, float y) const;
    void UpdateScale();
@@ -102,6 +106,7 @@ private:
    // Touch UI overlay
    void UpdateTouchUI();
    bool m_showTouchOverlay;
+   uint64_t m_touchOverlayHintEndMs = 0; // SDL_GetTicks end time of ShowTouchOverlayHint
 
    // VR: whether the last rendered frame had UI content (mirrors the state pushed
    // to VRDevice::SetShowUILayer, gating the controller pointer and its ray)

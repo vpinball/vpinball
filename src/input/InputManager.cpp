@@ -58,21 +58,30 @@ InputManager::InputManager(Player* player, Settings& appSettings)
    }
    if (touchDevices)
       SDL_free(touchDevices);
-   auto addTouchRegion = [this](const RECT& region, unsigned int actionId) { m_touchRegionMap.emplace_back(region, actionId, m_inputActions[actionId]->NewDirectStateSlot()); };
+   auto addTouchRegion = [this](const RECT& region, unsigned int actionId, const string& label)
+   { m_touchRegionMap.emplace_back(region, actionId, m_inputActions[actionId]->NewDirectStateSlot(), label); };
    // RECT definition is left, top, right, bottom in % of screen
-   addTouchRegion(RECT { 0, 0, 50, 10 }, GetAddCreditActionId(0));
-   addTouchRegion(RECT { 50, 0, 100, 10 }, GetOpenInGameUIActionId());
-   addTouchRegion(RECT { 0, 10, 50, 30 }, GetLeftMagnaActionId());
-   addTouchRegion(RECT { 50, 10, 100, 30 }, GetRightMagnaActionId());
-   addTouchRegion(RECT { 0, 30, 50, 60 }, GetLeftNudgeActionId());
-   addTouchRegion(RECT { 50, 30, 100, 60 }, GetRightNudgeActionId());
-   addTouchRegion(RECT { 0, 60, 30, 90 }, GetLeftFlipperActionId());
-   addTouchRegion(RECT { 0, 60, 30, 90 }, GetStagedLeftFlipperActionId());
-   addTouchRegion(RECT { 30, 60, 70, 100 }, GetCenterNudgeActionId());
-   addTouchRegion(RECT { 70, 60, 100, 90 }, GetRightFlipperActionId());
-   addTouchRegion(RECT { 70, 60, 100, 90 }, GetStagedRightFlipperActionId());
-   addTouchRegion(RECT { 0, 90, 30, 100 }, GetStartActionId());
-   addTouchRegion(RECT { 70, 90, 100, 100 }, GetLaunchBallActionId());
+   // Touch regions, in percent of the playfield view (left, top, right, bottom), from top to bottom:
+   // - 0..10:   Credit, Extra Ball (buy-in), Menu
+   // - 10..50:  Left / Right Nudge
+   // - 50..80:  Left Flipper, Center Nudge, Right Flipper (the staged flippers share the flipper areas)
+   // - 80..90:  Left Magna, Lockbar, Right Magna
+   // - 90..100: Start, Lockbar, Plunger
+   addTouchRegion(RECT { 0, 0, 25, 10 }, GetAddCreditActionId(0), "Credit"s);
+   addTouchRegion(RECT { 25, 0, 50, 10 }, GetExtraBallActionId(), "Extra Ball"s);
+   addTouchRegion(RECT { 50, 0, 100, 10 }, GetOpenInGameUIActionId(), "Menu"s);
+   addTouchRegion(RECT { 0, 10, 50, 50 }, GetLeftNudgeActionId(), "Left Nudge"s);
+   addTouchRegion(RECT { 50, 10, 100, 50 }, GetRightNudgeActionId(), "Right Nudge"s);
+   addTouchRegion(RECT { 0, 50, 30, 80 }, GetLeftFlipperActionId(), "Left Flipper"s);
+   addTouchRegion(RECT { 0, 50, 30, 80 }, GetStagedLeftFlipperActionId(), ""s);
+   addTouchRegion(RECT { 30, 50, 70, 80 }, GetCenterNudgeActionId(), "Center Nudge"s);
+   addTouchRegion(RECT { 70, 50, 100, 80 }, GetRightFlipperActionId(), "Right Flipper"s);
+   addTouchRegion(RECT { 70, 50, 100, 80 }, GetStagedRightFlipperActionId(), ""s);
+   addTouchRegion(RECT { 0, 80, 30, 90 }, GetLeftMagnaActionId(), "Left Magna"s);
+   addTouchRegion(RECT { 30, 80, 70, 100 }, GetLockbarActionId(), "Lockbar"s);
+   addTouchRegion(RECT { 70, 80, 100, 90 }, GetRightMagnaActionId(), "Right Magna"s);
+   addTouchRegion(RECT { 0, 90, 30, 100 }, GetStartActionId(), "Start"s);
+   addTouchRegion(RECT { 70, 90, 100, 100 }, GetLaunchBallActionId(), "Plunger"s);
 
    m_rumbleMode = m_appSettings.GetPlayer_RumbleMode();
    m_rumbleFlipperContact = m_appSettings.GetPlayer_RumbleFlipperContact();
@@ -445,6 +454,10 @@ void InputManager::ProcessInput()
 #ifdef ENABLE_XR
    if (IsUIPointerScrollingActive())
    {
+      // ProcessInput runs at the logic loop rate (many times per rendered frame with the multithreaded loop): scroll by elapsed time
+      const uint64_t nowUs = usec();
+      const float elapsedS = m_lastUIScrollUs == 0 ? 0.f : std::min(0.1f, static_cast<float>(nowUs - m_lastUIScrollUs) * 1e-6f);
+      m_lastUIScrollUs = nowUs;
       float wheelX = 0.f, wheelY = 0.f;
       for (const auto& [axisId, position] : m_axisPositions)
       {
@@ -454,10 +467,12 @@ void InputManager::ProcessInput()
          wheelY += UINavWheelForAxis(axisId, position, false, navBound);
          wheelX += UINavWheelForAxis(axisId, position, true, navBound);
       }
-      constexpr float scrollSpeed = 0.05f; // mouse wheel units per frame at full deflection
+      constexpr float scrollSpeed = 4.f; // mouse wheel units per second at full deflection
       if (wheelX != 0.f || wheelY != 0.f)
-         ImGui::GetIO().AddMouseWheelEvent(wheelX * scrollSpeed, wheelY * scrollSpeed);
+         ImGui::GetIO().AddMouseWheelEvent(wheelX * scrollSpeed * elapsedS, wheelY * scrollSpeed * elapsedS);
    }
+   else
+      m_lastUIScrollUs = 0;
 #endif
 
    UpdateRumble();
@@ -759,15 +774,24 @@ void InputManager::PushTouchEvent(float relativeX, float relativeY, uint64_t tim
    if (m_player->IsVR())
       return;
 
-   POINT point;
-   point.x = (int)((float)m_player->m_playfieldWnd->GetWidth() * relativeX);
-   point.y = (int)((float)m_player->m_playfieldWnd->GetHeight() * relativeY);
+   // Regions are in the UI (playfield view) orientation: rotate the window-relative position like the UI mouse position
+   // (see LiveUI::AddMousePosEvent), so touches match the overlay for any view rotation, including the implicit window mode one
+   float u, v;
+   switch (m_player->m_liveUI ? m_player->m_liveUI->GetUIOrientation() : 0)
+   {
+   case 1: u = relativeY; v = 1.f - relativeX; break;
+   case 2: u = 1.f - relativeX; v = 1.f - relativeY; break;
+   case 3: u = 1.f - relativeY; v = relativeX; break;
+   default: u = relativeX; v = relativeY; break;
+   }
+   u *= 100.f;
+   v *= 100.f;
    for (const auto& region : m_touchRegionMap)
    {
       if (const bool wasPressed = m_inputActions[region.actionId]->GetDirectState(region.directStateSlot); wasPressed == isPressed)
          continue;
-      if (!Intersect(region.region, m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight(), point,
-             fmodf(m_player->m_ptable->GetViewSetup().mViewportRotation, 360.0f) != 0.f))
+      const RECT& rc = region.region;
+      if (u < (float)rc.left || u > (float)rc.right || v < (float)rc.top || v > (float)rc.bottom)
          continue;
       m_inputActions[region.actionId]->SetDirectState(region.directStateSlot, isPressed);
    }

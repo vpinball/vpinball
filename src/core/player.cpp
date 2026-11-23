@@ -459,13 +459,16 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    // Popup notification on startup
    if (m_renderer->m_stereo3D != STEREO_OFF && m_renderer->m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
       m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off"s, 4000);
+   // First launches: present the touch controls by briefly showing their overlay (unless always shown)
    const int numberOfTimesToShowTouchMessage = g_settingsService.GetAppSettings().GetPlayer_NumberOfTimesToShowTouchMessage();
-   if (m_pininput.HasTouchInput() && numberOfTimesToShowTouchMessage != 0) //!! visualize with real buttons or at least the areas?? Add extra buttons?
+   if (m_pininput.HasTouchInput() && !m_vrDevice && numberOfTimesToShowTouchMessage != 0 && !g_settingsService.GetAppSettings().GetPlayer_TouchOverlay())
    {
       g_settingsService.GetAppSettings().SetPlayer_NumberOfTimesToShowTouchMessage(max(numberOfTimesToShowTouchMessage - 1, 0), false);
-      m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
-                                 "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and top right for the Menu"s,
-         12000);
+      constexpr int touchHintMs = 12000;
+      m_liveUI->ShowTouchOverlayHint(touchHintMs);
+      m_liveUI->PushNotification("This display supports touch controls, each highlighted area shows what it does.\n"
+                                 "To show the areas permanently, open the Menu (top right area) and select 'Enable Touch Overlay'."s,
+         touchHintMs);
    }
 
    SetPlayState(true);

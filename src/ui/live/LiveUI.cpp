@@ -108,6 +108,19 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_showTouchOverlay = g_settingsService.GetAppSettings().GetPlayer_TouchOverlay();
 }
 
+// Releases the texture backing an ImGui texture, including its pinned texture manager entry (never evicted,
+// so it would otherwise keep its GPU texture and budget share for the whole session)
+void LiveUI::ReleaseImGuiTexture(ImTextureData *tex)
+{
+   auto texture = static_cast<std::shared_ptr<BaseTexture> *>(tex->BackendUserData);
+   if (texture == nullptr)
+      return;
+   if (*texture && m_renderer && m_renderer->m_renderDevice)
+      m_renderer->m_renderDevice->m_texMan.UnloadTexture(texture->get());
+   delete texture;
+   tex->BackendUserData = nullptr;
+}
+
 LiveUI::~LiveUI()
 {
    HideUI();
@@ -119,8 +132,7 @@ LiveUI::~LiveUI()
       io.BackendFlags &= ~ImGuiBackendFlags_RendererHasTextures;
       for (auto tex : ImGui::GetPlatformIO().Textures)
       {
-         delete static_cast<std::shared_ptr<BaseTexture> *>(tex->BackendUserData);
-         tex->BackendUserData = nullptr;
+         ReleaseImGuiTexture(tex);
          tex->SetTexID(ImTextureID_Invalid);
          tex->SetStatus(ImTextureStatus_Destroyed);
       }
@@ -472,7 +484,7 @@ void LiveUI::NewFrame()
    if (m_player->m_vrDevice != nullptr)
    {
       const VRDevice::UIPointer &pointer = m_player->m_vrDevice->GetUIPointer();
-      const bool pointerActive = m_uiLayerShown && pointer.valid;
+      const bool pointerActive = m_uiLayerShown && m_inGameUI.IsOpened() && pointer.valid;
       if (pointerActive)
          AddMousePosEvent(false, pointer.u * io.DisplaySize.x, pointer.v * io.DisplaySize.y);
       const bool click = pointerActive && pointer.click;
@@ -507,7 +519,7 @@ void LiveUI::Render3D()
 // point on the view-locked UI layer. It is drawn in world space since the UI
 // layer is a flat quad and cannot host geometry anchored outside it
 #ifdef ENABLE_XR
-   if (m_player->m_vrDevice != nullptr && m_uiLayerShown)
+   if (m_player->m_vrDevice != nullptr && m_uiLayerShown && m_inGameUI.IsOpened())
    {
       const VRDevice::UIPointer &pointer = m_player->m_vrDevice->GetUIPointer();
       if (pointer.valid)
@@ -693,8 +705,7 @@ void LiveUI::RenderUI()
          }
          else if (tex->Status == ImTextureStatus_WantDestroy && tex->UnusedFrames > 0)
          {
-            delete static_cast<std::shared_ptr<BaseTexture> *>(tex->BackendUserData);
-            tex->BackendUserData = nullptr;
+            ReleaseImGuiTexture(tex);
             tex->SetTexID(ImTextureID_Invalid);
             tex->SetStatus(ImTextureStatus_Destroyed);
          }
@@ -818,7 +829,7 @@ void LiveUI::RenderUI()
 
    m_uiLayerShown = hasContent;
    if (m_player->m_vrDevice)
-      m_player->m_vrDevice->SetShowUILayer(hasContent);
+      m_player->m_vrDevice->SetShowUILayer(hasContent, m_inGameUI.IsOpened()); // Pointer interaction only with the InGame UI
 
    NewFrame();
 }
@@ -831,39 +842,56 @@ void LiveUI::UpdateTouchUI()
    if (m_player->m_vrDevice)
       return;
 
-   if (!m_showTouchOverlay)
+   // Always shown when enabled, else during ShowTouchOverlayHint (fading out over its last 2 s)
+   float opacity = 0.f;
+   if (m_showTouchOverlay)
+      opacity = 1.f;
+   else if (const uint64_t now = SDL_GetTicks(); now < m_touchOverlayHintEndMs)
+      opacity = min(1.f, static_cast<float>(m_touchOverlayHintEndMs - now) / 2000.f);
+   if (opacity <= 0.f)
       return;
 
-   const ImGuiIO &io = ImGui::GetIO();
+   // Hidden while a menu is open, as it covers the regions
+   if (m_inGameUI.IsOpened() || m_editorUI.IsOpened())
+      return;
 
+   // ImGui coordinates share the orientation of the touch regions (the UI is rotated with the view)
+   const ImGuiIO &io = ImGui::GetIO();
    const float screenWidth = io.DisplaySize.x;
    const float screenHeight = io.DisplaySize.y;
-
-   constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize
-      | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-
-   ImGui::SetNextWindowPos(ImVec2(0, 0));
-   ImGui::SetNextWindowSize(ImVec2(screenWidth, screenHeight));
-   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-   ImGui::Begin("Touch Controls", nullptr, window_flags);
-   ImDrawList *drawList = ImGui::GetWindowDrawList();
+   const auto alpha = [opacity](int a) { return static_cast<int>(static_cast<float>(a) * opacity); };
+   ImDrawList *drawList = ImGui::GetBackgroundDrawList();
+   ImFont *const font = m_overlayFont ? m_overlayFont : ImGui::GetFont();
+   const float inset = max(2.f, min(screenWidth, screenHeight) * 0.004f);
    for (const auto& region : m_pininput->GetTouchState())
    {
+      if (region.label.empty()) // Same area as a labeled region (staged flippers)
+         continue;
       const RECT& rect = region.region;
+      const ImVec2 topLeft((float)rect.left * screenWidth / 100.0f + inset, (float)rect.top * screenHeight / 100.0f + inset);
+      const ImVec2 bottomRight((float)rect.right * screenWidth / 100.0f - inset, (float)rect.bottom * screenHeight / 100.0f - inset);
+      const ImVec2 size = bottomRight - topLeft;
+      if (size.x <= 0.f || size.y <= 0.f)
+         continue;
+      const float rounding = min(size.x, size.y) * 0.08f;
 
-      const ImVec2 topLeft((float)rect.left * screenWidth / 100.0f, (float)rect.top * screenHeight / 100.0f);
-      const ImVec2 bottomRight((float)rect.right * screenWidth / 100.0f, (float)rect.bottom * screenHeight / 100.0f);
+      const bool pressed = m_pininput->IsTouchRegionPressed(region);
+      drawList->AddRectFilled(topLeft, bottomRight, pressed ? IM_COL32(255, 255, 255, alpha(90)) : IM_COL32(0, 0, 0, alpha(55)), rounding);
+      drawList->AddRect(topLeft, bottomRight, IM_COL32(255, 255, 255, alpha(pressed ? 220 : 120)), rounding, ImDrawFlags_None, max(1.5f, inset * 0.6f));
 
-      constexpr ImColor fillColor(255, 255, 255, 5);
-      drawList->AddRectFilled(topLeft, bottomRight, fillColor);
-
-      constexpr ImColor borderColor(255, 255, 255, 20);
-      drawList->AddRect(topLeft, bottomRight, borderColor, 0.0f, ImDrawFlags_RoundAll, 2.0f);
+      // Label centered in the region, scaled down to fit its width
+      float fontSize = min(font->LegacySize, size.y * 0.4f);
+      ImVec2 textSize = font->CalcTextSizeA(fontSize, FLT_MAX, 0.f, region.label.c_str());
+      if (textSize.x > size.x * 0.9f)
+      {
+         fontSize *= size.x * 0.9f / textSize.x;
+         textSize = font->CalcTextSizeA(fontSize, FLT_MAX, 0.f, region.label.c_str());
+      }
+      const ImVec2 textPos = topLeft + (size - textSize) * 0.5f;
+      const float shadow = max(1.f, fontSize * 0.06f);
+      drawList->AddText(font, fontSize, textPos + ImVec2(shadow, shadow), IM_COL32(0, 0, 0, alpha(200)), region.label.c_str());
+      drawList->AddText(font, fontSize, textPos, IM_COL32(255, 255, 255, alpha(pressed ? 255 : 220)), region.label.c_str());
    }
-   ImGui::End();
-   ImGui::PopStyleVar(2);
 }
 
 void LiveUI::OpenInGameUI(const string& page)

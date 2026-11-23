@@ -72,14 +72,6 @@ public:
    }
 };
 
-constexpr inline bool Intersect(const RECT &rc, const int width, const int height, const POINT &p, const bool rotated) // width & height in percent/[0..100]-range
-{
-   if (!rotated)
-      return (p.x >= rc.left*width / 100 && p.x <= rc.right*width / 100 && p.y >= rc.top*height / 100 && p.y <= rc.bottom*height / 100);
-   else
-      return (p.x >= rc.top*width / 100 && p.x <= rc.bottom*width / 100 && p.y <= height - rc.left*height / 100 && p.y >= height - rc.right*height / 100);
-}
-
 #ifdef ENABLE_SSE_OPTIMIZATIONS
 inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 {

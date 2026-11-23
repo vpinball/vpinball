@@ -137,12 +137,14 @@ public:
 
    struct TouchRegionDef
    {
-      RECT region;
+      RECT region; // In percent of the playfield view, oriented as the UI (see LiveUI::GetUIOrientation)
       unsigned int actionId;
       int directStateSlot;
+      string label; // Overlay label, empty for a region sharing the area of a labeled one
    };
    bool HasTouchInput() const { return m_supportsTouch; }
    const vector<TouchRegionDef>& GetTouchState() const { return m_touchRegionMap; }
+   bool IsTouchRegionPressed(const TouchRegionDef& region) const { return m_inputActions[region.actionId]->GetDirectState(region.directStateSlot); }
 
    void StartButtonCapture();
    const vector<ButtonMapping>& GetButtonCapture() const { return m_buttonCapture; }
@@ -293,6 +295,7 @@ private:
    // controller points at its surface, axes bound to UI navigation actions are
    // repurposed as mouse-wheel scroll of the pointed pane (see ProcessInput)
    ankerl::unordered_dense::map<uint32_t, float> m_axisPositions;
+   uint64_t m_lastUIScrollUs = 0; // Last VR pointer stick scroll, for a frame rate independent scroll speed
    float UINavWheelForAxis(uint32_t deviceAndAxisId, float position, bool horizontal, bool& navBound) const;
 
    class DeviceDef final
