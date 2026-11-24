@@ -4,7 +4,7 @@
 # pip install Pillow
 # pip install lxml
 
-# Alongside each SDF atlas '<name>.png', a pre-integrated coverage atlas '<name>-cov.png' is generated
+# Alongside each SDF atlas '<name>.webp', a pre-integrated coverage atlas '<name>-cov.webp' is generated
 # (twice as wide: left half = sharp segment coverage, right half = squared SDF) which is used by VPX for
 # resolution independent minification (see GetSegCov in Renderer.cpp and fs_display.sc). To regenerate only
 # the coverage atlases from the existing SDFs (no msdfgen needed), run with '--cov-only'.
@@ -82,8 +82,8 @@ def build_sdf(svg_file, group_id, crop_right, crop_bottom, segs, out_file):
                 mergedA.paste(image, (int((i // 4) * scale * (img_w - crop_right)), 0))
             os.remove(out_img) 
     merged = Image.merge('RGBA', (mergedR, mergedG, mergedB, mergedA))
-    merged.save(os.path.join(assets_dir, out_file))
-    build_cov(os.path.join(assets_dir, out_file), os.path.join(assets_dir, out_file.replace('.png', '-cov.png')))
+    merged.save(os.path.join(assets_dir, out_file), lossless=True, quality=100, method=6, exact=True)
+    build_cov(os.path.join(assets_dir, out_file), os.path.join(assets_dir, out_file.replace('.webp', '-cov.webp')))
 
 
 def build_cov(sdf_file, out_file):
@@ -104,13 +104,13 @@ def build_cov(sdf_file, out_file):
     out = Image.new('RGBA', (2 * w, h))
     out.paste(cov, (0, 0))
     out.paste(sdf2, (w, 0))
-    out.save(out_file)
+    out.save(out_file, lossless=True, quality=100, method=6, exact=True) # exact: keep the color of fully transparent pixels
 
 if len(sys.argv) > 1 and sys.argv[1] == '--cov-only':
     # Regenerate only the coverage atlases from the existing SDF atlases (no msdfgen run)
-    for sdf_file in glob.glob(os.path.join(assets_dir, '*seg*.png')):
+    for sdf_file in glob.glob(os.path.join(assets_dir, '*seg*.webp')):
         if '-cov' not in sdf_file:
-            build_cov(sdf_file, sdf_file.replace('.png', '-cov.png'))
+            build_cov(sdf_file, sdf_file.replace('.webp', '-cov.webp'))
     sys.exit(0)
 
 # Needed display types:
@@ -125,25 +125,25 @@ if len(sys.argv) > 1 and sys.argv[1] == '--cov-only':
 # - 16 segments (split top/bottom segments)
 
 # Generic displays (made without any reference)
-build_sdf(svg_file, '16seg-generic',     4.5, 6.0, range(16),                                           '16seg.png')
+build_sdf(svg_file, '16seg-generic',     4.5, 6.0, range(16),                                           '16seg.webp')
 
 # Gottlieb System 1, 80A, 80B, 3: Futaba 7, 9, 9c (made with a dot and a comma), 14dc
-build_sdf(svg_file, '7seg-gts-4digits',  4.5, 6.0, range(7),                                            '7seg-gts.png')
-build_sdf(svg_file, '9seg-gts',          4.0, 6.0, (0, 1, 2, 3, 4, 5, 6, -1, 7, 8),                     '9seg-gts.png')
-build_sdf(svg_file, '9seg-c-gts',        4.0, 6.0, range(10),                                           '9seg-c-gts.png')
-build_sdf(svg_file, '14seg-dc-gts',      1.5, 4.5, range(16),                                           '14seg-dc-gts.png')
+build_sdf(svg_file, '7seg-gts-4digits',  4.5, 6.0, range(7),                                            '7seg-gts.webp')
+build_sdf(svg_file, '9seg-gts',          4.0, 6.0, (0, 1, 2, 3, 4, 5, 6, -1, 7, 8),                     '9seg-gts.webp')
+build_sdf(svg_file, '9seg-c-gts',        4.0, 6.0, range(10),                                           '9seg-c-gts.webp')
+build_sdf(svg_file, '14seg-dc-gts',      1.5, 4.5, range(16),                                           '14seg-dc-gts.webp')
 
 # Bally displays: Panaplex 7, 7c, 9, 9c
-build_sdf(svg_file, '7seg-c-bally',      1.0, 4.0, range(7),                                            '7seg-bally.png')
-build_sdf(svg_file, '7seg-c-bally',      1.0, 4.0, range(8),                                            '7seg-c-bally.png')
+build_sdf(svg_file, '7seg-c-bally',      1.0, 4.0, range(7),                                            '7seg-bally.webp')
+build_sdf(svg_file, '7seg-c-bally',      1.0, 4.0, range(8),                                            '7seg-c-bally.webp')
 
 # Williams displays: Panaplex 7, 7c, 14dc
-build_sdf(svg_file, '7seg-c-williams',   1.5, 2.5, range(7),                                            '7seg-williams.png')
-build_sdf(svg_file, '7seg-c-williams',   1.5, 2.5, range(8),                                            '7seg-c-williams.png')
-build_sdf(svg_file, '14seg-dc-williams', 1.0, 0.0, (0, 1, 2, 3, 4, 5, 6, -1, 8, 9, 10, 11, 12, 13, 14), '14seg-williams.png')
-build_sdf(svg_file, '14seg-dc-williams', 1.0, 0.0, (0, 1, 2, 3, 4, 5, 6, 15, 8, 9, 10, 11, 12, 13, 14), '14seg-d-williams.png')
-build_sdf(svg_file, '14seg-dc-williams', 1.0, 0.0, range(16),                                           '14seg-dc-williams.png')
+build_sdf(svg_file, '7seg-c-williams',   1.5, 2.5, range(7),                                            '7seg-williams.webp')
+build_sdf(svg_file, '7seg-c-williams',   1.5, 2.5, range(8),                                            '7seg-c-williams.webp')
+build_sdf(svg_file, '14seg-dc-williams', 1.0, 0.0, (0, 1, 2, 3, 4, 5, 6, -1, 8, 9, 10, 11, 12, 13, 14), '14seg-williams.webp')
+build_sdf(svg_file, '14seg-dc-williams', 1.0, 0.0, (0, 1, 2, 3, 4, 5, 6, 15, 8, 9, 10, 11, 12, 13, 14), '14seg-d-williams.webp')
+build_sdf(svg_file, '14seg-dc-williams', 1.0, 0.0, range(16),                                           '14seg-dc-williams.webp')
 
 # Atari displays: LED 7, 7c. Atari System 1 has a tighter 7seg layout than the one provided here
-build_sdf(svg_file, '7seg-c-atari',      2.0, 2.5, range(7),                                            '7seg-atari.png')
-build_sdf(svg_file, '7seg-c-atari',      2.0, 2.5, range(8),                                            '7seg-c-atari.png')
+build_sdf(svg_file, '7seg-c-atari',      2.0, 2.5, range(7),                                            '7seg-atari.webp')
+build_sdf(svg_file, '7seg-c-atari',      2.0, 2.5, range(8),                                            '7seg-c-atari.webp')

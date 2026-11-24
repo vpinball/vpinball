@@ -1,17 +1,17 @@
 # Input device layout artwork: sources
 
 Vector sources of the device diagrams shown on the in-game UI input device
-page (`InputDevicePage`, rendered by `DeviceLayouts`). The PNG exports live in
+page (`InputDevicePage`, rendered by `DeviceLayouts`). The WebP exports live in
 `src/assets/input/` because everything under `src/assets` is copied into the
 packaged app.
 
-- Authored SVG, one file per recognized device in `svg/`, named like the PNG
+- Authored SVG, one file per recognized device in `svg/`, named like the image
   it produces (the `id` of the matching `DeviceLayout` entry in
   `src/ui/live/ingameui/DeviceLayouts.cpp`).
 - Light gray line art on a transparent background, drawn to be shown on the
   dark in-game UI panels.
 - Anchor coordinates are normalized (0..1) over the artwork bounds, so the
-  PNGs may be re-exported at other resolutions without side effects.
+  images may be re-exported at other resolutions without side effects.
 
 ## Anchors: the 'anchors' layer
 
@@ -61,12 +61,16 @@ uses `python` for `layout.py`, or set `PYTHON`):
 ```sh
 for svg in svg/*.svg; do
    name="$(basename "$svg" .svg)"
-   inkscape "$svg" --export-type=png --export-filename="../../src/assets/input/$name.png" -w 1024
+   inkscape "$svg" --export-type=png --export-filename="$name.png" -w 1024
+   python -c "import sys; from PIL import Image; Image.open(sys.argv[1]).convert('RGBA').save(sys.argv[2], lossless=True, quality=100, method=6, exact=True)" "$name.png" "../../src/assets/input/$name.webp"
+   rm "$name.png"
 done
 python layout.py
 ```
 
-The PNGs are rendered 1024 px wide with straight (non-premultiplied) alpha.
+The images are rendered 1024 px wide with straight (non-premultiplied) alpha,
+and stored as lossless WebP with `exact` set: libwebp otherwise drops the color
+of fully transparent pixels, which bilinear filtering reads at the edges.
 
 ## Generated SVGs
 

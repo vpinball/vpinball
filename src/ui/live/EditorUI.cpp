@@ -2200,32 +2200,32 @@ std::shared_ptr<Sampler> EditorUI::PartTypeIcon(const ItemTypeEnum type)
 {
    if (const auto it = m_partTypeIcons.find(type); it != m_partTypeIcons.end())
       return it->second;
-   // Part icons from src/assets/editor/*.png (vector sources in tools/editor-icons); eItemInvalid maps to the reference image icon
+   // Part icons from src/assets/editor/*.webp (vector sources in tools/editor-icons); eItemInvalid maps to the reference image icon
    const char *file = nullptr;
    switch (type)
    {
-   case eItemSurface: file = "editor/wall.png"; break;
-   case eItemGate: file = "editor/gate.png"; break;
-   case eItemRamp: file = "editor/ramp.png"; break;
-   case eItemFlipper: file = "editor/flipper.png"; break;
-   case eItemPlunger: file = "editor/plunger.png"; break;
-   case eItemBall: file = "editor/ball.png"; break;
-   case eItemBumper: file = "editor/bumper.png"; break;
-   case eItemSpinner: file = "editor/spinner.png"; break;
-   case eItemTimer: file = "editor/timer.png"; break;
-   case eItemTrigger: file = "editor/trigger.png"; break;
-   case eItemLight: file = "editor/light.png"; break;
-   case eItemKicker: file = "editor/kicker.png"; break;
-   case eItemHitTarget: file = "editor/target.png"; break;
-   case eItemDecal: file = "editor/decal.png"; break;
-   case eItemTextbox: file = "editor/textbox.png"; break;
-   case eItemDispReel: file = "editor/reel.png"; break;
-   case eItemLightSeq: file = "editor/lightseq.png"; break;
-   case eItemPrimitive: file = "editor/primitive.png"; break;
-   case eItemFlasher: file = "editor/flasher.png"; break;
-   case eItemRubber: file = "editor/rubber.png"; break;
-   case eItemInvalid: file = "editor/refimage.png"; break;
-   case eItemTable: file = "vpinball.png"; break;
+   case eItemSurface: file = "editor/wall.webp"; break;
+   case eItemGate: file = "editor/gate.webp"; break;
+   case eItemRamp: file = "editor/ramp.webp"; break;
+   case eItemFlipper: file = "editor/flipper.webp"; break;
+   case eItemPlunger: file = "editor/plunger.webp"; break;
+   case eItemBall: file = "editor/ball.webp"; break;
+   case eItemBumper: file = "editor/bumper.webp"; break;
+   case eItemSpinner: file = "editor/spinner.webp"; break;
+   case eItemTimer: file = "editor/timer.webp"; break;
+   case eItemTrigger: file = "editor/trigger.webp"; break;
+   case eItemLight: file = "editor/light.webp"; break;
+   case eItemKicker: file = "editor/kicker.webp"; break;
+   case eItemHitTarget: file = "editor/target.webp"; break;
+   case eItemDecal: file = "editor/decal.webp"; break;
+   case eItemTextbox: file = "editor/textbox.webp"; break;
+   case eItemDispReel: file = "editor/reel.webp"; break;
+   case eItemLightSeq: file = "editor/lightseq.webp"; break;
+   case eItemPrimitive: file = "editor/primitive.webp"; break;
+   case eItemFlasher: file = "editor/flasher.webp"; break;
+   case eItemRubber: file = "editor/rubber.webp"; break;
+   case eItemInvalid: file = "editor/refimage.webp"; break;
+   case eItemTable: file = "vpinball.webp"; break;
    default: break;
    }
    std::shared_ptr<Sampler> icon;

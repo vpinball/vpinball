@@ -41,9 +41,9 @@ def emit_anchor(a, id_style):
     return '      { %s, %s, %s%s },' % (eid, names_cpp, pos, cap)
 
 
-def png_aspect(layout_name):
+def image_aspect(layout_name):
     from PIL import Image
-    im = Image.open(ASSETS / (layout_name + '.png'))
+    im = Image.open(ASSETS / (layout_name + '.webp'))
     return round(1024 * im.size[1] / im.size[0])
 
 
@@ -53,7 +53,7 @@ def sync(text, const_name, layout_name, id_style):
     pat = re.compile(r'(const DeviceLayout ' + const_name + r' \{.*?\.anchors = \{\n).*?(\n   \},\n\};)', re.S)
     text, n = pat.subn(lambda m: m.group(1) + block + m.group(2), text, count=1)
     assert n == 1, const_name + ': anchors block not found'
-    aspect = png_aspect(layout_name)
+    aspect = image_aspect(layout_name)
     pat = re.compile(r'(const DeviceLayout ' + const_name + r' \{.*?\.aspect = 1024\.f / )[\d.]+f(,)', re.S)
     text, n = pat.subn(r'\g<1>%d.f\g<2>' % aspect, text, count=1)
     assert n == 1, const_name + ': aspect not found'

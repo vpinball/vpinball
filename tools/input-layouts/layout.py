@@ -67,7 +67,7 @@ def to_px(length):
 
 
 def document_box(root):
-    """Normalized anchor space = the exported PNG = document extent, in the px
+    """Normalized anchor space = the exported image = document extent, in the px
     units reported by `inkscape --query-all`. Returns (originX, originY, span)."""
     view_box = [0.0, 0.0, 1.0, 1.0]
     if root.get("viewBox"):

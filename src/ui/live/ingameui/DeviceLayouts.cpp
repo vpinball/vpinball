@@ -21,7 +21,7 @@ namespace
    // Positions are normalized (0..1) on the layout artwork in src/assets/input/
    const DeviceLayout kGamepadLayout {
    .id = "gamepad",
-   .assetFile = "input/gamepad.png",
+   .assetFile = "input/gamepad.webp",
    .aspect = 1024.f / 601.f,
    .anchors = {
       { 0xFFFF, { "Left Trigger"s }, { 0.3554f, 0.1440f }, "LT" },
@@ -48,7 +48,7 @@ namespace
    // plunger). Element ids are the fixed pin numbers registered by SDLInputHandler.
    const DeviceLayout kArcade2TVLayout {
    .id = "arcade2tv-xr",
-   .assetFile = "input/arcade2tv-xr.png",
+   .assetFile = "input/arcade2tv-xr.webp",
    .aspect = 1024.f / 483.f,
    .anchors = {
       { 0x0006, {}, { 0.0845f, 0.2577f }, "L Flip" },
@@ -83,7 +83,7 @@ namespace
    // Anchors are keyed by the registered element names (see XRInputHandler).
    const DeviceLayout kVRLayout {
    .id = "vr",
-   .assetFile = "input/vr-controller.png",
+   .assetFile = "input/vr-controller.webp",
    .aspect = 1024.f / 547.f,
    .anchors = {
       { 0xFFFF, { "Left Trigger"s, "Left Trigger (Analog)"s, "Left Select"s }, { 0.2049f, 0.1551f }, "Trig" },
@@ -220,7 +220,7 @@ namespace
          { 98, { 0.8723f, 0.9333f }, "0" },
          { 99, { 0.9377f, 0.9333f }, "." },
       };
-      DeviceLayout layout { .id = "keyboard", .assetFile = "input/keyboard.png", .aspect = 1024.f / 288.f, .anchors = {} };
+      DeviceLayout layout { .id = "keyboard", .assetFile = "input/keyboard.webp", .aspect = 1024.f / 288.f, .anchors = {} };
       layout.anchors.reserve(std::size(cells));
       for (const KeyCell& cell : cells)
          layout.anchors.push_back({ cell.scancode, {}, cell.pos, cell.caption });
@@ -229,7 +229,7 @@ namespace
 
    const DeviceLayout kMouseLayout {
    .id = "mouse",
-   .assetFile = "input/mouse.png",
+   .assetFile = "input/mouse.webp",
    .aspect = 1024.f / 979.f,
    .anchors = {
       { SDL_BUTTON_LEFT, {}, { 0.4339f, 0.2933f }, "LMB" },
@@ -256,23 +256,33 @@ namespace
       const auto anchors = json.find("anchors");
       if (anchors == json.end() || !anchors->is_array() || anchors->empty())
          return;
-      layout.anchors.clear();
-      for (const auto& entry : *anchors)
+      // A malformed entry throws: keep the compiled-in fallback
+      vector<DeviceLayoutAnchor> parsed;
+      try
       {
-         DeviceLayoutAnchor anchor;
-         anchor.elementId = static_cast<uint16_t>(entry.value("id", 0xFFFF));
-         for (const auto& name : entry.value("names", nlohmann::json::array()))
-            anchor.elementNames.push_back(name.get<string>());
-         if (const auto pos = entry.find("pos"); pos != entry.end() && pos->is_array() && pos->size() == 2)
-            anchor.pos = ImVec2((*pos)[0].get<float>(), (*pos)[1].get<float>());
-         anchor.caption = entry.value("caption", ""s);
-         if (const auto callout = entry.find("callout"); callout != entry.end() && callout->is_array() && callout->size() == 4)
+         for (const auto& entry : *anchors)
          {
-            anchor.hasCallout = true;
-            anchor.callout = ImVec4((*callout)[0].get<float>(), (*callout)[1].get<float>(), (*callout)[2].get<float>(), (*callout)[3].get<float>());
+            DeviceLayoutAnchor anchor;
+            anchor.elementId = static_cast<uint16_t>(entry.value("id", 0xFFFF));
+            for (const auto& name : entry.value("names", nlohmann::json::array()))
+               anchor.elementNames.push_back(name.get<string>());
+            if (const auto pos = entry.find("pos"); pos != entry.end() && pos->is_array() && pos->size() == 2)
+               anchor.pos = ImVec2((*pos)[0].get<float>(), (*pos)[1].get<float>());
+            anchor.caption = entry.value("caption", ""s);
+            if (const auto callout = entry.find("callout"); callout != entry.end() && callout->is_array() && callout->size() == 4)
+            {
+               anchor.hasCallout = true;
+               anchor.callout = ImVec4((*callout)[0].get<float>(), (*callout)[1].get<float>(), (*callout)[2].get<float>(), (*callout)[3].get<float>());
+            }
+            parsed.push_back(std::move(anchor));
          }
-         layout.anchors.push_back(std::move(anchor));
       }
+      catch (const nlohmann::json::exception& e)
+      {
+         PLOGE << "Invalid device layout file " << file.string() << ": " << e.what();
+         return;
+      }
+      layout.anchors = std::move(parsed);
       if (const auto aspect = json.find("aspect"); aspect != json.end() && aspect->is_number())
          layout.aspect = aspect->get<float>();
    }

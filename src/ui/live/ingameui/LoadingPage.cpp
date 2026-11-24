@@ -269,10 +269,11 @@ void LoadingPage::RenderLoadingScreen(const ImVec4& rect)
       drawList->AddCircleFilled(c, dotRadius * (1.f + 0.4f * l), IM_COL32(shade, shade, shade + 6, 140 + static_cast<int>(l * 60.f)));
    }
 
-   // Logo, horizontally centered in the upper mid of the screen
+   // Logo, horizontally centered in the upper mid of the screen: one of vpinball-logo1..4 picked at random (not with rand_mt, as it also drives the physics)
    if (!m_logo && !m_logoLoadFailed)
    {
-      if (std::shared_ptr<const BaseTexture> tex = BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "vpinball-logo.png")); tex != nullptr)
+      const string logoFile = "vpinball-logo" + std::to_string(1 + std::random_device{}() % 4) + ".webp";
+      if (std::shared_ptr<const BaseTexture> tex = BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, logoFile)); tex != nullptr)
          m_logo = std::make_shared<Sampler>(m_player->m_renderer->m_renderDevice, "InGameUILoadingLogo"s, tex, false);
       else
          m_logoLoadFailed = true;

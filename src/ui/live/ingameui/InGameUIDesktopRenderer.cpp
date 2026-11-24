@@ -472,7 +472,7 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
       // The plunger page's rail icon is the editor's plunger image, not a font glyph
       if (!m_plungerIcon && !m_plungerLoadFailed)
       {
-         if (std::shared_ptr<const BaseTexture> tex = BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "editor/plunger.png")); tex != nullptr)
+         if (std::shared_ptr<const BaseTexture> tex = BaseTexture::CreateFromFile(g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Assets, "editor/plunger.webp")); tex != nullptr)
             m_plungerIcon = std::make_shared<Sampler>(m_player->m_renderer->m_renderDevice, "InGameUIPlungerIcon"s, tex, false);
          else
             m_plungerLoadFailed = true;

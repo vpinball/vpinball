@@ -1621,67 +1621,67 @@
     <Image Include="$(SolutionDir)/../../src/assets/bumperskirt.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/ball.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/ball.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/bumper.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/bumper.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/decal.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/decal.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/flasher.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/flasher.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/flipper.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/flipper.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/gate.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/gate.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/kicker.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/kicker.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/light.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/light.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/lightseq.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/lightseq.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/plunger.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/plunger.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/primitive.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/primitive.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/ramp.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/ramp.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/reel.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/reel.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/refimage.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/refimage.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/rubber.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/rubber.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/spinner.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/spinner.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/target.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/target.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/textbox.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/textbox.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/timer.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/timer.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/trigger.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/trigger.webp">
       <FileType>Document</FileType>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/assets/editor/wall.png">
+    <Image Include="$(SolutionDir)/../../src/assets/editor/wall.webp">
       <FileType>Document</FileType>
     </Image>
     <Image Include="$(SolutionDir)/../../src/assets/envmap.webp">

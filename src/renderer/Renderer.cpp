@@ -928,7 +928,7 @@ void Renderer::UpdateStereoShaderState()
    }
 }
 
-// Loads a segment SDF atlas together with its pre-integrated coverage atlas '<name>-cov.png' (generated offline
+// Loads a segment SDF atlas together with its pre-integrated coverage atlas '<name>-cov.webp' (generated offline
 // alongside the SDF atlases by tools/alphaseg/extract-segs.py and expected to be in sync with them: the left
 // half holds the sharp segment coverage, the right half the squared SDF for glass light dispersion). Box filtered
 // mipmaps of the coverage atlas directly provide the emitted light integrated over each texel footprint, making
@@ -941,7 +941,7 @@ void Renderer::GetSegSDF(SegDisplayAtlas& atlas, const char* const name) const
    atlas.sdf.reset(Texture::CreateFromFile(path, false));
    if (atlas.sdf == nullptr)
       return;
-   atlas.cov.reset(Texture::CreateFromFile(path.parent_path() / (path.stem().string() + "-cov.png"), false));
+   atlas.cov.reset(Texture::CreateFromFile(path.parent_path() / (path.stem().string() + "-cov.webp"), false));
    if (atlas.cov != nullptr)
    {
       const std::shared_ptr<const BaseTexture> covTex = atlas.cov->GetRawBitmap(false, 0);
@@ -1038,43 +1038,43 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    case CTLPI_SEG_LAYOUT_7:
       segIndex = 0;
       GetSegSDF(m_segDisplay[family][0],
-         (family == SegmentFamily::Gottlieb)   ? "7seg-gts.png"
-            : (family == SegmentFamily::Bally) ? "7seg-bally.png"
-            : (family == SegmentFamily::Atari) ? "7seg-atari.png"
-                                               : "7seg-williams.png");
+         (family == SegmentFamily::Gottlieb)   ? "7seg-gts.webp"
+            : (family == SegmentFamily::Bally) ? "7seg-bally.webp"
+            : (family == SegmentFamily::Atari) ? "7seg-atari.webp"
+                                               : "7seg-williams.webp");
       break;
    case CTLPI_SEG_LAYOUT_7C:
       segIndex = 1;
-      GetSegSDF(m_segDisplay[family][1], (family == SegmentFamily::Bally) ? "7seg-c-bally.png" : (family == SegmentFamily::Atari) ? "7seg-c-atari.png" : "7seg-c-williams.png");
+      GetSegSDF(m_segDisplay[family][1], (family == SegmentFamily::Bally) ? "7seg-c-bally.webp" : (family == SegmentFamily::Atari) ? "7seg-c-atari.webp" : "7seg-c-williams.webp");
       break;
    // TODO I did not found any reference for a dot only 7 segments display, so we use the comma one which is likely wrong
    case CTLPI_SEG_LAYOUT_7D:
       segIndex = 2;
-      GetSegSDF(m_segDisplay[family][2], "7seg-c-williams.png");
+      GetSegSDF(m_segDisplay[family][2], "7seg-c-williams.webp");
       break;
    case CTLPI_SEG_LAYOUT_9:
       segIndex = 3;
-      GetSegSDF(m_segDisplay[family][3], "9seg-gts.png");
+      GetSegSDF(m_segDisplay[family][3], "9seg-gts.webp");
       break;
    case CTLPI_SEG_LAYOUT_9C:
       segIndex = 4;
-      GetSegSDF(m_segDisplay[family][4], "9seg-c-gts.png");
+      GetSegSDF(m_segDisplay[family][4], "9seg-c-gts.webp");
       break;
    case CTLPI_SEG_LAYOUT_14:
       segIndex = 5;
-      GetSegSDF(m_segDisplay[family][5], "14seg-williams.png");
+      GetSegSDF(m_segDisplay[family][5], "14seg-williams.webp");
       break;
    case CTLPI_SEG_LAYOUT_14D:
       segIndex = 6;
-      GetSegSDF(m_segDisplay[family][6], "14seg-d-williams.png");
+      GetSegSDF(m_segDisplay[family][6], "14seg-d-williams.webp");
       break;
    case CTLPI_SEG_LAYOUT_14DC:
       segIndex = 7;
-      GetSegSDF(m_segDisplay[family][7], (family == SegmentFamily::Gottlieb) ? "14seg-dc-gts.png" : "14seg-dc-williams.png");
+      GetSegSDF(m_segDisplay[family][7], (family == SegmentFamily::Gottlieb) ? "14seg-dc-gts.webp" : "14seg-dc-williams.webp");
       break;
    case CTLPI_SEG_LAYOUT_16:
       segIndex = 8;
-      GetSegSDF(m_segDisplay[family][8], "16seg.png");
+      GetSegSDF(m_segDisplay[family][8], "16seg.webp");
       break;
    }
    const SegDisplayAtlas& segAtlas = m_segDisplay[family][segIndex];
