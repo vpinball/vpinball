@@ -701,7 +701,7 @@ void DisplaySettingsPage::BuildWindowPage()
             .m_excludeFromDefault
             = true;
 
-         AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You may also drag the window to adjust its position"s));
+         AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You may also drag the window (outside of the settings list) to adjust its position"s));
       }
    }
 }
@@ -813,7 +813,7 @@ void DisplaySettingsPage::BuildEmbeddedPage()
               }))
       .m_excludeFromDefault = true;
 
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You may also drag the window to adjust its position"s));
+   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "You may also drag the window (outside of the settings list) to adjust its position"s));
 }
 
 void DisplaySettingsPage::Update(float elapsedS)
