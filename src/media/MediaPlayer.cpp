@@ -147,6 +147,11 @@ MediaPlayer::~MediaPlayer()
       m_libAV._avcodec_free_context(&m_videoContext);
    if (m_audioContext)
       m_libAV._avcodec_free_context(&m_audioContext);
+   if (m_alphaContext)
+      m_libAV._avcodec_free_context(&m_alphaContext);
+   for (AVFrame* alphaFrame : m_alphaFrames)
+      m_libAV._av_frame_free(&alphaFrame);
+   m_alphaFrames.clear();
    if (m_formatContext)
       m_libAV._avformat_close_input(&m_formatContext);
    if (m_packet)
@@ -185,6 +190,25 @@ AVCodecContext* MediaPlayer::OpenStream(int streamIndex)
       return nullptr;
    }
 
+   return context;
+}
+
+// Opens the decoder of the alpha layer of alpha videos (Matroska alpha_mode): the alpha plane
+// is a frame encoded with the video codec, carried in each video packet's BlockAdditional side
+// data, so it is decoded by a second instance of the same codec, without codec parameters
+AVCodecContext* MediaPlayer::OpenAlphaStream()
+{
+   const AVCodec* const codec = m_libAV._avcodec_find_decoder(m_videoContext->codec_id);
+   AVCodecContext* context = codec ? m_libAV._avcodec_alloc_context3(codec) : nullptr;
+   if (context == nullptr)
+      return nullptr;
+   context->pkt_timebase = m_formatContext->streams[m_videoStream]->time_base;
+   if (m_libAV._avcodec_open2(context, codec, nullptr) != 0)
+   {
+      PLOGE << "MediaPlayer: couldn't open codec for the alpha layer";
+      m_libAV._avcodec_free_context(&context);
+      return nullptr;
+   }
    return context;
 }
 
@@ -233,11 +257,16 @@ int MediaPlayer::Read(MediaOutput* output)
       if (rfRet == AVERROR_EOF)
       {
          m_inputEof = true;
-         // Flush both decoders so the last buffered frames are not dropped
+         // Flush the decoders so the last buffered frames are not dropped
          if (m_videoContext)
             m_libAV._avcodec_send_packet(m_videoContext, nullptr);
          if (m_audioContext)
             m_libAV._avcodec_send_packet(m_audioContext, nullptr);
+         if (m_alphaContext)
+         {
+            m_libAV._avcodec_send_packet(m_alphaContext, nullptr);
+            ReceiveAlphaFrames();
+         }
          ReceiveFrames(m_audioContext);
          ReceiveFrames(m_videoContext);
       }
@@ -249,6 +278,35 @@ int MediaPlayer::Read(MediaOutput* output)
       }
       else
       {
+         // An alpha video (Matroska alpha_mode) carries its alpha plane as a frame encoded with
+         // the video codec in the packet's BlockAdditional side data: decode it with a secondary
+         // decoder instance; it is attached to the video frame on emission
+         if (m_packet->stream_index == m_videoStream)
+         {
+            size_t additionalSize = 0;
+            uint8_t* additional = m_libAV._av_packet_get_side_data(m_packet, AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL, &additionalSize);
+            if (additional != nullptr && additionalSize >= 8 && AV_RB64(additional) == 1)
+            {
+               additional += 8;
+               additionalSize -= 8;
+               if (m_alphaContext == nullptr)
+                  m_alphaContext = OpenAlphaStream();
+               if (m_alphaContext != nullptr)
+               {
+                  AVPacket* alphaPacket = m_libAV._av_packet_alloc();
+                  if (alphaPacket != nullptr && m_libAV._av_new_packet(alphaPacket, static_cast<int>(additionalSize)) == 0)
+                  {
+                     memcpy(alphaPacket->data, additional, additionalSize);
+                     alphaPacket->pts = m_packet->pts;
+                     alphaPacket->dts = m_packet->dts;
+                     alphaPacket->duration = m_packet->duration;
+                     m_libAV._avcodec_send_packet(m_alphaContext, alphaPacket);
+                     ReceiveAlphaFrames();
+                  }
+                  m_libAV._av_packet_free(&alphaPacket);
+               }
+            }
+         }
          AVCodecContext* codecContext = nullptr;
          if (m_packet->stream_index == m_videoStream)
             codecContext = m_videoContext;
@@ -283,6 +341,11 @@ int MediaPlayer::Seek(double position)
       m_libAV._avcodec_flush_buffers(m_videoContext);
    if (m_audioContext)
       m_libAV._avcodec_flush_buffers(m_audioContext);
+   if (m_alphaContext)
+      m_libAV._avcodec_flush_buffers(m_alphaContext);
+   for (AVFrame* alphaFrame : m_alphaFrames)
+      m_libAV._av_frame_free(&alphaFrame);
+   m_alphaFrames.clear();
    m_inputEof = false;
    m_lastVideoPts = 0.;
    m_lastAudioPts = 0.;
@@ -303,6 +366,7 @@ void MediaPlayer::ReceiveFrames(AVCodecContext* codecContext)
          DecodedFrame* mediaFrame = new DecodedFrame();
          mediaFrame->frame = m_libAV._av_frame_alloc();
          m_libAV._av_frame_move_ref(mediaFrame->frame, frame);
+         AttachAlphaFrame(mediaFrame->frame);
          mediaFrame->pts = FramePtsSeconds(mediaFrame->frame, m_videoStream);
          QueuedOutput queued;
          queued.output.type = MEDIA_OUT_VIDEO;
@@ -317,6 +381,67 @@ void MediaPlayer::ReceiveFrames(AVCodecContext* codecContext)
       }
    }
    m_libAV._av_frame_free(&frame);
+}
+
+void MediaPlayer::ReceiveAlphaFrames()
+{
+   AVFrame* frame = m_libAV._av_frame_alloc();
+   if (!frame)
+      return;
+   while (m_libAV._avcodec_receive_frame(m_alphaContext, frame) >= 0)
+   {
+      AVFrame* alpha = m_libAV._av_frame_alloc();
+      if (alpha != nullptr)
+      {
+         m_libAV._av_frame_move_ref(alpha, frame);
+         m_alphaFrames.push_back(alpha);
+      }
+   }
+   m_libAV._av_frame_free(&frame);
+}
+
+// Pairs the video frame with the alpha plane decoded from its packet's BlockAdditional side
+// data. Both decoders are fed in the same order and emit their frames in presentation order,
+// so the pairing is done on timestamps (an alpha frame that has not been decoded yet leaves
+// its video frame opaque rather than being mismatched)
+void MediaPlayer::AttachAlphaFrame(AVFrame* frame)
+{
+   if (m_alphaContext == nullptr || frame->format != AV_PIX_FMT_YUV420P)
+      return;
+   const int64_t pts = frame->best_effort_timestamp;
+   while (!m_alphaFrames.empty() && m_alphaFrames.front()->best_effort_timestamp != AV_NOPTS_VALUE && pts != AV_NOPTS_VALUE
+      && m_alphaFrames.front()->best_effort_timestamp < pts)
+   {
+      AVFrame* stale = m_alphaFrames.front(); // Stale alpha, its video frame already emitted opaque
+      m_alphaFrames.pop_front();
+      m_libAV._av_frame_free(&stale);
+   }
+   if (m_alphaFrames.empty())
+      return;
+   AVFrame* alpha = m_alphaFrames.front();
+   if (pts != AV_NOPTS_VALUE && alpha->best_effort_timestamp != AV_NOPTS_VALUE && alpha->best_effort_timestamp != pts)
+      return; // The alpha decoder still lags behind the video one: wait for the matching frame
+   m_alphaFrames.pop_front();
+   if (alpha->width != frame->width || alpha->height != frame->height || alpha->buf[0] == nullptr)
+   {
+      m_libAV._av_frame_free(&alpha);
+      return;
+   }
+   // Attach the alpha luma plane as the frame's fourth plane: it is materialized with the frame
+   // as a YUVA420P picture, its buffer kept alive through a spare frame buffer reference
+   for (int i = 0; i < AV_NUM_DATA_POINTERS && alpha->buf[0] != nullptr; i++)
+      if (frame->buf[i] == nullptr)
+      {
+         frame->buf[i] = alpha->buf[0];
+         alpha->buf[0] = nullptr;
+      }
+   if (alpha->buf[0] == nullptr)
+   {
+      frame->data[3] = alpha->data[0];
+      frame->linesize[3] = alpha->linesize[0];
+      frame->format = AV_PIX_FMT_YUVA420P;
+   }
+   m_libAV._av_frame_free(&alpha);
 }
 
 void MediaPlayer::EmitAudioFrame(AVFrame* frame)
