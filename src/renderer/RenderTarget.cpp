@@ -103,7 +103,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx:
 }
 #endif
 
-RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth)
+RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth, const bool withMipmaps)
    : m_name(name)
    , m_type(type)
    , m_nLayers(type == SurfaceType::RT_DEFAULT ? 1
@@ -151,7 +151,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    case colorFormat::GREY8: m_colorFormat = bgfx::TextureFormat::R8; break;
    default: assert(false); // Unsupported texture format 
    }
-   m_color_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, m_colorFormat, texFlags);
+   // Mipmapped render target: the attachment resolve flag makes BGFX regenerate the mip chain after rendering
+   const bool hasMips = withMipmaps && (nMSAASamples == 1) && ((bgfx::getCaps()->formats[m_colorFormat] & BGFX_CAPS_FORMAT_TEXTURE_MIP_AUTOGEN) != 0);
+   m_color_tex = bgfx::createTexture2D(m_width, m_height, hasMips, m_nLayers, m_colorFormat, texFlags);
    m_color_sampler = std::make_shared<Sampler>(m_rd, name + ".Color", m_type, m_color_tex, m_colorFormat, m_width, m_height, false);
 
    if (m_shared_depth)
@@ -176,18 +178,19 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    }
 
    {
+      const uint8_t colorResolve = hasMips ? BGFX_ATTACHMENT_AUTO_GEN_MIPS : BGFX_ATTACHMENT_NONE;
       bgfx::Attachment colorAttachment;
       if (with_depth)
       {
          bgfx::Attachment depthAttachment;
-         colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
+         colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, colorResolve);
          depthAttachment.init(m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
          const std::array<bgfx::Attachment, 2> attachments { colorAttachment, depthAttachment };
          m_framebuffer = bgfx::createFrameBuffer(2, attachments.data());
       }
       else
       {
-         colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_ATTACHMENT_NONE);
+         colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, colorResolve);
          m_framebuffer = bgfx::createFrameBuffer(1, &colorAttachment);
       }
       if (!bgfx::isValid(m_framebuffer))

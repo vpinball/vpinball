@@ -138,6 +138,7 @@
 #include "math/matrix.h"
 
 class MeshBuffer;
+class RenderTarget;
 
 class VRDevice final
 {
@@ -227,7 +228,7 @@ public:
    bool IsApplicationRunning() const { return true; }
 #endif
 
-   // The UI layer is head locked while it only shows overlays (performance, notifications), and room locked while
+   // The UI quad is head locked while it only shows overlays (performance, notifications), and room locked while
    // interactive (InGame UI opened, pointed at with the controllers): anchored in front of the headset when it becomes
    // interactive, then fixed until it is not anymore. Called on the logic thread, consumed on the render thread
    void SetShowUILayer(bool show, bool interactive)
@@ -265,7 +266,7 @@ private:
    std::atomic<bool> m_showUILayer { false };
    std::atomic<bool> m_uiLayerInteractive { false };
    std::atomic<bool> m_uiLayerReanchor { true }; // Set by the logic thread, consumed by the render thread
-   // Room-locked pose of the interactive UI quad layer in the tracking reference space (render thread only)
+   // Room-locked pose of the interactive UI quad in the tracking reference space (render thread only)
 #ifdef ENABLE_XR
    XrPosef m_uiLayerPose {};
 #endif
@@ -286,17 +287,27 @@ public:
    bgfx::RendererType::Enum GetGraphicContextType() const;
    void PollEvents();
    void RenderFrame(class RenderDevice* rd, const std::function<void(RenderTarget* vrRenderTarget)>& submitFrame);
-   RenderTarget* GetUIRenderTarget() const { return m_uiRenderTarget; } // Acquired swapchain target for the UI composition layer (or nullptr if unsupported/not acquired yet)
-   unsigned int GetUISurfaceWidth() const { return m_uiSwapchainInfo.width; }
-   unsigned int GetUISurfaceHeight() const { return m_uiSwapchainInfo.height; }
-   // Geometry of the view-locked UI quad layer in XR view space (meters): shared
-   // between the composition layer submission and the controller pointer raycast
+   unsigned int GetUISurfaceWidth() const { return m_uiSurfaceWidth; }
+   unsigned int GetUISurfaceHeight() const { return m_uiSurfaceHeight; }
+   // Copies the UI quad corners (scene VPU coordinates) published by the render thread; false when the UI is not shown
+   bool GetUIQuadScene(Vertex3Ds corners[4]) const
+   {
+      const std::lock_guard lock(m_uiPointerMutex);
+      if (!m_uiQuadSceneValid)
+         return false;
+      for (int i = 0; i < 4; i++)
+         corners[i] = m_uiQuadScene[i];
+      return true;
+   }
+   // Geometry of the UI quad (meters, in XR tracking space): shared between the
+   // in-scene draw list placement and the controller pointer raycast
    static constexpr float kUILayerDistance = 0.8f; // Distance in front of the viewer
    static constexpr float kUILayerWidth = 0.75f;
    static constexpr float kUILayerHeight = kUILayerWidth * 9.f / 16.f; // 16:9, matching the desktop UI layout
-   // Controller pointer raycast against the UI quad layer: computed per frame on
+   static constexpr float kUILayerDrop = 0.45f * kUILayerHeight; // Panel center below eye level: top edge just above the line of sight
+   // Controller pointer raycast against the UI quad: computed per frame on
    // the render thread, read on the logic thread (same write/read split as
-   // m_uiRenderTarget — a frame of staleness is fine for a pointer)
+   // m_uiQuadScene — a frame of staleness is fine for a pointer)
    struct UIPointer
    {
       float origin[3] { 0.f, 0.f, 0.f }; // Ray origin in XR tracking reference space (meters)
@@ -363,16 +374,18 @@ private:
 
    SwapchainInfo m_colorSwapchainInfo = {};
    SwapchainInfo m_depthSwapchainInfo = {};
-   SwapchainInfo m_uiSwapchainInfo = {};
    std::vector<std::unique_ptr<RenderTarget>> m_swapchainRenderTargets;
-   std::vector<std::unique_ptr<RenderTarget>> m_uiRenderTargets;
-   RenderTarget* m_uiRenderTarget = nullptr; // Written by the render thread before releasing the frame semaphore, read by the logic thread while recording the frame
+   unsigned int m_uiSurfaceWidth = 0; // Virtual resolution of the UI panel (16:9): the layout space of the world-space UI quad
+   unsigned int m_uiSurfaceHeight = 0;
+   // UI quad corners in scene coordinates (VPU): staged on the render thread, published under m_uiPointerMutex, copied out by GetUIQuadScene
+   Vertex3Ds m_uiQuadScene[4];
+   bool m_uiQuadSceneValid = false;
    std::vector<XrEnvironmentBlendMode> m_applicationEnvironmentBlendModes = { XR_ENVIRONMENT_BLEND_MODE_OPAQUE, XR_ENVIRONMENT_BLEND_MODE_ADDITIVE };
    std::vector<XrEnvironmentBlendMode> m_environmentBlendModes = {};
    XrEnvironmentBlendMode m_environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM;
 
    XrSpace m_referenceSpace = XR_NULL_HANDLE;
-   XrSpace m_viewSpace = XR_NULL_HANDLE; // Head-locked space for the UI quad layer
+   XrSpace m_viewSpace = XR_NULL_HANDLE; // Head-locked space for the UI quad
 
    bool m_headsetRecenterPending = false;
    bool m_controllerRecenterEnabled = false;
@@ -390,7 +403,6 @@ private:
       XrCompositionLayerProjection layerProjection = { XR_TYPE_COMPOSITION_LAYER_PROJECTION };
       std::vector<XrCompositionLayerProjectionView> layerProjectionViews;
       std::vector<XrCompositionLayerDepthInfoKHR> depthInfoViews;
-      XrCompositionLayerQuad layerQuad = { XR_TYPE_COMPOSITION_LAYER_QUAD };
       XrCompositionLayerPassthroughFB layerPassthrough = { XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_FB };
    };
 
@@ -408,9 +420,10 @@ private:
    PFN_xrRequestDisplayRefreshRateFB m_xrRequestDisplayRefreshRateFB = nullptr;
    int m_displayRefreshRateMode = 0;
    void ApplyDisplayRefreshRate();
-   // Raycasts the active controller aim poses against the UI quad layer and
-   // fills m_uiPointer (view-space endpoints, UV, trigger state and the same
-   // endpoints converted to scene coordinates for world-space rendering)
+   // Resolves the UI quad pose (anchored when interactive, head locked otherwise)
+   // into scene-space corners, and raycasts the active controller aim poses
+   // against it, filling m_uiPointer (view-space endpoints, UV, trigger state
+   // and the same endpoints converted to scene coordinates for world-space rendering)
    void UpdateUIPointer(XrTime predictedDisplayTime, float vpuToWorldScale);
 
    Matrix3D m_nextProj[2];

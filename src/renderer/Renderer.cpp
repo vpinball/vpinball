@@ -1420,23 +1420,31 @@ void Renderer::RenderUIScene()
    // per view with the correct orientation (same render path as Render3DScene)
    const bool uiBeforeStero = m_stereo3Denabled && (m_renderDevice->m_stereoShader != nullptr) && (GetBackBufferTexture() != nullptr)
       && (m_stereo3D == STEREO_SBS || m_stereo3D == STEREO_TB || m_stereo3D == STEREO_INT || m_stereo3D == STEREO_FLIPPED_INT);
-   // For OpenXR, the LiveUI is rendered to a dedicated mono render target submitted as a view locked quad composition layer (see Render3DScene)
-   RenderTarget* xrUILayer = nullptr;
-#ifdef ENABLE_XR
-   if (m_stereo3Denabled && m_stereo3D == STEREO_VR)
-      xrUILayer = g_pplayer->m_vrDevice->GetUIRenderTarget();
-#endif
-   RenderTarget* const uiRT = xrUILayer != nullptr ? xrUILayer : uiBeforeStero ? GetBackBufferTexture() : backBuffer;
-   if (xrUILayer != nullptr)
-   {
-      // The projection layer below the UI quad has no scene content while loading, so clear it to black
-      m_renderDevice->SetRenderTarget("Loading"s, backBuffer, false, true);
-      m_renderDevice->Clear(clearType::TARGET, 0xFF000000);
-   }
+   RenderTarget* const uiRT = uiBeforeStero ? GetBackBufferTexture() : backBuffer;
    m_renderDevice->SetRenderTarget("Loading"s, uiRT, false, true);
-   m_renderDevice->Clear(clearType::TARGET, xrUILayer != nullptr ? 0x00000000 : 0xFF000000); // The XR UI quad layer is alpha blended over the projection layer
-   g_pplayer->m_liveUI->RenderUI();
-   if (uiRT != backBuffer && xrUILayer == nullptr)
+   m_renderDevice->Clear(clearType::TARGET, 0xFF000000);
+#ifdef ENABLE_XR
+   // For OpenXR, the UI draw list is rasterized to an offscreen surface, then drawn inside the
+   // stereo projection as a world-space quad (same path as RenderView::Render)
+   if (m_stereo3Denabled && m_stereo3D == STEREO_VR)
+   {
+      VRDevice* const vrDevice = g_pplayer->m_vrDevice;
+      Vertex3Ds quad[4] = {}; // Degenerate (invisible) quad while the UI is not shown
+      vrDevice->GetUIQuadScene(quad);
+      ModelViewProj quadMvp(m_renderDevice->m_nEyes);
+      const SceneLayout::SpaceTransform& space = g_pplayer->m_ptable->GetSceneLayout().GetSpaceTransform(VPX::SpaceReference::Playfield);
+      for (int eye = 0; eye < m_renderDevice->m_nEyes; eye++)
+      {
+         float projScale;
+         quadMvp.SetView(eye, SceneLayout::ComposeView(space, vrDevice->GetEyeView(eye), projScale));
+         quadMvp.SetProj(eye, Matrix3D::MatrixScale(projScale) * vrDevice->GetEyeProj(eye));
+      }
+      g_pplayer->m_liveUI->RenderUIVR(quad, quadMvp);
+   }
+   else
+#endif
+      g_pplayer->m_liveUI->RenderUI();
+   if (uiRT != backBuffer)
    {
       UpdateStereoShaderState();
       m_activeView->ApplyStereo(uiRT, backBuffer);

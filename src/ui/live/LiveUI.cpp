@@ -11,6 +11,7 @@
 #include "fonts/DroidSansBold.h"
 #include "fonts/JetBrainsMono.h"
 #include "math/matrix.h"
+#include "math/ModelViewProj.h"
 #include "plugins/VPXPlugin.h"
 #include "renderer/Renderer.h"
 #include "renderer/RenderCommand.h"
@@ -443,8 +444,18 @@ void LiveUI::NewFrame()
 
    // Adjust display size and scale eventually gathered in ImGui_ImplSDL3_NewFrame to our framebuffer rendering with rotation & stereo support
    {
-      const float renderWidth = m_rd->GetCurrentPass() ? static_cast<float>(m_rd->GetCurrentPass()->m_rt->GetWidth()) : 1920.f;
-      const float renderHeight = m_rd->GetCurrentPass() ? static_cast<float>(m_rd->GetCurrentPass()->m_rt->GetHeight()) : 1080.f;
+      float renderWidth = m_rd->GetCurrentPass() ? static_cast<float>(m_rd->GetCurrentPass()->m_rt->GetWidth()) : 1920.f;
+      float renderHeight = m_rd->GetCurrentPass() ? static_cast<float>(m_rd->GetCurrentPass()->m_rt->GetHeight()) : 1080.f;
+#ifdef ENABLE_XR
+      // In VR the UI is laid out at its virtual panel resolution (fixed 16:9), then executed
+      // as world-space geometry on the quad VRDevice::UpdateUIPointer raycasts — the target
+      // size is the eye resolution and does not reflect the panel's layout space
+      if (m_player->m_vrDevice != nullptr && m_renderer->m_stereo3D == STEREO_VR && m_player->m_vrDevice->GetUISurfaceWidth() != 0)
+      {
+         renderWidth = static_cast<float>(m_player->m_vrDevice->GetUISurfaceWidth());
+         renderHeight = static_cast<float>(m_player->m_vrDevice->GetUISurfaceHeight());
+      }
+#endif
 
       // The VR playfield window has no SDL window: the window size and scale gathered by ImGui_ImplSDL3_NewFrame
       // are undefined there (failed SDL calls leave their outputs untouched), so the framebuffer scale can be
@@ -501,7 +512,7 @@ void LiveUI::NewFrame()
       AddMousePosEvent(false, globalMouse.x - static_cast<float>(windowPos.x), globalMouse.y - static_cast<float>(windowPos.y));
    }
 
-// VR controller pointer: the aim pose raycast against the view-locked UI layer
+// VR controller pointer: the aim pose raycast against the UI quad
 // is computed per frame by the VRDevice; it drives ImGui like a mouse, the
 // front trigger acting as the left button
 #ifdef ENABLE_XR
@@ -540,8 +551,8 @@ void LiveUI::Render3D()
       m_editorUI.Render3D();
 
 // VR controller pointer ray: a gradient line from the controller to its hit
-// point on the view-locked UI layer. It is drawn in world space since the UI
-// layer is a flat quad and cannot host geometry anchored outside it
+// point on the UI quad. It is drawn in world space since the UI surface is a
+// flat quad and cannot host geometry anchored outside it
 #ifdef ENABLE_XR
    if (m_player->m_vrDevice != nullptr && m_uiLayerShown && m_inGameUI.IsOpened())
    {
@@ -652,7 +663,125 @@ void LiveUI::Render3D()
 #endif
 }
 
+#ifdef ENABLE_XR
+// Depth-only draw of the UI quad into the scene depth buffer: the VR color key passthrough
+// (fs_pp_passthrough) punches through every pixel at far depth (== 1.0), but the UI draw list is
+// executed post-process and writes no depth. Stamping the panel's footprint inside the scene pass
+// keeps its pixels classified as scene geometry. The write is unconditional since the UI always
+// draws on top (the stamp is invisible either way, so it only marks the keying mask).
+void LiveUI::RenderVRUIDepthStamp(const Vertex3Ds corners[4], const ModelViewProj &mvp)
+{
+   m_rd->ResetRenderState();
+   m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
+   m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
+   m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+   m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   m_rd->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RGBMASK_NONE);
+   m_rd->m_basicShader->SetTechnique(ShaderTechnique::unshaded_without_texture);
+   const Matrix3D matIdentity = Matrix3D::MatrixIdentity();
+   m_rd->m_basicShader->SetMatrix(ShaderUniform::matWorld, &matIdentity);
+   m_rd->m_basicShader->SetMatrix(ShaderUniform::matView, &mvp.GetView(0), mvp.m_nEyes);
+   m_rd->m_basicShader->SetMatrix(ShaderUniform::matWorldView, &mvp.GetModelView(0), mvp.m_nEyes);
+   m_rd->m_basicShader->SetMatrix(ShaderUniform::matWorldViewInverseTranspose, &mvp.GetModelViewInverseTranspose(0), mvp.m_nEyes);
+   m_rd->m_basicShader->SetMatrix(ShaderUniform::matRotViewProj, &mvp.GetRotViewProj(0), mvp.m_nEyes);
+   m_rd->m_basicShader->SetVector(ShaderUniform::cameraPosWorld, &mvp.GetCameraPos(0), mvp.m_nEyes);
+   m_rd->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
+   const Vertex3D_NoTex2 vertices[4] = { //
+      { corners[0].x, corners[0].y, corners[0].z, 0.f, 0.f, 1.f, 0.f, 0.f }, // Top left
+      { corners[1].x, corners[1].y, corners[1].z, 0.f, 0.f, 1.f, 1.f, 0.f }, // Top right
+      { corners[2].x, corners[2].y, corners[2].z, 0.f, 0.f, 1.f, 0.f, 1.f }, // Bottom left
+      { corners[3].x, corners[3].y, corners[3].z, 0.f, 0.f, 1.f, 1.f, 1.f }
+   }; // Bottom right
+   m_rd->DrawTexturedQuad(m_rd->m_basicShader, vertices, false);
+}
+#endif
+
 void LiveUI::RenderUI()
+{
+   // SDR white level to place UI white at, normalized to the 10000 nits PQ encodes (the white point counts in multiples of 80 nits). 0 for a sRGB output
+   const bool wcg = (m_player != nullptr) && m_player->m_playfieldWnd->IsWCGBackBuffer();
+   RenderUIInternal(wcg ? m_player->m_playfieldWnd->GetSDRWhitePoint() * (float)(80. / 10000.) : 0.f);
+}
+
+#ifdef ENABLE_XR
+void LiveUI::RenderUIVR(const Vertex3Ds uiQuadScene[4], const ModelViewProj &uiMVP)
+{
+   if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING || m_rd->GetCurrentPass() == nullptr || m_player->m_playMode == Player::PlayMode::CaptureAttract)
+      return;
+
+   // World-space UI (VR): map the UI pixel space onto the quad VRDevice::UpdateUIPointer
+   // raycasts (same geometry, top-left origin, row vectors applied left to right), then
+   // through each eye's view/projection of the quad's space (m_rotate is forced to 0 for VR)
+   const ImGuiIO &io = ImGui::GetIO();
+   const float right = io.DisplaySize.x;
+   const float bottom = io.DisplaySize.y;
+   const float invW = 1.f / right;
+   const float invH = 1.f / bottom;
+   Matrix3D uiToScene;
+   uiToScene._11 = (uiQuadScene[1].x - uiQuadScene[0].x) * invW;
+   uiToScene._12 = (uiQuadScene[1].y - uiQuadScene[0].y) * invW;
+   uiToScene._13 = (uiQuadScene[1].z - uiQuadScene[0].z) * invW;
+   uiToScene._14 = 0.f;
+   uiToScene._21 = (uiQuadScene[2].x - uiQuadScene[0].x) * invH;
+   uiToScene._22 = (uiQuadScene[2].y - uiQuadScene[0].y) * invH;
+   uiToScene._23 = (uiQuadScene[2].z - uiQuadScene[0].z) * invH;
+   uiToScene._24 = 0.f;
+   uiToScene._31 = uiToScene._32 = uiToScene._33 = uiToScene._34 = 0.f;
+   uiToScene._41 = uiQuadScene[0].x;
+   uiToScene._42 = uiQuadScene[0].y;
+   uiToScene._43 = uiQuadScene[0].z;
+   uiToScene._44 = 1.f;
+   Matrix3D matQuadView[2];
+   for (int eye = 0; eye < m_rd->m_nEyes; eye++)
+      matQuadView[eye] = uiToScene * uiMVP.GetView(eye) * uiMVP.GetProj(eye);
+
+   // The draw list is rasterized to an offscreen mipmapped texture, then drawn back as a textured
+   // quad (below): the XR surface is single sample (no MSAA) and the panel minifies on screen, so
+   // in-place geometry aliases badly while the composition layer this replaces was texture-filtered
+   RenderTarget* const uiTarget = m_rd->GetCurrentPass()->m_rt;
+   const int panelWidth = static_cast<int>(right), panelHeight = static_cast<int>(bottom);
+   if ((m_uiPanelTarget == nullptr) || (m_uiPanelTarget->GetWidth() != panelWidth) || (m_uiPanelTarget->GetHeight() != panelHeight))
+      m_uiPanelTarget = std::make_unique<RenderTarget>(m_rd, SurfaceType::RT_DEFAULT, "LiveUI Panel"s, panelWidth, panelHeight, colorFormat::RGBA8,
+         false, 1, "Fatal Error: unable to create LiveUI panel render target", nullptr, true);
+   m_rd->SetRenderTarget("LiveUI Panel"s, m_uiPanelTarget.get(), false);
+   m_rd->Clear(clearType::TARGET, 0xFF000000); // Opaque black backing: the world-space UI is a solid surface
+
+   RenderUIInternal(0.f); // The panel holds sRGB encoded values
+
+   // Composite the panel texture on the world-space quad, into the XR surface holding linear
+   // values (see the tonemap pass' isLinearFrameBuffer). The panel is alpha-composited over
+   // its opaque black backing, and the composite forces opaque output since the world-space
+   // UI is a solid surface
+   m_rd->SetRenderTarget("LiveUI"s, uiTarget, true);
+   m_rd->AddRenderTargetDependency(m_uiPanelTarget.get());
+   m_rd->m_uiShader->SetTechnique(uiTarget->m_nLayers == 1 ? ShaderTechnique::LiveUI_mono : ShaderTechnique::LiveUI);
+   m_rd->m_uiShader->SetMatrix(ShaderUniform::matWorldView, &matQuadView[0], m_rd->m_nEyes);
+   const vec4 quadParams(1.f, 0.f, 1.f, 0.f); // x = force opaque, z = linear output
+   m_rd->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, &quadParams);
+   m_rd->m_uiShader->SetVector(ShaderUniform::clip_plane, 0.f, 0.f, right, bottom);
+   m_rd->m_uiShader->SetTexture(ShaderUniform::tex_base_color, m_uiPanelTarget->GetColorSampler(), SamplerFilter::SF_ANISOTROPIC);
+   m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::ONE);
+   m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+   if (m_uiPanelQuad == nullptr)
+      m_uiPanelQuad = std::make_shared<UIListGeometry>();
+   m_uiPanelQuad->numVertices = 4;
+   m_uiPanelQuad->numIndices = 6;
+   m_uiPanelQuad->upload = UIListGeometry::Upload::None;
+   m_uiPanelQuad->vtx.resize(4 * sizeof(ImDrawVert));
+   m_uiPanelQuad->idx.resize(6 * sizeof(ImDrawIdx));
+   ImDrawVert *const quadVtx = reinterpret_cast<ImDrawVert *>(m_uiPanelQuad->vtx.data());
+   quadVtx[0].pos = ImVec2(0.f, 0.f);      quadVtx[0].uv = ImVec2(0.f, 0.f); quadVtx[0].col = IM_COL32_WHITE;
+   quadVtx[1].pos = ImVec2(right, 0.f);    quadVtx[1].uv = ImVec2(1.f, 0.f); quadVtx[1].col = IM_COL32_WHITE;
+   quadVtx[2].pos = ImVec2(0.f, bottom);   quadVtx[2].uv = ImVec2(0.f, 1.f); quadVtx[2].col = IM_COL32_WHITE;
+   quadVtx[3].pos = ImVec2(right, bottom); quadVtx[3].uv = ImVec2(1.f, 1.f); quadVtx[3].col = IM_COL32_WHITE;
+   ImDrawIdx *const quadIdx = reinterpret_cast<ImDrawIdx *>(m_uiPanelQuad->idx.data());
+   quadIdx[0] = 0; quadIdx[1] = 2; quadIdx[2] = 1; quadIdx[3] = 1; quadIdx[4] = 2; quadIdx[5] = 3;
+   m_rd->DrawTransientMesh(m_rd->m_uiShader, true, -10000.f, m_uiPanelQuad, RenderDevice::TRIANGLELIST, 0, 6);
+}
+#endif
+
+void LiveUI::RenderUIInternal(const float sdrWhitePQ)
 {
    if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING || m_rd->GetCurrentPass() == nullptr || m_player->m_playMode == Player::PlayMode::CaptureAttract)
       return;
@@ -749,24 +878,14 @@ void LiveUI::RenderUI()
    }
    const float right = (m_rotate == 1 || m_rotate == 3) ? io.DisplaySize.y : io.DisplaySize.x;
    const float bottom = (m_rotate == 1 || m_rotate == 3) ? io.DisplaySize.x : io.DisplaySize.y;
+   // Orthographic mapping of the UI pixel space onto the rasterization target
    Matrix3D matView[2];
    matView[0] = matRotate * matTranslate * Matrix3D::MatrixOrthoOffCenterRH(0.f, right, bottom, 0.f, 0.f, 1.f);
    if (m_rd->m_nEyes == 2)
       matView[1] = matView[0];
    m_rd->m_uiShader->SetMatrix(ShaderUniform::matWorldView, &matView[0], m_rd->m_nEyes);
-   // UI shader parameters: x = VR stereo offset (BGFX), y = texture is sRGB decoded (set per draw, unused on DX9), w = HDR white level (BGFX)
-   vec4 uiParams(0.f, 0.f, 0.f, 0.f);
-#if defined(ENABLE_BGFX)
-#ifdef ENABLE_XR
-   const bool onXrUILayer = m_player->m_vrDevice && m_rd->GetCurrentPass()->m_rt == m_player->m_vrDevice->GetUIRenderTarget();
-#else
-   const bool onXrUILayer = false;
-#endif
-   // Stereo offset for VR (fake depth), only when rendering per eye inside the stereo projection layer
-   uiParams.x = (m_player->m_vrDevice && m_rd->GetCurrentPass()->m_rt->m_nLayers == 2) ? ((float)m_player->m_vrDevice->GetEyeWidth() * 0.15f) : 0.f;
-   // SDR white level to place UI white at, normalized to the 10000 nits PQ encodes (the white point counts in multiples of 80 nits). 0 = no conversion (sRGB backbuffer)
-   uiParams.w = (!onXrUILayer && m_player->m_playfieldWnd->IsWCGBackBuffer()) ? (m_player->m_playfieldWnd->GetSDRWhitePoint() * (float)(80. / 10000.)) : 0.f;
-#endif
+   // UI shader parameters: y = texture is sRGB decoded (set per draw, unused on DX9), w = HDR white level (BGFX)
+   vec4 uiParams(0.f, 0.f, 0.f, sdrWhitePQ);
    m_rd->ResetRenderState();
    m_rd->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RGBMASK_RGBA);
    m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
@@ -835,12 +954,12 @@ void LiveUI::RenderUI()
          if (cmd->ElemCount != 0)
          {
             m_rd->m_uiShader->SetVector(ShaderUniform::clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
-            m_rd->m_uiShader->SetTexture(ShaderUniform::tex_base_color, cmd->GetTexID(), SamplerFilter::SF_BILINEAR);
-            #if !defined(ENABLE_DX9) // DX9 samples raw values (see UIShader.hlsl)
+            m_rd->m_uiShader->SetTexture(ShaderUniform::tex_base_color, cmd->GetTexID(), m_player->IsVR() ? SamplerFilter::SF_ANISOTROPIC : SamplerFilter::SF_BILINEAR);
+#if !defined(ENABLE_DX9) // DX9 samples raw values (see UIShader.hlsl)
             // ImGui works in sRGB: the shader re-encodes textures that sampling decodes (table images)
             uiParams.y = (cmd->GetTexID() != nullptr && cmd->GetTexID()->IsSRGB()) ? 1.f : 0.f;
             m_rd->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, &uiParams);
-            #endif
+#endif
 #if defined(ENABLE_BGFX)
             m_rd->DrawTransientMesh(m_rd->m_uiShader, true, static_cast<float>(depthSort), geo, RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
 #else

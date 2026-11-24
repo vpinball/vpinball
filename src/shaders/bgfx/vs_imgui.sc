@@ -7,32 +7,28 @@ $output v_color0, v_texcoord0, v_texcoord1
 
 #ifdef STEREO
 uniform mat4 matWorldView[2];
+uniform vec4 layer;
 #else
 uniform mat4 matWorldView;
 #endif
-
-uniform vec4 staticColor_Alpha;
-#define stereoOfs staticColor_Alpha.x
 
 void main()
 {
     v_texcoord1 = a_position.xy;
 
-    vec4 ofsPos = vec4(a_position.xy, 0.0, 1.0);
     #ifdef STEREO
-        if (gl_InstanceID == 0)
-            ofsPos.x += stereoOfs;
-        else
-            ofsPos.x -= stereoOfs;
+        // Target eye: the instance index for layered rendering, or the activated layer
+        // index when the backend renders each layer through a dedicated pass
+        float eye = layer.x + float(gl_InstanceID);
         gl_Layer = gl_InstanceID;
-    #endif
-    #ifdef STEREO
-        #define mWorldView matWorldView[gl_InstanceID]
+        #define mWorldView matWorldView[int(round(eye))]
     #else
         #define mWorldView matWorldView
     #endif
-    vec4 pos = mul(mWorldView, ofsPos);
-    gl_Position = vec4(pos.x, pos.y, 0.0, 1.0);
+    // Full transform: an ortho mapping for display space UI, or a world space
+    // mapping (perspective divide included) when drawn inside the VR projection
+    vec4 pos = mul(mWorldView, vec4(a_position.xy, 0.0, 1.0));
+    gl_Position = pos;
 
     v_texcoord0 = a_texcoord0;
 

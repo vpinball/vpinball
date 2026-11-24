@@ -81,7 +81,7 @@ public:
    bool IsRenderingScene() const { return m_renderScene; } // False: nothing is recorded for the view, except that the primary view still
    // clears the output and ticks the game logic while the editor areas own the frame, see RenderView::Render
    void SetRenderOverlay3D(const bool render) { m_renderOverlay3D = render; } // Record LiveUI's 3D overlays (editor gizmos, selection,...)
-   void SetRenderLiveUI(const bool render) { m_renderLiveUI = render; } // Record a LiveUI pass into this view's output (or the XR UI layer for the VR view)
+   void SetRenderLiveUI(const bool render) { m_renderLiveUI = render; } // Record a LiveUI pass into this view's output (or the VR UI surface for the VR view)
    bool RendersLiveUI() const { return m_renderLiveUI; }
    void SetRunGameLogic(const bool run) { m_runGameLogic = run; } // Call Player::UpdateGameLogic mid-record to keep latency low
    void SetApplyPostFX(const bool apply) { m_applyPostFX = apply; } // Run the post process tail (AA / sharpen / upscale / stereo) after tonemapping
