@@ -65,6 +65,8 @@ set(VPX_SOURCES
    src/core/SettingsService.h
    src/core/TableAudit.cpp
    src/core/TableAudit.h
+   src/core/TableCatalog.cpp
+   src/core/TableCatalog.h
    src/core/TableDB.cpp
    src/core/TableDB.h
    src/core/TournamentFile.cpp
@@ -423,6 +425,7 @@ set(VPX_SOURCES
    src/ui/live/editor/ViewportPane.cpp
    src/ui/live/editor/ViewportSidebar.h
    src/ui/live/editor/ViewportSidebar.cpp
+   
    
    src/ui/live/ingameui/InGameUI.cpp
    src/ui/live/ingameui/InGameUI.h

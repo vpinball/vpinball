@@ -212,6 +212,14 @@ PropIntUnbounded(Player, Autostart, "Autostart"s, ""s, 0);
 PropIntUnbounded(Player, AutostartRetry, "AutostartRetry"s, ""s, 0);
 PropBool(Player, asenable, "AutostartEnable"s, ""s, false);
 
+// Mini frontend settings
+PropString(Frontend, TableFolders, "Table Folders"s, "Semicolon separated list of root folders which are recursively scanned for tables"s, ""s);
+PropBool(Frontend, SetupDone, "Setup Done"s, "Set when the guided setup has been run (or skipped)"s, false);
+PropString(Frontend, DisplaySignature, "Display Signature"s, "Display setup under which the guided setup was last run, used to detect a new display setup"s, ""s);
+PropInt(Frontend, CaptureDelayMs, "Capture Delay"s, "Delay in milliseconds after starting a table before recording a media capture"s, 0, 60000, 5000);
+PropString(Frontend, ThemeFolders, "Theme Folders"s, "Semicolon separated list of root folders which are scanned for frontend themes"s, ""s);
+PropString(Frontend, Theme, "Theme"s, "Selected frontend theme (theme folder name), empty to use the first one found"s, ""s);
+
 // UI & input settings
 PropString(Input, Devices, "Devices"s, "List of known devices"s, ""s);
 

@@ -1,0 +1,228 @@
+// license:GPLv3+
+
+#include "core/stdafx.h"
+#include "../vpx-test.h"
+
+#include "core/TableCatalog.h"
+
+#include "doctest.h"
+
+#include <fstream>
+
+TEST_CASE("TableCatalog")
+{
+   const std::filesystem::path root = GetTestTmpDir() / "catalog"sv;
+   std::filesystem::remove_all(root);
+
+   const auto writeFile = [](const std::filesystem::path& path, const string& content = ""s)
+   {
+      std::filesystem::create_directories(path.parent_path());
+      std::ofstream file(path, std::ios::binary);
+      file << content;
+   };
+
+   // A table stored in its own folder, with an info file named after the folder and medias
+   const std::filesystem::path folderA = root / "Attack From Mars (Bally 1995)"sv;
+   writeFile(folderA / "Attack From Mars v1.0.vpx"s);
+   writeFile(folderA / "Attack From Mars (Bally 1995).info"s, R"(
+      {
+         "Info": {
+            "Title": "Attack From Mars",
+            "Description": "The classic table",
+            "Authors": ["Author One", "Author Two"],
+            "Manufacturer": "Bally",
+            "Year": 1995,
+            "VPSId": "afm_113",
+            "IPDBId": "3781"
+         },
+         "User": {
+            "Rating": 9,
+            "Favorite": 1,
+            "LastRun": "2024-05-01T10:00:00Z",
+            "StartCount": 42,
+            "RunTime": 3600,
+            "Tags": ["SS", "Classic"]
+         },
+         "VPX": {
+            "Version": "1.0",
+            "LastRun": "2024-05-02T10:00:00Z",
+            "StartCount": 12,
+            "RunTime": 1800
+         }
+      })");
+   writeFile(folderA / "medias"sv / "(Playfield) Attack From Mars.png"s);
+   writeFile(folderA / "medias"sv / "(Wheel) Attack From Mars.png"s);
+   writeFile(folderA / "medias"sv / "(AudioLaunch) intro.mp3"s); // unsupported: audio is not rendered
+   writeFile(folderA / "medias"sv / "(GameInfo) clip.f4v"s); // f4v is a supported video (PinballY convention)
+   writeFile(folderA / "medias"sv / "(Playfield) clip.mp4"s); // video is favored over the still
+   writeFile(folderA / "medias"sv / "(Topper) clip.mp4"s); // video media, played through the shared decoding service
+   writeFile(folderA / "medias"sv / "(Playfield) decoy.vpx"s); // decoy: files inside medias are never tables
+   // An APNG file: 'acTL' animation control chunk between IHDR and the first IDAT
+   const string apng = "\x89PNG\r\n\x1a\n"s + "\x00\x00\x00\x0DIHDR"s + string(17, '\0')
+      + "\x00\x00\x00\x08"
+        "acTL"s
+      + string(12, '\0') + "\x00\x00\x00\x00IDAT"s;
+   writeFile(folderA / "medias"sv / "(Wheel) animated.png"s, apng); // animated image is favored over the still
+   writeFile(folderA / "medias"sv / "(Other) alt.apng"s); // .apng is a supported extension
+
+   // A loose table file with an info file named after it
+   writeFile(root / "Medieval Madness.vpx"s);
+   writeFile(root / "Medieval Madness.info"s, R"({ "Info": { "Title": "Medieval Madness", "Year": "1997" } })");
+
+   // A table nested deeper, without any companion file
+   writeFile(root / "nested"sv / "deep"sv / "Congo.vpx"s);
+
+   // VPZ packs: a folder holding a manifest, and an archive file
+   writeFile(root / "Funhouse Pack"sv / "manifest.json"s, "{}"s);
+   writeFile(root / "The Addams Family.vpz"s);
+
+   TableCatalog catalog;
+   catalog.Scan({ root, root / "does-not-exist"sv });
+   const auto& entries = catalog.GetEntries();
+
+   REQUIRE(entries.size() == 5);
+
+   const auto findByStem = [&entries](const string& stem) -> const TableCatalog::Entry*
+   {
+      for (const auto& entry : entries)
+         if (PathToUTF8(entry.tablePath.stem()) == stem)
+            return &entry;
+      return nullptr;
+   };
+
+   SUBCASE("entries are sorted by display title")
+   {
+      CHECK(PathToUTF8(entries[0].tablePath.stem()) == "Attack From Mars v1.0"s);
+      CHECK(PathToUTF8(entries[1].tablePath.stem()) == "Congo"s);
+      CHECK(PathToUTF8(entries[2].tablePath.stem()) == "Funhouse Pack"s);
+      CHECK(PathToUTF8(entries[3].tablePath.stem()) == "Medieval Madness"s);
+      CHECK(PathToUTF8(entries[4].tablePath.stem()) == "The Addams Family"s);
+   }
+
+   SUBCASE("info file named after the folder is found and parsed")
+   {
+      const TableCatalog::Entry* entry = findByStem("Attack From Mars v1.0"s);
+      REQUIRE(entry != nullptr);
+      CHECK(entry->hasInfoFile);
+      CHECK(!entry->isPack);
+      CHECK(PathToUTF8(entry->infoPath.filename()) == "Attack From Mars (Bally 1995).info"s);
+      CHECK(entry->title == "Attack From Mars"s);
+      CHECK(entry->info.manufacturer == "Bally"s);
+      CHECK(entry->info.year == 1995);
+      CHECK(entry->info.authors.size() == 2);
+      CHECK(entry->info.authors[1] == "Author Two"s);
+      CHECK(entry->info.vpsId == "afm_113"s);
+      CHECK(entry->info.ipdbId == "3781"s);
+      CHECK(entry->info.description == "The classic table"s);
+      CHECK(entry->user.rating == 9);
+      CHECK(entry->user.favorite);
+      CHECK(entry->user.startCount == 42);
+      CHECK(entry->user.runTime == 3600);
+      CHECK(entry->user.tags.size() == 2);
+      CHECK(entry->vpx.version == "1.0"s);
+      CHECK(entry->vpx.startCount == 12);
+   }
+
+   SUBCASE("medias are located per type")
+   {
+      const TableCatalog::Entry* entry = findByStem("Attack From Mars v1.0"s);
+      REQUIRE(entry != nullptr);
+      CHECK(entry->HasMedia(TableCatalog::MediaType::Playfield));
+      CHECK(entry->HasMedia(TableCatalog::MediaType::Wheel));
+      CHECK(!entry->HasMedia(TableCatalog::MediaType::Backglass));
+      CHECK(!entry->HasMedia(TableCatalog::MediaType::AudioLaunch)); // dropped: unsupported audio format
+      CHECK(entry->HasMedia(TableCatalog::MediaType::Topper));
+      CHECK(PathToUTF8(entry->GetMedia(TableCatalog::MediaType::Playfield).filename()) == "(Playfield) clip.mp4"s); // the video wins over the still
+      CHECK(PathToUTF8(entry->GetMedia(TableCatalog::MediaType::Wheel).filename()) == "(Wheel) animated.png"s); // the animated image wins over the still
+      CHECK(PathToUTF8(entry->GetMedia(TableCatalog::MediaType::GameInfo).filename()) == "(GameInfo) clip.f4v"s);
+      CHECK(PathToUTF8(entry->GetMedia(TableCatalog::MediaType::Topper).filename()) == "(Topper) clip.mp4"s);
+      CHECK(PathToUTF8(entry->GetMedia(TableCatalog::MediaType::Other).filename()) == "(Other) alt.apng"s);
+   }
+
+   SUBCASE("animated images are detected by their content")
+   {
+      CHECK(TableCatalog::IsAnimatedImageFile(folderA / "medias"sv / "(Wheel) animated.png"s));
+      CHECK(!TableCatalog::IsAnimatedImageFile(folderA / "medias"sv / "(Wheel) Attack From Mars.png"s));
+      CHECK(!TableCatalog::IsAnimatedImageFile(folderA / "medias"sv / "(Other) alt.apng"s)); // empty file: no animation chunks
+      CHECK(!TableCatalog::IsAnimatedImageFile(folderA / "medias"sv / "(Playfield) clip.mp4"s));
+      CHECK(TableCatalog::IsAnimatedMediaFile(folderA / "medias"sv / "(Playfield) clip.mp4"s)); // videos count as animated medias
+      CHECK(!TableCatalog::IsAnimatedMediaFile(folderA / "medias"sv / "(Wheel) Attack From Mars.png"s));
+   }
+
+   SUBCASE("info file named after the table file is found")
+   {
+      const TableCatalog::Entry* entry = findByStem("Medieval Madness"s);
+      REQUIRE(entry != nullptr);
+      CHECK(entry->hasInfoFile);
+      CHECK(PathToUTF8(entry->infoPath.filename()) == "Medieval Madness.info"s);
+      CHECK(entry->info.year == 1997); // year given as a string still parses
+   }
+
+   SUBCASE("tables without info file get the default companion path")
+   {
+      const TableCatalog::Entry* entry = findByStem("Congo"s);
+      REQUIRE(entry != nullptr);
+      CHECK(!entry->hasInfoFile);
+      CHECK(entry->title == "Congo"s);
+      CHECK(PathToUTF8(entry->infoPath.filename()) == "Congo.info"s);
+   }
+
+   SUBCASE("folder and archive VPZ packs are discovered")
+   {
+      const TableCatalog::Entry* folderPack = findByStem("Funhouse Pack"s);
+      REQUIRE(folderPack != nullptr);
+      CHECK(folderPack->isPack);
+      const TableCatalog::Entry* zipPack = findByStem("The Addams Family"s);
+      REQUIRE(zipPack != nullptr);
+      CHECK(zipPack->isPack);
+   }
+
+   SUBCASE("edited info file round-trips and preserves other sections")
+   {
+      const TableCatalog::Entry* entry = findByStem("Attack From Mars v1.0"s);
+      REQUIRE(entry != nullptr);
+      TableCatalog::Entry edited = *entry;
+      edited.info.title = "Attack From Mars (Remastered)"s;
+      edited.info.description = "Edited description"s;
+      edited.info.authors = { "New Author"s };
+      edited.info.manufacturer = "Midway"s;
+      edited.info.year = 1996;
+      edited.user.rating = 7;
+      edited.user.favorite = false;
+      edited.user.tags = { "Edited"s };
+      REQUIRE(TableCatalog::SaveInfoFile(edited));
+
+      TableCatalog::Entry reloaded;
+      reloaded.infoPath = entry->infoPath;
+      reloaded.hasInfoFile = true;
+      TableCatalog::ReadInfoFile(reloaded);
+      CHECK(reloaded.info.title == "Attack From Mars (Remastered)"s);
+      CHECK(reloaded.info.description == "Edited description"s);
+      CHECK(reloaded.info.authors.size() == 1);
+      CHECK(reloaded.info.manufacturer == "Midway"s);
+      CHECK(reloaded.info.year == 1996);
+      CHECK(reloaded.info.vpsId == "afm_113"s);
+      CHECK(reloaded.user.rating == 7);
+      CHECK(!reloaded.user.favorite);
+      CHECK(reloaded.user.tags.size() == 1);
+      // Engine maintained stats are preserved, not written back
+      CHECK(reloaded.vpx.version == "1.0"s);
+      CHECK(reloaded.vpx.startCount == 12);
+      CHECK(reloaded.user.startCount == 42);
+      CHECK(reloaded.user.lastRun == "2024-05-01T10:00:00Z"s);
+   }
+
+   SUBCASE("info file is created when missing")
+   {
+      const TableCatalog::Entry* entry = findByStem("Congo"s);
+      REQUIRE(entry != nullptr);
+      REQUIRE(!entry->hasInfoFile);
+      TableCatalog::Entry edited = *entry;
+      edited.info.title = "Congo (Williams 1995)"s;
+      REQUIRE(TableCatalog::SaveInfoFile(edited));
+      TableCatalog::Entry reloaded;
+      reloaded.infoPath = entry->infoPath;
+      TableCatalog::ReadInfoFile(reloaded);
+      CHECK(reloaded.info.title == "Congo (Williams 1995)"s);
+   }
+}
