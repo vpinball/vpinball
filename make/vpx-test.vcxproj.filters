@@ -68,6 +68,9 @@
     <ClCompile Include="../../tests/core/test-settings.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/core/test-tablecatalog.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/core/test-tabledb.cpp">
       <Filter>core</Filter>
     </ClCompile>
