@@ -92,9 +92,10 @@ private:
    bool m_isDraggingScroll = false;
    ImGuiID m_dragScrollPaneId = 0; // Pane that owns the current drag gesture
    ImVec2 m_dragScrollStartPos { 0.f, 0.f };
+   float m_dragScrollStartScrollY = 0.f; // Pane scroll offset when the drag was armed
    float m_dragScrollVelocity = 0.f; // px/s, for the inertial glide after release
    static bool IsWidgetActive();
-   ImGuiID m_dragPassThroughId = 0; // Last pressed whole-row button: a drag-scroll may start on it (the press is then cancelled)
+   ImGuiID m_dragPassThroughId = 0; // Last pressed whole-row button: a drag-scroll may start on it (the press is cancelled once the pane really scrolls)
    string m_lastNavPath; // Navigation path as of the last rendered frame (level resets on change)
    struct TabNav
    {

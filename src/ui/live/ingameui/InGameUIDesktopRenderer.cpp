@@ -1102,7 +1102,9 @@ bool InGameUIDesktopRenderer::IsWidgetActive()
 
 void InGameUIDesktopRenderer::UpdateDragScroll()
 {
-   constexpr float kDragThreshold = 6.f; // px before we commit to a drag
+   // Deadzone before a press commits to a drag, much wider for the VR pointer:
+   // its controller aim always drifts a few px while the trigger is pulled
+   const float kDragThreshold = (m_player->IsVR() ? 24.f : 6.f) * m_player->m_liveUI->GetDPI();
    constexpr float kFriction = 8.f; // deceleration rate (higher = quicker stop)
    constexpr float kVelocitySmooth = 0.2f; // EMA weight for velocity sampling
    const ImGuiIO& io = ImGui::GetIO();
@@ -1114,6 +1116,7 @@ void InGameUIDesktopRenderer::UpdateDragScroll()
       m_isDraggingScroll = false;
       m_dragScrollPaneId = paneId;
       m_dragScrollStartPos = ImGui::GetMousePos();
+      m_dragScrollStartScrollY = ImGui::GetScrollY();
       m_dragScrollVelocity = 0.f;
    }
    if (paneId != m_dragScrollPaneId)
@@ -1148,14 +1151,17 @@ void InGameUIDesktopRenderer::UpdateDragScroll()
             return;
          }
          m_isDraggingScroll = true;
-         if (activeId != 0)
-            ImGui::ClearActiveID(); // The pressed row must not fire when released after a drag
       }
    }
    else
    {
       const float dy = io.MouseDelta.y;
       ImGui::SetScrollY(ImGui::GetScrollY() - dy);
+      // The press turns into a scroll only once the pane really moved away from
+      // its press offset: aim drift during a trigger pull (VR), or a drag a
+      // pane at its scroll limits cannot follow, must not eat the click
+      if (ImGui::GetActiveID() != 0 && fabsf(ImGui::GetScrollY() - m_dragScrollStartScrollY) > kDragThreshold)
+         ImGui::ClearActiveID(); // The pressed row must not fire when released after a drag
       const float frameVel = (elapsedS > 0.f) ? (-dy / elapsedS) : 0.f;
       m_dragScrollVelocity = m_dragScrollVelocity * (1.f - kVelocitySmooth) + frameVel * kVelocitySmooth;
    }
