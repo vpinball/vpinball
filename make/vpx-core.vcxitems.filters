@@ -67,6 +67,9 @@
     <Filter Include="ui\live\editor\ops">
       <UniqueIdentifier>{7B4E9A21-3C5D-4E8F-A6B2-9D1F0C5E7A83}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ui\live\frontend">
+      <UniqueIdentifier>{87193B12-0BF6-4254-A162-E35A09D8793F}</UniqueIdentifier>
+    </Filter>
     <Filter Include="ui\live\ingame">
       <UniqueIdentifier>{6DF89AE6-299E-4F7E-A729-9188AD1D98F1}</UniqueIdentifier>
     </Filter>
@@ -702,6 +705,12 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ViewportSidebar.cpp">
       <Filter>ui\live\editor</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendMedia.cpp">
+      <Filter>ui\live\frontend</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendTheme.cpp">
+      <Filter>ui\live\frontend</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
@@ -721,6 +730,15 @@
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendHomePage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendTablePage.cpp">
+      <Filter>ui\live\ingame</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendThemesPage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.cpp">
@@ -1925,6 +1943,12 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ViewportSidebar.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendMedia.h">
+      <Filter>ui\live\frontend</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendTheme.h">
+      <Filter>ui\live\frontend</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
@@ -1944,6 +1968,15 @@
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendHomePage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendTablePage.h">
+      <Filter>ui\live\ingame</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendThemesPage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.h">

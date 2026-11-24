@@ -130,6 +130,7 @@
     <ClCompile Include="../../tests/ui/test-arc.cpp" />
     <ClCompile Include="../../tests/ui/test-arealayout.cpp" />
     <ClCompile Include="../../tests/ui/test-bevel.cpp" />
+    <ClCompile Include="../../tests/ui/test-frontendtheme.cpp" />
     <ClCompile Include="../../tests/ui/test-referenceimage.cpp" />
     <ClCompile Include="../../tests/ui/test-scriptanalysis.cpp" />
     <ClCompile Include="../../tests/ui/test-wallcircle.cpp" />
