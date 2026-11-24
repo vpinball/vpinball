@@ -519,7 +519,7 @@ void Player::BeginStartupLoadingScreen()
    m_isStartupLoading = true;
    m_startupLoadingPhase = "Initializing physics"s;
    if (!m_liveUI->m_inGameUI.IsOpened())
-      m_liveUI->m_inGameUI.Open("loading"s);
+      m_liveUI->m_inGameUI.Open("progress/loading"s);
    m_playfieldWnd->Show();
    m_playfieldWnd->RaiseAndFocus();
    UpdateStartupLoadingScreen(m_startupLoadingPhase);
@@ -1012,7 +1012,7 @@ void Player::InitTableSession(const bool isInitial)
             {
                m_isLoading = true;
                if (!m_liveUI->m_inGameUI.IsOpened())
-                  m_liveUI->m_inGameUI.Open("loading"s);
+                  m_liveUI->m_inGameUI.Open("progress/preparing"s);
                m_playfieldWnd->Show();
                m_playfieldWnd->RaiseAndFocus();
             }

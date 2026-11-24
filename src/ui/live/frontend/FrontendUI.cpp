@@ -9,6 +9,7 @@
 #include "core/extern.h"
 #include "core/FileLocator.h"
 #include "core/VPApp.h"
+#include "imgui/imgui_internal.h"
 #include "parts/pintable.h"
 #include "renderer/Sampler.h"
 #include "renderer/Texture.h"
@@ -16,6 +17,7 @@
 #include "ui/live/IconsLucide.h"
 #include "ui/live/ImGuiHelpers.h"
 #include "ui/live/ingameui/InGameUIWidgets.h"
+#include "ui/live/ingameui/LoadingPage.h"
 #include "ui/live/LiveUI.h"
 #include "ui/VPXFileFeedback.h"
 
@@ -32,6 +34,11 @@ FrontendUI::FrontendUI(LiveUI &liveUI)
 
 FrontendUI::~FrontendUI()
 {
+   // An in-flight asynchronous table load must not keep a stale owner: once flagged abandoned the
+   // worker releases the loaded table itself, and a completed result is released right away
+   if (m_tableLoad)
+      if (PinTable *const table = (m_tableLoad->abandoned.store(true), m_tableLoad->table.exchange(nullptr)))
+         table->Release();
    if (m_auxSubscribed)
    {
       m_msgApi->UnsubscribeMsg(m_auxRendererMsgId, OnGetAuxRenderer, this);
@@ -148,6 +155,10 @@ VPXTexture FrontendUI::GetAuxTexture(const std::filesystem::path &path)
    return m_auxTextures.emplace(path, texture).first->second;
 }
 
+// The table played or edited by the previous session: a fresh frontend session (each
+// session has its own FrontendUI instance) puts the wheel back on it when it rescans
+static std::filesystem::path s_resumeTablePath;
+
 void FrontendUI::Rescan()
 {
    vector<std::filesystem::path> roots;
@@ -165,35 +176,83 @@ void FrontendUI::Rescan()
    }
    m_catalog.Scan(roots);
    m_selected = std::clamp(m_selected, 0, std::max(0, static_cast<int>(m_catalog.GetEntries().size()) - 1));
+   // Back from a played/edited table: put the wheel back on it (the path is the stable
+   // identity across the rescan, and the stored slot is consumed, not kept)
+   if (!s_resumeTablePath.empty())
+   {
+      const auto &entries = m_catalog.GetEntries();
+      for (int i = 0; i < static_cast<int>(entries.size()); ++i)
+         if (entries[i].tablePath == s_resumeTablePath)
+         {
+            m_selected = i;
+            m_wheelPos = static_cast<float>(i);
+            break;
+         }
+      s_resumeTablePath.clear();
+   }
    m_scanned = true;
 }
 
 void FrontendUI::LaunchSession(const Player::PlayMode playMode)
 {
-   const auto &entries = m_catalog.GetEntries();
-   if (entries.empty() || m_selected < 0 || m_selected >= static_cast<int>(entries.size()))
+   const TableCatalog::Entry *const entry = GetSelected();
+   if (entry == nullptr || m_tableLoad)
       return;
-
-   CComObject<PinTable> *table;
-   CComObject<PinTable>::CreateInstance(&table);
-   table->AddRef();
-   VPXFileFeedback feedback;
-   const HRESULT hr = table->LoadGameFromFilename(entries[m_selected].tablePath, feedback);
-   if (FAILED(hr) && (hr != APPX_E_BLOCK_HASH_INVALID) && (hr != APPX_E_CORRUPT_CONTENT))
-   {
-      table->Release();
-      m_liveUI.PushNotification(std::format("Failed to load table '{}'", entries[m_selected].title), 4000);
-      return;
-   }
 
    // Keep the VR state when playing from an XR frontend; edit sessions stay on the desktop as the
    // live editor is not available inside the headset
    const Player::VROverride vr = m_player->IsVR() && playMode == Player::PlayMode::Play ? Player::VROverride::ForceOn : Player::VROverride::Auto;
-   m_player->RequestSessionRestart(table, playMode, vr, false);
+   BeginTableLoad(*entry, playMode, vr);
+}
+
+void FrontendUI::BeginTableLoad(const TableCatalog::Entry &entry, const Player::PlayMode playMode, const Player::VROverride vr)
+{
+   const auto load = std::make_shared<PendingTableLoad>();
+   load->playMode = playMode;
+   load->vr = vr;
+   load->title = entry.title;
+   const std::filesystem::path tablePath = entry.tablePath;
+   m_tableLoad = load;
+   s_resumeTablePath = tablePath; // The next frontend session puts the wheel back on it
+
+   // The table file is parsed on a worker thread: the load may take seconds on a full
+   // featured table, and the loading screen keeps giving the user feedback meanwhile
+   std::thread(
+      [load, tablePath]()
+      {
+         CComObject<PinTable> *table;
+         CComObject<PinTable>::CreateInstance(&table);
+         table->AddRef();
+         VPXFileFeedback feedback;
+         const HRESULT hr = table->LoadGameFromFilename(tablePath, feedback);
+         PinTable *const loaded = FAILED(hr) && (hr != APPX_E_BLOCK_HASH_INVALID) && (hr != APPX_E_CORRUPT_CONTENT) ? nullptr : table;
+         if (loaded == nullptr)
+            table->Release();
+         load->table.store(loaded, std::memory_order_release);
+         load->done.store(true, std::memory_order_release);
+         // The owner may have been destroyed while the file was being parsed: it never polls
+         // the result anymore, the loaded table is released here instead of being adopted
+         if (load->abandoned.load(std::memory_order_acquire))
+            if (PinTable *const t = load->table.exchange(nullptr))
+               t->Release();
+      })
+      .detach();
+
+   // The loading screen gives feedback while the file parses, rendered by the frontend itself:
+   // back navigation is suspended (see OnNavigateBack) until the load completes
+   m_player->m_isLoading = true;
+   if (m_liveUI.IsInGameUIOpened())
+      m_liveUI.m_inGameUI.Close();
+   m_loadingPage = std::make_unique<InGameUI::LoadingPage>("LOADING"s);
+   m_loadingPage->Open(false);
 }
 
 bool FrontendUI::OnNavigateBack()
 {
+   // The loading screen is the navigation root while a table file is parsed: back is suspended
+   if (m_tableLoad)
+      return true;
+
    return false;
 }
 
@@ -233,8 +292,9 @@ void FrontendUI::ApplyWheelDrag(const float deltaX, const float pxPerCell)
 
 void FrontendUI::HandleInput()
 {
-   // The in-game UI chrome owns the input while it is open over the wheel
-   if (m_liveUI.IsInGameUIOpened())
+   // The in-game UI chrome owns the input while it is open over the wheel, and the loading
+   // screen suspends it while a table file is being parsed
+   if (m_liveUI.IsInGameUIOpened() || m_tableLoad)
    {
       m_wheelNavDir = m_wheelNavSince = 0;
       return;
@@ -422,6 +482,27 @@ void FrontendUI::Update()
 {
    if (m_player == nullptr)
       m_player = g_pplayer;
+
+   // An asynchronous table load completes on the main thread: adopt the result into a session
+   // switch, or report the failure back on the wheel. The loading screen stays up through a
+   // successful switch, the new session showing its own preparation screen when needed
+   if (m_tableLoad && m_tableLoad->done.load(std::memory_order_acquire))
+   {
+      const std::shared_ptr<PendingTableLoad> load = std::move(m_tableLoad);
+      PinTable *const table = load->table.exchange(nullptr);
+      load->abandoned.store(true, std::memory_order_release);
+      if (table != nullptr)
+      {
+         m_player->RequestSessionRestart(table, load->playMode, load->vr, false);
+      }
+      else
+      {
+         m_player->m_isLoading = false;
+         m_loadingPage.reset();
+         m_liveUI.PushNotification(std::format("Failed to load table '{}'", load->title), 4000);
+      }
+   }
+
    if (m_media == nullptr)
       m_media = std::make_unique<FrontendMedia>(m_player->m_renderer->m_renderDevice);
    SetupAuxRenderer();
@@ -469,7 +550,7 @@ void FrontendUI::Update()
    // center of the screen, only in desktop mode (there is no mouse in VR; exiting is done from
    // the stereo toggle or the table actions page), when a VR session can actually run (runtime
    // and HMD probed above)
-   if (m_vrAvailable && !m_player->IsVR() && !m_liveUI.IsInGameUIOpened())
+   if (m_vrAvailable && !m_player->IsVR() && m_tableLoad == nullptr && !m_liveUI.IsInGameUIOpened())
    {
       const ImVec2 size = IconButtonInkSize(ICON_LC_RECTANGLE_GOGGLES);
       ImGui::SetCursorPos(ImVec2((io.DisplaySize.x - size.x) * 0.5f, 8.f * m_liveUI.GetDPI()));
@@ -481,6 +562,22 @@ void FrontendUI::Update()
 #endif
    ImGui::End();
    ImGui::PopStyleColor();
+
+   // The loading page is rendered directly by the frontend while the table file parses on its
+   // worker thread (the in-game UI stays closed: it would swallow the frontend's input)
+   if (m_loadingPage != nullptr)
+   {
+      // Its window may sit below the opaque frontend one in ImGui's creation ordered window list
+      // (the session's own startup loading screen created it first): hoist it on top
+      if (ImGuiWindow *const wnd = ImGui::FindWindowByName("##LoadingScreen"))
+         ImGui::BringWindowToDisplayFront(wnd);
+      m_loadingPage->Update(io.DeltaTime);
+      vector<InGameUI::InGameUIPane> panes;
+      m_loadingPage->CollectPanes(panes);
+      for (InGameUI::InGameUIPane &pane : panes)
+         if (pane.placement == InGameUI::InGameUIPane::Placement::Modal && pane.render)
+            pane.render(ImVec4(0.f, 0.f, io.DisplaySize.x, io.DisplaySize.y));
+   }
 }
 
 FrontendUI::Presentation FrontendUI::ResolvePresentation() const
@@ -911,7 +1008,8 @@ void FrontendUI::DrawInfoBand()
    // desktop renderer's shared bottom bar (same band height and chip styling)
    vector<InGameUI::DesktopHint> hints { { "Flippers", "navigate" }, { "Magna", "letter" }, { "Start", "table actions" }, { "Launch", "play" }, { "Esc", "quit" } };
    if (IsVRAvailable())
-      hints.insert(hints.end() - 1, { "Stereo", m_player->IsVR() ? "desktop" : "VR" });   InGameUI::RenderDesktopHintBar(m_player, drawList, ImVec2(0.f, io.DisplaySize.y - InGameUI::DesktopHintBarHeight(m_player)), io.DisplaySize.x, hints);
+      hints.insert(hints.end() - 1, { "Stereo", m_player->IsVR() ? "desktop" : "VR" });
+   InGameUI::RenderDesktopHintBar(m_player, drawList, ImVec2(0.f, io.DisplaySize.y - InGameUI::DesktopHintBarHeight(m_player)), io.DisplaySize.x, hints);
 }
 
 void FrontendUI::DrawInfoPane(const TableCatalog::Entry *const selected, const ImVec2 &pos, const ImVec2 &size)

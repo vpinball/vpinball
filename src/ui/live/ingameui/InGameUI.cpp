@@ -47,7 +47,8 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("table/media"s, []() { return std::make_unique<FrontendMediaManagerPage>(); });
    AddPage("settings/themes"s, []() { return std::make_unique<FrontendThemesPage>(); });
    AddPage("homepage"s, []() { return std::make_unique<HomePage>(); });
-   AddPage("loading"s, []() { return std::make_unique<LoadingPage>(); });
+   AddPage("progress/loading"s, []() { return std::make_unique<LoadingPage>("LOADING"s); });
+   AddPage("progress/preparing"s, []() { return std::make_unique<LoadingPage>("PREPARING"s); });
    AddPage("settings/audio"s, []() { return std::make_unique<AudioSettingsPage>(); });
    AddPage("settings/cabinet"s, []() { return std::make_unique<CabinetSettingsPage>(); });
    AddPage("settings/display_profiles"s, []() { return std::make_unique<DisplayProfileSettingsPage>(); });
