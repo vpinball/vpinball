@@ -65,7 +65,9 @@ MediaPlayer::MediaPlayer(const char* path)
    {
       m_videoContext = OpenStream(m_videoStream);
       if (m_videoContext == nullptr)
+      {
          PLOGE << "MediaPlayer: unable to open video stream: " << path;
+      }
    }
 
    if (m_videoStream >= 0)
@@ -74,7 +76,9 @@ MediaPlayer::MediaPlayer(const char* path)
       if (m_audioStream < 0)
       {
          if (m_audioStream == AVERROR_DECODER_NOT_FOUND)
+	 {
             PLOGE << "MediaPlayer: no audio stream found: " << path;
+	 }
          m_audioStream = -1;
       }
    }
@@ -94,7 +98,9 @@ MediaPlayer::MediaPlayer(const char* path)
    {
       m_audioContext = OpenStream(m_audioStream);
       if (m_audioContext == nullptr)
+      {
          PLOGE << "MediaPlayer: unable to open audio stream: " << path;
+      }
    }
 
    if (!m_videoContext && !m_audioContext)
@@ -249,7 +255,9 @@ int MediaPlayer::Read(MediaOutput* output)
          else if (m_packet->stream_index == m_audioStream)
             codecContext = m_audioContext;
          if (codecContext && m_libAV._avcodec_send_packet(codecContext, m_packet) != 0)
+	 {
             PLOGE << "MediaPlayer: unable to send packet";
+	 }
          m_libAV._av_packet_unref(m_packet);
          ReceiveFrames(m_audioContext);
          ReceiveFrames(m_videoContext);
