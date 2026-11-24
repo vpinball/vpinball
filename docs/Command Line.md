@@ -19,6 +19,7 @@ VPX supports the following command line options:
 | | |
 | -Edit [filename]         | Load file into VP (Windows editor build only) |
 | -LiveEdit [opt filename] | Start in live editor mode. If a filename is provided, loads it as the table to edit |
+| -Frontend                | Start in the mini frontend mode (see [Frontend.md](Frontend.md)) |
 | -Play [filename]         | Load and play file |
 | | |
 | -PovEdit [filename]      | Load and run file in live editing mode, then export new pov on exit |

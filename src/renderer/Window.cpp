@@ -552,6 +552,10 @@ void RenderOutput::SetMode(const Settings& settings, OutputMode mode)
 #endif
    std::unique_ptr<Window> prevWindow;
    m_mode = (mode == OM_WINDOW && isSingleView) ? OM_EMBEDDED : mode;
+   // The frontend renders on the playfield window: embedded ancillary panes would
+   // overlay the wheel — only actual ancillary windows are kept for its media
+   if (m_mode == OM_EMBEDDED && g_pplayer != nullptr && g_pplayer->m_playMode == Player::PlayMode::Frontend)
+      m_mode = OM_DISABLED;
    switch (m_mode)
    {
    case OM_DISABLED:

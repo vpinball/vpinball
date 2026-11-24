@@ -1114,7 +1114,7 @@ void Player::InitTableSession(const bool isInitial)
    m_pluginAPI.OnGameStart();
 
    // Update the play statistics of the frontend info file along the table (see docs/FileLayout.md)
-   m_trackTableSessionStats = !IsEditorMode() && (m_playMode != PlayMode::CaptureAttract);
+   m_trackTableSessionStats = !IsEditorMode() && (m_playMode != PlayMode::CaptureAttract) && (m_playMode != PlayMode::Frontend);
    m_tableSessionPlayTime = 0;
    m_tableSessionStartTime = (m_trackTableSessionStats && m_playing) ? SDL_GetTicksNS() / 1000 : 0;
    if (m_trackTableSessionStats)

@@ -339,6 +339,59 @@ void LiveEditCommand::Execute()
 }
 
 
+void FrontendCommand::Execute()
+{
+   // The frontend's next session starts in the VR state the last ended session was actually in
+   Player::VROverride resumeVR = Player::VROverride::Auto;
+   for (;;)
+   {
+      // Host a frontend session on a synthetic empty table, then follow the session switches it
+      // requests (playing or editing a table). When a session started from the frontend ends, loop
+      // back to a new frontend session; when the frontend session itself ends, leave the app.
+      CComObject<PinTable>* table;
+      CComObject<PinTable>::CreateInstance(&table);
+      table->AddRef();
+      table->m_title = "Visual Pinball"s;
+      table->GetSettings().SetIniPath(std::filesystem::path()); // No per-table settings file on the frontend table
+
+      Player::SessionSwitch sessionSwitch;
+      sessionSwitch.table = table;
+      sessionSwitch.playMode = Player::PlayMode::Frontend;
+      sessionSwitch.vr = resumeVR;
+      bool lastSessionWasFrontend = false;
+      while (sessionSwitch.table != nullptr)
+      {
+         lastSessionWasFrontend = (sessionSwitch.playMode == Player::PlayMode::Frontend);
+         PinTable* sessionTable = sessionSwitch.table;
+         const Player::PlayMode sessionMode = sessionSwitch.playMode;
+         const Player::VROverride sessionVR = sessionSwitch.vr;
+         const bool openEditor = sessionSwitch.openEditor;
+         vector<Player::StackedTable> suspended = std::move(sessionSwitch.suspended);
+         sessionSwitch = Player::SessionSwitch();
+         {
+            LoadProgress loadProgress;
+            auto player = std::make_unique<Player>(sessionTable, sessionMode, loadProgress, sessionVR);
+            player->AdoptSuspendedSessions(std::move(suspended));
+            {
+               ScopedUserMessageSink msgSink(player->m_liveUI);
+               if (openEditor)
+                  player->m_liveUI->OpenEditorUI();
+               player->GameLoop();
+            }
+            player->TakeTableSwitch(sessionSwitch);
+            // A session that ends without a switch sends the host back to the frontend, which
+            // resumes in the VR state the ended session was actually in (XR frontend round trip)
+            if (sessionSwitch.table == nullptr)
+               resumeVR = player->IsVR() ? Player::VROverride::ForceOn : Player::VROverride::Auto;
+         }
+         sessionTable->Release();
+      }
+      if (lastSessionWasFrontend)
+         return;
+   }
+}
+
+
 CaptureAttractCommand::CaptureAttractCommand(const std::filesystem::path& tableFilename, int nFrames, int framesPerSecond, bool cutToLoop)
    : TableBasedCommand(tableFilename)
    , m_nFrames(nFrames)
@@ -459,6 +512,7 @@ enum option_names
    OPTION_EDIT,
 #endif
    OPTION_LIVE_EDIT,
+   OPTION_FRONTEND,
    OPTION_PLAY,
    OPTION_POVEDIT,
    OPTION_POV,
@@ -509,6 +563,7 @@ static const CommandLineOption options[] = {
 #endif
    { OPTION_LIVE_EDIT, "LiveEdit"s,
       "[opt filename]  Start in live editor mode. if a filename is provided, loads it as the table to edit. WARNING Unstable feature only provided for early testing"s },
+   { OPTION_FRONTEND, "Frontend"s, "Start in the mini frontend mode"s },
    { OPTION_PLAY, "Play"s, "[filename]  Load and play file"s },
    { OPTION_POVEDIT, "PovEdit"s, "[filename]  Load and run file in live editing mode, then export new pov on exit"s },
    { OPTION_POV, "Pov"s, "[filename]  Load, export pov and close"s },
@@ -772,6 +827,8 @@ void CommandLineProcessor::ProcessCommandLine(int nArgs, const char* szArglist[]
             commands.push_back(std::make_unique<LiveEditCommand>());
          }
          break;
+
+      case OPTION_FRONTEND: commands.push_back(std::make_unique<FrontendCommand>()); break;
 
       case OPTION_POVEDIT:
       case OPTION_PLAY:

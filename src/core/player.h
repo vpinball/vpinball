@@ -74,7 +74,8 @@ public:
       EditPOV,
       LiveEdit,
       FullEdit,
-      CaptureAttract
+      CaptureAttract,
+      Frontend // Mini frontend session, running on a synthetic empty table (no table file loaded)
    };
 
    // Overrides for the PlayerVR.AskToTurnOn setting (and the forced-off rule of the edit modes) when a
