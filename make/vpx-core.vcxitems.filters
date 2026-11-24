@@ -705,7 +705,13 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ViewportSidebar.cpp">
       <Filter>ui\live\editor</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendDesktopRenderer.cpp">
+      <Filter>ui\live\frontend</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendMedia.cpp">
+      <Filter>ui\live\frontend</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendUI.cpp">
       <Filter>ui\live\frontend</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendTheme.cpp">
@@ -733,9 +739,6 @@
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendHomePage.cpp">
-      <Filter>ui\live\ingame</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendTablePage.cpp">
       <Filter>ui\live\ingame</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendThemesPage.cpp">
@@ -1943,7 +1946,13 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ViewportSidebar.h">
       <Filter>ui\live\editor</Filter>
     </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendDesktopRenderer.h">
+      <Filter>ui\live\frontend</Filter>
+    </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendMedia.h">
+      <Filter>ui\live\frontend</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendUI.h">
       <Filter>ui\live\frontend</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendTheme.h">
@@ -1971,9 +1980,6 @@
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendHomePage.h">
-      <Filter>ui\live\ingame</Filter>
-    </ClInclude>
-    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendTablePage.h">
       <Filter>ui\live\ingame</Filter>
     </ClInclude>
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendThemesPage.h">

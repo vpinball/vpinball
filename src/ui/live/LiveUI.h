@@ -10,6 +10,7 @@
 #include "imgui_markdown/imgui_markdown.h"
 
 #include "PerfUI.h"
+#include "frontend/FrontendUI.h"
 #include "ingameui/InGameUI.h"
 #include "EditorUI.h"
 #include "NotificationOverlay.h"
@@ -61,7 +62,9 @@ public:
    bool IsEditorViewMode() const { return m_editorUI.IsOpened() && !m_editorUI.IsPreview(); }
    bool IsEditorBackdropViewMode() const { return m_editorUI.IsOpened() && m_editorUI.IsBackdropEditMode(); }
 
-   void OpenInGameUI(const string& page = "homepage"s);
+   // Opens the in-game UI on its navigation root (empty page = the play mode's
+   // default: the homepage in play sessions, the frontend home in frontend mode)
+   void OpenInGameUI(const string &page = ""s);
    bool IsInGameUIOpened() const { return m_inGameUI.IsOpened(); }
    bool IsGameplayInputSuspended() const { return m_inGameUI.IsGameplayInputSuspended(); }
 
@@ -88,6 +91,9 @@ public:
    // In Game UI
    VPX::InGameUI::InGameUI m_inGameUI;
 
+   // Mini frontend UI (displayed in frontend play mode)
+   VPX::Frontend::FrontendUI m_frontendUI;
+
    // Profiler display data
    PerfUI m_perfUI;
 
@@ -95,6 +101,7 @@ public:
    void SetMarkdownStartId(const unsigned int startId) { markdown_start_id = startId; }
    const ImGui::MarkdownConfig &GetMarkdownConfig() const { return markdown_config; }
    ImFont *GetOverlayFont() const { return m_overlayFont; }
+   ImFont *GetOverlayBoldFont() const { return m_overlayBoldFont; }
    ImFont *GetMonoFont() const { return m_monoFont; }
    float GetDPI() const { return m_uiScale; }
    int GetUIOrientation() const { return m_rotate; }

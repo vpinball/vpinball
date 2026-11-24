@@ -426,8 +426,12 @@ set(VPX_SOURCES
    src/ui/live/editor/ViewportSidebar.h
    src/ui/live/editor/ViewportSidebar.cpp
    
+   src/ui/live/frontend/FrontendDesktopRenderer.cpp
+   src/ui/live/frontend/FrontendDesktopRenderer.h
    src/ui/live/frontend/FrontendMedia.cpp
    src/ui/live/frontend/FrontendMedia.h
+   src/ui/live/frontend/FrontendUI.cpp
+   src/ui/live/frontend/FrontendUI.h
    src/ui/live/frontend/FrontendTheme.cpp
    src/ui/live/frontend/FrontendTheme.h
    
@@ -445,6 +449,10 @@ set(VPX_SOURCES
    src/ui/live/ingameui/DisplayProfileSettingsPage.cpp
    src/ui/live/ingameui/DisplaySettingsPage.h
    src/ui/live/ingameui/DisplaySettingsPage.cpp
+   src/ui/live/ingameui/FrontendHomePage.h
+   src/ui/live/ingameui/FrontendHomePage.cpp
+   src/ui/live/ingameui/FrontendThemesPage.h
+   src/ui/live/ingameui/FrontendThemesPage.cpp
    src/ui/live/ingameui/GraphicSettingsPage.h
    src/ui/live/ingameui/GraphicSettingsPage.cpp
    src/ui/live/ingameui/HomePage.h
