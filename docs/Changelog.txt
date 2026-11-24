@@ -17,6 +17,13 @@ FEATURES:
 - add -v command line option to just output the version and quit
 - add -CaptureAttract command line option to automatically capture an attract video
 - add -Convert command line option to convert a table between the .vpx and .vpz pack file formats
+- add -Frontend command line option to start into a new mini frontend (see docs/Frontend.md):
+  . scans the folders listed in the 'Frontend.TableFolders' setting for tables, .info files and medias, and presents them as a table wheel
+  . adapts its layout to the setup: cabinet (media broadcasted to the other displays), desktop, full single screen/mobile (touch), and XR on builds with OpenXR support
+  . tables are launched from the frontend and quitting them returns to it; tables can also be opened in the live editor
+  . table .info files can be edited, and playfield/backglass medias can be captured from a table session
+  . the frontend is opt-in for now: 'vpx' without command still starts the Windows editor
+  . themable layout: themes made of aspect ratio variant images (color keyed layout map plus optional under/overlay) are selected per display and managed from the settings; a 'base' theme is bundled
 
 - Folder layout has been redesigned:
   . Folder layout now conforms to platform requirements, with the application stored in its read-only application folder (for example 'C:\Program Files' under Windows),
