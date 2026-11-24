@@ -1021,6 +1021,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplayProfileSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendHomePage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendMediaManagerPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendTableInfoPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendTablePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendThemesPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.cpp" />
@@ -2025,6 +2028,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplayProfileSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendHomePage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendMediaManagerPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendTableInfoPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendTablePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendThemesPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.h" />

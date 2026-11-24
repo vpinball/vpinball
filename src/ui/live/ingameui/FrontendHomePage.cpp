@@ -18,6 +18,10 @@ FrontendHomePage::FrontendHomePage()
 
 void FrontendHomePage::BuildPage()
 {
+   AddItem(std::make_unique<InGameUIItem>("Table Actions"s, ""s, "frontend/table"s));
+   AddItem(std::make_unique<InGameUIItem>("Table Info"s, ""s, "table/info"s));
+   AddItem(std::make_unique<InGameUIItem>("Manage Media"s, ""s, "table/media"s));
+
    AddItem(std::make_unique<InGameUIItem>("Plugin Settings"s, ""s, "plugins/homepage"s));
 
    AddItem(std::make_unique<InGameUIItem>("Sound Settings"s, ""s, "settings/audio"s));

@@ -449,6 +449,8 @@ void InGameUIPage::ReleaseAdjustedItem()
 
 void InGameUIPage::Update(float elapsedS)
 {
+   m_wasUpdated = true;
+
    // Rebuild requests made while a slider is being dragged are held until it is released. A rebuild
    // stops the frame at the item that requested it (see the renderer's item loop), so the page is
    // drawn shorter: its scrollbar disappears, the content area gets wider and the slider's scale

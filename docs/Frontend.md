@@ -31,7 +31,6 @@ paused when it scrolls out of view; sessions that stay unused are closed.
 | Frontend.TableFolders | Semicolon separated list of root folders recursively scanned for tables |
 | Frontend.SetupDone | Set when the guided setup has been run (or skipped) |
 | Frontend.DisplaySignature | Display setup under which the guided setup was last run, used to propose the assistant again when the display setup changes |
-| Frontend.CaptureDelayMs | Delay in milliseconds after starting a table before recording a media capture (0..60000, default 5000) |
 | Frontend.Theme | Name of the theme used to lay out the frontend (empty = first theme found) |
 | Frontend.ThemeFolders | Semicolon separated list of root folders scanned for theme subfolders |
 
@@ -65,8 +64,6 @@ The Table view offers:
 - **Table Info**: a page editing the table's `.info` metadata (title, description, manufacturer,
   year, authors) and its user fields (rating, favorite, tags).
 - **Manage Media**: a page listing the discovered media of the table, with deletion.
-- **Capture media**: starts the table, waits `Frontend.CaptureDelayMs`, captures playfield and
-  backglass stills into the table's `medias` folder and returns to the frontend.
 - **Rescan tables**: scans the table folders again.
 - **Enter VR** / **Exit VR**: only on XR builds, when a headset is detected / a VR frontend session is
   running.

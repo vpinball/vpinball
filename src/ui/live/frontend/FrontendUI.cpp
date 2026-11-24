@@ -307,8 +307,10 @@ void FrontendUI::JumpLetter(const int dir)
 
 void FrontendUI::OpenActionsView()
 {
-   // The in-game UI opens on the frontend's navigation root (the chrome's table of contents)
+   // The in-game UI opens on the frontend's navigation root (the chrome's table of
+   // contents), then navigates straight to the selected table's actions page
    m_liveUI.OpenInGameUI();
+   m_liveUI.m_inGameUI.NavigateTo("frontend/table"s);
 }
 
 bool FrontendUI::HasSelection() const { return m_selected >= 0 && m_selected < static_cast<int>(m_catalog.GetEntries().size()); }
@@ -480,7 +482,6 @@ void FrontendUI::Update()
    ImGui::End();
    ImGui::PopStyleColor();
 }
-
 
 FrontendUI::Presentation FrontendUI::ResolvePresentation() const
 {

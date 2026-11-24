@@ -34,7 +34,7 @@ public:
    bool OnNavigateBack();
 
    // Opens the in-game UI chrome on the TABLE view: the page proposing the actions
-   // on the selected catalog entry (Play, Edit, media capture, ...)
+   // on the selected catalog entry (Play, Edit, media management, ...)
    void OpenActionsView();
 
    // Catalog actions (also the frontend's InGameUI "frontend/table" page)

@@ -52,11 +52,18 @@ void FrontendDesktopRenderer::BuildTopTabs(vector<InGameUI::DesktopTopTab> &tabs
       } });
 }
 
+string FrontendDesktopRenderer::NavGroup(const string &path) const
+{
+   // The frontend's table actions page is its TABLE section: it is registered
+   // under the frontend path (the "table" group is the play session's own pages)
+   return path == "frontend/table"s ? "table"s : InGameUIDesktopRenderer::NavGroup(path);
+}
+
 string FrontendDesktopRenderer::NavRootGroup(const string &rootPath) const
 {
    // The frontend's navigation root is its own category: there is no table the
    // way a play session has one, and GAMES is a base view action, not a category
-   return rootPath.substr(0, rootPath.find('/'));
+   return NavGroup(rootPath);
 }
 
 const char *FrontendDesktopRenderer::NavRootRailLabel(const string &group) const
