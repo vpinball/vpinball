@@ -4,6 +4,7 @@
 
 #include "InGameUIRenderer.h"
 #include "InGameUIPane.h"
+#include "InGameUIWidgets.h"
 #include "imgui/imgui.h"
 
 class Player;
@@ -26,7 +27,9 @@ namespace VPX::InGameUI
 // icon column, deploying over the item pane when hovered or navigated to. On
 // very wide frames the chrome is capped to a centered column, the frame showing
 // through dimmed side bands.
-class InGameUIDesktopRenderer final : public InGameUIRenderer
+// The class is meant to be extended by host-provided chromes (the mini frontend
+// reuses it with its own top bar tabs over the table catalog base view).
+class InGameUIDesktopRenderer : public InGameUIRenderer
 {
 public:
    explicit InGameUIDesktopRenderer(InGameUI& owner);
@@ -40,6 +43,43 @@ public:
    bool OnUIReleaseAdjust(InGameUIPage* page) override;
    bool OnUINavigateBack(InGameUIPage* page) override;
 
+protected:
+   // The top bar's tabs, in left-to-right order (right-justified ones laid out
+   // from the right edge, rightmost first): the same order drives flipper
+   // navigation. Category tabs navigate to the group's first navigation entry;
+   // action tabs run a callback instead (GAME hides the UI, QUIT closes).
+   // firstPathOf(group) resolves a group's first entry path, "" when unknown.
+   virtual void BuildTopTabs(vector<DesktopTopTab>& tabs, const string& rootPath, const std::function<string(const string&)>& firstPathOf);
+
+   // The top-level category a page path belongs to: the first path segment by
+   // default ("settings/audio" -> "settings"); host chromes may remap pages to
+   // an existing category (the frontend's "frontend/table" is its Table section)
+   virtual string NavGroup(const string& path) const;
+
+   // The top-level category (first path segment) the navigation root page
+   // belongs to ("table": the homepage doubles as the table's own section)
+   virtual string NavRootGroup(const string& rootPath) const;
+
+   // The label of the rail row pinned at the top of a group's sub-pages,
+   // navigating back to the navigation root ("Table Info" for the table
+   // category); nullptr = the group has no navigation root row
+   virtual const char* NavRootRailLabel(const string& group) const;
+
+   // The title the navigation root page's content is displayed under ("Table
+   // Info": the homepage doubles as the table info view); nullptr = its own title
+   virtual const char* NavRootPageTitle() const;
+
+   InGameUI& m_inGameUI;
+   Player* const m_player;
+
+   // Navigation item of the root page, kept while it is closed under another page
+   struct NavEntry
+   {
+      string label;
+      string path;
+   };
+   string m_selectedGroup; // First path segment of the selected category (the root page belongs to its NavRootGroup)
+
 private:
    bool NavStep(InGameUIPage* page, int direction);
    void EngageNav(InGameUIPage* page, int direction);
@@ -52,18 +92,8 @@ private:
    void RenderItems(InGameUIPage& page, const vector<InGameUIPane>& panes, bool isNavSource);
    bool NavRow(const char* icon, const char* label, bool selected, const char* id, const std::shared_ptr<Sampler>& iconImage, bool focused);
 
-   InGameUI& m_inGameUI;
-   Player* const m_player;
-
-   // Navigation item of the root page, kept while it is closed under another page
-   struct NavEntry
-   {
-      string label;
-      string path;
-   };
    vector<NavEntry> m_navEntries; // Cached root page navigation items
    vector<NavEntry> m_pluginEntries; // Cached plugins homepage items (one per plugin)
-   string m_selectedGroup; // First path segment of the selected category (the root page belongs to "table")
    std::shared_ptr<Sampler> m_plungerIcon; // Lazy-loaded editor plunger icon for the rail
    bool m_plungerLoadFailed = false;
 
