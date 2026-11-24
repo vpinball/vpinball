@@ -110,3 +110,22 @@ inline bool BarIconButtonInk(const char *icon, const char *id)
    ImGui::GetWindowDrawList()->AddText(ImVec2(min.x + (size.x - (ink.z - ink.x)) * 0.5f - ink.x, min.y + (size.y - (ink.w - ink.y)) * 0.5f - ink.y), ImGui::GetColorU32(ImGuiCol_Text), icon);
    return pressed;
 }
+
+// Letter-spaced text (like the LOADING caption), measured then drawn char by char
+inline float SpacedTextWidth(ImFont *const font, const float fontSize, const char *const text, const float tracking)
+{
+   float width = -tracking;
+   for (const char *c = text; *c; c++)
+      width += font->CalcTextSizeA(fontSize, FLT_MAX, 0.f, c, c + 1).x + tracking;
+   return width;
+}
+
+inline void DrawSpacedText(ImDrawList *const drawList, ImFont *const font, const float fontSize, const ImVec2 &pos, const float tracking, const ImU32 col, const char *const text)
+{
+   ImVec2 pen = pos;
+   for (const char *c = text; *c; c++)
+   {
+      drawList->AddText(font, fontSize, pen, col, c, c + 1);
+      pen.x += font->CalcTextSizeA(fontSize, FLT_MAX, 0.f, c, c + 1).x + tracking;
+   }
+}

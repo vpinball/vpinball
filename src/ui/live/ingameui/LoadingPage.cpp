@@ -7,6 +7,7 @@
 #include "core/VPApp.h"
 #include "renderer/Sampler.h"
 #include "renderer/Texture.h"
+#include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
 
 #include <algorithm>
@@ -70,17 +71,10 @@ namespace
       }
    };
 
-   void DrawSpacedText(ImDrawList* const drawList, ImFont* const font, const float fontSize, const ImVec2& center, const float spacing, const ImU32 col, const char* const text)
+   // Centered variant of the shared letter-spaced text helpers (ImGuiHelpers.h)
+   void DrawCenteredSpacedText(ImDrawList* const drawList, ImFont* const font, const float fontSize, const ImVec2& center, const float spacing, const ImU32 col, const char* const text)
    {
-      float width = -spacing;
-      for (const char* c = text; *c; c++)
-         width += font->CalcTextSizeA(fontSize, FLT_MAX, 0.f, c, c + 1).x + spacing;
-      ImVec2 pos(center.x - width * 0.5f, center.y);
-      for (const char* c = text; *c; c++)
-      {
-         drawList->AddText(font, fontSize, pos, col, c, c + 1);
-         pos.x += font->CalcTextSizeA(fontSize, FLT_MAX, 0.f, c, c + 1).x + spacing;
-      }
+      DrawSpacedText(drawList, font, fontSize, ImVec2(center.x - SpacedTextWidth(font, fontSize, text, spacing) * 0.5f, center.y), spacing, col, text);
    }
 }
 
@@ -307,7 +301,7 @@ void LoadingPage::RenderLoadingScreen(const ImVec4& rect)
    // "LOADING" caption below the bar
    ImFont* const overlayFont = m_player->m_liveUI->GetOverlayFont() ? m_player->m_liveUI->GetOverlayFont() : ImGui::GetFont();
    const float capSize = std::clamp(size.y * 0.028f, 12.f, 42.f);
-   DrawSpacedText(drawList, overlayFont, capSize, ImVec2(origin.x + size.x * 0.5f, barY + segH + size.y * 0.015f), capSize * 0.35f, IM_COL32(160, 160, 166, 255), "LOADING");
+   DrawCenteredSpacedText(drawList, overlayFont, capSize, ImVec2(origin.x + size.x * 0.5f, barY + segH + size.y * 0.015f), capSize * 0.35f, IM_COL32(160, 160, 166, 255), "LOADING");
 
    // Bottom info bar: explains the compression process and gives access to the skip options
    const bool canSkip = CanSkipCompression();
