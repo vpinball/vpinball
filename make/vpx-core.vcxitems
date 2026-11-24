@@ -1009,7 +1009,9 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/parts/TriggerUIPart.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ViewportPane.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/editor/ViewportSidebar.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendDesktopRenderer.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendMedia.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendTheme.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.cpp" />
@@ -1019,7 +1021,6 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplayProfileSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendHomePage.cpp" />
-    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendTablePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendThemesPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.cpp" />
@@ -2012,7 +2013,9 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/parts/TriggerUIPart.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ViewportPane.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/editor/ViewportSidebar.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendDesktopRenderer.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendMedia.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/frontend/FrontendTheme.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/InGameUI.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/AudioSettingsPage.h" />
@@ -2022,7 +2025,6 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplayProfileSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/DisplaySettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendHomePage.h" />
-    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendTablePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/FrontendThemesPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/GraphicSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/HomePage.h" />

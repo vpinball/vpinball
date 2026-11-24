@@ -9,6 +9,8 @@
 #include "CabinetSettingsPage.h"
 #include "DisplayProfileSettingsPage.h"
 #include "DisplaySettingsPage.h"
+#include "FrontendHomePage.h"
+#include "FrontendThemesPage.h"
 #include "GraphicSettingsPage.h"
 #include "HomePage.h"
 #include "InputProfilePage.h"
@@ -36,6 +38,8 @@ InGameUI::InGameUI(LiveUI &liveUI)
    : m_player(g_pplayer)
    , m_renderer(InGameUIRenderer::Create(*this))
 {
+   AddPage("frontend/home"s, []() { return std::make_unique<FrontendHomePage>(); });
+   AddPage("settings/themes"s, []() { return std::make_unique<FrontendThemesPage>(); });
    AddPage("homepage"s, []() { return std::make_unique<HomePage>(); });
    AddPage("loading"s, []() { return std::make_unique<LoadingPage>(); });
    AddPage("settings/audio"s, []() { return std::make_unique<AudioSettingsPage>(); });

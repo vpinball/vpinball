@@ -876,6 +876,11 @@ void InputManager::PushTouchEvent(float relativeX, float relativeY, uint64_t tim
    if (m_player->IsVR())
       return;
 
+   // The frontend is not a playfield: the gameplay touch regions (menu strip, nudges, flippers,...)
+   // would fire their actions on top of its own UI
+   if (m_player->m_playMode == Player::PlayMode::Frontend)
+      return;
+
    // While a menu is open, touches go to the UI (the overlay hides the regions): only releases apply
    if (isPressed && m_player->m_liveUI && m_player->m_liveUI->IsOpened())
       return;
@@ -1063,17 +1068,24 @@ void InputManager::CreateInputActions()
          {
             if (isPressed && m_buttonCaptureState != 0)
                return;
-            if (isPressed && !m_player->m_liveUI->IsOpened())
+            if (isPressed && m_player->m_liveUI->IsInGameUIOpened())
+            {
+               m_player->m_liveUI->m_inGameUI.OnUINavigateBack();
+            }
+            else if (isPressed && m_player->m_playMode == Player::PlayMode::Frontend)
+            {
+               // The frontend gets its back requests first (to close its modals); when it does
+               // not consume them the exit button quits the application like the chrome's QUIT tab
+               if (!m_player->m_liveUI->m_frontendUI.OnNavigateBack())
+                  m_player->SetCloseState(Player::CS_CLOSE_APP);
+            }
+            else if (isPressed && !m_player->m_liveUI->IsOpened())
             {
                CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
                DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
                m_player->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
                // A play test stacked over an editor session gets back to the editor, like the Win32 editor does
                m_player->SetCloseState(m_player->HasStackedTableSession() ? Player::CS_STOP_PLAY : g_isMobile ? Player::CS_CLOSE_CAPTURE_SCREENSHOT : g_isStandalone ? Player::CS_CLOSE_APP : Player::CS_STOP_PLAY);
-            }
-            else if (isPressed && m_player->m_liveUI->IsInGameUIOpened())
-            {
-               m_player->m_liveUI->m_inGameUI.OnUINavigateBack();
             }
          }))->GetActionId();
 
@@ -1227,6 +1239,15 @@ void InputManager::CreateInputActions()
       {
          if (m_player->m_liveUI->IsEditorUIOpened() || !isPressed)
             return;
+         if (m_player->m_playMode == Player::PlayMode::Frontend)
+         {
+            // A frontend session has no stereo display to toggle: the action switches the
+            // session between VR and the desktop instead (when a VR session can run)
+            VPX::Frontend::FrontendUI& frontend = m_player->m_liveUI->m_frontendUI;
+            if (frontend.IsVRAvailable())
+               frontend.RestartFrontendSession(m_player->IsVR() ? Player::VROverride::ForceOff : Player::VROverride::ForceOn);
+            return;
+         }
          if (Is3DTVStereoMode(m_player->m_renderer->m_stereo3D) || IsAnaglyphStereoMode(m_player->m_renderer->m_stereo3D))
          { // Toggle stereo on/off
             m_player->m_renderer->m_stereo3Denabled = !m_player->m_renderer->m_stereo3Denabled;

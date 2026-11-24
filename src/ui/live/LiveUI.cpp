@@ -60,6 +60,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    , m_inGameUI(*this)
    , m_perfUI(g_pplayer)
    , m_editorUI(*this)
+   , m_frontendUI(*this)
    , m_rd(rd)
    , m_player(g_pplayer)
    , m_renderer(m_player->m_renderer)
@@ -434,12 +435,14 @@ void LiveUI::HandleSDLEvent(SDL_Event &e)
    else
    {
       // A touch press while no UI is open (menu or loading) goes to the touch regions and may open the InGame UI: drop its
-      // SDL synthesized mouse clicks (sent before the finger event) until release, so they do not click the opened UI
-      if (e.type == SDL_EVENT_FINGER_DOWN && SDL_GetTouchDeviceType(e.tfinger.touchID) == SDL_TOUCH_DEVICE_DIRECT && !IsOpened() && !m_player->m_isLoading)
+      // SDL synthesized mouse clicks (sent before the finger event) until release, so they do not click the opened UI.
+      // The frontend has no gameplay touch regions: its taps stay ImGui clicks.
+      const bool gameplayTouchRegions = m_player->m_playMode != Player::PlayMode::Frontend;
+      if (gameplayTouchRegions && e.type == SDL_EVENT_FINGER_DOWN && SDL_GetTouchDeviceType(e.tfinger.touchID) == SDL_TOUCH_DEVICE_DIRECT && !IsOpened() && !m_player->m_isLoading)
          m_gameplayTouch = true;
       else if ((e.type == SDL_EVENT_MOUSE_BUTTON_DOWN || e.type == SDL_EVENT_MOUSE_BUTTON_UP) && e.button.which == SDL_TOUCH_MOUSEID)
       {
-         if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && !IsOpened() && !m_player->m_isLoading)
+         if (gameplayTouchRegions && e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && !IsOpened() && !m_player->m_isLoading)
             m_gameplayTouch = true;
          if (m_gameplayTouch)
          {
@@ -608,7 +611,9 @@ void LiveUI::NewFrame()
    if (m_player->m_vrDevice != nullptr)
    {
       const VRDevice::UIPointer &pointer = m_player->m_vrDevice->GetUIPointer();
-      const bool pointerActive = m_uiLayerShown && m_inGameUI.IsOpened() && pointer.valid;
+      // The frontend's wheel is the interactive UI on the quad layer, even with the chrome closed
+      const bool pointerActive
+         = m_uiLayerShown && (m_inGameUI.IsOpened() || m_player->m_playMode == Player::PlayMode::Frontend) && pointer.valid;
       if (pointerActive)
          AddMousePosEvent(false, pointer.u * io.DisplaySize.x, pointer.v * io.DisplaySize.y);
       const bool click = pointerActive && pointer.click;
@@ -730,7 +735,7 @@ void LiveUI::RenderVRUIDepthStamp(const Vertex3Ds corners[4], const ModelViewPro
 // beam fading over a fixed reach, with a small opaque contact point lying in the UI plane.
 void LiveUI::RenderVRPointer(const Vertex3Ds uiQuadScene[4], const ModelViewProj &uiMVP)
 {
-   if (m_player->m_vrDevice == nullptr || !m_uiLayerShown || !m_inGameUI.IsOpened())
+   if (m_player->m_vrDevice == nullptr || !m_uiLayerShown || (!m_inGameUI.IsOpened() && m_player->m_playMode != Player::PlayMode::Frontend))
       return;
    const VRDevice::UIPointer &pointer = m_player->m_vrDevice->GetUIPointer();
    if (!pointer.valid)
@@ -1036,6 +1041,10 @@ void LiveUI::BuildMainUI(const int width, const int height)
 
    ImGui::PushFont(m_baseFont, m_baseFont->LegacySize);
 
+   // Mini frontend (drawn first so that in-game UI pages, e.g. settings, render on top of it)
+   if (m_player->m_playMode == Player::PlayMode::Frontend)
+      m_frontendUI.Update();
+
    // Tweak UI (aligned to playfield view, using custom flipper controls)
    m_inGameUI.Update();
 
@@ -1048,7 +1057,7 @@ void LiveUI::BuildMainUI(const int width, const int height)
       m_editorUI.RenderUI();
       SetupImGuiStyle(false);
    }
-   else if (!m_inGameUI.IsOpened())
+   else if (!m_inGameUI.IsOpened() && m_player->m_playMode != Player::PlayMode::Frontend)
    { // No UI displayed: process ball control & throw balls
       m_ballControl.Update(width, height);
    }
@@ -1248,7 +1257,8 @@ void LiveUI::RenderUIInternal(const float sdrWhitePQ, const bool withOverlay)
 
       m_uiLayerShown = hasContent;
       if (m_player->m_vrDevice)
-         m_player->m_vrDevice->SetShowUILayer(hasContent, m_inGameUI.IsOpened()); // Pointer interaction only with the InGame UI
+         // Pointer interaction with the InGame UI, and in frontend mode where the wheel is the interactive UI
+         m_player->m_vrDevice->SetShowUILayer(hasContent, m_inGameUI.IsOpened() || m_player->m_playMode == Player::PlayMode::Frontend);
 
       NewFrame();
    }
@@ -1348,7 +1358,7 @@ void LiveUI::UpdateTouchUI()
 void LiveUI::OpenInGameUI(const string& page)
 {
    HideUI();
-   m_inGameUI.Open(page);
+   m_inGameUI.Open(page.empty() ? (m_player->m_playMode == Player::PlayMode::Frontend ? "frontend/home"s : "homepage"s) : page);
 }
 
 void LiveUI::HideUI()

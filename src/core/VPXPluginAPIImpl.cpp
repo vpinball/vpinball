@@ -321,7 +321,10 @@ void MSGPIAPI VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
          VPXTextureBlock* tex = reinterpret_cast<VPXTextureBlock*>(context);
          if (tex)
          {
-            if (g_pplayer && g_pplayer->GetCloseState() != Player::CS_CLOSED)
+            // The render device stays alive for the whole duration of the player teardown (it is
+            // destroyed as a member, after the destructor's body), so textures deleted while closing
+            // must still be unloaded or their GPU upload would leak until bgfx::shutdown asserts
+            if (g_pplayer && g_pplayer->m_renderer && g_pplayer->m_renderer->m_renderDevice)
             {
                if (tex->tex)
                   g_pplayer->m_renderer->m_renderDevice->m_texMan.UnloadTexture(tex->tex.get());

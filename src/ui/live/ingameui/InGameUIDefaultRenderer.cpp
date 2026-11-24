@@ -10,6 +10,7 @@
 
 #include "core/player.h"
 #include "core/VPApp.h"
+#include "ui/live/frontend/FrontendDesktopRenderer.h"
 #include "ui/live/IconsLucide.h"
 #include "ui/live/ImGuiHelpers.h"
 #include "ui/live/LiveUI.h"
@@ -27,6 +28,10 @@ std::unique_ptr<InGameUIRenderer> InGameUIRenderer::Create(InGameUI& owner)
    // gets it too: the UI quad is a 16:9 surface, so the landscape
    // layout applies there as well, including on mobile VR devices. Mobile
    // touch outside VR keeps the pinball card layout.
+   // The mini frontend session gets the frontend chrome: the same desktop
+   // renderer extended with the catalog's own tab arrangement.
+   if (!g_isMobile && g_pplayer->m_playMode == Player::PlayMode::Frontend)
+      return std::make_unique<Frontend::FrontendDesktopRenderer>(owner);
    if (!g_isMobile || g_pplayer->IsVR())
       return std::make_unique<InGameUIDesktopRenderer>(owner);
    return std::make_unique<InGameUIDefaultRenderer>(owner);
