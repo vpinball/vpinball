@@ -69,17 +69,6 @@ void InputSettingsPage::BuildPage()
       Settings::m_propPlayer_RumbleBallBall, 1.f, "%3.2f"s, //
       [this]() { return m_player->m_pininput.GetBallBallRumbleStrength(); }, //
       [this](float, float v) { m_player->m_pininput.SetBallBallRumbleStrength(v); }));
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Legacy Setting"s));
-   // FIXME deprecated, just remove
-   // Applied live (read per frame) and persisted globally as it is an input mode, not a per-table property
-   AddItem(std::make_unique<InGameUIItem>( //
-      Settings::m_propPlayer_EnableCameraModeFlyAround, //
-      [this]() { return g_settingsService.GetActiveSettings().GetPlayer_EnableCameraModeFlyAround(); }, //
-      [this](bool v)
-      {
-         g_settingsService.GetActiveSettings().SetPlayer_EnableCameraModeFlyAround(v, false);
-         m_player->m_liveUI->PushNotification("This change is directly persisted."s, 3000);
-      }));
 }
 
 
