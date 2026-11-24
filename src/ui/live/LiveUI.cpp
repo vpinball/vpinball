@@ -867,17 +867,25 @@ void LiveUI::UpdateTouchUI()
       return;
 
    // Always shown when enabled, else during ShowTouchOverlayHint (fading out over its last 2 s)
+   // Hidden while a menu is open, as it covers the regions
+   const uint64_t now = SDL_GetTicks();
    float opacity = 0.f;
-   if (m_showTouchOverlay)
-      opacity = 1.f;
-   else if (const uint64_t now = SDL_GetTicks(); now < m_touchOverlayHintEndMs)
+   if (m_inGameUI.IsOpened() || m_editorUI.IsOpened())
+      opacity = 0.f;
+   else if (m_showTouchOverlay)
+   {
+      // Full opacity when it shows up (table start, back from a menu), then dimmed to 60% after 10 s, over 1 s (the first-launch hint below has its own fade out)
+      if (m_touchOverlayShownMs == 0)
+         m_touchOverlayShownMs = now;
+      opacity = 1.f - 0.4f * clamp(static_cast<float>(now - m_touchOverlayShownMs) - 10000.f, 0.f, 1000.f) / 1000.f;
+   }
+   else if (now < m_touchOverlayHintEndMs)
       opacity = min(1.f, static_cast<float>(m_touchOverlayHintEndMs - now) / 2000.f);
    if (opacity <= 0.f)
+   {
+      m_touchOverlayShownMs = 0;
       return;
-
-   // Hidden while a menu is open, as it covers the regions
-   if (m_inGameUI.IsOpened() || m_editorUI.IsOpened())
-      return;
+   }
 
    // ImGui coordinates share the orientation of the touch regions (the UI is rotated with the view)
    const ImGuiIO &io = ImGui::GetIO();
@@ -885,8 +893,11 @@ void LiveUI::UpdateTouchUI()
    const float screenHeight = io.DisplaySize.y;
    const auto alpha = [opacity](int a) { return static_cast<int>(static_cast<float>(a) * opacity); };
    ImDrawList *drawList = ImGui::GetBackgroundDrawList();
-   ImFont *const font = m_overlayFont ? m_overlayFont : ImGui::GetFont();
-   const float inset = max(2.f, min(screenWidth, screenHeight) * 0.004f);
+   ImFont *const font = m_overlayBoldFont ? m_overlayBoldFont : ImGui::GetFont();
+   // Boxes drawn inset in their regions (the touch area itself is the whole region)
+   const float unit = min(screenWidth, screenHeight);
+   const float inset = max(6.f, unit * 0.015f);
+   const float lineWidth = max(1.5f, unit * 0.0024f);
    for (const auto& region : m_pininput->GetTouchState())
    {
       if (region.label.empty()) // Same area as a labeled region (staged flippers)
@@ -897,11 +908,12 @@ void LiveUI::UpdateTouchUI()
       const ImVec2 size = bottomRight - topLeft;
       if (size.x <= 0.f || size.y <= 0.f)
          continue;
-      const float rounding = min(size.x, size.y) * 0.08f;
+      const float rounding = min(min(size.x, size.y) * 0.08f, unit * 0.007f); // Capped, so large boxes are not much rounder than small ones
 
       const bool pressed = m_pininput->IsTouchRegionPressed(region);
-      drawList->AddRectFilled(topLeft, bottomRight, pressed ? IM_COL32(255, 255, 255, alpha(90)) : IM_COL32(0, 0, 0, alpha(55)), rounding);
-      drawList->AddRect(topLeft, bottomRight, IM_COL32(255, 255, 255, alpha(pressed ? 220 : 120)), rounding, ImDrawFlags_None, max(1.5f, inset * 0.6f));
+      // Light tint only, so the playfield stays visible below (the outline and the label shadow keep the regions readable)
+      drawList->AddRectFilled(topLeft, bottomRight, pressed ? IM_COL32(255, 255, 255, alpha(8)) : IM_COL32(0, 0, 0, alpha(52)), rounding);
+      drawList->AddRect(topLeft, bottomRight, IM_COL32(255, 255, 255, alpha(pressed ? 105 : 80)), rounding, ImDrawFlags_None, lineWidth);
 
       // Label centered in the region, scaled down to fit its width
       float fontSize = min(font->LegacySize, size.y * 0.4f);

@@ -64,16 +64,15 @@ void HomePage::BuildPage()
          }));
 
    if ((isTouch || m_player->m_pininput.HasTouchInput()) && !m_player->m_vrDevice)
-      AddItem(std::make_unique<InGameUIItem>(g_settingsService.GetAppSettings().GetPlayer_TouchOverlay() ? "Disable Touch Overlay"s : "Enable Touch Overlay"s, ""s,
-         [this]()
+      // On/off toggle, applied and stored right away (the home page has no save)
+      AddItem(std::make_unique<InGameUIItem>(
+         Settings::m_propPlayer_TouchOverlay, //
+         []() { return g_settingsService.GetAppSettings().GetPlayer_TouchOverlay(); }, //
+         [this](bool showTouchOverlay)
          {
-            bool showTouchOverlay = !g_settingsService.GetAppSettings().GetPlayer_TouchOverlay();
             g_settingsService.GetAppSettings().ResetPlayer_TouchOverlay();
             g_settingsService.GetAppSettings().SetPlayer_TouchOverlay(showTouchOverlay, false);
             m_player->m_liveUI->ShowTouchOverlay(showTouchOverlay);
-            ImGui::GetIO().MousePos.x = 0;
-            ImGui::GetIO().MousePos.y = 0;
-            RequestRebuild();
          }));
 
    if (!hasKeyboard)
@@ -166,6 +165,8 @@ void HomePage::CollectPanes(vector<InGameUIPane>& panes)
       info << " (" << (!m_player->m_ptable->m_dateSaved.empty() ? m_player->m_ptable->m_dateSaved : "N/A"s) << " Revision " << m_player->m_ptable->m_numTimesSaved << ")\n";
 
       // Drawn inline in the page's item list (no window or background of its own)
+      // Separated from the last item above by a blank band, so it does not read as part of it
+      ImGui::Dummy(ImVec2(0.f, ImGui::GetTextLineHeight() * 1.5f));
       m_player->m_liveUI->SetMarkdownStartId(ImGui::GetItemID());
       ImGui::Markdown(info.str().c_str(), info.str().length(), m_player->m_liveUI->GetMarkdownConfig());
    };

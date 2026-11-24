@@ -107,6 +107,7 @@ private:
    void UpdateTouchUI();
    bool m_showTouchOverlay;
    uint64_t m_touchOverlayHintEndMs = 0; // SDL_GetTicks end time of ShowTouchOverlayHint
+   uint64_t m_touchOverlayShownMs   = 0; // SDL_GetTicks time the enabled overlay last showed up (0 while hidden)
 
    // VR: whether the last rendered frame had UI content (mirrors the state pushed
    // to VRDevice::SetShowUILayer, gating the controller pointer and its ray)
