@@ -23,7 +23,9 @@ namespace VPX::InGameUI
 // with each item's control stacked under its label, and portrait cabinet renders
 // the whole UI as a 16:11 inset "display" in the lower half of the frame. On
 // narrow frames the tab bar splits in two lines and the left rail folds to an
-// icon column, deploying over the item pane when hovered or navigated to.
+// icon column, deploying over the item pane when hovered or navigated to. On
+// very wide frames the chrome is capped to a centered column, the frame showing
+// through dimmed side bands.
 class InGameUIDesktopRenderer final : public InGameUIRenderer
 {
 public:
