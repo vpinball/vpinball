@@ -19,6 +19,7 @@
 
 struct UIListGeometry;
 class Sampler;
+class RenderTarget;
 
 class LiveUI final : public UserMessageSink
 {
@@ -33,7 +34,19 @@ public:
 
    void PrepareScene(); // Called to set the scene display state of the view being recorded (editor panes)
    void Render3D(); // Called to contribute to 3D Scene
-   void RenderUI(); // Called to render UI overlay
+   // Called to render the UI overlay onto the current render target, in UI pixel space
+   void RenderUI();
+#ifdef ENABLE_XR
+   // Called to render the in-scene VR UI (OpenXR only, which requires BGFX): the draw list is
+   // rasterized to an offscreen texture which is drawn on the quad VRDevice::UpdateUIPointer
+   // raycasts — uiQuadScene holds its corners in scene coordinates (degenerate when hidden)
+   // and uiMVP the per-eye view/projection pair of the quad's space
+   void RenderUIVR(const Vertex3Ds uiQuadScene[4], const ModelViewProj &uiMVP);
+   // Stamps the UI panel footprint into the scene depth buffer (depth-only draw, recorded inside the
+   // scene pass): the VR color key passthrough treats far-depth pixels as background, and the UI draw
+   // list (executed post-process by RenderUI) writes none
+   void RenderVRUIDepthStamp(const Vertex3Ds corners[4], const class ModelViewProj &mvp);
+#endif
 
    bool IsOpened() const { return IsEditorUIOpened() || IsInGameUIOpened(); }
    void HideUI();
@@ -93,6 +106,9 @@ private:
    void ReleaseImGuiTexture(ImTextureData *tex);
 
    void NewFrame();
+   // Shared implementation of RenderUI/RenderUIVR: rasterizes the ImGui draw lists orthogonally onto
+   // the current render target, sdrWhitePQ is the output's PQ-encoded SDR white level (0 for sRGB)
+   void RenderUIInternal(const float sdrWhitePQ);
    void AddMousePosEvent(bool isTouch, float x, float y) const;
    void UpdateScale();
    void UpdatePlayfieldWindowFrame();
@@ -101,6 +117,10 @@ private:
    vector<std::shared_ptr<MeshBuffer>> m_meshBuffers;
 #if defined(ENABLE_BGFX)
    vector<std::shared_ptr<UIListGeometry>> m_uiGeometry; // Per command list CPU snapshot of the frame's UI geometry
+#endif
+#ifdef ENABLE_XR
+   std::unique_ptr<RenderTarget> m_uiPanelTarget; // VR: offscreen, mipmapped rasterization of the UI draw list (RenderUI world-space path)
+   std::shared_ptr<UIListGeometry> m_uiPanelQuad; // VR: quad drawing m_uiPanelTarget in world space
 #endif
 
    // Touch UI overlay

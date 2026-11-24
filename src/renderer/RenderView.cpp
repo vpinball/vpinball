@@ -1971,42 +1971,6 @@ RenderTarget* RenderView::ApplyStereo(RenderTarget* renderedRT, RenderTarget* ou
             rd->m_FBShader->SetInt(ShaderUniform::layer, 1);
             rd->DrawTexturedQuad(rd->m_FBShader, verts);
          }
-
-         // Composite the UI on the desktop display, as it is submitted to the headset as a dedicated composition layer
-         if (RenderTarget* const uiLayer = g_pplayer->m_vrDevice->GetUIRenderTarget(); uiLayer != nullptr && r->m_vrDesktop != VRDesktopMode::Disabled)
-         {
-            rd->AddRenderTargetDependency(uiLayer);
-            const float uiW = static_cast<float>(uiLayer->GetWidth()), uiH = static_cast<float>(uiLayer->GetHeight());
-            // Same cropping as the mirrored eye texture (uv span), with position mapped through a pixel ortho transform
-            const float tu1 = static_cast<float>(x) / w, tv1 = static_cast<float>(y) / h;
-            const float tu2 = static_cast<float>(x + fw) / w, tv2 = static_cast<float>(y + fh) / h;
-            const Matrix3D ortho = Matrix3D::MatrixOrthoOffCenterRH(0.f, uiW, uiH, 0.f, 0.f, 1.f);
-            const Matrix3D orthoEyes[2] = { ortho, ortho }; // One per eye
-            // TODO the UI shader takes its vertex color from the VF_IMGUI COLOR0 attribute, which these Vertex3D_NoTex2 quads (and the one
-            // in RenderView::Render) lack: BGFX D3D11 reads it as R8G8B8A8_UINT from the position bytes, so the UI is garbage or invisible
-            // (OpenGL only works by chance, through the (1,1,1) normal at location 1). Use a textured copy shader, or a white VF_IMGUI quad
-            rd->m_uiShader->SetTechnique(ShaderTechnique::LiveUI_mono);
-            rd->m_uiShader->SetMatrix(ShaderUniform::matWorldView, orthoEyes, rd->m_nEyes);
-            rd->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, 0.f, 0.f, 0.f, 0.f);
-            rd->m_uiShader->SetVector(ShaderUniform::clip_plane, 0.f, 0.f, uiW, uiH);
-            rd->m_uiShader->SetTexture(ShaderUniform::tex_base_color, uiLayer->GetColorSampler());
-            Vertex3D_NoTex2 overlay[4] = { { 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, tu1, tv1 }, { uiW, 0.f, 1.f, 1.f, 1.f, 1.f, tu2, tv1 }, { 0.f, uiH, 1.f, 1.f, 1.f, 1.f, tu1, tv2 },
-               { uiW, uiH, 1.f, 1.f, 1.f, 1.f, tu2, tv2 } };
-            rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-            rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-            rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
-            rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-            if (r->m_vrDesktop == VRDesktopMode::Both)
-            {
-               overlay[0].x = overlay[2].x = 0.f;
-               overlay[1].x = overlay[3].x = uiW * 0.5f;
-               rd->DrawTexturedQuad(rd->m_uiShader, overlay, true);
-               overlay[0].x = overlay[2].x = uiW * 0.5f;
-               overlay[1].x = overlay[3].x = uiW;
-            }
-            rd->DrawTexturedQuad(rd->m_uiShader, overlay, true);
-            rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-         }
       }
 
       if (r->m_vrApplyColorKey)
@@ -2195,7 +2159,29 @@ void RenderView::Render()
 
    // Render live UI 3D content (editors overlays, selection, ...)
    if (m_renderOverlay3D)
+   {
       g_pplayer->m_liveUI->Render3D();
+#ifdef ENABLE_XR
+      // The VR UI draw list writes no depth (it is executed post-process inside the stereo
+      // projection): stamp the panel's footprint into the scene depth so the color key
+      // passthrough does not punch its pixels through to the environment
+      if (r->m_stereo3D == STEREO_VR && r->m_vrApplyColorKey && !IsMirror())
+      {
+         constexpr int space = static_cast<int>(VPX::SpaceReference::Playfield);
+         Vertex3Ds quad[4];
+         if (g_pplayer->m_vrDevice->GetUIQuadScene(quad))
+         {
+            ModelViewProj quadMvp(rd->m_nEyes);
+            for (int eye = 0; eye < rd->m_nEyes; eye++)
+            {
+               quadMvp.SetView(eye, m_spaceView[space][eye]);
+               quadMvp.SetProj(eye, m_spaceProj[space][eye]);
+            }
+            g_pplayer->m_liveUI->RenderVRUIDepthStamp(quad, quadMvp);
+         }
+      }
+#endif
+   }
 
    // Keep latency low by proceeding input, ... (as next passes are not affected by the game logic)
    if (m_runGameLogic)
@@ -2283,62 +2269,41 @@ void RenderView::Render()
       g_pplayer->m_liveUI->RenderUI();
    }
 
-   // For OpenXR, the LiveUI is rendered to a dedicated mono render target submitted as a view locked quad composition
-   // layer (a head locked overlay rendered inside the world locked projection layer was shaken by the compositor
-   // reprojection). It is recorded before stereo to allow compositing it on the desktop display.
-   RenderTarget* xrUILayer = nullptr;
+   // For OpenXR, the LiveUI draw list is executed directly inside the stereo projection as world-space
+   // geometry: the UI pixel space is mapped onto the quad VRDevice::UpdateUIPointer raycasts for pointer
+   // input (anchored room-locked while interactive, head locked otherwise). This makes it part of the
+   // scene for color keying (which does not apply to composited layers) and reuses the scene's anchoring
+   // instead of a separate composition layer.
+   bool vrUIDrawn = false;
 #ifdef ENABLE_XR
    if (m_renderLiveUI && r->m_stereo3D == STEREO_VR)
-      xrUILayer = g_pplayer->m_vrDevice->GetUIRenderTarget();
-#endif
-   if (xrUILayer != nullptr)
    {
-      rd->SetRenderTarget("LiveUI"s, xrUILayer, false, true);
-      rd->Clear(clearType::TARGET, 0x00000000);
-      g_pplayer->m_liveUI->RenderUI();
-      if (rd->GetCurrentPass()->GetCommandCount() <= 1)
-         rd->GetCurrentPass()->ClearCommands();
+      constexpr int space = static_cast<int>(VPX::SpaceReference::Playfield);
+      ModelViewProj quadMvp(rd->m_nEyes);
+      for (int eye = 0; eye < rd->m_nEyes; eye++)
+      {
+         quadMvp.SetView(eye, m_spaceView[space][eye]);
+         quadMvp.SetProj(eye, m_spaceProj[space][eye]);
+      }
+      Vertex3Ds quad[4] = {}; // Degenerate (invisible) quad while the UI is not shown
+      g_pplayer->m_vrDevice->GetUIQuadScene(quad);
+      rd->SetRenderTarget("LiveUI"s, renderedRT, true, true);
+      g_pplayer->m_liveUI->RenderUIVR(quad, quadMvp);
+      vrUIDrawn = true;
    }
+#endif
 
    // Apply stereo
    if (m_applyPostFX)
       renderedRT = ApplyStereo(renderedRT, GetOutput());
 
-   if (m_renderLiveUI && !uiBeforeStero && xrUILayer == nullptr)
+   if (m_renderLiveUI && !uiBeforeStero && !vrUIDrawn)
    {
       rd->SetRenderTarget("LiveUI"s, renderedRT, true, true);
       if (renderedRT == GetOutput() && !IsFullOutputArea()) // Clip the UI to this view's area of its shared output
          rd->GetCurrentPass()->m_areaOfInterest = GetOutputAreaClip();
       g_pplayer->m_liveUI->RenderUI();
    }
-
-#ifdef ENABLE_XR
-   if (IsMirror())
-   {
-      // Add the XR LiveUI render layer which is submitted to the HMD as a separate composition layer, so it needs to be composited back on the desktop display
-      if (RenderTarget* const uiLayer = g_pplayer->m_vrDevice->GetUIRenderTarget(); uiLayer != nullptr)
-      {
-         rd->AddRenderTargetDependency(uiLayer);
-         // TODO the UI shader gets no vertex color from this Vertex3D_NoTex2 quad (see the VR desktop composite in RenderView::ApplyStereo)
-         rd->m_uiShader->SetTechnique(ShaderTechnique::LiveUI_mono);
-         const Matrix3D ortho = Matrix3D::MatrixOrthoOffCenterRH(0.f, static_cast<float>(uiLayer->GetWidth()), static_cast<float>(uiLayer->GetHeight()), 0.f, 0.f, 1.f);
-         const Matrix3D orthoEyes[2] = { ortho, ortho }; // One per eye
-         rd->m_uiShader->SetMatrix(ShaderUniform::matWorldView, orthoEyes, rd->m_nEyes);
-         rd->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, 0.f, 0.f, 0.f, 0.f);
-         rd->m_uiShader->SetVector(ShaderUniform::clip_plane, 0.f, 0.f, static_cast<float>(uiLayer->GetWidth()), static_cast<float>(uiLayer->GetHeight()));
-         rd->m_uiShader->SetTexture(ShaderUniform::tex_base_color, uiLayer->GetColorSampler());
-         const float uiW = static_cast<float>(uiLayer->GetWidth()), uiH = static_cast<float>(uiLayer->GetHeight());
-         const Vertex3D_NoTex2 overlay[4] = { { 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f }, { uiW, 0.f, 1.f, 1.f, 1.f, 1.f, 1.f, 0.f }, { 0.f, uiH, 1.f, 1.f, 1.f, 1.f, 0.f, 1.f },
-            { uiW, uiH, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f } };
-         rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-         rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-         rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
-         rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-         rd->DrawTexturedQuad(rd->m_uiShader, overlay, true);
-         rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      }
-   }
-#endif
 
    // The last rendered render target must be the output back buffer
    assert(renderedRT == GetOutput());

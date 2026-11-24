@@ -928,7 +928,7 @@ void Player::InitTableSession(const bool isInitial)
          {
 #ifdef ENABLE_BGFX
             // Enable a dedicated loading UI while the worker threads load & compress textures, giving the user progress feedback and a way to skip compression
-            // (in VR, the UI is rendered to a dedicated OpenXR composition layer which is acquired by the render thread inside its frame callback)
+            // (in VR, the UI is rendered to a dedicated surface drawn in-scene, created by the render thread inside its frame callback)
             showLoadingUI = (m_playMode != PlayMode::CaptureAttract) && (m_texLoadStats.nCompressed > 0);
             if (showLoadingUI)
             {

@@ -19,7 +19,7 @@ public:
    RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx::FrameBufferHandle fbh, bgfx::TextureHandle colorTex, bgfx::TextureFormat::Enum colFormat,
       bgfx::TextureHandle depthTex, bgfx::TextureFormat::Enum depthFormat, const string& name, const int width, const int height, const colorFormat format);
    #endif
-   RenderTarget(RenderDevice* const rd, const SurfaceType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth = nullptr);
+   RenderTarget(RenderDevice* const rd, const SurfaceType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth = nullptr, const bool withMipmaps = false);
    ~RenderTarget();
 
    void Activate(const int layer = -1);
