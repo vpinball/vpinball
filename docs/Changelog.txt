@@ -238,7 +238,7 @@ FEATURES:
   . 'Round Wall' tool,
   . Measure mode
   . Blender-style sidebar and orthographic views
-  . Note that many settings like rumble, legacy fly-over and VR mode moved to the InGameUI and the toolbar (e.g. the player options dialog was removed)
+  . Note that many settings like rumble and VR mode moved to the InGameUI and the toolbar (e.g. the player options dialog was removed)
 
  - InGameUI (via default 'F12' ingame):
   . Supports all player modes (VR, XR, cabinet, desktop) and all screen orientations
@@ -246,6 +246,7 @@ FEATURES:
   . Add settings pages, moving lots of settings inside these pages
   . Add a system info page, displaying some details of the GPU,CPU,Display,Audio,etc, and the paths used to load the various components
   . Navigation using flipper input has been unified: per default, magna buttons allow to move, while flipper buttons allow to select
+  . the legacy fly-over camera mode has been removed, replaced by the LiveUI fly camera
 
  - a cross-platform script debugger is available in the LiveUI, replacing the previous Windows-only debugger dialog
 

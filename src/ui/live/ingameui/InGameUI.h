@@ -54,7 +54,6 @@ public:
 
 private:
    void HandlePageInput();
-   void HandleLegacyFlyOver();
 
    Player *m_player;
    ImVec2 m_prevMousePos;
