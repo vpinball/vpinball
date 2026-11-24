@@ -8,6 +8,7 @@
 extern "C"
 {
 #include "libavutil/imgutils.h"
+#include "libavutil/intreadwrite.h"
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libswscale/swscale.h"
@@ -72,6 +73,8 @@ public:
    typedef AVPacket*(CDECL* fn_av_packet_alloc)(void);
    typedef void(CDECL* fn_av_packet_free)(AVPacket** pkt);
    typedef void(CDECL* fn_av_packet_unref)(AVPacket* pkt);
+   typedef int(CDECL* fn_av_new_packet)(AVPacket* pkt, int size);
+   typedef uint8_t*(CDECL* fn_av_packet_get_side_data)(const AVPacket* pkt, enum AVPacketSideDataType type, size_t* size);
    typedef AVCodecContext*(CDECL* fn_avcodec_alloc_context3)(const AVCodec* codec);
    typedef const AVCodec*(CDECL* fn_avcodec_find_decoder)(enum AVCodecID id);
    typedef void(CDECL* fn_avcodec_flush_buffers)(AVCodecContext* avctx);
@@ -117,6 +120,8 @@ public:
    fn_av_packet_alloc _av_packet_alloc = nullptr;
    fn_av_packet_free _av_packet_free = nullptr;
    fn_av_packet_unref _av_packet_unref = nullptr;
+   fn_av_new_packet _av_new_packet = nullptr;
+   fn_av_packet_get_side_data _av_packet_get_side_data = nullptr;
    fn_avcodec_alloc_context3 _avcodec_alloc_context3 = nullptr;
    fn_avcodec_find_decoder _avcodec_find_decoder = nullptr;
    fn_avcodec_flush_buffers _avcodec_flush_buffers = nullptr;
@@ -190,6 +195,8 @@ private:
          _av_packet_alloc = reinterpret_cast<fn_av_packet_alloc>(GetProcAddress(hinstLib, "av_packet_alloc"));
          _av_packet_free = reinterpret_cast<fn_av_packet_free>(GetProcAddress(hinstLib, "av_packet_free"));
          _av_packet_unref = reinterpret_cast<fn_av_packet_unref>(GetProcAddress(hinstLib, "av_packet_unref"));
+         _av_new_packet = reinterpret_cast<fn_av_new_packet>(GetProcAddress(hinstLib, "av_new_packet"));
+         _av_packet_get_side_data = reinterpret_cast<fn_av_packet_get_side_data>(GetProcAddress(hinstLib, "av_packet_get_side_data"));
          _avcodec_alloc_context3 = reinterpret_cast<fn_avcodec_alloc_context3>(GetProcAddress(hinstLib, "avcodec_alloc_context3"));
          _avcodec_find_decoder = reinterpret_cast<fn_avcodec_find_decoder>(GetProcAddress(hinstLib, "avcodec_find_decoder"));
          _avcodec_flush_buffers = reinterpret_cast<fn_avcodec_flush_buffers>(GetProcAddress(hinstLib, "avcodec_flush_buffers"));
@@ -199,8 +206,8 @@ private:
          _avcodec_parameters_to_context = reinterpret_cast<fn_avcodec_parameters_to_context>(GetProcAddress(hinstLib, "avcodec_parameters_to_context"));
          _avcodec_receive_frame = reinterpret_cast<fn_avcodec_receive_frame>(GetProcAddress(hinstLib, "avcodec_receive_frame"));
          _avcodec_send_packet = reinterpret_cast<fn_avcodec_send_packet>(GetProcAddress(hinstLib, "avcodec_send_packet"));
-         isLoaded &= _av_packet_alloc && _av_packet_free && _av_packet_unref && _avcodec_alloc_context3 && _avcodec_find_decoder && _avcodec_flush_buffers && _avcodec_free_context
-            && _avcodec_get_name && _avcodec_open2 && _avcodec_parameters_to_context && _avcodec_receive_frame && _avcodec_send_packet;
+         isLoaded &= _av_packet_alloc && _av_packet_free && _av_packet_unref && _av_new_packet && _av_packet_get_side_data && _avcodec_alloc_context3 && _avcodec_find_decoder
+            && _avcodec_flush_buffers && _avcodec_free_context && _avcodec_get_name && _avcodec_open2 && _avcodec_parameters_to_context && _avcodec_receive_frame && _avcodec_send_packet;
       }
 
       hinstLib = LoadLibraryExA((basepath + (x64 ? "avformat64-" LIBAV_STR(LIBAVFORMAT_VERSION_MAJOR) ".dll" : "avformat-" LIBAV_STR(LIBAVFORMAT_VERSION_MAJOR) ".dll")).c_str(), NULL,
@@ -265,6 +272,8 @@ private:
       _av_packet_alloc = &av_packet_alloc;
       _av_packet_free = &av_packet_free;
       _av_packet_unref = &av_packet_unref;
+      _av_new_packet = &av_new_packet;
+      _av_packet_get_side_data = &av_packet_get_side_data;
       _avcodec_alloc_context3 = &avcodec_alloc_context3;
       _avcodec_find_decoder = &avcodec_find_decoder;
       _avcodec_flush_buffers = &avcodec_flush_buffers;

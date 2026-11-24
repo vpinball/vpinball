@@ -76,6 +76,15 @@ private:
    AVCodecContext* m_videoContext = nullptr;
    double m_videoTimeBaseSec = 1.; // Stream time base as a pts to seconds factor
 
+   // Alpha layer of alpha videos (Matroska alpha_mode: the alpha plane travels as an encoded
+   // frame in the BlockAdditional packet side data). A secondary decoder instance decodes it,
+   // and its luma plane is attached to the matching video frame as a fourth (yuva420p) plane.
+   AVCodecContext* m_alphaContext = nullptr;
+   std::deque<AVFrame*> m_alphaFrames; // Decoded alpha frames awaiting pairing with their video frame
+   AVCodecContext* OpenAlphaStream();
+   void ReceiveAlphaFrames();
+   void AttachAlphaFrame(AVFrame* frame);
+
    int m_audioStream = -1;
    AVCodecContext* m_audioContext = nullptr;
    double m_audioTimeBaseSec = 1.;
