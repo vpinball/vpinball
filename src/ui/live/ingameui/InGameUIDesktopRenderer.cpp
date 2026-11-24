@@ -108,6 +108,13 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
    const bool portraitFrame = io.DisplaySize.x < io.DisplaySize.y;
    const bool cabinetInset = portraitFrame && m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN;
    ImVec2 uiPos(0.f, 0.f), uiSize(io.DisplaySize);
+   // Wide frames cap the chrome to a centered column with dimmed side bands
+   const float maxWidth = 1650.f * dpi;
+   if (uiSize.x > maxWidth)
+   {
+      uiPos.x = (uiSize.x - maxWidth) * 0.5f;
+      uiSize.x = maxWidth;
+   }
    if (cabinetInset)
    {
       uiSize.y = uiSize.x;
@@ -392,6 +399,17 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
       mainDrawList->AddRect(winPos, winPos + uiSize, ImGui::GetColorU32(IM_COL32(255, 255, 255, 50)), 0.f, 0, 1.f * dpi);
    {
       const ImU32 dimCol = ImGui::GetColorU32(ImGuiCol_WindowBg, opaqueBg ? 1.f : 0.55f);
+      // Width-capped wide frame: dim the frame outside the centered chrome
+      // column (drawn on the background list, the window only spans the column)
+      if (uiPos.x > 0.f)
+      {
+         ImDrawList* const bgDrawList = ImGui::GetBackgroundDrawList();
+         bgDrawList->AddRectFilled(ImVec2(0.f, 0.f), ImVec2(uiPos.x, io.DisplaySize.y), dimCol);
+         bgDrawList->AddRectFilled(ImVec2(uiPos.x + uiSize.x, 0.f), io.DisplaySize, dimCol);
+         const ImU32 edgeCol = ImGui::GetColorU32(IM_COL32(255, 255, 255, 25));
+         bgDrawList->AddLine(ImVec2(uiPos.x, 0.f), ImVec2(uiPos.x, io.DisplaySize.y), edgeCol);
+         bgDrawList->AddLine(ImVec2(uiPos.x + uiSize.x, 0.f), ImVec2(uiPos.x + uiSize.x, io.DisplaySize.y), edgeCol);
+      }
       const float bandTop = topBarH + columnH - contentPanesH;
       mainDrawList->AddRectFilled(winPos, winPos + ImVec2(uiSize.x, bandTop), dimCol);
       mainDrawList->AddRectFilled(winPos + ImVec2(0.f, bandTop), winPos + ImVec2(railW, topBarH + columnH), dimCol);
