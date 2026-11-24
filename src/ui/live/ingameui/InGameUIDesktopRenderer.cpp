@@ -384,7 +384,7 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
    if (cabinetInset)
       mainDrawList->AddRect(winPos, winPos + uiSize, ImGui::GetColorU32(IM_COL32(255, 255, 255, 50)), 0.f, 0, 1.f * dpi);
    {
-      const ImU32 dimCol = ImGui::GetColorU32(ImGuiCol_WindowBg, 0.55f);
+      const ImU32 dimCol = ImGui::GetColorU32(ImGuiCol_WindowBg, m_player->IsVR() ? 1.f : 0.55f);
       const float bandTop = topBarH + columnH - contentPanesH;
       mainDrawList->AddRectFilled(winPos, winPos + ImVec2(uiSize.x, bandTop), dimCol);
       mainDrawList->AddRectFilled(winPos + ImVec2(0.f, bandTop), winPos + ImVec2(railW, topBarH + columnH), dimCol);
