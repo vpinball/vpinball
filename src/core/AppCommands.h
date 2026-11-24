@@ -105,6 +105,14 @@ public:
    void Execute() override;
 };
 
+class FrontendCommand : public AppCommand
+{
+public:
+   FrontendCommand() = default;
+   ~FrontendCommand() override = default;
+   void Execute() override;
+};
+
 class CaptureAttractCommand : public TableBasedCommand
 {
 public:
