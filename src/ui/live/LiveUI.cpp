@@ -368,6 +368,30 @@ void LiveUI::HandleSDLEvent(SDL_Event &e)
    }
    else
    {
+      // A touch press while no UI is open (menu or loading) goes to the touch regions and may open the InGame UI: drop its
+      // SDL synthesized mouse clicks (sent before the finger event) until release, so they do not click the opened UI
+      if (e.type == SDL_EVENT_FINGER_DOWN && SDL_GetTouchDeviceType(e.tfinger.touchID) == SDL_TOUCH_DEVICE_DIRECT && !IsOpened() && !m_player->m_isLoading)
+         m_gameplayTouch = true;
+      else if ((e.type == SDL_EVENT_MOUSE_BUTTON_DOWN || e.type == SDL_EVENT_MOUSE_BUTTON_UP) && e.button.which == SDL_TOUCH_MOUSEID)
+      {
+         if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && !IsOpened() && !m_player->m_isLoading)
+            m_gameplayTouch = true;
+         if (m_gameplayTouch)
+         {
+            if (e.type == SDL_EVENT_MOUSE_BUTTON_UP)
+               m_gameplayTouch = false;
+            return;
+         }
+      }
+      else if ((e.type == SDL_EVENT_FINGER_UP || e.type == SDL_EVENT_FINGER_CANCELED) && m_gameplayTouch)
+      {
+         // Also ends without synthesized clicks (disabled by hint, or not the first finger)
+         int count = 0;
+         SDL_Finger **fingers = SDL_GetTouchFingers(e.tfinger.touchID, &count);
+         SDL_free(fingers);
+         if (count == 0)
+            m_gameplayTouch = false;
+      }
       if (e.type == SDL_EVENT_FINGER_DOWN || e.type == SDL_EVENT_FINGER_UP || e.type == SDL_EVENT_FINGER_MOTION || e.type == SDL_EVENT_FINGER_CANCELED)
          HandleTrackpadFingers(e.tfinger);
       else if (e.type == SDL_EVENT_MOUSE_WHEEL)

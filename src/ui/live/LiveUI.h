@@ -142,6 +142,7 @@ private:
    float m_pendingPinchScale = 1.f;
    float m_pinchScale = 1.f;
    SDL_TouchID m_trackpadTouchID = 0;
+   bool m_gameplayTouch = false; // Touch press started with no UI open: its synthesized mouse clicks are not forwarded
    bool m_twistActive = false;
    bool m_twistStarted = false;
    float m_twistAngle = 0.f;

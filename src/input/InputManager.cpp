@@ -29,6 +29,9 @@
 #if !defined(__LIBVPINBALL__) && !defined(__EMSCRIPTEN__)
    #include "input/OpenPinDevHandler.h"
 #endif
+#ifdef __EMSCRIPTEN__
+   #include <emscripten.h>
+#endif
 
 
 InputManager::InputManager(Player* player, Settings& appSettings)
@@ -58,6 +61,24 @@ InputManager::InputManager(Player* player, Settings& appSettings)
    }
    if (touchDevices)
       SDL_free(touchDevices);
+#ifdef _WIN32
+   // SDL only reports a Windows touch screen once used (see OnTouchScreenUsed): ask the system for a touch digitizer
+   // (Windows 7+ values, hidden by the Vista _WIN32_WINNT target; GetSystemMetrics returns 0 on older systems)
+   constexpr int smDigitizer = 94; // SM_DIGITIZER
+   constexpr int nidIntegratedTouch = 0x01, nidExternalTouch = 0x02, nidReady = 0x80; // NID_INTEGRATED_TOUCH, NID_EXTERNAL_TOUCH, NID_READY
+   if (const int digitizer = GetSystemMetrics(smDigitizer); !m_supportsTouch && (digitizer & nidReady) && (digitizer & (nidIntegratedTouch | nidExternalTouch)))
+   {
+      PLOGI << "Touch screen reported by the system - Enabling touch support";
+      m_supportsTouch = true;
+   }
+#elif defined(__EMSCRIPTEN__)
+   // Same for the browser (SDL adds the touch device on the first touch pointer event)
+   if (!m_supportsTouch && EM_ASM_INT({ return navigator.maxTouchPoints > 0 ? 1 : 0; }) != 0)
+   {
+      PLOGI << "Touch screen reported by the browser - Enabling touch support";
+      m_supportsTouch = true;
+   }
+#endif
    auto addTouchRegion = [this](const RECT& region, unsigned int actionId, const string& label)
    { m_touchRegionMap.emplace_back(region, actionId, m_inputActions[actionId]->NewDirectStateSlot(), label); };
    // RECT definition is left, top, right, bottom in % of screen
@@ -442,6 +463,13 @@ vector<InputManager::DeviceElement> InputManager::GetDeviceElements(uint16_t dev
    return elements;
 }
 
+std::optional<float> InputManager::GetAxisPosition(uint16_t deviceId, uint16_t axisId) const
+{
+   if (const auto it = m_axisPositions.find(static_cast<uint32_t>(deviceId) << 16 | axisId); it != m_axisPositions.end())
+      return it->second;
+   return std::nullopt;
+}
+
 InputManager::DeviceType InputManager::GetDeviceType(uint16_t deviceId) const
 {
    assert(deviceId < m_inputDevices.size());
@@ -798,6 +826,16 @@ void InputManager::PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t ti
    }
 }
 
+// Fallback for touch screens not detected at startup
+void InputManager::OnTouchScreenUsed()
+{
+   if (m_supportsTouch)
+      return;
+   PLOGI << "Touch screen used - Enabling touch support";
+   m_supportsTouch = true;
+   m_player->ShowTouchControlsHint();
+}
+
 void InputManager::PushTouchEvent(float relativeX, float relativeY, uint64_t timestampNs, bool isPressed)
 {
    // Discard input events until the player has been running for a few frames to avoid triggering actions during table startup
@@ -806,6 +844,10 @@ void InputManager::PushTouchEvent(float relativeX, float relativeY, uint64_t tim
       return;
 
    if (m_player->IsVR())
+      return;
+
+   // While a menu is open, touches go to the UI (the overlay hides the regions): only releases apply
+   if (isPressed && m_player->m_liveUI && m_player->m_liveUI->IsOpened())
       return;
 
    // Regions are in the UI (playfield view) orientation: rotate the window-relative position like the UI mouse position

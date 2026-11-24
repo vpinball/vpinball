@@ -5,6 +5,7 @@
 #include <SDL3/SDL.h>
 #include <bitset>
 #include <mutex>
+#include <optional>
 
 #include "input/InputAction.h"
 #include "input/PhysicsSensor.h"
@@ -116,6 +117,7 @@ public:
       string name;
    };
    vector<DeviceElement> GetDeviceElements(uint16_t deviceId) const;
+   std::optional<float> GetAxisPosition(uint16_t deviceId, uint16_t axisId) const; // Last reported position, if any
    DeviceType GetDeviceType(uint16_t deviceId) const;
    uint16_t GetKeyboardDeviceId() const { return m_keyboardDeviceId; }
    uint16_t GetMouseDeviceId() const { return m_mouseDeviceId; }
@@ -150,6 +152,7 @@ public:
       string label; // Overlay label, empty for a region sharing the area of a labeled one
    };
    bool HasTouchInput() const { return m_supportsTouch; }
+   void OnTouchScreenUsed();
    const vector<TouchRegionDef>& GetTouchState() const { return m_touchRegionMap; }
    bool IsTouchRegionPressed(const TouchRegionDef& region) const { return m_inputActions[region.actionId]->GetDirectState(region.directStateSlot); }
 

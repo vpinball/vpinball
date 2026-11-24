@@ -98,6 +98,7 @@ public:
    bool IsPlaying(const bool applyWndFocus = true) const { return (m_playMode == PlayMode::CaptureAttract) || (m_wantsToPlay && ((applyWndFocus && !s_ignoreWndFocus) ? m_playfieldWnd->IsFocused() : true) && !IsEditorMode()); }
    static inline bool s_ignoreWndFocus = false; // Automated runs (vpx-test): keep playing (no pause, no pause overlay) when the playfield window is not focused
    void OnFocusChanged(); // On focus lost, pause player and show mouse cursor
+   void ShowTouchControlsHint(); // First launches with a touch screen: present the touch controls
    bool ShouldHideDesktopCursor() const; // In VR, only hide the shared OS cursor when the desktop display presents a game surface (cabinet / cabinet+ancillary scene render)
 
    uint32_t m_pauseTimeTarget = 0;

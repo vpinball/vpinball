@@ -157,9 +157,9 @@ vector<InputDevicePage::ElementMapping> InputDevicePage::CollectElementMappings(
 }
 
 // The element variants editable through an anchor: every bound element tuple
-// whose device element resolves to it, or the unbound anchor element itself.
-// A merged anchor (e.g. stick + stick X/Y) can own several variants; clicking
-// cycles them.
+// whose device element resolves to it, plus the unbound button, or the unbound
+// directions of an axis. A merged anchor (e.g. stick + stick X/Y) can own
+// several variants; clicking cycles them.
 vector<InputDevicePage::ElementMapping> InputDevicePage::ResolveAnchorVariants(const DeviceLayoutAnchor& anchor)
 {
    InputManager& input = m_player->m_pininput;
@@ -176,15 +176,29 @@ vector<InputDevicePage::ElementMapping> InputDevicePage::ResolveAnchorVariants(c
       elementIds.push_back(anchor.elementId);
    for (const uint16_t elementId : elementIds)
    {
-      bool isBound = false;
+      const bool isAxis = std::ranges::any_of(deviceElements, [elementId](const InputManager::DeviceElement& el) { return el.id == elementId && el.isAxis; });
+      bool boundPos = false, boundNeg = false;
       for (const ElementMapping& e : bound)
          if (e.elementId == elementId)
          {
             variants.push_back(e);
-            isBound = true;
+            (e.reversed ? boundNeg : boundPos) = true;
          }
-      if (!isBound)
-         variants.push_back({ elementId, 0.f, false, false, ElementLabel(input, m_deviceId, elementId, 0.f, false), {}, {} });
+      const auto addUnbound = [&](float threshold, bool reversed)
+      { variants.push_back({ elementId, threshold, reversed, isAxis, ElementLabel(input, m_deviceId, elementId, threshold, reversed), {}, {} }); };
+      if (!isAxis)
+      {
+         if (!boundPos)
+            addUnbound(0.f, false);
+         continue;
+      }
+      // An axis is pressed half way from its rest position (taken as the current one): in both directions when centered,
+      // only toward the other end when resting at one (pedals, triggers reported as -1..1 joystick axes)
+      const float rest = input.GetAxisPosition(m_deviceId, elementId).value_or(0.f);
+      if (!boundPos && rest < 0.5f)
+         addUnbound(rest <= -0.5f ? 0.f : 0.5f, false);
+      if (!boundNeg && rest > -0.5f)
+         addUnbound(rest >= 0.5f ? 0.f : -0.5f, true);
    }
    return variants;
 }
@@ -740,7 +754,10 @@ void InputDevicePage::RenderDeviceLayout(const ImVec4& rect)
          m_hoveredAnchorIndex = it->anchorIndex;
          break;
       }
-   if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && m_hoveredAnchorIndex >= 0)
+   // Selected on release, unless the press started a drag scroll
+   const ImGuiIO& io = ImGui::GetIO();
+   if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && m_hoveredAnchorIndex >= 0
+      && io.MouseDragMaxDistanceSqr[ImGuiMouseButton_Left] < io.MouseDragThreshold * io.MouseDragThreshold)
       SelectAnchorElement(m_hoveredAnchorIndex);
 
    drawList->PopClipRect();

@@ -459,19 +459,25 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    // Popup notification on startup
    if (m_renderer->m_stereo3D != STEREO_OFF && m_renderer->m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
       m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off"s, 4000);
-   // First launches: present the touch controls by briefly showing their overlay (unless always shown)
-   const int numberOfTimesToShowTouchMessage = g_settingsService.GetAppSettings().GetPlayer_NumberOfTimesToShowTouchMessage();
-   if (m_pininput.HasTouchInput() && !m_vrDevice && numberOfTimesToShowTouchMessage != 0 && !g_settingsService.GetAppSettings().GetPlayer_TouchOverlay())
-   {
-      g_settingsService.GetAppSettings().SetPlayer_NumberOfTimesToShowTouchMessage(max(numberOfTimesToShowTouchMessage - 1, 0), false);
-      constexpr int touchHintMs = 12000;
-      m_liveUI->ShowTouchOverlayHint(touchHintMs);
-      m_liveUI->PushNotification("This display supports touch controls, each highlighted area shows what it does.\n"
-                                 "To show the areas permanently, open the Menu (top right area) and select 'Enable Touch Overlay'."s,
-         touchHintMs);
-   }
+   // Touch screens detected later get the hint on first use (see InputManager::OnTouchScreenUsed)
+   if (m_pininput.HasTouchInput())
+      ShowTouchControlsHint();
 
    SetPlayState(true);
+}
+
+// First launches: present the touch controls by briefly showing their overlay (unless always shown)
+void Player::ShowTouchControlsHint()
+{
+   const int numberOfTimesToShowTouchMessage = g_settingsService.GetAppSettings().GetPlayer_NumberOfTimesToShowTouchMessage();
+   if (m_liveUI == nullptr || m_vrDevice || numberOfTimesToShowTouchMessage == 0 || g_settingsService.GetAppSettings().GetPlayer_TouchOverlay())
+      return;
+   g_settingsService.GetAppSettings().SetPlayer_NumberOfTimesToShowTouchMessage(max(numberOfTimesToShowTouchMessage - 1, 0), false);
+   constexpr int touchHintMs = 12000;
+   m_liveUI->ShowTouchOverlayHint(touchHintMs);
+   m_liveUI->PushNotification("This display supports touch controls, each highlighted area shows what it does.\n"
+                              "To show the areas permanently, open the Menu (top right area) and select 'Enable Touch Overlay'."s,
+      touchHintMs);
 }
 
 void Player::LockRenderThread()

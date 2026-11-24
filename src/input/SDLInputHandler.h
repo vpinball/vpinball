@@ -114,6 +114,10 @@ public:
 
       case SDL_EVENT_FINGER_DOWN:
       case SDL_EVENT_FINGER_UP:
+         // Only touch screens drive the regions (trackpad fingers are gestures, see LiveUI::HandleTrackpadFingers)
+         if (SDL_GetTouchDeviceType(e.tfinger.touchID) != SDL_TOUCH_DEVICE_DIRECT)
+            break;
+         m_pininput.OnTouchScreenUsed();
          if (e.tfinger.windowID == SDL_GetWindowID(g_pplayer->m_playfieldWnd->GetCore()))
             m_pininput.PushTouchEvent(e.tfinger.x, e.tfinger.y, e.tfinger.timestamp, e.type == SDL_EVENT_FINGER_DOWN);
          break;
