@@ -180,19 +180,11 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
 
    const auto groupOf = [](const string& path) { return path.substr(0, path.find('/')); };
 
-   // Selected category: follows the active page's path, or the selected homepage
-   // item under flipper navigation while on the root page. The root page itself
+   // Selected category: follows the active page's path. The root page itself
    // belongs to the "Table" category as its "Table Info" sub-entry
-   string selectedNavPath = activePath;
-   if (contentPage == rootPage && rootPage != nullptr && m_inGameUI.IsFlipperNav())
-   {
-      const auto& rootItems = rootPage->GetItems();
-      const int sel = rootPage->GetSelectedItemIndex();
-      if (sel >= 0 && sel < (int)rootItems.size() && rootItems[sel]->m_type == InGameUIItem::Type::Navigation)
-         selectedNavPath = rootItems[sel]->m_path;
-   }
+   const string selectedNavPath = activePath;
    if (contentPage == rootPage)
-      m_selectedGroup = selectedNavPath == rootPath ? "table"s : groupOf(selectedNavPath);
+      m_selectedGroup = "table"s;
    else if (!activePath.starts_with("popup/"s))
       m_selectedGroup = groupOf(activePath);
    // Individual plugin pages ("plugin/<id>") and plugin sheets
@@ -829,15 +821,18 @@ void InGameUIDesktopRenderer::EnsureNavSelection(InGameUIPage& page, int directi
 }
 
 // First navigation press while the focus is not shown: engages flipper
-// navigation, landing on the categories when on the navigation source page (the
-// top of the hierarchy), and normalizes the item selection
+// navigation, landing on the section rail when on the navigation source page
+// (the top of the hierarchy), and normalizes the item selection
 void InGameUIDesktopRenderer::EngageNav(InGameUIPage* page, int direction)
 {
    m_navWasActive = true;
    if (page != nullptr && page == m_inGameUI.GetRootPage())
    {
-      m_navLevel = NavLevel::TopTabs;
-      m_navTabIndex = -1; // Syncs to the selected category at next render
+      // The rail is the root page's table of contents: land its focus on the
+      // currently shown section instead of the top categories, where the ring
+      // would sit on the already-selected tab
+      m_navLevel = NavLevel::SideRail;
+      m_navRailIndex = -1; // Syncs to the selected section at next render
    }
    if (page != nullptr)
       EnsureNavSelection(*page, direction);
