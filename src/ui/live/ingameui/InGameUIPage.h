@@ -28,6 +28,9 @@ public:
    virtual void Save();
    bool IsActive() const { return m_openAnimTarget == 0.f; }
    bool IsClosed() const { return (m_openAnimPos == m_openAnimTarget) && (m_openAnimPos == -1.f || m_openAnimPos == 1.f); }
+   // Whether Update() ran at least once: a page closed before its first update must still be
+   // rendered once — the renderer caches its items to lay out the navigation sections
+   bool WasUpdated() const { return m_wasUpdated; }
    virtual void SaveGlobally();
    virtual void SaveTableOverride();
    virtual void ResetToStoredValues();
@@ -143,6 +146,7 @@ private:
    float m_openAnimStart = -1.f;
    float m_openAnimTarget = -1.f;
    float m_openAnimElapsed = 0.f;
+   bool m_wasUpdated = false; // Set by Update(): gating reaping on it keeps a never-rendered page alive one frame
 
    ImVec2 m_windowPos = ImVec2(0.f, 0.f);
    ImVec2 m_windowSize = ImVec2(0.f, 0.f);

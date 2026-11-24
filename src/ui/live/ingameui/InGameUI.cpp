@@ -10,6 +10,9 @@
 #include "DisplayProfileSettingsPage.h"
 #include "DisplaySettingsPage.h"
 #include "FrontendHomePage.h"
+#include "FrontendMediaManagerPage.h"
+#include "FrontendTableInfoPage.h"
+#include "FrontendTablePage.h"
 #include "FrontendThemesPage.h"
 #include "GraphicSettingsPage.h"
 #include "HomePage.h"
@@ -39,6 +42,9 @@ InGameUI::InGameUI(LiveUI &liveUI)
    , m_renderer(InGameUIRenderer::Create(*this))
 {
    AddPage("frontend/home"s, []() { return std::make_unique<FrontendHomePage>(); });
+   AddPage("frontend/table"s, []() { return std::make_unique<FrontendTablePage>(); });
+   AddPage("table/info"s, []() { return std::make_unique<FrontendTableInfoPage>(); });
+   AddPage("table/media"s, []() { return std::make_unique<FrontendMediaManagerPage>(); });
    AddPage("settings/themes"s, []() { return std::make_unique<FrontendThemesPage>(); });
    AddPage("homepage"s, []() { return std::make_unique<HomePage>(); });
    AddPage("loading"s, []() { return std::make_unique<LoadingPage>(); });
@@ -179,7 +185,9 @@ void InGameUI::Update()
    {
       for (auto it = m_activePages.begin(); it != m_activePages.end();)
       {
-         if ((*it)->IsClosed())
+         // A page closed before its first update (navigation straight after opening it) is kept
+         // one more frame: the renderer needs one render to cache its items (sections, plugins)
+         if ((*it)->IsClosed() && (*it)->WasUpdated())
          {
             if (it->get() == m_rootPage)
                m_rootPage = nullptr; // Do not keep a dangling pointer to the erased instance

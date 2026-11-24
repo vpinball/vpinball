@@ -59,6 +59,12 @@ namespace
          return ICON_LC_IMAGE;
       if (path == "settings/vr")
          return ICON_LC_ROTATE_3D;
+      if (path == "frontend/table")
+         return ICON_LC_PLAY;
+      if (path == "table/info")
+         return ICON_LC_INFO;
+      if (path == "table/media")
+         return ICON_LC_FILM;
       if (path == "table/rules")
          return ICON_LC_CROWN;
       if (path == "table/options")
