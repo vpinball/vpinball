@@ -78,8 +78,9 @@ namespace
    }
 }
 
-LoadingPage::LoadingPage()
+LoadingPage::LoadingPage(string caption)
    : InGameUIPage("Loading & Compressing textures..."s, ""s, SaveMode::None)
+   , m_caption(std::move(caption))
 {
 }
 
@@ -298,17 +299,20 @@ void LoadingPage::RenderLoadingScreen(const ImVec4& rect)
       drawList->AddCircleFilled(ImVec2(tipX, barY), segH * 0.5f, IM_COL32(255, 255, 255, 255));
    }
 
-   // "LOADING" caption below the bar
+   // Caption below the bar: the loading phase message set by whoever opened the screen
+   // ("LOADING" while a table file is being loaded, "PREPARING" during texture compression)
+   const char* const caption = m_caption.c_str();
    ImFont* const overlayFont = m_player->m_liveUI->GetOverlayFont() ? m_player->m_liveUI->GetOverlayFont() : ImGui::GetFont();
    const float capSize = std::clamp(size.y * 0.028f, 12.f, 42.f);
-   DrawCenteredSpacedText(drawList, overlayFont, capSize, ImVec2(origin.x + size.x * 0.5f, barY + segH + size.y * 0.015f), capSize * 0.35f, IM_COL32(160, 160, 166, 255), "LOADING");
+   DrawCenteredSpacedText(drawList, overlayFont, capSize, ImVec2(origin.x + size.x * 0.5f, barY + segH + size.y * 0.015f), capSize * 0.35f, IM_COL32(160, 160, 166, 255), caption);
 
    // Bottom info bar: explains the compression process and gives access to the skip options
    const bool canSkip = CanSkipCompression();
-   const string info = canSkip                                ? "Compressing textures (one-time operation, results are cached for future launches).\nYou can adjust compression settings by pressing any UI button."s
+   const string info = canSkip ? "Compressing textures (one-time operation, results are cached for future launches).\nYou can adjust compression settings by pressing any UI button."s
       : stats.skipCompression.load(std::memory_order_relaxed) ? "Loading the remaining textures with compression skipped."s
       : m_player->m_isStartupLoading                          ? m_player->m_startupLoadingPhase + "..."s
-                                                              : "Loading table textures."s;
+      : totalPixels > 0                                       ? "Loading table textures."s
+                                                              : "Loading table."s;
    ImFont* const font = ImGui::GetFont();
    const float fontSize = ImGui::GetFontSize();
    const char* const link = canSkip ? "Options..." : nullptr;

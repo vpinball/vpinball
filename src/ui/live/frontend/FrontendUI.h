@@ -14,6 +14,11 @@
 
 class LiveUI;
 
+namespace VPX::InGameUI
+{
+class LoadingPage;
+}
+
 namespace VPX::Frontend
 {
 
@@ -39,8 +44,9 @@ public:
 
    // Catalog actions (also the frontend's InGameUI "frontend/table" page)
    void Rescan();
-   // Requests the host to end this frontend session and start a play or edit session on the
-   // selected catalog entry (loads the table file synchronously first).
+   // Loads the selected catalog entry's table file asynchronously, the loading screen giving
+   // feedback while it parses, then requests the host to end this frontend session and start
+   // a play or edit session on it.
    void LaunchSession(Player::PlayMode playMode);
    // Restarts the frontend session on the same synthetic table with a different VR mode, to enter
    // (ForceOn) or leave (ForceOff) XR. In XR, LiveUI is submitted to the HMD as a head locked quad
@@ -163,6 +169,24 @@ private:
    float m_wheelPos = 0.f; // Continuous wheel position (entry index), eased toward m_selected or scrolled on held navigation
 
    PreviewPane m_panes[3]; // Playfield, backglass, instruction card
+
+   // An asynchronous table file load, started by a launch action and polled each frame in Update:
+   // the worker thread parses the file then publishes the loaded table (null on failure) under
+   // `done`; `abandoned` tells it the frontend is gone so it must release the result itself
+   struct PendingTableLoad
+   {
+      std::atomic<PinTable *> table { nullptr };
+      std::atomic<bool> done { false };
+      std::atomic<bool> abandoned { false };
+      Player::PlayMode playMode = Player::PlayMode::Play;
+      Player::VROverride vr = Player::VROverride::Auto;
+      string title;
+   };
+   void BeginTableLoad(const TableCatalog::Entry &entry, Player::PlayMode playMode, Player::VROverride vr);
+   std::shared_ptr<PendingTableLoad> m_tableLoad;
+   // The loading screen is rendered by the frontend itself while the file parses (the in-game UI
+   // chrome stays closed, it would else swallow the frontend's input)
+   std::unique_ptr<InGameUI::LoadingPage> m_loadingPage;
 
    const MsgPluginAPI *m_msgApi = nullptr;
    const VPXPluginAPI *m_vpxApi = nullptr;

@@ -12,7 +12,9 @@ namespace VPX::InGameUI
 class LoadingPage final : public InGameUIPage
 {
 public:
-   LoadingPage();
+   // caption is the phase label displayed below the progress bar ("LOADING" while a table file
+   // is being parsed, "PREPARING" during the texture compression), set by the page's creator
+   explicit LoadingPage(string caption);
    bool IsPlayerPauseAllowed() const override { return false; }
    void BuildPage() override;
    void CollectPanes(vector<InGameUIPane>& panes) override;
@@ -40,6 +42,8 @@ private:
    void OpenSkipOptions();
    void RenderLoadingScreen(const ImVec4& rect);
    void GenerateWireNet(const ImVec2& size);
+
+   string m_caption;
 
    // Wire/dot constellation backdrop: randomly generated once per loading screen
    // instance (a fresh pattern each load), then static for its lifetime
