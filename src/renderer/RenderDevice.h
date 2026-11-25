@@ -324,6 +324,21 @@ public:
    uint16_t m_scissorCache = UINT16_MAX;
    void ApplyScissor() const { if (m_scissorCache != UINT16_MAX) bgfx::setScissor(m_scissorCache); }
 
+   // Monotonic counter incremented after each call to bgfx::frame() (render thread only). BGFX uniform memory
+   // is per-frame, so shader uniform caches use it to know when previously written uniform values were dropped.
+   uint32_t m_uniformFrameGeneration = 0;
+
+   // Cache of the uniform values written to BGFX during the current frame, indexed by uniform handle (render
+   // thread only). BGFX uniforms are frame global (not per program) and handles are shared between shaders
+   // created with the same uniform name, so one cache is valid for all shaders within a frame. Used to skip
+   // re-uploading uniform values that did not change (uniform upload is expensive, especially in debug builds).
+   struct UniformCacheEntry
+   {
+      vector<uint8_t> data; // Last written value (valid only if generation matches m_uniformFrameGeneration)
+      uint32_t generation = 0; // Frame generation at which the value was written
+   };
+   vector<UniformCacheEntry> m_uniformCache;
+
    bool m_frameNoPresent = false; // Flag set when the next frame should be submitted without VBlank sync disabled
    std::binary_semaphore m_rendererInitialized { 0 }; // Semaphore to signal when the renderer is initialized
    std::binary_semaphore m_renderThreadStopped { 0 }; // Semaphore signaled by the render thread when it has left its render loop, so the destructor can free render resources without racing in-flight rendering
