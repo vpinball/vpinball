@@ -509,7 +509,6 @@ private:
 
    // caches
 #if defined(ENABLE_BGFX)
-   class ShaderState* m_boundState[static_cast<unsigned int>(ShaderTechnique::COUNT)]; // The state currently applied to the backend (per program, so per technique)
    bgfx::ProgramHandle m_techniques[static_cast<unsigned int>(ShaderTechnique::COUNT)];
    bgfx::ProgramHandle m_clipPlaneTechniques[static_cast<unsigned int>(ShaderTechnique::COUNT)];
    bgfx::UniformHandle m_uniformHandles[static_cast<unsigned int>(ShaderTechnique::COUNT)];
