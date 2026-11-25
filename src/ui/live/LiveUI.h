@@ -109,6 +109,10 @@ private:
    // Shared implementation of RenderUI/RenderUIVR: rasterizes the ImGui draw lists orthogonally onto
    // the current render target, sdrWhitePQ is the output's PQ-encoded SDR white level (0 for sRGB)
    void RenderUIInternal(const float sdrWhitePQ);
+#ifdef ENABLE_XR
+   // Renders the controller beam and contact point after the VR UI panel composite
+   void RenderVRPointer(const Vertex3Ds uiQuadScene[4], const ModelViewProj &uiMVP);
+#endif
    void AddMousePosEvent(bool isTouch, float x, float y) const;
    void UpdateScale();
    void UpdatePlayfieldWindowFrame();
