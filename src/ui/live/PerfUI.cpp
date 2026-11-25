@@ -63,13 +63,8 @@ void PerfUI::RenderFPS()
    const ImGuiIO &io = ImGui::GetIO();
    constexpr ImGuiWindowFlags window_flags
       = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-   if (m_player->m_vrDevice == nullptr)
-      ImGui::SetNextWindowPos(ImVec2(8.f * m_uiScale, io.DisplaySize.y - 8.f * m_uiScale), 0, ImVec2(0.f, 1.f));
-   else if (m_showPerf == PerfMode::PM_STATS) // VR with stats
-      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.25f, io.DisplaySize.y * 0.35f), 0, ImVec2(0.f, 0.f));
-   else // VR without stats
-      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.35f), 0, ImVec2(0.5f, 0.f));
-   ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.666f);
+   ImGui::SetNextWindowPos(ImVec2(8.f * m_uiScale, io.DisplaySize.y - 8.f * m_uiScale), 0, ImVec2(0.f, 1.f));
+   ImGui::SetNextWindowBgAlpha(0.666f);
    ImGui::Begin("FPS", nullptr, window_flags);
 
    // Frame sequence graph & stats
@@ -102,7 +97,7 @@ void PerfUI::RenderFPS()
          5.f * m_uiScale, color);
    }
 
-   ImGui::SetNextWindowBgAlpha(m_player->m_renderer->m_vrApplyColorKey ? 1.f : 0.666f);
+   ImGui::SetNextWindowBgAlpha(0.666f);
    ImGui::BeginChild("FPSText", ImVec2(0.f, 0.f), ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
 
    {
@@ -242,9 +237,8 @@ void PerfUI::RenderStats() const
       }
 
       // Full scale is expected frame length + 1 display frame (to show when we miss)
-      const float elapse = m_player->IsVR()
-         ? 1.5f * static_cast<float>(m_player->m_renderProfiler->GetAvg(FrameProfiler::PROFILE_FRAME))
-         : static_cast<float>(m_player->m_renderer->m_renderDevice->GetTargetFrameLength()) + static_cast<float>(1000000. / (double)m_player->m_playfieldWnd->GetRefreshRate());
+      const float elapse
+         = static_cast<float>(m_player->m_renderer->m_renderDevice->GetTargetFrameLength()) + static_cast<float>(1000000. / (double)m_player->m_playfieldWnd->GetRefreshRate());
       const float width = inner_bb.Max.x - inner_bb.Min.x;
       for (int i = 0; i < std::size(sections); i++)
       {
@@ -387,18 +381,11 @@ void PerfUI::RenderStats() const
 void PerfUI::RenderPlots()
 {
    const ImGuiIO &io = ImGui::GetIO();
-   ImGuiWindowFlags window_flags_plots
-      = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-   if (!m_player->m_renderer->m_vrApplyColorKey)
-   {
-      window_flags_plots |= ImGuiWindowFlags_NoBackground;
-   }
+   constexpr ImGuiWindowFlags window_flags_plots
+      = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBackground;
 
    ImGui::SetNextWindowSize(ImVec2(5.f * ImGui::CalcTextSize("1234567890").x, 500.f));
-   if (m_player->m_vrDevice)
-      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.80f, io.DisplaySize.y * 0.35f), 0, ImVec2(1.f, 0.f));
-   else
-      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 8.f * m_uiScale, io.DisplaySize.y - 8.f * m_uiScale), 0, ImVec2(1.f, 1.f));
+   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 8.f * m_uiScale, io.DisplaySize.y - 8.f * m_uiScale), 0, ImVec2(1.f, 1.f));
    ImGui::Begin("Plots", nullptr, window_flags_plots);
 
    const float t = static_cast<float>(m_player->m_time_sec);
@@ -416,7 +403,7 @@ void PerfUI::RenderPlots()
    {
       ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
       ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_LockMin);
-      const float targetRefreshRate = clamp(m_player->m_vrDevice ? 60.f : m_player->GetTargetRefreshRate(), 24.f, 200.f);
+      const float targetRefreshRate = clamp(m_player->GetTargetRefreshRate(), 24.f, 200.f);
       ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2000.f / targetRefreshRate, ImGuiCond_Always); // range is twice the target frame rate
       if (m_plotFPS.m_rolling)
          ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotFPS.m_timeSpan, ImGuiCond_Always);
