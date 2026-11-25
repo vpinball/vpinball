@@ -847,14 +847,16 @@ void LiveUI::RenderUIInternal(const float sdrWhitePQ)
       m_ballControl.Update(width, height);
    }
 
-   // Display plumb state overlay
-   m_plumbOverlay.Update();
+   // Display plumb state overlay (disabled in VR)
+   if (m_player->m_vrDevice == nullptr)
+      m_plumbOverlay.Update();
 
    // Display notification overlays except when script has an unaligned rotation
    m_notificationOverlay.Update(true, m_overlayFont);
 
-   // Display performance overlays
-   m_perfUI.Update();
+   // Display performance overlays (disabled in VR)
+   if (m_player->m_vrDevice == nullptr)
+      m_perfUI.Update();
 
    ImGui::PopFont();
 
