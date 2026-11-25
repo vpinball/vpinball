@@ -549,118 +549,6 @@ void LiveUI::Render3D()
 {
    if (m_editorUI.IsOpened())
       m_editorUI.Render3D();
-
-// VR controller pointer ray: a gradient line from the controller to its hit
-// point on the UI quad. It is drawn in world space since the UI surface is a
-// flat quad and cannot host geometry anchored outside it
-#ifdef ENABLE_XR
-   if (m_player->m_vrDevice != nullptr && m_uiLayerShown && m_inGameUI.IsOpened())
-   {
-      const VRDevice::UIPointer &pointer = m_player->m_vrDevice->GetUIPointer();
-      if (pointer.valid)
-      {
-         if (m_laserSampler == nullptr)
-         {
-            // 1D alpha ramp, solid at the controller end fading out toward the UI end
-            const auto tex = BaseTexture::Create(16, 1, BaseTexture::Format::SRGBA);
-            if (tex != nullptr)
-            {
-               uint32_t *const texels = static_cast<uint32_t *>(tex->data());
-               for (unsigned int i = 0; i < 16; ++i)
-                  texels[i] = 0x00FFFFFFu | (((15u - i) * 255u / 15u) << 24u);
-               m_laserSampler = std::make_shared<Sampler>(m_rd, "UIPointerRay"s, tex, false);
-            }
-         }
-         if (m_laserDotSampler == nullptr)
-         {
-            // Filled circle with a soft edge, marking the pick point on the UI surface
-            const auto tex = BaseTexture::Create(64, 64, BaseTexture::Format::SRGBA);
-            if (tex != nullptr)
-            {
-               uint32_t *const texels = static_cast<uint32_t *>(tex->data());
-               for (unsigned int y = 0; y < 64; ++y)
-                  for (unsigned int x = 0; x < 64; ++x)
-                  {
-                     const float dx = static_cast<float>(x) - 31.5f;
-                     const float dy = static_cast<float>(y) - 31.5f;
-                     const float alpha = clamp((31.f - sqrtf(dx * dx + dy * dy)) * 4.f, 0.f, 1.f);
-                     texels[y * 64 + x] = 0x00FFFFFFu | (static_cast<uint32_t>(alpha * 255.f) << 24u);
-                  }
-               m_laserDotSampler = std::make_shared<Sampler>(m_rd, "UIPointerDot"s, tex, false);
-            }
-         }
-         if (m_laserSampler != nullptr)
-         {
-            const Vertex3Ds origin(pointer.sceneOrigin[0], pointer.sceneOrigin[1], pointer.sceneOrigin[2]);
-            const Vertex3Ds hit(pointer.sceneHit[0], pointer.sceneHit[1], pointer.sceneHit[2]);
-            const Vertex3Ds head(pointer.headScene[0], pointer.headScene[1], pointer.headScene[2]);
-            Vertex3Ds dir = hit - origin;
-            if (dir.Length() > 1e-6f)
-            {
-               dir.Normalize();
-               // Ribbon billboarding: its side axis is perpendicular to both the
-               // ray and the direction toward the head, so it faces the viewer
-               const Vertex3Ds mid = (origin + hit) * 0.5f;
-               Vertex3Ds toHead = head - mid;
-               toHead.Normalize();
-               Vertex3Ds side = CrossProduct(dir, toHead);
-               if (side.Length() > 1e-6f)
-               {
-                  side.Normalize();
-                  constexpr float halfW = 6.f; // VPU (~3mm) half-width of the ray ribbon
-                  const Vertex3Ds edge = side * halfW;
-                  const Vertex3D_NoTex2 vertices[4] = { //
-                     { origin.x + edge.x, origin.y + edge.y, origin.z + edge.z, 0.f, 0.f, 1.f, 0.f, 0.5f }, //
-                     { hit.x + edge.x, hit.y + edge.y, hit.z + edge.z, 0.f, 0.f, 1.f, 1.f, 0.5f }, //
-                     { origin.x - edge.x, origin.y - edge.y, origin.z - edge.z, 0.f, 0.f, 1.f, 0.f, 0.5f }, //
-                     { hit.x - edge.x, hit.y - edge.y, hit.z - edge.z, 0.f, 0.f, 1.f, 1.f, 0.5f }
-                  };
-                  m_rd->ResetRenderState();
-                  m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-                  m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-                  m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // Floats over the table
-                  m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
-                  m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
-                  m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::ONE); // Additive glow
-                  m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
-                  m_rd->m_basicShader->SetTechnique(ShaderTechnique::unshaded_with_texture);
-                  m_rd->m_basicShader->SetTexture(ShaderUniform::tex_base_color, m_laserSampler, SamplerFilter::SF_BILINEAR);
-                  m_rd->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
-                  m_rd->DrawTexturedQuad(m_rd->m_basicShader, vertices, true);
-               }
-            }
-            // Pick marker: a circle billboarded over the hit point while the ray
-            // points at the UI surface (replaces the software mouse cursor)
-            if (pointer.onQuad && m_laserDotSampler != nullptr)
-            {
-               Vertex3Ds toDot = head - hit;
-               if (toDot.Length() > 1e-6f)
-               {
-                  toDot.Normalize();
-                  Vertex3Ds dotSide = CrossProduct(toDot, Vertex3Ds(0.f, 0.f, 1.f));
-                  if (dotSide.Length() < 1e-4f)
-                     dotSide = Vertex3Ds(1.f, 0.f, 0.f);
-                  else
-                     dotSide.Normalize();
-                  const Vertex3Ds dotUp = CrossProduct(dotSide, toDot);
-                  constexpr float r = 14.f; // VPU (~7mm) dot half-size
-                  const Vertex3Ds a = dotSide * r;
-                  const Vertex3Ds b = dotUp * r;
-                  const Vertex3Ds c = hit + toDot * 0.5f; // floats just in front of the surface
-                  const Vertex3D_NoTex2 vertices[4] = { //
-                     { c.x - a.x + b.x, c.y - a.y + b.y, c.z - a.z + b.z, 0.f, 0.f, 1.f, 0.f, 0.f }, //
-                     { c.x + a.x + b.x, c.y + a.y + b.y, c.z + a.z + b.z, 0.f, 0.f, 1.f, 1.f, 0.f }, //
-                     { c.x - a.x - b.x, c.y - a.y - b.y, c.z - a.z - b.z, 0.f, 0.f, 1.f, 0.f, 1.f }, //
-                     { c.x + a.x - b.x, c.y + a.y - b.y, c.z + a.z - b.z, 0.f, 0.f, 1.f, 1.f, 1.f }
-                  };
-                  m_rd->m_basicShader->SetTexture(ShaderUniform::tex_base_color, m_laserDotSampler, SamplerFilter::SF_BILINEAR);
-                  m_rd->DrawTexturedQuad(m_rd->m_basicShader, vertices, true);
-               }
-            }
-         }
-      }
-   }
-#endif
 }
 
 #ifdef ENABLE_XR
@@ -695,6 +583,142 @@ void LiveUI::RenderVRUIDepthStamp(const Vertex3Ds corners[4], const ModelViewPro
    }; // Bottom right
    m_rd->DrawTexturedQuad(m_rd->m_basicShader, vertices, false);
 }
+
+// VR controller pointer, matching Virtual Desktop's visual language: a narrow white
+// beam fading over a fixed reach, with a small opaque contact point lying in the UI plane.
+void LiveUI::RenderVRPointer(const Vertex3Ds uiQuadScene[4], const ModelViewProj &uiMVP)
+{
+   if (m_player->m_vrDevice == nullptr || !m_uiLayerShown || !m_inGameUI.IsOpened())
+      return;
+   const VRDevice::UIPointer &pointer = m_player->m_vrDevice->GetUIPointer();
+   if (!pointer.valid)
+      return;
+
+   if (m_laserSampler == nullptr)
+   {
+      // Alpha across the beam is a soft-edged strip; alpha along it is a fixed-length fade.
+      // Encoding the fade against the maximum reach keeps the end visible when it lands on a near surface.
+      const auto tex = BaseTexture::Create(64, 16, BaseTexture::Format::SRGBA);
+      if (tex != nullptr)
+      {
+         uint32_t *const texels = static_cast<uint32_t *>(tex->data());
+         for (unsigned int y = 0; y < 16; ++y)
+         {
+            const float across = fabsf((static_cast<float>(y) + 0.5f) * (2.f / 16.f) - 1.f);
+            float edgeAlpha = clamp((1.f - across) / 0.65f, 0.f, 1.f);
+            edgeAlpha = edgeAlpha * edgeAlpha * (3.f - 2.f * edgeAlpha);
+            for (unsigned int x = 0; x < 64; ++x)
+            {
+               const float along = (static_cast<float>(x) + 0.5f) / 64.f;
+               const float lengthAlpha = 1.f - along * along * along;
+               const float alpha = lengthAlpha * edgeAlpha;
+               texels[y * 64 + x] = 0x00FFFFFFu | (static_cast<uint32_t>(alpha * 255.f + 0.5f) << 24u);
+            }
+         }
+         m_laserSampler = std::make_shared<Sampler>(m_rd, "UIPointerRay"s, tex, false);
+      }
+   }
+   if (m_laserDotSampler == nullptr)
+   {
+      // Small filled contact point with a narrow antialiased edge.
+      const auto tex = BaseTexture::Create(32, 32, BaseTexture::Format::SRGBA);
+      if (tex != nullptr)
+      {
+         uint32_t *const texels = static_cast<uint32_t *>(tex->data());
+         for (unsigned int y = 0; y < 32; ++y)
+            for (unsigned int x = 0; x < 32; ++x)
+            {
+               const float dx = static_cast<float>(x) - 15.5f;
+               const float dy = static_cast<float>(y) - 15.5f;
+               const float alpha = clamp((14.5f - sqrtf(dx * dx + dy * dy)) / 1.2f, 0.f, 1.f);
+               texels[y * 32 + x] = 0x00FFFFFFu | (static_cast<uint32_t>(alpha * 255.f + 0.5f) << 24u);
+            }
+         m_laserDotSampler = std::make_shared<Sampler>(m_rd, "UIPointerDot"s, tex, false);
+      }
+   }
+   if (m_laserSampler == nullptr)
+      return;
+
+   m_rd->ResetRenderState();
+   m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // Composited over the UI panel
+   m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+   m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+   m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+   m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+   m_rd->m_basicShader->SetTechnique(ShaderTechnique::unshaded_with_texture);
+   const Matrix3D matIdentity = Matrix3D::MatrixIdentity();
+   m_rd->m_basicShader->SetMatrix(ShaderUniform::matWorld, &matIdentity);
+   m_rd->m_basicShader->SetMatrix(ShaderUniform::matView, &uiMVP.GetView(0), uiMVP.m_nEyes);
+   m_rd->m_basicShader->SetMatrix(ShaderUniform::matWorldView, &uiMVP.GetModelView(0), uiMVP.m_nEyes);
+   m_rd->m_basicShader->SetMatrix(ShaderUniform::matWorldViewInverseTranspose, &uiMVP.GetModelViewInverseTranspose(0), uiMVP.m_nEyes);
+   m_rd->m_basicShader->SetMatrix(ShaderUniform::matRotViewProj, &uiMVP.GetRotViewProj(0), uiMVP.m_nEyes);
+   m_rd->m_basicShader->SetVector(ShaderUniform::cameraPosWorld, &uiMVP.GetCameraPos(0), uiMVP.m_nEyes);
+   m_rd->m_basicShader->SetVector(ShaderUniform::staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
+
+   const Vertex3Ds origin(pointer.sceneOrigin[0], pointer.sceneOrigin[1], pointer.sceneOrigin[2]);
+   const Vertex3Ds hit(pointer.sceneHit[0], pointer.sceneHit[1], pointer.sceneHit[2]);
+   const Vertex3Ds head(pointer.headScene[0], pointer.headScene[1], pointer.headScene[2]);
+   Vertex3Ds dir = hit - origin;
+   const float hitDistance = dir.Length();
+   if (hitDistance > 1e-6f)
+   {
+      dir.Normalize();
+      constexpr float maxLength = MMTOVPU(350.f); // Maximum visible beam reach, like Virtual Desktop
+      const float beamLength = min(hitDistance, maxLength);
+      const Vertex3Ds end = origin + dir * beamLength;
+
+      // Ribbon billboarding: its side axis is perpendicular to both the
+      // ray and the direction toward the head, so it faces the viewer
+      const Vertex3Ds mid = (origin + end) * 0.5f;
+      Vertex3Ds toHead = head - mid;
+      toHead.Normalize();
+      Vertex3Ds side = CrossProduct(dir, toHead);
+      if (side.Length() <= 1e-6f)
+      {
+         side = CrossProduct(dir, Vertex3Ds(0.f, 0.f, 1.f));
+         if (side.Length() <= 1e-6f)
+            side = Vertex3Ds(1.f, 0.f, 0.f);
+      }
+      side.Normalize();
+      constexpr float halfW = MMTOVPU(1.5f); // 3mm overall width, including the soft edge
+      const Vertex3Ds edge = side * halfW;
+      const float beamU = beamLength / maxLength;
+      const Vertex3D_NoTex2 vertices[4] = { //
+         { origin.x + edge.x, origin.y + edge.y, origin.z + edge.z, 0.f, 0.f, 1.f, 0.f, 0.f }, //
+         { end.x + edge.x, end.y + edge.y, end.z + edge.z, 0.f, 0.f, 1.f, beamU, 0.f }, //
+         { origin.x - edge.x, origin.y - edge.y, origin.z - edge.z, 0.f, 0.f, 1.f, 0.f, 1.f }, //
+         { end.x - edge.x, end.y - edge.y, end.z - edge.z, 0.f, 0.f, 1.f, beamU, 1.f }
+      };
+      m_rd->m_basicShader->SetTexture(ShaderUniform::tex_base_color, m_laserSampler, SamplerFilter::SF_BILINEAR);
+      m_rd->DrawTexturedQuad(m_rd->m_basicShader, vertices, true, -10001.f); // After the -10000 UI panel
+   }
+
+   // Contact point: a small opaque disk lying in the UI plane rather than a head-facing billboard.
+   if (pointer.onQuad && m_laserDotSampler != nullptr)
+   {
+      Vertex3Ds dotRight = uiQuadScene[1] - uiQuadScene[0];
+      Vertex3Ds dotDown = uiQuadScene[2] - uiQuadScene[0];
+      if (dotRight.Length() > 1e-6f && dotDown.Length() > 1e-6f)
+      {
+         dotRight.Normalize();
+         dotDown.Normalize();
+         constexpr float r = MMTOVPU(2.1f); // Approximately 4mm visible diameter
+         const Vertex3Ds a = dotRight * r;
+         const Vertex3Ds b = dotDown * r;
+         const Vertex3D_NoTex2 vertices[4] = { //
+            { hit.x - a.x + b.x, hit.y - a.y + b.y, hit.z - a.z + b.z, 0.f, 0.f, 1.f, 0.f, 0.f }, //
+            { hit.x + a.x + b.x, hit.y + a.y + b.y, hit.z + a.z + b.z, 0.f, 0.f, 1.f, 1.f, 0.f }, //
+            { hit.x - a.x - b.x, hit.y - a.y - b.y, hit.z - a.z - b.z, 0.f, 0.f, 1.f, 0.f, 1.f }, //
+            { hit.x + a.x - b.x, hit.y + a.y - b.y, hit.z + a.z - b.z, 0.f, 0.f, 1.f, 1.f, 1.f }
+         };
+         m_rd->m_basicShader->SetTexture(ShaderUniform::tex_base_color, m_laserDotSampler, SamplerFilter::SF_BILINEAR);
+         m_rd->DrawTexturedQuad(m_rd->m_basicShader, vertices, true, -10002.f); // After the beam and UI panel
+      }
+   }
+}
+
 #endif
 
 void LiveUI::RenderUI()
@@ -778,6 +802,7 @@ void LiveUI::RenderUIVR(const Vertex3Ds uiQuadScene[4], const ModelViewProj &uiM
    ImDrawIdx *const quadIdx = reinterpret_cast<ImDrawIdx *>(m_uiPanelQuad->idx.data());
    quadIdx[0] = 0; quadIdx[1] = 2; quadIdx[2] = 1; quadIdx[3] = 1; quadIdx[4] = 2; quadIdx[5] = 3;
    m_rd->DrawTransientMesh(m_rd->m_uiShader, true, -10000.f, m_uiPanelQuad, RenderDevice::TRIANGLELIST, 0, 6);
+   RenderVRPointer(uiQuadScene, uiMVP);
 }
 #endif
 
