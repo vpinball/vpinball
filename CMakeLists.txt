@@ -137,6 +137,7 @@ add_compile_options(
 option(USE_SYSTEM_LIBS "Search system locations for third-party libs before the bundled tree" OFF)
 set(SYSTEM_LIBS_INCLUDE_DIR "/usr/include" CACHE PATH "System include dir searched first when USE_SYSTEM_LIBS")
 set(SYSTEM_LIBS_LIB_DIR "/usr/lib" CACHE PATH "System library dir searched first when USE_SYSTEM_LIBS")
+set(FREEIMAGE_DIR "" CACHE PATH "FreeImage prefix (include/, lib/) searched before the system dirs when USE_SYSTEM_LIBS")
 
 if(USE_SYSTEM_LIBS)
    # include_directories(BEFORE) prepends each entry, so the resulting search order is the
@@ -147,6 +148,10 @@ if(USE_SYSTEM_LIBS)
       "${SYSTEM_LIBS_INCLUDE_DIR}/libwinevbs/wine"
       "${SYSTEM_LIBS_INCLUDE_DIR}/libwinevbs/atl")
    link_directories(BEFORE "${SYSTEM_LIBS_LIB_DIR}")
+   if(FREEIMAGE_DIR)
+      include_directories(BEFORE "${FREEIMAGE_DIR}/include")
+      link_directories(BEFORE "${FREEIMAGE_DIR}/lib")
+   endif()
    message(STATUS "USE_SYSTEM_LIBS: include=${SYSTEM_LIBS_INCLUDE_DIR} lib=${SYSTEM_LIBS_LIB_DIR}")
 endif()
 
