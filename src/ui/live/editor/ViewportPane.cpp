@@ -2124,9 +2124,16 @@ void ViewportPane::RenderUI(ImDrawList* const overlayDrawList)
       AdoptCameraFrom(other != this ? other : nullptr);
       if (m_editor.m_camSetupPending && m_editor.GetTargetViewport() == this && m_viewType == m_editor.m_camSetupPending->mode)
       {
-         m_perspectiveCam = m_editor.m_camSetupPending->persp;
-         m_shadeMode = m_editor.m_camSetupPending->shade;
-         m_predefinedView = m_editor.m_camSetupPending->predef;
+         // Through SetView / SetPerspectiveCam, which orient the camera adopted above and convert its distance between the projections
+         const EditorUI::CamSetup &setup = *m_editor.m_camSetupPending;
+         m_shadeMode = setup.shade;
+         if (setup.predef != PredefinedView::None && !setup.persp)
+            SetView(setup.predef);
+         else
+         {
+            SetPerspectiveCam(setup.persp);
+            m_predefinedView = setup.predef;
+         }
          m_editor.m_camSetupPending.reset();
          if (m_editor.m_fitPlayfieldCamera && m_imageRect.Height() > 0.f)
          {
