@@ -817,7 +817,7 @@ struct ImPool
     void        Clear()                             { for (int n = 0; n < Map.Data.Size; n++) { int idx = Map.Data[n].val_i; if (idx != -1) Buf[idx].~T(); } Map.Clear(); Buf.Size = 0; Buf.clear(); FreeIdx = AliveCount = 0; } // ImPool owns element lifetime (elements are destructed by Remove/Clear, not by Buf, and Buf also holds destructed free slots), so clear Buf storage without re-destructing elements.
     T*          Add()                               { int idx = FreeIdx; if (idx == Buf.Size) { if (Buf.Size == Buf.Capacity) Buf.reserve(Buf._grow_capacity(Buf.Size + 1)); Buf.Size++; FreeIdx++; } else { FreeIdx = *(int*)&Buf[idx]; } IM_PLACEMENT_NEW(&Buf[idx]) T(); AliveCount++; return &Buf[idx]; } // VPX: grow without constructing (constructed once below)
     void        Remove(ImGuiID key, const T* p)     { Remove(key, GetIndex(p)); }
-    void        Remove(ImGuiID key, ImPoolIdx idx)  { Buf[idx].~T(); memset(&Buf[idx], 0, sizeof(T)); *(int*)&Buf[idx] = FreeIdx; FreeIdx = idx; Map.SetInt(key, -1); AliveCount--; } // Zero the destructed slot so Buf copies/moves (reserve) and Clear() don't re-destruct dangling member pointers.
+    void        Remove(ImGuiID key, ImPoolIdx idx)  { Buf[idx].~T(); memset(&Buf[idx], 0, sizeof(T)); *(int*)&Buf[idx] = FreeIdx; FreeIdx = idx; Map.SetInt(key, -1); AliveCount--; } // VPX: zero the destructed slot (Buf never destructs its elements: reserve relocates bitwise, Clear() empties Buf before freeing it)
     void        Reserve(int capacity)               { Buf.reserve(capacity); Map.Data.reserve(capacity); }
 
     // To iterate a ImPool: for (int n = 0; n < pool.GetMapSize(); n++) if (T* t = pool.TryGetMapData(n)) { ... }

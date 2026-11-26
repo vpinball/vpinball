@@ -2867,7 +2867,10 @@ void ImGui::TableMergeDrawChannels(ImGuiTable* table)
     {
         // We skip channel 0 (Bg0/Bg1) and 1 (Bg2 frozen) from the shuffling since they won't move - see channels allocation in TableSetupDrawChannels().
         const int LEADING_DRAW_CHANNELS = 2;
-        g.DrawChannelsTempMergeBuffer.resize(splitter->_Count - LEADING_DRAW_CHANNELS); // Use shared temporary storage so the allocation gets amortized
+        // VPX: the buffer holds bitwise copies of channels owned by the splitter: size its raw storage without constructing/destructing them (ImVector does for non-POD types)
+        if (splitter->_Count - LEADING_DRAW_CHANNELS > g.DrawChannelsTempMergeBuffer.Capacity)
+            g.DrawChannelsTempMergeBuffer.reserve(g.DrawChannelsTempMergeBuffer._grow_capacity(splitter->_Count - LEADING_DRAW_CHANNELS));
+        g.DrawChannelsTempMergeBuffer.Size = splitter->_Count - LEADING_DRAW_CHANNELS; // Use shared temporary storage so the allocation gets amortized
         ImDrawChannel* dst_tmp = g.DrawChannelsTempMergeBuffer.Data;
         ImBitArraySetBitRange(remaining_mask, LEADING_DRAW_CHANNELS, splitter->_Count);
         ImBitArrayClearBit(remaining_mask, table->Bg2DrawChannelUnfrozen);

@@ -4669,6 +4669,7 @@ void ImGui::Shutdown()
 
     g.Tables.Clear();
     g.TablesTempData.clear_destruct();
+    g.DrawChannelsTempMergeBuffer.Size = 0; // VPX: holds bitwise copies of channels owned by (already freed) table splitters, which must not be destructed
     g.DrawChannelsTempMergeBuffer.clear();
 
     g.MultiSelectStorage.Clear();
