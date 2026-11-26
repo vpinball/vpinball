@@ -111,6 +111,12 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
 {
    if (pages.empty())
       return;
+   // Pages are not faded in/out: the UI appears and vanishes instantly, so once
+   // the top page starts closing (the whole UI closing back to the game) there
+   // is nothing left to render — the page only finishes its close animation in
+   // the model before being discarded
+   if (!pages.back()->IsActive())
+      return;
    const ImGuiIO& io = ImGui::GetIO();
    const ImGuiStyle& style = ImGui::GetStyle();
    const float dpi = m_player->m_liveUI->GetDPI();
@@ -399,13 +405,6 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
    ImGui::Begin("##InGameUIDesktop", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove);
    ImGui::PopStyleVar(); // The window captured a zero padding at Begin; columns keep the standard padding
-   // The chrome fades only when the whole UI closes back to the game (Close
-   // clears the navigation history while the last page animates out); during
-   // page-to-page transitions it stays opaque while the content fades.
-   // GetColorU32-fetched colors are dimmed by the style alpha; explicit colors
-   // must be passed through it
-   const float pageFade = 1.f - fabs(contentPage->GetOpenCloseAnimPos());
-   ImGui::PushStyleVar(ImGuiStyleVar_Alpha, history.empty() ? pageFade : 1.f);
    ImDrawList* const mainDrawList = ImGui::GetWindowDrawList();
    const ImVec2 winPos = ImGui::GetWindowPos();
    if (cabinetInset)
@@ -628,8 +627,6 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
       ImGui::SameLine(0.f, 0.f);
    }
 
-   // The content column always follows the page open/close animation
-   ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * pageFade);
    ImGui::PushStyleColor(ImGuiCol_ChildBg, panelBg);
    ImGui::BeginChild("##Content", ImVec2(contentSize.x, contentSize.y - contentPanesH), ImGuiChildFlags_None);
    ImGui::PopStyleColor();
@@ -639,7 +636,6 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
    // Only the content column: a drag on the UI window background (top bar, pane band, margins) still moves the window (display settings)
    uiListHovered |= ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
    ImGui::EndChild();
-   ImGui::PopStyleVar();
    float paneY = cabinetInset ? uiPos.y - 12.f * dpi - panesH + style.ItemSpacing.y : contentPos.y + contentSize.y - panesH + style.ItemSpacing.y;
    const float paneBandX = cabinetInset ? uiPos.x : contentPos.x;
    for (const auto& [pane, paneSize] : attachedPanes)
@@ -808,7 +804,6 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
       mainDrawList->AddLine(winPos + ImVec2(railW, topBarH), winPos + ImVec2(railW, topBarH + columnH), ImGui::GetColorU32(IM_COL32(255, 255, 255, (int)(25.f * (1.f - m_railDeployAnim)))));
    }
 
-   ImGui::PopStyleVar(); // Alpha fade
    ImGui::End();
    contentPage->SetWindowState(contentPos, contentSize, uiListHovered || ImGui::IsAnyItemHovered() || IsWidgetActive());
 
