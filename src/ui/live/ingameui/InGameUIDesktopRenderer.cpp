@@ -94,6 +94,19 @@ InGameUIDesktopRenderer::InGameUIDesktopRenderer(InGameUI& owner)
 {
 }
 
+void InGameUIDesktopRenderer::OnUIOpened()
+{
+   // Each UI session starts its flipper navigation on the top-level header.
+   // Track the initial path so the render-time navigation-change handling does
+   // not immediately move this initial focus down to the page items.
+   const auto& history = m_inGameUI.GetNavigationHistory();
+   m_lastNavPath = history.empty() ? ""s : history.back();
+   m_navLevel = NavLevel::TopTabs;
+   m_navTabIndex = -1; // Syncs to the selected group at next render
+   m_navRailIndex = -1;
+   m_navWasActive = m_inGameUI.IsFlipperNav();
+}
+
 void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, float elapsedS)
 {
    if (pages.empty())
@@ -864,19 +877,15 @@ void InGameUIDesktopRenderer::EnsureNavSelection(InGameUIPage& page, int directi
 }
 
 // First navigation press while the focus is not shown: engages flipper
-// navigation, landing on the section rail when on the navigation source page
-// (the top of the hierarchy), and normalizes the item selection
+// navigation at the top header and normalizes the item selection
 void InGameUIDesktopRenderer::EngageNav(InGameUIPage* page, int direction)
 {
    m_navWasActive = true;
-   if (page != nullptr && IsNavSource(*page))
-   {
-      // The rail is the root page's table of contents: land its focus on the
-      // currently shown section instead of the top categories, where the ring
-      // would sit on the already-selected tab
-      m_navLevel = NavLevel::SideRail;
-      m_navRailIndex = -1; // Syncs to the selected section at next render
-   }
+   // Keyboard/controller navigation starts at the top of the navigation
+   // hierarchy; pages without navigation chrome normalize this back to their
+   // item level during rendering.
+   m_navLevel = NavLevel::TopTabs;
+   m_navTabIndex = -1; // Syncs to the selected group at next render
    if (page != nullptr)
       EnsureNavSelection(*page, direction);
 }
@@ -1542,8 +1551,6 @@ void InGameUIDesktopRenderer::RenderItems(InGameUIPage& page, const vector<InGam
             if (IconButtonInk(ICON_LC_X, std::format("##Item{:d}", i).c_str()))
             {
                item->m_inputAction->ClearMapping();
-               if (item->m_inputAction->IsNavigationAction())
-                  page.RequestInputActionPopup(*item);
             }
             ImGui::SameLine();
          }

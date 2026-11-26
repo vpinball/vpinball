@@ -358,9 +358,6 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
          if (direction < 0.f)
          {
             item->m_inputAction->ClearMapping();
-            // Base navigation items must always be mapped (otherwise navigation ends up broken), so immediately start a mapping definition
-            if (item->m_inputAction->IsNavigationAction())
-               RequestInputActionPopup(*item);
          }
          else
          {
@@ -513,17 +510,6 @@ void InGameUIPage::Update(float elapsedS)
       m_selectedItem = clamp(m_selectedItem, 0, static_cast<int>(m_items.size()) - 1);
       while (!m_items[m_selectedItem]->IsSelectable())
          m_selectedItem = (m_selectedItem + 1) % static_cast<int>(m_items.size());
-   }
-
-   // A navigation action must always be bound: keep requesting the binding popup until a valid
-   // mapping is defined (the popup itself is rendered by the page renderer)
-   if (!m_defineActionPopup && m_defineActionItem)
-   {
-      assert(false); // Not supposed to happen as the only way to close the popup is to actually define a mapping which deselects the item
-      if (m_defineActionItem->m_inputAction->IsNavigationAction() && !m_defineActionItem->m_inputAction->IsMapped())
-         m_defineActionPopup = true;
-      else
-         m_defineActionItem = nullptr;
    }
 
    if (m_openAnimTarget != m_openAnimPos)

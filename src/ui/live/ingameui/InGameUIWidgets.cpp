@@ -98,11 +98,9 @@ void RenderInputActionPopup(Player* player, InGameUIPage& page)
          ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
          ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoKeyboard;
          item->m_inputAction->AddMapping(player->m_pininput.GetButtonCapture());
-         if (!(item->m_inputAction->IsNavigationAction() && !item->m_inputAction->IsMapped()))
-         {
-            ImGui::CloseCurrentPopup();
-            page.CloseInputActionPopup();
-         }
+         player->m_pininput.EndButtonCapture();
+         ImGui::CloseCurrentPopup();
+         page.CloseInputActionPopup();
       }
       ImGui::EndPopup();
    }

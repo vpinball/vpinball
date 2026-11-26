@@ -105,8 +105,7 @@ public:
    // Scroll offset of the selected scrollable (markdown) item, shared with AdjustItem
    float GetItemScroll() const { return m_pressedItemScroll; }
    void SetItemScroll(float scroll) { m_pressedItemScroll = scroll; }
-   // Key binding popup: the page keeps the request state and the policy that a
-   // navigation action must always be bound; the renderer draws the modal.
+   // Key binding popup: the page keeps the request state; the renderer draws the modal.
    void RequestInputActionPopup(InGameUIItem& item)
    {
       m_defineActionPopup = true;

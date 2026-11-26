@@ -1225,6 +1225,7 @@ void VRDevice::UpdateUIPointer(XrTime predictedDisplayTime, float vpuToWorldScal
    memcpy(pointer.hit, p.hit, sizeof(p.hit));
    pointer.u = p.u;
    pointer.v = p.v;
+   pointer.hand = hand;
 
    // Click: the trigger click where the runtime binds it, else the analog trigger value (e.g. Oculus Touch has no
    // trigger/click), else the select click (khr/simple_controller)

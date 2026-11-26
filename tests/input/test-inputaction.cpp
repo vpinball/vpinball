@@ -32,7 +32,6 @@ public:
    bool OnInputActionStateChanged(InputAction*) override { return true; }
    void RegisterOnUpdate(InputAction*) override { }
    void UnregisterOnUpdate(InputAction*) override { }
-   bool IsUINavigationActionId(unsigned int) const override { return false; }
 
    vector<ButtonMapping*> m_mappings;
    ankerl::unordered_dense::map<string, uint16_t> m_deviceIds;

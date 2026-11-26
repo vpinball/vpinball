@@ -320,6 +320,7 @@ public:
       bool valid = false; // A controller aim pose is tracked and its ray meets the quad plane
       bool onQuad = false; // The intersection lies inside the quad rect
       bool click = false; // Front trigger state of the pointing hand
+      int hand = -1; // Pointing hand (0: right, 1: left), or -1 when invalid
    };
    UIPointer GetUIPointer() const { const std::lock_guard lock(m_uiPointerMutex); return m_uiPointer; } // Copy: written on the render thread
    void UpdateVisibilityMask(class RenderDevice* rd);

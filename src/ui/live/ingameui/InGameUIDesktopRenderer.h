@@ -32,6 +32,7 @@ public:
    explicit InGameUIDesktopRenderer(InGameUI& owner);
 
    void RenderPages(const vector<InGameUIPage*>& pages, float elapsedS) override;
+   void OnUIOpened() override;
 
    bool OnUINavigatePrev(InGameUIPage* page) override;
    bool OnUINavigateNext(InGameUIPage* page) override;
