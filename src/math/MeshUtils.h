@@ -280,7 +280,7 @@ inline bool AdvancePoint(const RenderVertexCont& rgv, const vector<unsigned int>
          (pvCross1->y >= miny || pvCross2->y >= miny) &&
          (pvCross1->y <= maxy || pvCross2->y <= maxy) &&
          (pvCross1->x >= minx || pvCross2->x >= minx) &&
-         (pvCross1->x <= maxx || pvCross2->y <= maxx) &&
+         (pvCross1->x <= maxx || pvCross2->x <= maxx) &&
          FLinesIntersect(pv1, pv3, pvCross1, pvCross2))
          return false;
    }
