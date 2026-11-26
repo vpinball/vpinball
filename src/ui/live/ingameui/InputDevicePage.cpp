@@ -49,26 +49,33 @@ namespace
 
 void InputDevicePage::BuildPage()
 {
-   const InputManager& input = m_player->m_pininput;
+   InputManager& input = m_player->m_pininput;
+
+   vector<InputAction*> actions;
+   for (const auto& action : input.GetInputActions())
+      actions.push_back(action.get());
+
+   auto storedMappings = std::make_shared<vector<InputAction::MappingBindings>>();
+   storedMappings->reserve(actions.size());
+   for (InputAction* action : actions)
+      storedMappings->push_back(InputAction::ParseMappingString(action->GetStoredMappingString(g_settingsService.GetAppSettings()), &input));
 
    // The field under the device diagram edits the action of the element
    // selected by clicking an input area on the artwork
    EnsureSelectedElement();
    if (m_selectedElement.has_value())
    {
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "Mapping defined for the selected element:"s));
       m_selectedElement->label = ElementLabel(input, m_deviceId, m_selectedElement->elementId, m_selectedElement->threshold, m_selectedElement->reversed);
-      vector<InputAction*> actions;
-      for (const auto& action : input.GetInputActions())
-         actions.push_back(action.get());
-      AddElementComboItem(*m_selectedElement, actions);
+      AddElementComboItem(*m_selectedElement, actions, storedMappings);
    }
 
    bool hasActionMapping = false;
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Action mappings"s));
-   BuildActionMappingItems(hasActionMapping);
+   const bool hasActionRows = BuildActionMappingItems(hasActionMapping, actions, storedMappings);
    bool hasSensorMapping = false;
    BuildSensorMappingItems(hasSensorMapping);
-   if (!hasActionMapping && !hasSensorMapping)
+   if (!hasActionRows && !hasSensorMapping)
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "No mapping defined for this device"s));
 
    const auto noAutoLayoutId = Settings::GetRegistry().GetPropertyId("Input"s, std::format("Device.{}.NoAutoLayout", m_deviceSettingId));
@@ -156,6 +163,35 @@ vector<InputDevicePage::ElementMapping> InputDevicePage::CollectElementMappings(
    return elements;
 }
 
+vector<InputDevicePage::ElementMapping> InputDevicePage::ResolveElementVariants(uint16_t elementId, bool isAxis, const vector<ElementMapping>& bound)
+{
+   InputManager& input = m_player->m_pininput;
+   vector<ElementMapping> variants;
+   bool boundPos = false, boundNeg = false;
+   for (const ElementMapping& e : bound)
+      if (e.elementId == elementId)
+      {
+         variants.push_back(e);
+         (e.reversed ? boundNeg : boundPos) = true;
+      }
+   const auto addUnbound
+      = [&](float threshold, bool reversed) { variants.push_back({ elementId, threshold, reversed, isAxis, ElementLabel(input, m_deviceId, elementId, threshold, reversed), {}, {} }); };
+   if (!isAxis)
+   {
+      if (!boundPos)
+         addUnbound(0.f, false);
+      return variants;
+   }
+   // An axis is pressed half way from its rest position (taken as the current one): in both directions when centered,
+   // only toward the other end when resting at one (pedals, triggers reported as -1..1 joystick axes)
+   const float rest = input.GetAxisPosition(m_deviceId, elementId).value_or(0.f);
+   if (!boundPos && rest < 0.5f)
+      addUnbound(rest <= -0.5f ? 0.f : 0.5f, false);
+   if (!boundNeg && rest > -0.5f)
+      addUnbound(rest >= 0.5f ? 0.f : -0.5f, true);
+   return variants;
+}
+
 // The element variants editable through an anchor: every bound element tuple
 // whose device element resolves to it, plus the unbound button, or the unbound
 // directions of an axis. A merged anchor (e.g. stick + stick X/Y) can own
@@ -177,28 +213,8 @@ vector<InputDevicePage::ElementMapping> InputDevicePage::ResolveAnchorVariants(c
    for (const uint16_t elementId : elementIds)
    {
       const bool isAxis = std::ranges::any_of(deviceElements, [elementId](const InputManager::DeviceElement& el) { return el.id == elementId && el.isAxis; });
-      bool boundPos = false, boundNeg = false;
-      for (const ElementMapping& e : bound)
-         if (e.elementId == elementId)
-         {
-            variants.push_back(e);
-            (e.reversed ? boundNeg : boundPos) = true;
-         }
-      const auto addUnbound = [&](float threshold, bool reversed)
-      { variants.push_back({ elementId, threshold, reversed, isAxis, ElementLabel(input, m_deviceId, elementId, threshold, reversed), {}, {} }); };
-      if (!isAxis)
-      {
-         if (!boundPos)
-            addUnbound(0.f, false);
-         continue;
-      }
-      // An axis is pressed half way from its rest position (taken as the current one): in both directions when centered,
-      // only toward the other end when resting at one (pedals, triggers reported as -1..1 joystick axes)
-      const float rest = input.GetAxisPosition(m_deviceId, elementId).value_or(0.f);
-      if (!boundPos && rest < 0.5f)
-         addUnbound(rest <= -0.5f ? 0.f : 0.5f, false);
-      if (!boundNeg && rest > -0.5f)
-         addUnbound(rest >= 0.5f ? 0.f : -0.5f, true);
+      vector<ElementMapping> elementVariants = ResolveElementVariants(elementId, isAxis, bound);
+      variants.insert(variants.end(), std::make_move_iterator(elementVariants.begin()), std::make_move_iterator(elementVariants.end()));
    }
    return variants;
 }
@@ -245,7 +261,7 @@ void InputDevicePage::EnsureSelectedElement()
       }
 }
 
-void InputDevicePage::AddElementComboItem(const ElementMapping& element, const vector<InputAction*>& actions)
+void InputDevicePage::AddElementComboItem(const ElementMapping& element, const vector<InputAction*>& actions, const StoredMappingSnapshot& storedMappings)
 {
    vector<string> actionNames { "Not mapped"s };
    for (const InputAction* action : actions)
@@ -318,10 +334,18 @@ void InputDevicePage::AddElementComboItem(const ElementMapping& element, const v
                      return static_cast<int>(i) + 1;
       return 0;
    };
+   const int storedOwnerIndex = [this, &element, &actions, &storedMappings]()
+   {
+      for (size_t i = 0; i < actions.size(); i++)
+         for (const vector<ButtonMapping>& binding : (*storedMappings)[i])
+            if (binding.size() == 1 && MatchesElement(element, binding[0], m_deviceId))
+               return static_cast<int>(i) + 1;
+      return 0;
+   }();
    AddItem(std::make_unique<InGameUIItem>( //
       VPX::Properties::EnumPropertyDef(""s, ""s, element.label, tooltip, false, 0, 0, actionNames), //
       [ownerIndex]() { return ownerIndex(); }, //
-      [ownerIndex](const Settings&) { return ownerIndex(); }, //
+      [storedOwnerIndex](const Settings&) { return storedOwnerIndex; }, //
       [this, element, actions](int, int v)
       {
          // Reassign this element exclusively to the selected action
@@ -332,43 +356,94 @@ void InputDevicePage::AddElementComboItem(const ElementMapping& element, const v
                       return binding.buttons.size() == 1
                          && std::ranges::any_of(binding.buttons, [this, &element](const ButtonMapping& member) { return MatchesElement(element, member, m_deviceId); });
                    }))
-            {
                action->UnmapElement(m_deviceId, element.elementId, element.threshold, element.reversed, true, !element.isAxis);
-               m_pendingSaveActions.insert(action);
-            }
          if (v > 0)
-         {
             actions[v - 1]->AddMapping(ButtonMapping::Create(m_deviceId, element.elementId, element.threshold, element.reversed));
-            m_pendingSaveActions.insert(actions[v - 1]);
-         }
          RequestRebuild();
       }, //
-      [this](Settings& settings)
+      [](Settings&) {},
+      [this, actions, storedMappings](int, Settings& settings, bool)
       {
-         for (InputAction* action : m_pendingSaveActions)
-            action->LoadMapping(settings);
-      }, //
-      [this](int, Settings& settings, bool)
-      {
-         for (InputAction* action : m_pendingSaveActions)
-            action->SaveMapping(settings);
-         m_pendingSaveActions.clear();
+         for (size_t i = 0; i < actions.size(); i++)
+         {
+            InputAction* action = actions[i];
+            if (action->GetMappingString() == action->GetStoredMappingString(settings))
+               continue;
+            bool usesDevice = action->IsMappedToDevice(m_deviceId);
+            if (!usesDevice)
+               for (const vector<ButtonMapping>& binding : (*storedMappings)[i])
+                  for (const ButtonMapping& member : binding)
+                     if (member.GetDeviceId() == m_deviceId)
+                        usesDevice = true;
+            if (usesDevice)
+               action->SaveMapping(settings);
+         }
+         RequestRebuild();
       }));
 }
 
-void InputDevicePage::BuildActionMappingItems(bool& hasMapping)
+bool InputDevicePage::UseGenericElementRows() const { return m_layout == nullptr && m_player->m_pininput.GetDeviceType(m_deviceId) == InputManager::DeviceType::Joystick; }
+
+vector<InputDevicePage::ElementMapping> InputDevicePage::CollectGenericElementMappings(const vector<ElementMapping>& bound)
 {
    InputManager& input = m_player->m_pininput;
-   vector<InputAction*> actions;
-   for (const auto& action : input.GetInputActions())
-      actions.push_back(action.get());
+   vector<ElementMapping> elements;
+   std::unordered_set<uint16_t> registeredElementIds;
+   for (const InputManager::DeviceElement& deviceElement : input.GetDeviceElements(m_deviceId))
+   {
+      registeredElementIds.insert(deviceElement.id);
+      vector<ElementMapping> variants = ResolveElementVariants(deviceElement.id, deviceElement.isAxis, bound);
+      elements.insert(elements.end(), std::make_move_iterator(variants.begin()), std::make_move_iterator(variants.end()));
+   }
+   for (const ElementMapping& element : bound)
+      if (!registeredElementIds.contains(element.elementId))
+         elements.push_back(element);
+   return elements;
+}
 
+vector<InputDevicePage::ElementMapping> InputDevicePage::CollectUnmappedStoredElementMappings(const vector<ElementMapping>& rows, const StoredMappingSnapshot& storedMappings)
+{
+   InputManager& input = m_player->m_pininput;
+   std::unordered_set<uint16_t> axisIds;
+   for (const InputManager::DeviceElement& el : input.GetDeviceElements(m_deviceId))
+      if (el.isAxis)
+         axisIds.insert(el.id);
+
+   vector<ElementMapping> elements;
+   const auto hasElement = [](const vector<ElementMapping>& list, uint16_t elementId, float threshold, bool reversed)
+   {
+      return std::ranges::any_of(list, [elementId, threshold, reversed](const ElementMapping& e) { return e.elementId == elementId && e.threshold == threshold && e.reversed == reversed; });
+   };
+   for (const InputAction::MappingBindings& actionBindings : *storedMappings)
+      for (const vector<ButtonMapping>& binding : actionBindings)
+      {
+         if (binding.size() != 1)
+            continue;
+         const ButtonMapping& member = binding[0];
+         if (member.GetDeviceId() != m_deviceId)
+            continue;
+         const bool isAxis = axisIds.contains(member.GetAxisOrButtonId());
+         const float threshold = isAxis ? member.GetAxisThreshold() : 0.f;
+         const bool reversed = isAxis && member.IsAxisReversed();
+         if (hasElement(rows, member.GetAxisOrButtonId(), threshold, reversed) || hasElement(elements, member.GetAxisOrButtonId(), threshold, reversed))
+            continue;
+         elements.push_back({ member.GetAxisOrButtonId(), threshold, reversed, isAxis, ElementLabel(input, m_deviceId, member.GetAxisOrButtonId(), threshold, reversed), {}, {} });
+      }
+   return elements;
+}
+
+bool InputDevicePage::BuildActionMappingItems(bool& hasMapping, const vector<InputAction*>& actions, const StoredMappingSnapshot& storedMappings)
+{
    // List the mappings element first: each bound button/axis of this device gets
    // a dropdown item selecting which action it triggers
-   const vector<ElementMapping> elements = CollectElementMappings();
-   hasMapping = !elements.empty();
+   const vector<ElementMapping> boundElements = CollectElementMappings();
+   hasMapping = !boundElements.empty();
+   vector<ElementMapping> elements = UseGenericElementRows() ? CollectGenericElementMappings(boundElements) : boundElements;
+   vector<ElementMapping> storedOnlyElements = CollectUnmappedStoredElementMappings(elements, storedMappings);
+   elements.insert(elements.end(), std::make_move_iterator(storedOnlyElements.begin()), std::make_move_iterator(storedOnlyElements.end()));
    for (const ElementMapping& element : elements)
-      AddElementComboItem(element, actions);
+      AddElementComboItem(element, actions, storedMappings);
+   return !elements.empty();
 }
 
 void InputDevicePage::BuildSensorMappingItems(bool& hasMapping)

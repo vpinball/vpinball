@@ -4,6 +4,7 @@
 #include "../vpx-test.h"
 
 #include "input/InputAction.h"
+#include "core/Settings.h"
 
 #include "doctest.h"
 
@@ -223,5 +224,59 @@ TEST_CASE("Input action chord priority")
       CHECK(chord->IsPressed());
       CHECK(!single->IsPressed());
       CHECK(events == vector<string> { "chord:down"s });
+   }
+}
+
+TEST_CASE("Input action mapping strings")
+{
+   FakeActionEventManager manager;
+
+   SUBCASE("direct button mapping")
+   {
+      const auto bindings = InputAction::ParseMappingString("Key;1"s, &manager);
+      REQUIRE(bindings.size() == 1);
+      REQUIRE(bindings[0].size() == 1);
+      CHECK(bindings[0][0].GetDeviceId() == manager.GetDeviceId("Key"s));
+      CHECK(bindings[0][0].GetAxisOrButtonId() == 1);
+      CHECK(bindings[0][0].GetAxisThreshold() == doctest::Approx(0.f));
+      CHECK(!bindings[0][0].IsAxisReversed());
+   }
+
+   SUBCASE("chords, alternatives and axis directions")
+   {
+      const auto bindings = InputAction::ParseMappingString("Key;1 & Key;2 | Joy;512;x;-0.5"s, &manager);
+      REQUIRE(bindings.size() == 2);
+      REQUIRE(bindings[0].size() == 2);
+      REQUIRE(bindings[1].size() == 1);
+      CHECK(bindings[0][0].GetAxisOrButtonId() == 1);
+      CHECK(bindings[0][1].GetAxisOrButtonId() == 2);
+      CHECK(bindings[1][0].GetDeviceId() == manager.GetDeviceId("Joy"s));
+      CHECK(bindings[1][0].GetAxisOrButtonId() == 512);
+      CHECK(bindings[1][0].GetAxisThreshold() == doctest::Approx(-0.5f));
+      CHECK(bindings[1][0].IsAxisReversed());
+   }
+
+   SUBCASE("serialized bindings parse back to the same mappings")
+   {
+      InputAction action(&manager, "Roundtrip"s, "Roundtrip"s, ""s, [](InputAction&, bool, bool) { });
+      action.SetMapping("Key;1 & Joy;512;x;-0.5 | Key;2"s);
+      const auto parsed = InputAction::ParseMappingString(action.GetMappingString(), &manager);
+      REQUIRE(parsed.size() == action.GetBindings().size());
+      for (size_t i = 0; i < parsed.size(); i++)
+         CHECK(InputAction::IsSameMapping(parsed[i], action.GetBindings()[i].buttons));
+   }
+
+   SUBCASE("stored mapping reflects saved settings, not later live edits")
+   {
+      Settings settings;
+      InputAction action(&manager, "Stored"s, "Stored"s, "Key;1"s, [](InputAction&, bool, bool) { });
+      CHECK(action.GetStoredMappingString(settings) == "Key;1"s);
+
+      action.SetMapping("Key;2"s);
+      action.SaveMapping(settings);
+      CHECK(action.GetStoredMappingString(settings) == action.GetMappingString());
+
+      action.SetMapping("Key;3"s);
+      CHECK(action.GetStoredMappingString(settings) != action.GetMappingString());
    }
 }
