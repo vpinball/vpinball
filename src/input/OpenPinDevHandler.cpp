@@ -323,9 +323,9 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                         {
                            sigMatch = std::wstring_view(strBuf).starts_with(L"OpenPinballDeviceStruct/"sv);
                            if (!sigMatch)
-			   {
+                           {
                               PLOGW << "Pinball Device found, but its usage string is not an Open Pinball Device signature";
-			   }
+                           }
                         }
                         else
                         {
@@ -334,7 +334,9 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                            // struct version 1.0.
                            // (SDL does not report the backend's error text: on Linux and macOS, this is the unsupported case above)
                            PLOGW << "Pinball Device found, but its usage string could not be read; assuming Open Pinball Device struct version 1.0";
-                           wcscpy(strBuf, L"OpenPinballDeviceStruct/1.0");
+                           static constexpr wchar_t defaultSig[] = L"OpenPinballDeviceStruct/1.0";
+                           static_assert(std::size(defaultSig) <= nStrBuf);
+                           std::copy(std::begin(defaultSig), std::end(defaultSig), strBuf);
                            sigMatch = true;
                         }
 
@@ -480,7 +482,7 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                   // stop as soon as we find a match
                   if (found)
                   {
-                     PLOGI << "OpenPinballDevice found and registered.";
+                     PLOGI << "OpenPinballDevice found and registered";
                      break;
                   }
                }
