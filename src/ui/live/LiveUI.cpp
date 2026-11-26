@@ -466,7 +466,8 @@ void LiveUI::NewFrame()
          io.DisplayFramebufferScale.x = 1.f;
       if (io.DisplayFramebufferScale.y <= 0.f)
          io.DisplayFramebufferScale.y = 1.f;
-      switch (m_player->m_renderer->m_stereo3Denabled ? m_player->m_renderer->m_stereo3D : STEREO_OFF)
+      const StereoMode stereoMode = m_player->m_renderer->m_stereo3Denabled ? m_player->m_renderer->m_stereo3D : STEREO_OFF;
+      switch (stereoMode)
       {
       // Render is a vertically squashed view which is stretched back by the display
       case STEREO_TB:
@@ -482,10 +483,12 @@ void LiveUI::NewFrame()
       io.DisplaySize.x = renderWidth / io.DisplayFramebufferScale.x;
       io.DisplaySize.y = renderHeight / io.DisplayFramebufferScale.y;
 
+      // Rotation from the render size like the 3D view (see RenderView), not from the display size above: SDL's per axis scale
+      // flips its aspect ratio while SDL's window and pixel sizes disagree (seen on Wayland during the table loading)
       if (m_renderer->m_stereo3D == STEREO_VR)
          m_rotate = 0;
       else
-         m_rotate = static_cast<int>(m_player->m_ptable->GetViewSetup().GetRotation(static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y)) / 90.0f);
+         m_rotate = static_cast<int>(m_player->m_ptable->GetViewSetup().GetRotation(stereoMode, static_cast<int>(renderWidth), static_cast<int>(renderHeight)) / 90.0f);
       if (m_rotate == 1 || m_rotate == 3)
       {
          std::swap(io.DisplaySize.x, io.DisplaySize.y);
