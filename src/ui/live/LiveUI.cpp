@@ -22,6 +22,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl3.h"
 #include "imgui/imgui_stdlib.h"
+#include "imgui/imgui_internal.h" // ImGuiContext complete type (cross context IO access in NewOverlayFrame)
 #include "imgui_markdown/imgui_markdown.h"
 
 
@@ -37,6 +38,22 @@ namespace plog
 Record &operator<<(Record &record, const ImVec2 &pt) { return record << '(' << pt.x << ", " << pt.y << ')'; }
 }
 
+// Scoped switch of the current ImGui context: outside of these scopes, the main
+// context is always the current one (input capture queries outside frame builds land on it)
+namespace
+{
+struct ImGuiContextScope
+{
+   explicit ImGuiContextScope(ImGuiContext *ctx)
+      : m_prev(ImGui::GetCurrentContext())
+   {
+      ImGui::SetCurrentContext(ctx);
+   }
+   ~ImGuiContextScope() { ImGui::SetCurrentContext(m_prev); }
+   ImGuiContext *const m_prev;
+};
+}
+
 LiveUI::LiveUI(RenderDevice *const rd)
    : m_ballControl(*this)
    , m_debuggerUI(*this)
@@ -50,7 +67,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_pininput = &(m_player->m_pininput);
    
    IMGUI_CHECKVERSION();
-   ImGui::CreateContext();
+   m_mainContext = ImGui::CreateContext();
    ImGuiIO &io = ImGui::GetIO();
    io.IniFilename = nullptr; //don't use an ini file for configuration
 
@@ -104,7 +121,19 @@ LiveUI::LiveUI(RenderDevice *const rd)
 
    io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 
+   // The overlay layer lives in its own ImGui context, sharing the main context's font atlas
+   // (so the fonts above are valid in both). It has no SDL backend and receives no input at
+   // all: its windows are purely non interactive informational displays.
+   m_overlayContext = ImGui::CreateContext(io.Fonts);
+   ImGui::SetCurrentContext(m_overlayContext);
+   ImGuiIO &overlayIO = ImGui::GetIO();
+   overlayIO.IniFilename = nullptr;
+   overlayIO.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
+   SetupImGuiStyle(false);
+   ImGui::SetCurrentContext(m_mainContext);
+
    NewFrame();
+   NewOverlayFrame();
 
    m_showTouchOverlay = g_settingsService.GetAppSettings().GetPlayer_TouchOverlay();
 }
@@ -125,8 +154,12 @@ void LiveUI::ReleaseImGuiTexture(ImTextureData *tex)
 LiveUI::~LiveUI()
 {
    HideUI();
-   if (ImGui::GetCurrentContext())
+   if (m_mainContext != nullptr)
    {
+      // Both contexts are mid frame (each render restarts its frame for the next one)
+      ImGui::SetCurrentContext(m_overlayContext);
+      ImGui::EndFrame();
+      ImGui::SetCurrentContext(m_mainContext);
       ImGui::EndFrame();
 
       ImGuiIO &io = ImGui::GetIO();
@@ -140,7 +173,11 @@ LiveUI::~LiveUI()
 
       ImGui_ImplSDL3_Shutdown();
 
-      ImGui::DestroyContext();
+      // The overlay context shares the main context's font atlas: it must be destroyed first
+      ImGui::DestroyContext(m_overlayContext);
+      ImGui::DestroyContext(m_mainContext);
+      m_overlayContext = nullptr;
+      m_mainContext = nullptr;
    }
 }
 
@@ -318,6 +355,14 @@ void LiveUI::UpdateScale()
       m_perfUI.SetUIScale(overlayScale);
       m_plumbOverlay.SetUIScale(overlayScale);
       SetupImGuiStyle(m_editorUI.IsOpened());
+      // The overlay context has its own independent style state (always the non editor variant)
+      if (m_overlayContext != nullptr)
+      {
+         ImGuiContext *const prevContext = ImGui::GetCurrentContext();
+         ImGui::SetCurrentContext(m_overlayContext);
+         SetupImGuiStyle(false);
+         ImGui::SetCurrentContext(prevContext);
+      }
    }
 }
 
@@ -374,6 +419,9 @@ void LiveUI::HandleTrackpadFingers(const SDL_TouchFingerEvent &e)
 
 void LiveUI::HandleSDLEvent(SDL_Event &e)
 {
+   // The SDL backend is initialized on the main context only; the main context is also the one
+   // input capture queries (ImGui::GetIO() outside of frame builds) are expected to land on
+   ImGui::SetCurrentContext(m_mainContext);
    if (e.type == SDL_EVENT_MOUSE_MOTION)
    {
       // Custom implementation of ImGui_ImplSDL3_ProcessEvent supporting screen rotation and event filtering
@@ -558,6 +606,55 @@ void LiveUI::NewFrame()
    io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
 
    ImGui::NewFrame();
+}
+
+#ifdef ENABLE_XR
+// Inset of the glass overlay footprint from the playfield edges, in cabinet units (1 inch per edge)
+static constexpr float kGlassOverlayInset = MMTOVPU(25.4f);
+// Logical resolution of the glass overlay surface, in UI pixels per inch of glass: sets the physical
+// size of the overlay content (fonts are rasterized at the UI scale, their physical height on the
+// glass is inversely proportional to this value)
+static constexpr float kGlassOverlayPxPerInch = 200.f;
+
+// Inset glass rectangle in playfield space (x0..x1 across, y0..y1 back to front, z at the glass level,
+// linearly interpolated between the table's glass heights which may differ at the back and front edges)
+static void GetGlassOverlayRect(const PinTable *const table, float &x0, float &y0, float &x1, float &y1, float &zBack, float &zFront)
+{
+   const float inset = min(kGlassOverlayInset, min(table->m_right - table->m_left, table->m_bottom - table->m_top) * 0.25f);
+   x0 = table->m_left + inset;
+   x1 = table->m_right - inset;
+   y0 = table->m_top + inset;
+   y1 = table->m_bottom - inset;
+   const float depth = max(1e-6f, table->m_bottom - table->m_top);
+   zBack = table->m_glassTopHeight + (y0 - table->m_top) / depth * (table->m_glassBottomHeight - table->m_glassTopHeight);
+   zFront = table->m_glassTopHeight + (y1 - table->m_top) / depth * (table->m_glassBottomHeight - table->m_glassTopHeight);
+}
+#endif
+
+void LiveUI::NewOverlayFrame()
+{
+   ImGuiContext *const prevContext = ImGui::GetCurrentContext();
+   ImGui::SetCurrentContext(m_overlayContext);
+   ImGuiIO &io = ImGui::GetIO();
+   const ImGuiIO &mainIO = m_mainContext->IO;
+   io.DeltaTime = mainIO.DeltaTime;
+   io.DisplaySize = mainIO.DisplaySize;
+   io.DisplayFramebufferScale = mainIO.DisplayFramebufferScale;
+#ifdef ENABLE_XR
+   // In VR, outside of loading, the overlay is laid out on its own portrait surface matching the
+   // aspect ratio of the inset glass footprint it is rendered onto (so text is not stretched)
+   if (m_player->m_vrDevice != nullptr && m_renderer->m_stereo3D == STEREO_VR && !m_player->m_isLoading && m_player->m_ptable != nullptr)
+   {
+      float x0, y0, x1, y1, zBack, zFront;
+      GetGlassOverlayRect(m_player->m_ptable, x0, y0, x1, y1, zBack, zFront);
+      const float widthInches = VPUTOMM(x1 - x0) / 25.4f;
+      io.DisplaySize.x = max(1.f, widthInches * kGlassOverlayPxPerInch);
+      io.DisplaySize.y = io.DisplaySize.x * (y1 - y0) / max(1e-6f, x1 - x0);
+      io.DisplayFramebufferScale = ImVec2(1.f, 1.f);
+   }
+#endif
+   ImGui::NewFrame();
+   ImGui::SetCurrentContext(prevContext);
 }
 
 void LiveUI::PrepareScene()
@@ -746,7 +843,8 @@ void LiveUI::RenderUI()
 {
    // SDR white level to place UI white at, normalized to the 10000 nits PQ encodes (the white point counts in multiples of 80 nits). 0 for a sRGB output
    const bool wcg = (m_player != nullptr) && m_player->m_playfieldWnd->IsWCGBackBuffer();
-   RenderUIInternal(wcg ? m_player->m_playfieldWnd->GetSDRWhitePoint() * (float)(80. / 10000.) : 0.f);
+   ImGui::SetCurrentContext(m_mainContext);
+   RenderUIInternal(wcg ? m_player->m_playfieldWnd->GetSDRWhitePoint() * (float)(80. / 10000.) : 0.f, true);
 }
 
 #ifdef ENABLE_XR
@@ -758,6 +856,7 @@ void LiveUI::RenderUIVR(const Vertex3Ds uiQuadScene[4], const ModelViewProj &uiM
    // World-space UI (VR): map the UI pixel space onto the quad VRDevice::UpdateUIPointer
    // raycasts (same geometry, top-left origin, row vectors applied left to right), then
    // through each eye's view/projection of the quad's space (m_rotate is forced to 0 for VR)
+   ImGui::SetCurrentContext(m_mainContext);
    const ImGuiIO &io = ImGui::GetIO();
    const float right = io.DisplaySize.x;
    const float bottom = io.DisplaySize.y;
@@ -792,7 +891,10 @@ void LiveUI::RenderUIVR(const Vertex3Ds uiQuadScene[4], const ModelViewProj &uiM
    m_rd->SetRenderTarget("LiveUI Panel"s, m_uiPanelTarget.get(), false);
    m_rd->Clear(clearType::TARGET, 0xFF000000); // Opaque black backing: the world-space UI is a solid surface
 
-   RenderUIInternal(0.f); // The panel holds sRGB encoded values
+   // The panel holds sRGB encoded values. While playing, the overlay layer is not part of the
+   // panel: it is emitted as world space geometry on the table glass inside the scene pass (see
+   // RenderOverlayVR). While loading there is no scene pass, so it falls back to the panel.
+   RenderUIInternal(0.f, m_player->m_isLoading);
 
    // Composite the panel texture on the world-space quad, into the XR surface holding linear
    // values (see the tonemap pass' isLinearFrameBuffer). The panel is alpha-composited over
@@ -825,18 +927,87 @@ void LiveUI::RenderUIVR(const Vertex3Ds uiQuadScene[4], const ModelViewProj &uiM
    m_rd->DrawTransientMesh(m_rd->m_uiShader, true, -10000.f, m_uiPanelQuad, RenderDevice::TRIANGLELIST, 0, 6);
    RenderVRPointer(uiQuadScene, uiMVP);
 }
-#endif
 
-void LiveUI::RenderUIInternal(const float sdrWhitePQ)
+// Non interactive overlay layer in VR: the draw lists are executed as world space geometry lying
+// on the table glass (inset footprint at the glass level), recorded inside the scene pass so they
+// are depth tested against the physical scene. Unlike the interactive panel, there is no offscreen
+// rasterization: the commands are pushed directly with the glass mapping as their MVP, alpha blended
+// over the scene. Being part of the linear scene render, the overlay participates in the scene's
+// exposure/tonemapping like the rest of the world geometry (isLinearFB in the UI shader).
+void LiveUI::RenderOverlayVR(const ModelViewProj &playfieldMVP)
 {
    if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING || m_rd->GetCurrentPass() == nullptr || m_player->m_playMode == Player::PlayMode::CaptureAttract)
       return;
+   if (m_player->m_isLoading || m_player->m_ptable == nullptr)
+      return; // While loading there is no scene pass: the overlay falls back to the UI panel (RenderUIVR)
 
+   ImGuiContextScope scope(m_overlayContext);
+
+   BuildOverlayUI();
+
+   ImGui::EndFrame();
+   ImGui::Render();
+   ImDrawData *const draw_data = ImGui::GetDrawData();
+   UpdateImGuiTextures(draw_data);
+
+   // Map the overlay pixel space onto the inset glass footprint (top-left origin, row vectors applied
+   // left to right, same construction as the UI panel): x across the table, y from back to front, so
+   // that desktop bottom anchored content lands near the player, at the interpolated glass height
    const ImGuiIO &io = ImGui::GetIO();
-   const bool rotated = (m_rotate == 1 || m_rotate == 3);
-   const int width = static_cast<int>(rotated ? io.DisplaySize.y : io.DisplaySize.x);
-   const int height = static_cast<int>(rotated ? io.DisplaySize.x : io.DisplaySize.y);
+   float x0, y0, x1, y1, zBack, zFront;
+   GetGlassOverlayRect(m_player->m_ptable, x0, y0, x1, y1, zBack, zFront);
+   const float invW = 1.f / io.DisplaySize.x;
+   const float invH = 1.f / io.DisplaySize.y;
+   Matrix3D uiToScene;
+   uiToScene._11 = (x1 - x0) * invW;
+   uiToScene._12 = 0.f;
+   uiToScene._13 = 0.f;
+   uiToScene._14 = 0.f;
+   uiToScene._21 = 0.f;
+   uiToScene._22 = (y1 - y0) * invH;
+   uiToScene._23 = (zFront - zBack) * invH;
+   uiToScene._24 = 0.f;
+   uiToScene._31 = uiToScene._32 = uiToScene._33 = uiToScene._34 = 0.f;
+   uiToScene._41 = x0;
+   uiToScene._42 = y0;
+   uiToScene._43 = zBack;
+   uiToScene._44 = 1.f;
+   Matrix3D matGlassView[2];
+   for (int eye = 0; eye < m_rd->m_nEyes; eye++)
+      matGlassView[eye] = uiToScene * playfieldMVP.GetView(eye) * playfieldMVP.GetProj(eye);
 
+   m_rd->m_uiShader->SetMatrix(ShaderUniform::matWorldView, &matGlassView[0], m_rd->m_nEyes);
+#ifdef ENABLE_BGFX
+   if (m_rd->GetCurrentPass()->m_rt->m_nLayers == 1)
+      m_rd->m_uiShader->SetTechnique(ShaderTechnique::LiveUI_mono);
+   else
+#endif
+      m_rd->m_uiShader->SetTechnique(ShaderTechnique::LiveUI);
+   // z = output linear values (the scene pass holds linear values, unlike the display space UI paths)
+   vec4 uiParams(0.f, 0.f, 1.f, 0.f);
+   m_rd->ResetRenderState();
+   m_rd->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RGBMASK_RGBA);
+   m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+   m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+   m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+   m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+   m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE); // Physically depth tested against the scene
+   m_rd->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
+   m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE); // But coplanar overlay primitives do not write depth
+   // The overlay sorts after the scene's transparent parts (flasher DMDs sit at -10000): it is
+   // the closest thing to the viewer, and transparent scene parts write depth anyway, so depth
+   // testing keeps occlusion correct. Equal-depth commands keep their submission order (stable
+   // sort), preserving ImGui's painter order within the layer.
+   bool hasContent = false;
+   EmitDrawListCommands(draw_data, uiParams, -20000.f, hasContent, m_overlayUIPool);
+
+   NewOverlayFrame();
+}
+#endif
+
+void LiveUI::BuildMainUI(const int width, const int height)
+{
    UpdateTouchUI();
 
    ImGui::PushFont(m_baseFont, m_baseFont->LegacySize);
@@ -846,16 +1017,6 @@ void LiveUI::RenderUIInternal(const float sdrWhitePQ)
 
    // Debugger tool window (may be opened along other UIs)
    m_debuggerUI.Update();
-
-   if (!m_player->IsPlaying() && !m_player->m_isLoading && !m_editorUI.IsOpened())
-   {
-      ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 24 * m_uiScale, 4 * m_uiScale));
-      ImGui::Begin("PauseOverlay", nullptr,
-         ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus // Prevent focus issues
-            | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings);
-      ImGui::Text(ICON_LC_PAUSE);
-      ImGui::End();
-   }
 
    if (m_editorUI.IsOpened())
    { // Editor UI (aligned to desktop, using traditional mouse interaction)
@@ -868,52 +1029,138 @@ void LiveUI::RenderUIInternal(const float sdrWhitePQ)
       m_ballControl.Update(width, height);
    }
 
-   // Display plumb state overlay (disabled in VR)
-   if (m_player->m_vrDevice == nullptr)
-      m_plumbOverlay.Update();
+   ImGui::PopFont();
+}
+
+void LiveUI::BuildOverlayUI()
+{
+   ImGui::PushFont(m_baseFont, m_baseFont->LegacySize);
+
+   if (!m_player->IsPlaying() && !m_player->m_isLoading && !m_editorUI.IsOpened())
+   {
+      ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 24 * m_uiScale, 4 * m_uiScale));
+      ImGui::Begin("PauseOverlay", nullptr,
+         ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus // Prevent focus issues
+            | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings);
+      ImGui::Text(ICON_LC_PAUSE);
+      ImGui::End();
+   }
+
+   // Display plumb state overlay
+   m_plumbOverlay.Update();
 
    // Display notification overlays except when script has an unaligned rotation
    m_notificationOverlay.Update(true, m_overlayFont);
 
-   // Display performance overlays (disabled in VR)
-   if (m_player->m_vrDevice == nullptr)
-      m_perfUI.Update();
+   // Display performance overlays
+   m_perfUI.Update();
 
    ImGui::PopFont();
+}
 
-   ImGui::EndFrame();
-
-   ImGui::Render();
-
-   ImDrawData *const draw_data = ImGui::GetDrawData();
-
-   // Update textures
-   if (draw_data->Textures != nullptr)
+void LiveUI::UpdateImGuiTextures(ImDrawData *const draw_data)
+{
+   if (draw_data->Textures == nullptr)
+      return;
+   for (ImTextureData *tex : *draw_data->Textures)
    {
-      for (ImTextureData *tex : *draw_data->Textures)
+      if (tex->Status == ImTextureStatus_WantCreate || tex->Status == ImTextureStatus_WantUpdates)
       {
-         if (tex->Status == ImTextureStatus_WantCreate || tex->Status == ImTextureStatus_WantUpdates)
-         {
-            assert(tex->GetPitch() == tex->Width * 4);
-            assert(tex->Format == ImTextureFormat_RGBA32);
-            if (tex->Status == ImTextureStatus_WantCreate)
-               tex->BackendUserData = new std::shared_ptr<BaseTexture>();
-            auto texture = static_cast<std::shared_ptr<BaseTexture> *>(tex->BackendUserData);
-            BaseTexture::Update(*texture, tex->Width, tex->Height, BaseTexture::RGBA, static_cast<const uint8_t *>(tex->GetPixels()));
-            (*texture)->SetName(std::format("ImGui.Tex{}", tex->UniqueID));
-            tex->SetTexID(m_renderer->m_renderDevice->m_texMan.LoadPinnedTexture(texture->get()));
-            tex->SetStatus(ImTextureStatus_OK);
+         assert(tex->GetPitch() == tex->Width * 4);
+         assert(tex->Format == ImTextureFormat_RGBA32);
+         if (tex->Status == ImTextureStatus_WantCreate)
+            tex->BackendUserData = new std::shared_ptr<BaseTexture>();
+         auto texture = static_cast<std::shared_ptr<BaseTexture> *>(tex->BackendUserData);
+         BaseTexture::Update(*texture, tex->Width, tex->Height, BaseTexture::RGBA, static_cast<const uint8_t *>(tex->GetPixels()));
+         (*texture)->SetName(std::format("ImGui.Tex{}", tex->UniqueID));
+         tex->SetTexID(m_renderer->m_renderDevice->m_texMan.LoadPinnedTexture(texture->get()));
+         tex->SetStatus(ImTextureStatus_OK);
+      }
+      else if (tex->Status == ImTextureStatus_WantDestroy && tex->UnusedFrames > 0)
+      {
+         ReleaseImGuiTexture(tex);
+         tex->SetTexID(ImTextureID_Invalid);
+         tex->SetStatus(ImTextureStatus_Destroyed);
+      }
+   }
+}
+
+float LiveUI::EmitDrawListCommands(ImDrawData *const draw_data, vec4 uiParams, const float depthStart, bool &hasContent, UIGeometryPool &pool)
+{
+   if (static_cast<int>(pool.meshBuffers.size()) < draw_data->CmdListsCount)
+      pool.meshBuffers.resize(draw_data->CmdListsCount);
+   float depthSort = depthStart;
+   hasContent = false;
+   for (int n = 0; n < draw_data->CmdListsCount; n++)
+   {
+      const ImDrawList *const cmd_list = draw_data->CmdLists[n];
+      const unsigned int numVertices = cmd_list->VtxBuffer.size();
+      const unsigned int numIndices = cmd_list->IdxBuffer.size();
+      hasContent |= numIndices > 0;
+
+#if defined(ENABLE_BGFX)
+      // Snapshot this command list's geometry: it is uploaded on the render thread, into BGFX's
+      // per-frame transient buffers (single copy, no persistent buffer traffic)
+      if (static_cast<int>(pool.uiGeometry.size()) <= n)
+         pool.uiGeometry.resize(n + 1);
+      if (pool.uiGeometry[n] == nullptr)
+         pool.uiGeometry[n] = std::make_shared<UIListGeometry>();
+      const std::shared_ptr<UIListGeometry> &geo = pool.uiGeometry[n];
+      geo->numVertices = numVertices;
+      geo->numIndices = numIndices;
+      geo->upload = UIListGeometry::Upload::None;
+      geo->vtx.resize(numVertices * sizeof(ImDrawVert));
+      geo->idx.resize(numIndices * sizeof(ImDrawIdx));
+      memcpy(geo->vtx.data(), cmd_list->VtxBuffer.Data, geo->vtx.size());
+      memcpy(geo->idx.data(), cmd_list->IdxBuffer.Data, geo->idx.size());
+#else
+      if ((numVertices != 0) && (numIndices != 0))
+      {
+         if ((pool.meshBuffers[n] == nullptr) || (pool.meshBuffers[n]->m_ib->m_count < numIndices) || (pool.meshBuffers[n]->m_vb->m_count < numVertices))
+         { // Grow at 1.5x the needed size to amortize reallocation when the UI keeps growing
+            auto ib = std::make_shared<IndexBuffer>(m_rd, numIndices + (numIndices >> 1), true, IndexBuffer::Format::FMT_INDEX32);
+            auto vb = std::make_shared<VertexBuffer>(m_rd, numVertices + (numVertices >> 1), nullptr, true, VertexFormat::VF_IMGUI);
+            pool.meshBuffers[n] = std::make_shared<MeshBuffer>(std::format("ImGui.{}", n), vb, ib, false);
          }
-         else if (tex->Status == ImTextureStatus_WantDestroy && tex->UnusedFrames > 0)
+
+         ImDrawVert *vb;
+         pool.meshBuffers[n]->m_vb->Lock(vb, 0, numVertices * sizeof(ImDrawVert));
+         memcpy(vb, cmd_list->VtxBuffer.Data, numVertices * sizeof(ImDrawVert));
+         pool.meshBuffers[n]->m_vb->Unlock();
+
+         uint32_t *ib;
+         pool.meshBuffers[n]->m_ib->Lock(ib, 0, numIndices * sizeof(ImDrawIdx));
+         memcpy(ib, cmd_list->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
+         pool.meshBuffers[n]->m_ib->Unlock();
+      }
+#endif
+
+      for (const ImDrawCmd *cmd = cmd_list->CmdBuffer.begin(), *cmdEnd = cmd_list->CmdBuffer.end(); cmd != cmdEnd; cmd++)
+      {
+         if (cmd->ElemCount != 0)
          {
-            ReleaseImGuiTexture(tex);
-            tex->SetTexID(ImTextureID_Invalid);
-            tex->SetStatus(ImTextureStatus_Destroyed);
+            m_rd->m_uiShader->SetVector(ShaderUniform::clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
+            m_rd->m_uiShader->SetTexture(ShaderUniform::tex_base_color, cmd->GetTexID(), m_player->IsVR() ? SamplerFilter::SF_ANISOTROPIC : SamplerFilter::SF_BILINEAR);
+#if !defined(ENABLE_DX9) // DX9 samples raw values (see UIShader.hlsl)
+            // ImGui works in sRGB: the shader re-encodes textures that sampling decodes (table images)
+            uiParams.y = (cmd->GetTexID() != nullptr && cmd->GetTexID()->IsSRGB()) ? 1.f : 0.f;
+            m_rd->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, &uiParams);
+#endif
+#if defined(ENABLE_BGFX)
+            m_rd->DrawTransientMesh(m_rd->m_uiShader, true, depthSort, geo, RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
+#else
+            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(0.f, 0.f, 0.f), depthSort, pool.meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
+#endif
+            depthSort -= 1.f;
          }
       }
    }
+   return depthSort;
+}
 
-   // Update meshes and renders
+float LiveUI::EmitDrawListsOrtho(ImDrawData *const draw_data, const float sdrWhitePQ, const float depthStart, bool &hasContent, UIGeometryPool &pool)
+{
+   const ImGuiIO &io = ImGui::GetIO();
    const Matrix3D matRotate = Matrix3D::MatrixRotateZ(static_cast<float>(m_rotate * (M_PI / 2.0)));
    Matrix3D matTranslate;
    switch (m_rotate)
@@ -922,7 +1169,7 @@ void LiveUI::RenderUIInternal(const float sdrWhitePQ)
    case 1: matTranslate = Matrix3D::MatrixTranslate(io.DisplaySize.y, 0, 0); break;
    case 2: matTranslate = Matrix3D::MatrixTranslate(io.DisplaySize.x, io.DisplaySize.y, 0); break;
    case 3: matTranslate = Matrix3D::MatrixTranslate(0, io.DisplaySize.x, 0); break;
-   default: assert(false); return;
+   default: assert(false); return depthStart;
    }
    const float right = (m_rotate == 1 || m_rotate == 3) ? io.DisplaySize.y : io.DisplaySize.x;
    const float bottom = (m_rotate == 1 || m_rotate == 3) ? io.DisplaySize.x : io.DisplaySize.y;
@@ -949,80 +1196,55 @@ void LiveUI::RenderUIInternal(const float sdrWhitePQ)
    else
 #endif
       m_rd->m_uiShader->SetTechnique(ShaderTechnique::LiveUI);
-   if (static_cast<int>(m_meshBuffers.size()) < draw_data->CmdListsCount)
-      m_meshBuffers.resize(draw_data->CmdListsCount);
-   int depthSort = -10000;
-   bool hasContent = false;
-   for (int n = 0; n < draw_data->CmdListsCount; n++)
+   return EmitDrawListCommands(draw_data, uiParams, depthStart, hasContent, pool);
+}
+
+void LiveUI::RenderUIInternal(const float sdrWhitePQ, const bool withOverlay)
+{
+   if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING || m_rd->GetCurrentPass() == nullptr || m_player->m_playMode == Player::PlayMode::CaptureAttract)
+      return;
+
+   // Main (interactive) layer
+   float depthSort = -10000.f;
    {
-      const ImDrawList *const cmd_list = draw_data->CmdLists[n];
-      const unsigned int numVertices = cmd_list->VtxBuffer.size();
-      const unsigned int numIndices = cmd_list->IdxBuffer.size();
-      hasContent |= numIndices > 0;
+      ImGuiContextScope scope(m_mainContext);
+      const ImGuiIO &io = ImGui::GetIO();
+      const bool rotated = (m_rotate == 1 || m_rotate == 3);
+      const int width = static_cast<int>(rotated ? io.DisplaySize.y : io.DisplaySize.x);
+      const int height = static_cast<int>(rotated ? io.DisplaySize.x : io.DisplaySize.y);
 
-#if defined(ENABLE_BGFX)
-      // Snapshot this command list's geometry: it is uploaded on the render thread, into BGFX's
-      // per-frame transient buffers (single copy, no persistent buffer traffic)
-      if (static_cast<int>(m_uiGeometry.size()) <= n)
-         m_uiGeometry.resize(n + 1);
-      if (m_uiGeometry[n] == nullptr)
-         m_uiGeometry[n] = std::make_shared<UIListGeometry>();
-      const std::shared_ptr<UIListGeometry> &geo = m_uiGeometry[n];
-      geo->numVertices = numVertices;
-      geo->numIndices = numIndices;
-      geo->upload = UIListGeometry::Upload::None;
-      geo->vtx.resize(numVertices * sizeof(ImDrawVert));
-      geo->idx.resize(numIndices * sizeof(ImDrawIdx));
-      memcpy(geo->vtx.data(), cmd_list->VtxBuffer.Data, geo->vtx.size());
-      memcpy(geo->idx.data(), cmd_list->IdxBuffer.Data, geo->idx.size());
-#else
-      if ((numVertices != 0) && (numIndices != 0))
-      {
-         if ((m_meshBuffers[n] == nullptr) || (m_meshBuffers[n]->m_ib->m_count < numIndices) || (m_meshBuffers[n]->m_vb->m_count < numVertices))
-         { // Grow at 1.5x the needed size to amortize reallocation when the UI keeps growing
-            auto ib = std::make_shared<IndexBuffer>(m_rd, numIndices + (numIndices >> 1), true, IndexBuffer::Format::FMT_INDEX32);
-            auto vb = std::make_shared<VertexBuffer>(m_rd, numVertices + (numVertices >> 1), nullptr, true, VertexFormat::VF_IMGUI);
-            m_meshBuffers[n] = std::make_shared<MeshBuffer>(std::format("ImGui.{}", n), vb, ib, false);
-         }
+      BuildMainUI(width, height);
 
-         ImDrawVert *vb;
-         m_meshBuffers[n]->m_vb->Lock(vb, 0, numVertices * sizeof(ImDrawVert));
-         memcpy(vb, cmd_list->VtxBuffer.Data, numVertices * sizeof(ImDrawVert));
-         m_meshBuffers[n]->m_vb->Unlock();
+      ImGui::EndFrame();
+      ImGui::Render();
+      ImDrawData *const draw_data = ImGui::GetDrawData();
+      UpdateImGuiTextures(draw_data);
+      bool hasContent = false;
+      depthSort = EmitDrawListsOrtho(draw_data, sdrWhitePQ, depthSort, hasContent, m_mainUIPool);
 
-         uint32_t *ib;
-         m_meshBuffers[n]->m_ib->Lock(ib, 0, numIndices * sizeof(ImDrawIdx));
-         memcpy(ib, cmd_list->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
-         m_meshBuffers[n]->m_ib->Unlock();
-      }
-#endif
+      m_uiLayerShown = hasContent;
+      if (m_player->m_vrDevice)
+         m_player->m_vrDevice->SetShowUILayer(hasContent, m_inGameUI.IsOpened()); // Pointer interaction only with the InGame UI
 
-      for (const ImDrawCmd *cmd = cmd_list->CmdBuffer.begin(), *cmdEnd = cmd_list->CmdBuffer.end(); cmd != cmdEnd; cmd++)
-      {
-         if (cmd->ElemCount != 0)
-         {
-            m_rd->m_uiShader->SetVector(ShaderUniform::clip_plane, cmd->ClipRect.x, cmd->ClipRect.y, cmd->ClipRect.z, cmd->ClipRect.w);
-            m_rd->m_uiShader->SetTexture(ShaderUniform::tex_base_color, cmd->GetTexID(), m_player->IsVR() ? SamplerFilter::SF_ANISOTROPIC : SamplerFilter::SF_BILINEAR);
-#if !defined(ENABLE_DX9) // DX9 samples raw values (see UIShader.hlsl)
-            // ImGui works in sRGB: the shader re-encodes textures that sampling decodes (table images)
-            uiParams.y = (cmd->GetTexID() != nullptr && cmd->GetTexID()->IsSRGB()) ? 1.f : 0.f;
-            m_rd->m_uiShader->SetVector(ShaderUniform::staticColor_Alpha, &uiParams);
-#endif
-#if defined(ENABLE_BGFX)
-            m_rd->DrawTransientMesh(m_rd->m_uiShader, true, static_cast<float>(depthSort), geo, RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
-#else
-            m_rd->DrawMesh(m_rd->m_uiShader, true, Vertex3Ds(0.f, 0.f, 0.f), static_cast<float>(depthSort), m_meshBuffers[n], RenderDevice::TRIANGLELIST, cmd->IdxOffset, cmd->ElemCount);
-#endif
-            depthSort--;
-         }
-      }
+      NewFrame();
    }
 
-   m_uiLayerShown = hasContent;
-   if (m_player->m_vrDevice)
-      m_player->m_vrDevice->SetShowUILayer(hasContent, m_inGameUI.IsOpened()); // Pointer interaction only with the InGame UI
+   // Overlay (non interactive) layer, always after the main one
+   if (withOverlay)
+   {
+      ImGuiContextScope scope(m_overlayContext);
 
-   NewFrame();
+      BuildOverlayUI();
+
+      ImGui::EndFrame();
+      ImGui::Render();
+      ImDrawData *const draw_data = ImGui::GetDrawData();
+      UpdateImGuiTextures(draw_data);
+      bool hasContent = false;
+      EmitDrawListsOrtho(draw_data, sdrWhitePQ, depthSort, hasContent, m_overlayUIPool);
+
+      NewOverlayFrame();
+   }
 }
 
 void LiveUI::UpdateTouchUI()

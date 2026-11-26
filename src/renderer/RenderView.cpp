@@ -2162,23 +2162,28 @@ void RenderView::Render()
    {
       g_pplayer->m_liveUI->Render3D();
 #ifdef ENABLE_XR
-      // The VR UI draw list writes no depth (it is executed post-process inside the stereo
-      // projection): stamp the panel's footprint into the scene depth so the color key
-      // passthrough does not punch its pixels through to the environment
-      if (r->m_stereo3D == STEREO_VR && r->m_vrApplyColorKey && !IsMirror())
+      if (r->m_stereo3D == STEREO_VR && !IsMirror())
       {
          constexpr int space = static_cast<int>(VPX::SpaceReference::Playfield);
-         Vertex3Ds quad[4];
-         if (g_pplayer->m_vrDevice->GetUIQuadScene(quad))
+         ModelViewProj playfieldMvp(rd->m_nEyes);
+         for (int eye = 0; eye < rd->m_nEyes; eye++)
          {
-            ModelViewProj quadMvp(rd->m_nEyes);
-            for (int eye = 0; eye < rd->m_nEyes; eye++)
-            {
-               quadMvp.SetView(eye, m_spaceView[space][eye]);
-               quadMvp.SetProj(eye, m_spaceProj[space][eye]);
-            }
-            g_pplayer->m_liveUI->RenderVRUIDepthStamp(quad, quadMvp);
+            playfieldMvp.SetView(eye, m_spaceView[space][eye]);
+            playfieldMvp.SetProj(eye, m_spaceProj[space][eye]);
          }
+         // The VR UI draw list writes no depth (it is executed post-process inside the stereo
+         // projection): stamp the panel's footprint into the scene depth so the color key
+         // passthrough does not punch its pixels through to the environment
+         if (r->m_vrApplyColorKey)
+         {
+            Vertex3Ds quad[4];
+            if (g_pplayer->m_vrDevice->GetUIQuadScene(quad))
+               g_pplayer->m_liveUI->RenderVRUIDepthStamp(quad, playfieldMvp);
+         }
+         // The non interactive overlay layer is world space geometry resting on the table glass:
+         // it is emitted inside the scene pass so it is physically depth tested against the scene
+         // (not in the VR desktop mirror view: it is part of the player's headset experience)
+         g_pplayer->m_liveUI->RenderOverlayVR(playfieldMvp);
       }
 #endif
    }
