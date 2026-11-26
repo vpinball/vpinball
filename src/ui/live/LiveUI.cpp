@@ -262,6 +262,22 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    return imageData;
 }
 
+// SDL's window size can lag behind its pixel size (Wayland, rotated display, while loading: the window size is still the unrotated one),
+// so the per axis pixel/window ratios disagree, and SDL_GetWindowPixelDensity (width only) is off. The true density is the same on both
+// axes: the geometric mean of the ratios is exact for a transposed stale size, and unchanged when the sizes agree
+static float GetIsotropicPixelDensity(const float scaleX, const float scaleY)
+{
+   return (scaleX > 0.f && scaleY > 0.f) ? sqrtf(scaleX * scaleY) : 1.f;
+}
+
+static float GetIsotropicPixelDensity(SDL_Window* const wnd)
+{
+   int w, h, pw, ph;
+   if (wnd == nullptr || !SDL_GetWindowSize(wnd, &w, &h) || !SDL_GetWindowSizeInPixels(wnd, &pw, &ph) || w <= 0 || h <= 0)
+      return 1.f;
+   return GetIsotropicPixelDensity(static_cast<float>(pw) / static_cast<float>(w), static_cast<float>(ph) / static_cast<float>(h));
+}
+
 void LiveUI::UpdateScale()
 {
    const float prevDPI = m_uiScale;
@@ -285,7 +301,7 @@ void LiveUI::UpdateScale()
       // On macOS/iOS, keep m_uiScale at 1.0f. ImGui_ImplSDL3_NewFrame applies a 2.0f DisplayFramebufferScale
       // for SDL_WINDOW_HIGH_PIXEL_DENSITY windows. A m_uiScale of 2.0 would cause the UI to scale at 400%.
       // See: https://wiki.libsdl.org/SDL3/README/highdpi
-      m_uiScale = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore()) / SDL_GetWindowPixelDensity(m_player->m_playfieldWnd->GetCore());
+      m_uiScale = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore()) / GetIsotropicPixelDensity(m_player->m_playfieldWnd->GetCore());
       overlayScale = m_uiScale;
 
       // For cabinet mode, the user is not standing in front of screen, so scale out the UI based on display size to be more readable (more "game like")
@@ -466,6 +482,9 @@ void LiveUI::NewFrame()
          io.DisplayFramebufferScale.x = 1.f;
       if (io.DisplayFramebufferScale.y <= 0.f)
          io.DisplayFramebufferScale.y = 1.f;
+#ifndef __APPLE__ // Apple: ImGui_ImplSDL3_NewFrame already uses a single display scale
+      io.DisplayFramebufferScale.x = io.DisplayFramebufferScale.y = GetIsotropicPixelDensity(io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+#endif
       const StereoMode stereoMode = m_player->m_renderer->m_stereo3Denabled ? m_player->m_renderer->m_stereo3D : STEREO_OFF;
       switch (stereoMode)
       {
@@ -483,8 +502,7 @@ void LiveUI::NewFrame()
       io.DisplaySize.x = renderWidth / io.DisplayFramebufferScale.x;
       io.DisplaySize.y = renderHeight / io.DisplayFramebufferScale.y;
 
-      // Rotation from the render size like the 3D view (see RenderView), not from the display size above: SDL's per axis scale
-      // flips its aspect ratio while SDL's window and pixel sizes disagree (seen on Wayland during the table loading)
+      // Rotation from the render size like the 3D view (see RenderView), not from the display size above, which depends on SDL's window size
       if (m_renderer->m_stereo3D == STEREO_VR)
          m_rotate = 0;
       else
