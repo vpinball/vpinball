@@ -2,9 +2,9 @@
 #define VULKAN_VIDEO_CODEC_AV1STD_H_ 1
 
 /*
-** Copyright 2015-2025 The Khronos Group Inc.
+** Copyright 2015-2026 The Khronos Group Inc.
 **
-** SPDX-License-Identifier: Apache-2.0
+** SPDX-License-Identifier: Apache-2.0 OR MIT
 */
 
 /*
@@ -21,7 +21,9 @@ extern "C" {
 
 // vulkan_video_codec_av1std is a preprocessor guard. Do not pass it to API calls.
 #define vulkan_video_codec_av1std 1
+
 #include "vulkan_video_codecs_common.h"
+
 #define STD_VIDEO_AV1_NUM_REF_FRAMES      8U
 #define STD_VIDEO_AV1_REFS_PER_FRAME      7U
 #define STD_VIDEO_AV1_TOTAL_REFS_PER_FRAME 8U
@@ -201,6 +203,7 @@ typedef enum StdVideoAV1ChromaSamplePosition {
     STD_VIDEO_AV1_CHROMA_SAMPLE_POSITION_INVALID = 0x7FFFFFFF,
     STD_VIDEO_AV1_CHROMA_SAMPLE_POSITION_MAX_ENUM = 0x7FFFFFFF
 } StdVideoAV1ChromaSamplePosition;
+
 typedef struct StdVideoAV1ColorConfigFlags {
     uint32_t    mono_chrome : 1;
     uint32_t    color_range : 1;

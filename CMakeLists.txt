@@ -148,6 +148,9 @@ if(USE_SYSTEM_LIBS)
       "${SYSTEM_LIBS_INCLUDE_DIR}/libwinevbs/wine"
       "${SYSTEM_LIBS_INCLUDE_DIR}/libwinevbs/atl")
    link_directories(BEFORE "${SYSTEM_LIBS_LIB_DIR}")
+   # FreeImage should still be our own build (github.com/toxieainc/freeimage, see platforms/*/external.sh), not a distribution
+   # package: it is more up to date than the last official release (3.18), and adds an fp16 path (EXR_ALLOW_FOR_FP16 loads EXR
+   # images as FIT_RGB16F/FIT_RGBA16F, used by src/renderer/Texture.cpp) that a stock FreeImage.h does not even declare
    if(FREEIMAGE_DIR)
       include_directories(BEFORE "${FREEIMAGE_DIR}/include")
       link_directories(BEFORE "${FREEIMAGE_DIR}/lib")

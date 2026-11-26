@@ -644,7 +644,7 @@ void WebServer::LogStream(struct mg_connection *c, struct mg_http_message* hm)
               "Access-Control-Allow-Origin: *\r\n"
               "\r\n");
 
-   c->is_resp = 0;
+   c->pfn_data = NULL; // mark HTTP response as complete (mongoose >= 7.24; was c->is_resp = 0)
 
    {
       std::lock_guard<std::mutex> lock(s_logMutex);

@@ -2,9 +2,9 @@
 #define VULKAN_VIDEO_CODEC_H265STD_H_ 1
 
 /*
-** Copyright 2015-2025 The Khronos Group Inc.
+** Copyright 2015-2026 The Khronos Group Inc.
 **
-** SPDX-License-Identifier: Apache-2.0
+** SPDX-License-Identifier: Apache-2.0 OR MIT
 */
 
 /*
@@ -21,7 +21,9 @@ extern "C" {
 
 // vulkan_video_codec_h265std is a preprocessor guard. Do not pass it to API calls.
 #define vulkan_video_codec_h265std 1
+
 #include "vulkan_video_codecs_common.h"
+
 #define STD_VIDEO_H265_CPB_CNT_LIST_SIZE  32U
 #define STD_VIDEO_H265_SUBLAYERS_LIST_SIZE 7U
 #define STD_VIDEO_H265_SCALING_LIST_4X4_NUM_LISTS 6U
@@ -122,6 +124,7 @@ typedef enum StdVideoH265AspectRatioIdc {
     STD_VIDEO_H265_ASPECT_RATIO_IDC_INVALID = 0x7FFFFFFF,
     STD_VIDEO_H265_ASPECT_RATIO_IDC_MAX_ENUM = 0x7FFFFFFF
 } StdVideoH265AspectRatioIdc;
+
 typedef struct StdVideoH265DecPicBufMgr {
     uint32_t    max_latency_increase_plus1[STD_VIDEO_H265_SUBLAYERS_LIST_SIZE];
     uint8_t     max_dec_pic_buffering_minus1[STD_VIDEO_H265_SUBLAYERS_LIST_SIZE];
