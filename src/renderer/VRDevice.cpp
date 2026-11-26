@@ -1102,24 +1102,35 @@ void VRDevice::UpdateUIPointer(XrTime predictedDisplayTime, float vpuToWorldScal
    if (!m_showUILayer || m_viewSpace == XR_NULL_HANDLE || m_referenceSpace == XR_NULL_HANDLE)
       return;
 
+   // Resolve where the quad would be if it was rigidly attached to the head: bottom edge in front and below the viewer,
+   // tilted around this edge so that its normal points toward the viewer, with a small additional backward tilt.
+   const auto locateHeadLockedQuadPose = [this, predictedDisplayTime](XrPosef& pose)
+   {
+      XrSpaceLocation headLocation { XR_TYPE_SPACE_LOCATION };
+      if (xrLocateSpace(m_viewSpace, m_referenceSpace, predictedDisplayTime, &headLocation) != XR_SUCCESS
+         || (headLocation.locationFlags & (XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT))
+            != (XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT))
+         return false;
+      const bx::Quaternion headRot { headLocation.pose.orientation.x, headLocation.pose.orientation.y, headLocation.pose.orientation.z, headLocation.pose.orientation.w };
+      const bx::Vec3 headPos { headLocation.pose.position.x, headLocation.pose.position.y, headLocation.pose.position.z };
+      const float halfHeight = 0.5f * kUILayerHeight;
+      const float eyeAngle = atan2f(kUILayerBottomDrop, kUILayerBottomDistance);
+      const float pivotSwingAngle = asinf(halfHeight / sqrtf(kUILayerBottomDistance * kUILayerBottomDistance + kUILayerBottomDrop * kUILayerBottomDrop));
+      const float tilt = eyeAngle - pivotSwingAngle + bx::toRad(kUILayerExtraTiltDeg);
+      const bx::Quaternion tiltRot = bx::rotateX(-tilt);
+      const bx::Vec3 centerOffset = bx::add(bx::Vec3 { 0.f, -kUILayerBottomDrop, -kUILayerBottomDistance }, bx::mul(bx::Vec3 { 0.f, halfHeight, 0.f }, tiltRot));
+      const bx::Vec3 quadOffset = bx::mul(centerOffset, headRot);
+      const bx::Quaternion quadRot = bx::mul(headRot, tiltRot);
+      pose.position = { headPos.x + quadOffset.x, headPos.y + quadOffset.y, headPos.z + quadOffset.z };
+      pose.orientation = { quadRot.x, quadRot.y, quadRot.z, quadRot.w };
+      return true;
+   };
+
    // The UI quad is anchored in the tracking space when it becomes interactive: placed in
    // front of the user's head on first show, then room locked until hidden (a
    // fixed surface is far easier to point at than a head-locked one)
    if (m_uiLayerInteractive && (m_uiLayerReanchor.exchange(false) || !m_uiLayerPoseValid))
-   {
-      XrSpaceLocation headLocation { XR_TYPE_SPACE_LOCATION };
-      m_uiLayerPoseValid = xrLocateSpace(m_viewSpace, m_referenceSpace, predictedDisplayTime, &headLocation) == XR_SUCCESS
-         && (headLocation.locationFlags & (XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT))
-            == (XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT);
-      if (m_uiLayerPoseValid)
-      {
-         const bx::Quaternion headRot { headLocation.pose.orientation.x, headLocation.pose.orientation.y, headLocation.pose.orientation.z, headLocation.pose.orientation.w };
-         const bx::Vec3 headPos { headLocation.pose.position.x, headLocation.pose.position.y, headLocation.pose.position.z };
-         const bx::Vec3 quadOffset = bx::mul(bx::Vec3 { 0.f, -kUILayerDrop, -kUILayerDistance }, headRot);
-         m_uiLayerPose.position = { headPos.x + quadOffset.x, headPos.y + quadOffset.y, headPos.z + quadOffset.z };
-         m_uiLayerPose.orientation = headLocation.pose.orientation;
-      }
-   }
+      m_uiLayerPoseValid = locateHeadLockedQuadPose(m_uiLayerPose);
 
    // Resolve the quad pose in reference space: room locked from the anchored pose while
    // interactive, head locked (a fixed offset in front of the view) otherwise
@@ -1128,18 +1139,9 @@ void VRDevice::UpdateUIPointer(XrTime predictedDisplayTime, float vpuToWorldScal
    {
       quadPose = m_uiLayerPose;
    }
-   else
+   else if (!locateHeadLockedQuadPose(quadPose))
    {
-      XrSpaceLocation headLocation { XR_TYPE_SPACE_LOCATION };
-      if (xrLocateSpace(m_viewSpace, m_referenceSpace, predictedDisplayTime, &headLocation) != XR_SUCCESS
-         || (headLocation.locationFlags & (XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT))
-            != (XR_SPACE_LOCATION_POSITION_VALID_BIT | XR_SPACE_LOCATION_ORIENTATION_VALID_BIT))
-         return;
-      const bx::Quaternion headRot { headLocation.pose.orientation.x, headLocation.pose.orientation.y, headLocation.pose.orientation.z, headLocation.pose.orientation.w };
-      const bx::Vec3 headPos { headLocation.pose.position.x, headLocation.pose.position.y, headLocation.pose.position.z };
-      const bx::Vec3 quadOffset = bx::mul(bx::Vec3 { 0.f, -kUILayerDrop, -kUILayerDistance }, headRot);
-      quadPose.position = { headPos.x + quadOffset.x, headPos.y + quadOffset.y, headPos.z + quadOffset.z };
-      quadPose.orientation = headLocation.pose.orientation;
+      return;
    }
 
    // Quad frame in reference space (meters)

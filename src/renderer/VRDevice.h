@@ -301,10 +301,11 @@ public:
    }
    // Geometry of the UI quad (meters, in XR tracking space): shared between the
    // in-scene draw list placement and the controller pointer raycast
-   static constexpr float kUILayerDistance = 0.8f; // Distance in front of the viewer
+   static constexpr float kUILayerBottomDistance = 0.8f; // Bottom edge distance in front of the viewer
    static constexpr float kUILayerWidth = 0.75f;
    static constexpr float kUILayerHeight = kUILayerWidth * 9.f / 16.f; // 16:9, matching the desktop UI layout
-   static constexpr float kUILayerDrop = 0.45f * kUILayerHeight; // Panel center below eye level: top edge just above the line of sight
+   static constexpr float kUILayerBottomDrop = 0.45f; // Bottom edge below eye level
+   static constexpr float kUILayerExtraTiltDeg = 0.f; // Extra backward tilt beyond exactly facing the viewer
    // Controller pointer raycast against the UI quad: computed per frame on
    // the render thread, read on the logic thread (same write/read split as
    // m_uiQuadScene — a frame of staleness is fine for a pointer)
