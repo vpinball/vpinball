@@ -144,6 +144,7 @@ void InGameUI::Open(const string& page)
    assert(!IsOpened());
    Navigate(page);
    m_useFlipperNav = m_player->m_vrDevice || m_player->m_ptable->GetViewMode() == ViewSetupID::BG_FULLSCREEN;
+   m_renderer->OnUIOpened();
 }
 
 void InGameUI::Close()
@@ -321,11 +322,11 @@ void InGameUI::OnUINavigateBack()
 
 void InGameUI::HandlePageInput()
 {
-   // Disable keyboard shortcut if no control editing is in progress
-   if (ImGui::IsAnyItemActive())
+   // Disable command input while a control or the input-mapping capture owns input
+   if (ImGui::IsAnyItemActive() || m_player->m_pininput.IsButtonCaptureActive())
       return;
 
-   // If user has moved the mouse, disable flipper navigation
+   // If user has moved the mouse, disable command/focus navigation
    if (m_useFlipperNav && !m_player->m_vrDevice)
    {
       ImVec2 delta = m_prevMousePos - ImGui::GetMousePos();
@@ -333,27 +334,31 @@ void InGameUI::HandlePageInput()
    }
    m_prevMousePos = ImGui::GetMousePos();
 
+   InputManager &input = m_player->m_pininput;
+
    // While a VR controller points at a scrollable pane, pointer gestures
-   // (wheel/drag) own its scroll position: drop flipper navigation so the
+   // (wheel/drag) own its scroll position: drop focus navigation so the
    // keep-focus-visible scrolling doesn't fight them (causing a flicker)
-   if (m_useFlipperNav && m_player->m_pininput.IsUIPointerScrollingActive())
+   if (m_useFlipperNav && input.IsUIPointerScrollingActive())
       m_useFlipperNav = false;
 
-   // Allow pages to force flipper navigation (needed by anaglyph calibration)
+   // Allow pages to force focus navigation (needed by anaglyph calibration)
    for (const auto &page : m_activePages)
       m_useFlipperNav |= page->IsFlipperNavNeeded();
 
    // Handle continuous press navigation
    const uint32_t now = msec();
    const uint32_t flipperNavRepeat = m_flipperNavRepeatCount == 0 ? 500 : m_flipperNavRepeatCount == 1 ? 250 : 125;
-   if (m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUIUpActionId()) && (now - m_flipperNavStart) > flipperNavRepeat)
+   const bool prevPressed = input.IsPressed(input.GetUIUpActionId()) || input.IsPressed(input.GetLeftMagnaActionId());
+   const bool nextPressed = input.IsPressed(input.GetUIDownActionId()) || input.IsPressed(input.GetRightMagnaActionId());
+   if (m_useFlipperNav && prevPressed && (now - m_flipperNavStart) > flipperNavRepeat)
    {
       m_flipperNavStart = now;
       m_flipperNavRepeatCount++;
       if (!m_renderer->OnUINavigatePrev(GetActivePage()))
          GetActivePage()->SelectPrevItem();
    }
-   else if (m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUIDownActionId()) && (now - m_flipperNavStart) > flipperNavRepeat)
+   else if (m_useFlipperNav && nextPressed && (now - m_flipperNavStart) > flipperNavRepeat)
    {
       m_flipperNavStart = now;
       m_flipperNavRepeatCount++;
@@ -362,8 +367,8 @@ void InGameUI::HandlePageInput()
    }
 
    // Handle continuous press item adjustment, applying remaining adjustment on release
-   const bool leftPressed = m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUILeftActionId());
-   const bool rightPressed = m_useFlipperNav && m_player->m_pininput.IsPressed(m_player->m_pininput.GetUIRightActionId());
+   const bool leftPressed = m_useFlipperNav && (input.IsPressed(input.GetUILeftActionId()) || input.IsPressed(input.GetLeftFlipperActionId()));
+   const bool rightPressed = m_useFlipperNav && (input.IsPressed(input.GetUIRightActionId()) || input.IsPressed(input.GetRightFlipperActionId()));
    if (leftPressed)
    {
       if (!m_renderer->OnUIAdjust(GetActivePage(), -1.f, false))
@@ -381,7 +386,6 @@ void InGameUI::HandlePageInput()
    }
    m_itemAdjustWasPressed = leftPressed || rightPressed;
 }
-
 
 bool InGameUI::ProposeInputLayout(const string& deviceName, const std::function<void(bool, bool)>& handler)
 {

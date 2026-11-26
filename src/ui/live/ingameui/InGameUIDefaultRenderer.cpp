@@ -444,8 +444,6 @@ void InGameUIDefaultRenderer::RenderPage(InGameUIPage& page, float elapsedS)
             if (IconButtonInk(ICON_LC_X, std::format("##Item{:d}", i).c_str()))
             {
                item->m_inputAction->ClearMapping();
-               if (item->m_inputAction->IsNavigationAction())
-                  page.RequestInputActionPopup(*item);
             }
             ImGui::SameLine();
          }

@@ -72,7 +72,6 @@ public:
    unsigned int GetRulesActionId() const { return m_rulesActionId; }
    unsigned int GetMouseLeftActionId() const { return m_mouseLeftActionId; }
    unsigned int GetMouseRightActionId() const { return m_mouseRightActionId; }
-   bool IsUINavigationActionId(unsigned int id) const override;
    bool IsPressed(int actionId) const;
    int GetWindowVirtualKeyForAction(unsigned int actionId) const;
 
@@ -157,8 +156,10 @@ public:
    bool IsTouchRegionPressed(const TouchRegionDef& region) const { return m_inputActions[region.actionId]->GetDirectState(region.directStateSlot); }
 
    void StartButtonCapture();
+   void EndButtonCapture();
    const vector<ButtonMapping>& GetButtonCapture() const { return m_buttonCapture; }
    string GetMappingLabel(const vector<ButtonMapping>& mappings) const override;
+   bool IsButtonCaptureActive() const { return m_buttonCaptureState != 0; }
    bool IsButtonCaptureDone() const { return m_buttonCaptureState == 2; }
 
    // ButtonInputEventManager
@@ -296,6 +297,7 @@ private:
    unsigned int m_mouseRightActionId;
    ankerl::unordered_dense::map<uint32_t, vector<ButtonMapping*>> m_buttonMappings;
    vector<InputAction*> m_onUpdateActions;
+   bool IsUIPointerOwnedInput(uint16_t deviceId, uint16_t buttonOrAxisId, bool isAxis) const;
    const unsigned int m_onActionEventMsgId;
 
    ankerl::unordered_dense::map<uint32_t, vector<SensorMapping*>> m_sensorMappings;

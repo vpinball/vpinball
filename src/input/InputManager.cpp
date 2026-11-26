@@ -662,6 +662,11 @@ void InputManager::PushButtonEvent(uint16_t deviceId, uint16_t buttonId, uint64_
    if (isPressed && (deviceId == m_keyboardDeviceId || deviceId == m_mouseDeviceId) && m_player->m_liveUI->IsEditorUIOpened() && m_player->m_ptable->m_liveBaseTable == nullptr)
       return;
 
+   // A controller pointing at the VR UI surface uses its trigger/select inputs as laser clicks:
+   // they must not simultaneously trigger cabinet flipper adjustment.
+   if (IsUIPointerOwnedInput(deviceId, buttonId, false))
+      isPressed = false;
+
    uint32_t id = deviceId << 16 | buttonId;
    if (auto it = m_buttonMappings.find(id); it != m_buttonMappings.end())
    {
@@ -718,6 +723,27 @@ bool InputManager::IsUIPointerScrollingActive() const
 #endif
 }
 
+// Whether a low-level input belongs to the hand currently owning the VR laser
+// pointer. Trigger/select controls of that hand are pointer clicks while the
+// aim is on the UI surface, so they are removed from cabinet/UI action routing.
+bool InputManager::IsUIPointerOwnedInput(const uint16_t deviceId, const uint16_t buttonOrAxisId, const bool isAxis) const
+{
+#ifdef ENABLE_XR
+   if (m_player == nullptr || m_player->m_liveUI == nullptr || !m_player->m_liveUI->IsInGameUIOpened() || m_player->m_vrDevice == nullptr || deviceId >= m_inputDevices.size()
+      || m_inputDevices[deviceId].m_type != DeviceType::VRController)
+      return false;
+   const VRDevice::UIPointer pointer = m_player->m_vrDevice->GetUIPointer();
+   if (!pointer.valid || !pointer.onQuad || pointer.hand < 0 || pointer.hand > 1)
+      return false;
+   if (isAxis)
+      return buttonOrAxisId == (pointer.hand == 0 ? 17 : 16); // Analog trigger of the pointing hand
+   return buttonOrAxisId == (pointer.hand == 0 ? 1 : 0) // select/click
+      || buttonOrAxisId == (pointer.hand == 0 ? 7 : 6); // trigger/click
+#else
+   return false;
+#endif
+}
+
 // Signed wheel delta contributed by an axis position toward the given direction
 // (positive = up for vertical, right for horizontal), honoring the binding's
 // polarity. navBound reports whether the axis feeds the corresponding actions.
@@ -751,6 +777,10 @@ void InputManager::PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t ti
    // (during initial table load, the loading UI is displayed and interactive, so events must flow)
    if (m_player->m_overall_frames < 5 && !m_player->m_isLoading && !m_acceptStartupEvents)
       return;
+
+   // Trigger input of the hand owning the VR laser pointer is neutralized while it points at the UI.
+   if (IsUIPointerOwnedInput(deviceId, axisId, true))
+      position = 0.f;
 
    const uint32_t id = deviceId << 16 | axisId;
    m_axisPositions[id] = position;
@@ -890,31 +920,31 @@ void InputManager::CreateInputActions()
          {
             if (m_player->m_liveUI->IsInGameUIOpened())
             {
+               if (m_buttonCaptureState != 0)
+                  return;
                if (isPressed)
                {
-                  if (action.GetActionId() == m_uiUpActionId)
+                  const unsigned int actionId = action.GetActionId();
+                  if (actionId == m_uiUpActionId || actionId == m_leftMagnaActionId)
                      m_player->m_liveUI->m_inGameUI.OnUIUpAction();
-                  else if (action.GetActionId() == m_uiDownActionId)
+                  else if (actionId == m_uiDownActionId || actionId == m_rightMagnaActionId)
                      m_player->m_liveUI->m_inGameUI.OnUIDownAction();
-                  else if (action.GetActionId() == m_uiLeftActionId)
+                  else if (actionId == m_uiLeftActionId)
                      m_player->m_liveUI->m_inGameUI.OnUILeftAction();
-                  else if (action.GetActionId() == m_uiRightActionId)
+                  else if (actionId == m_uiRightActionId)
                      m_player->m_liveUI->m_inGameUI.OnUIRightAction();
-                  // Somewhat hacky direct UI action mapping (inherited from legacy POV adjustment mode, could benefit from some additional cleanups)
-                  else if (action.GetActionId() == m_launchBallActionId)
+                  else if (actionId == m_launchBallActionId)
                      m_player->m_liveUI->m_inGameUI.OnUIResetToDefaults();
-                  else if (std::ranges::find(m_addCreditActionId, action.GetActionId()) != std::end(m_addCreditActionId)) // Any credit slot undoes
+                  else if (std::ranges::find(m_addCreditActionId, actionId) != std::end(m_addCreditActionId))
                      m_player->m_liveUI->m_inGameUI.OnUICancelChanges();
-                  else if (action.GetActionId() == m_startActionId)
+                  else if (actionId == m_startActionId)
                      m_player->m_liveUI->m_inGameUI.OnUISaveChanges();
                }
+               return;
             }
-            else
-            {
-               CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
-               DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
-               m_player->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
-            }
+            CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
+            DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+            m_player->m_ptable->FireDispID(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, &dispparams);
          }));
       return newAction->GetActionId();
    };
@@ -925,7 +955,18 @@ void InputManager::CreateInputActions()
          [this](const InputAction& action, bool prev, bool isPressed)
          {
             if (m_player->m_liveUI->IsInGameUIOpened())
+            {
+               if (m_buttonCaptureState != 0)
+                  return;
+               if (isPressed)
+               {
+                  if (action.GetActionId() == m_leftFlipperActionId)
+                     m_player->m_liveUI->m_inGameUI.OnUILeftAction();
+                  else if (action.GetActionId() == m_rightFlipperActionId)
+                     m_player->m_liveUI->m_inGameUI.OnUIRightAction();
+               }
                return;
+            }
             if (isPressed && m_player->IsPlaying() && m_player->ShouldHideDesktopCursor())
                SDL_HideCursor();
          
@@ -978,10 +1019,10 @@ void InputManager::CreateInputActions()
    m_stagedRightFlipperActionId = addFlipperKeyAction("RightStagedFlipper"s, "Right Staged Flipper"s, SDL_SCANCODE_RSHIFT); // SDL_SCANCODE_RALT
    m_leftMagnaActionId = addKeyAction("LeftMagna"s, "Left Magna"s, SDL_SCANCODE_LCTRL);
    m_rightMagnaActionId = addKeyAction("RightMagna"s, "Right Magna"s, SDL_SCANCODE_RCTRL);
-   m_uiUpActionId = addKeyAction("UIUp"s, "UI: Next Item"s, SDL_SCANCODE_LCTRL);
-   m_uiDownActionId = addKeyAction("UIDown"s, "UI: Previous Item"s, SDL_SCANCODE_RCTRL);
-   m_uiLeftActionId = addKeyAction("UILeft"s, "UI: Decrease/Cancel"s, SDL_SCANCODE_LSHIFT);
-   m_uiRightActionId = addKeyAction("UIRight"s, "UI: Increase/Confirm"s, SDL_SCANCODE_RSHIFT);
+   m_uiUpActionId = addKeyAction("UIPrev"s, "UI: Navigate Previous"s, SDL_SCANCODE_UNKNOWN); // Additional UI input (cabinet input through flipper/magna/... is always mapped)
+   m_uiDownActionId = addKeyAction("UINext"s, "UI: Navigate Next"s, SDL_SCANCODE_UNKNOWN);
+   m_uiLeftActionId = addKeyAction("UIDecrease"s, "UI: Adjust Decrease"s, SDL_SCANCODE_UNKNOWN);
+   m_uiRightActionId = addKeyAction("UIIncrease"s, "UI: Adjust Increase"s, SDL_SCANCODE_UNKNOWN);
    m_launchBallActionId = addKeyAction("LaunchBall"s, "Launch Ball"s, SDL_SCANCODE_RETURN);
    m_leftNudgeActionId = addNudgeKeyAction("LeftNudge"s, "Left Nudge"s, SDL_SCANCODE_Z);
    m_rightNudgeActionId = addNudgeKeyAction("RightNudge"s, "Right Nudge"s, SDL_SCANCODE_SLASH);
@@ -1015,6 +1056,8 @@ void InputManager::CreateInputActions()
       std::make_unique<InputAction>(this, "ExitGame"s, "Exit Game"s, keyMapping(SDL_SCANCODE_ESCAPE),
          [this](const InputAction& action, bool, bool isPressed)
          {
+            if (isPressed && m_buttonCaptureState != 0)
+               return;
             if (isPressed && !m_player->m_liveUI->IsOpened())
             {
                CComVariant rgvar[1] = { CComVariant(0x10000 | static_cast<int>(action.GetActionId())) };
@@ -1033,6 +1076,8 @@ void InputManager::CreateInputActions()
       std::make_unique<InputAction>(this, "InGameUI"s, "Toggle InGame UI"s, keyMapping(SDL_SCANCODE_F12),
          [this](const InputAction&, bool, bool isPressed)
          {
+            if (isPressed && m_buttonCaptureState != 0)
+               return;
             if (isPressed && !m_player->m_liveUI->IsOpened())
             {
                m_player->m_liveUI->OpenInGameUI();
@@ -1263,10 +1308,6 @@ InputAction* InputManager::AddAction(std::unique_ptr<InputAction>&& action)
    return m_inputActions.back().get();
 }
 
-bool InputManager::IsUINavigationActionId(unsigned int id) const
-{
-   return id == m_openInGameUIActionId || id == m_uiUpActionId || id == m_uiDownActionId || id == m_uiLeftActionId || id == m_uiRightActionId;
-}
 
 bool InputManager::IsPressed(int actionId) const
 {
@@ -1394,6 +1435,12 @@ void InputManager::StartButtonCapture()
 {
    assert(m_buttonCaptureState != 1);
    m_buttonCaptureState = 1;
+   m_buttonCapture.clear();
+}
+
+void InputManager::EndButtonCapture()
+{
+   m_buttonCaptureState = 0;
    m_buttonCapture.clear();
 }
 

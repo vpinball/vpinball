@@ -18,7 +18,6 @@ public:
       virtual bool OnInputActionStateChanged(InputAction* action) = 0;
       virtual void RegisterOnUpdate(InputAction* action) = 0;
       virtual void UnregisterOnUpdate(InputAction* action) = 0;
-      virtual bool IsUINavigationActionId(unsigned int id) const = 0;
    };
 
    InputAction(EventManager* eventManager, const string& settingId, const string& label, const string& defaultMappings, const std::function<void(InputAction&, bool, bool)>& onChange)
@@ -75,8 +74,6 @@ public:
    void SetRepeatPeriod(int delayMs);
 
    const string& GetLabel() const { return m_label; }
-
-   bool IsNavigationAction() const;
 
    int NewDirectStateSlot();
    void SetDirectState(int slot, bool state);

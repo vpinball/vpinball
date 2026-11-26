@@ -177,7 +177,9 @@ public:
          map.MapAction(ButtonMapping::Create(m_joyId, 10), m_pininput.GetStartActionId());
          map.MapAction(ButtonMapping::Create(m_joyId, 8), m_pininput.GetOpenInGameUIActionId()); // Left buttons
          map.MapAction(ButtonMapping::Create(m_joyId, 9), m_pininput.GetExitGameActionId());
-         map.MapAction(ButtonMapping::Create(m_joyId, 21, -0.9f, true), m_pininput.GetUIDownActionId()); // Left vertical stick
+         map.MapAction(ButtonMapping::Create(m_joyId, 20, -0.9f, true), m_pininput.GetUIUpActionId()); // Left stick navigation (up/left = previous)
+         map.MapAction(ButtonMapping::Create(m_joyId, 20, 0.9f), m_pininput.GetUIDownActionId());
+         map.MapAction(ButtonMapping::Create(m_joyId, 21, -0.9f, true), m_pininput.GetUIDownActionId());
          map.MapAction(ButtonMapping::Create(m_joyId, 21, 0.9f), m_pininput.GetUIUpActionId());
          map.MapAction(ButtonMapping::Create(m_joyId, 22, -0.9f, true), m_pininput.GetUILeftActionId()); // Right horizontal stick
          map.MapAction(ButtonMapping::Create(m_joyId, 22, 0.9f), m_pininput.GetUIRightActionId());

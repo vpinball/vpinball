@@ -21,6 +21,9 @@ public:
    // entirely the implementation's choice.
    virtual void RenderPages(const vector<InGameUIPage*>& pages, float elapsedS) = 0;
 
+   // Called when a new in-game UI session is opened.
+   virtual void OnUIOpened() { }
+
    // Flipper/button navigation events. The default implementation declines the
    // event and the standard behavior applies (moving/adjusting the active page's
    // item selection); renderers with multi-level navigation consume the events.

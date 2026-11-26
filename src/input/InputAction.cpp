@@ -340,8 +340,3 @@ void InputAction::SetRepeatPeriod(int delayMs)
          m_eventManager->RegisterOnUpdate(this);
    }
 }
-
-bool InputAction::IsNavigationAction() const
-{
-   return m_eventManager->IsUINavigationActionId(GetActionId());
-}
