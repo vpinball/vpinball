@@ -836,7 +836,7 @@ void Player::InitTableSession(const bool isInitial)
          m_texLoadStats.nPixelsTotal += static_cast<uint64_t>(image->m_width) * image->m_height;
 
 #ifdef ENABLE_BGFX
-      if (m_renderer->m_renderDevice->m_compressTextures && FileExists(m_ptable->m_filename))
+      if (m_renderer->m_renderDevice->m_compressTextures && m_ptable->IsOnDisk())
       {
          // Texture compression relies on its disk cache, so it is disabled entirely when the cache folder is not writable
          const std::filesystem::path texCacheDir = g_app->m_fileLocator.GetTablePath(m_ptable, FileLocator::TableSubFolder::Cache, true);
@@ -1121,7 +1121,7 @@ void Player::InitTableSession(const bool isInitial)
 void Player::LoadUsedTextures()
 {
    m_usedTextures.clear();
-   if ((m_ptable->GetSettings().GetPlayer_CacheMode() <= 0) || !FileExists(m_ptable->m_filename))
+   if ((m_ptable->GetSettings().GetPlayer_CacheMode() <= 0) || !m_ptable->IsOnDisk())
       return;
    try
    {
@@ -1153,7 +1153,7 @@ void Player::LoadUsedTextures()
 
 void Player::SaveUsedTextures()
 {
-   if ((m_ptable->GetSettings().GetPlayer_CacheMode() <= 0) || !FileExists(m_ptable->m_filename))
+   if ((m_ptable->GetSettings().GetPlayer_CacheMode() <= 0) || !m_ptable->IsOnDisk())
       return;
 
    // Age all entries, renew the ones drawn by the player, and drop the ones not drawn for 100 saves
