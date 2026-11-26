@@ -362,6 +362,9 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
       ShowFatalError(std::format("Renderer initialization error code: {:#010X}", static_cast<unsigned int>(hr)));
       throw hr;
    }
+#ifdef ENABLE_BGFX
+   m_frameMutexHeld = true; // The render device constructor locked the frame mutex for the game thread
+#endif
 
    m_backglassOutput.SetMode(m_ptable->GetSettings(), static_cast<RenderOutput::OutputMode>(m_ptable->GetSettings().GetWindow_Mode(VPXWindowId::VPXWINDOW_Backglass)));
    m_scoreViewOutput.SetMode(m_ptable->GetSettings(), static_cast<RenderOutput::OutputMode>(m_ptable->GetSettings().GetWindow_Mode(VPXWindowId::VPXWINDOW_ScoreView)));
@@ -421,6 +424,7 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
 
    // Initialize the table session: physics, script, per part rendering and timers
    InitTableSession(true);
+   EndStartupLoadingScreen();
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == PlayMode::EditPOV)
@@ -500,6 +504,70 @@ void Player::UnlockRenderThread()
    m_frameMutexHeld = false;
    m_renderer->m_renderDevice->m_frameMutex.unlock();
 #endif
+}
+
+void Player::BeginStartupLoadingScreen()
+{
+#ifdef ENABLE_BGFX
+   // Not in the Android/iOS apps (libvpinball), which show their own loading screen during the whole startup, fed by m_loadProgress
+   if (g_isMobile || IsEditorMode() || m_playMode == PlayMode::CaptureAttract)
+      return;
+#ifdef _WIN32
+   // The script start can block the main thread for seconds: keep the loading screen instead of the '(Not Responding)' ghost
+   // window Windows shows after 5s. Process wide and permanent, so it also applies to the Win32 editor afterwards
+   DisableProcessWindowsGhosting();
+#endif
+   m_isLoading = true;
+   m_isStartupLoading = true;
+   m_startupLoadingPhase = "Initializing physics"s;
+   if (!m_liveUI->m_inGameUI.IsOpened())
+      m_liveUI->m_inGameUI.Open("loading"s);
+   m_playfieldWnd->Show();
+   m_playfieldWnd->RaiseAndFocus();
+   UpdateStartupLoadingScreen(m_startupLoadingPhase);
+#endif
+}
+
+void Player::UpdateStartupLoadingScreen(const string& phase)
+{
+#ifdef ENABLE_BGFX
+   if (!m_isStartupLoading)
+      return;
+   m_startupLoadingPhase = phase;
+   // Render one loading frame: release the game thread's frame ownership and wait (at most 100ms) for the render thread to request a frame
+   const bool wasHeld = m_frameMutexHeld;
+   if (wasHeld)
+      UnlockRenderThread();
+   RenderDevice *const rd = m_renderer->m_renderDevice;
+   for (const uint64_t start = usec(); usec() - start < 100000;)
+   {
+      ProcessOSMessages();
+      if (rd->m_frameRequested && !rd->m_framePending && rd->m_frameMutex.try_lock())
+      {
+         m_frameMutexHeld = true;
+         m_renderer->RenderUIScene();
+         SubmitFrame(); // Hands the recorded frame over to the render thread and releases the render frame mutex
+         m_frameMutexHeld = false;
+         break;
+      }
+      uOverSleep(1000);
+   }
+   if (wasHeld)
+      LockRenderThread();
+#else
+   (void)phase;
+#endif
+}
+
+void Player::EndStartupLoadingScreen()
+{
+   if (!m_isStartupLoading)
+      return;
+   // No final loading frame: the loading page would resume the play that the session start just paused (see InGameUI::Update),
+   // before the physics start. The last loading frame stays on screen until the first game frame.
+   m_liveUI->m_inGameUI.Close(); // While m_isLoading: no play state change, no option event. The page is erased once its closing animation ends
+   m_isStartupLoading = false;
+   m_isLoading = false;
 }
 
 void Player::InitTableSession(const bool isInitial)
@@ -722,6 +790,10 @@ void Player::InitTableSession(const bool isInitial)
       m_renderer->SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
    }
 
+   // Loading screen for the rest of the startup (the UI rendering needs the physics)
+   if (isInitial)
+      BeginStartupLoadingScreen();
+
    //----------------------------------------------------------------------------------
 
    if (isInitial)
@@ -898,7 +970,10 @@ void Player::InitTableSession(const bool isInitial)
       for (auto image : preloadImages)
          pool.enqueue_block(loadImage, image, false);
 
-      bool showLoadingUI = false;
+      const bool startupScreen = m_isStartupLoading; // Already open, and stays open after the textures
+      if (startupScreen)
+         m_startupLoadingPhase = "Loading textures"s;
+      bool showLoadingUI = startupScreen;
       while (pool.has_work_in_flight())
       {
          ProcessOSMessages();
@@ -942,7 +1017,7 @@ void Player::InitTableSession(const bool isInitial)
             Sleep(0);
          }
       }
-      if (showLoadingUI)
+      if (showLoadingUI && !startupScreen)
       {
          m_liveUI->m_inGameUI.Close(); // Page is erased once its closing animation completes, during the first gameplay frames
          m_isLoading = false;
@@ -966,6 +1041,7 @@ void Player::InitTableSession(const bool isInitial)
 
    PLOGI << "Initializing renderer"; // For profiling
    m_loadProgress->SetProgress("Initializing Visuals..."s);
+   UpdateStartupLoadingScreen("Initializing visuals"s);
 
    // Setup rendering and timers
    RenderState state;
@@ -990,6 +1066,7 @@ void Player::InitTableSession(const bool isInitial)
    {
       PLOGI << "Starting script"; // For profiling
       m_loadProgress->SetProgress("Starting Game Scripts..."s, m_loadProgress->GetProgress() + progressVisualLength);
+      UpdateStartupLoadingScreen("Starting game scripts"s); // Last frame until the script start returns (it blocks the main thread)
 
       // Setup script interpreter and run the main script
       CComObject<ScriptInterpreter>::CreateInstance(&m_scriptInterpreter);

@@ -198,6 +198,11 @@ private:
 
    void LockRenderThread();   // Wait for the render thread to be idle and take ownership of the render frame (BGFX only)
    void UnlockRenderThread(); // Release render frame ownership, letting the game loop resume (BGFX only)
+   // Startup loading screen (BGFX, not in the mobile apps or the editor): shown after the physics initialization until the game starts.
+   // The startup phases block the main thread, so frames are only rendered between them (continuously during the texture loading)
+   void BeginStartupLoadingScreen();
+   void UpdateStartupLoadingScreen(const string& phase);
+   void EndStartupLoadingScreen();
 
 public:
    // Stats shared between the texture loading worker threads and the loading UI
@@ -224,6 +229,9 @@ public:
    };
    TextureLoadStats m_texLoadStats;
    bool m_isLoading = false; // True while the initial table content is being loaded (the loading UI is displayed instead of the game)
+   bool m_isStartupLoading = false; // True while the loading UI covers the whole startup (see BeginStartupLoadingScreen), not only the texture compression
+   string m_startupLoadingPhase; // Startup phase shown by the loading UI (main thread only)
+   float GetStartupProgress() const { return m_loadProgress->GetProgress() / 100.f; } // Overall startup progress, 0..1
 
    uint64_t m_timeUpdateTimeStamp = 0; // Timestamp in computer time that correspond to last update of game time
    double m_time_sec = 0.0; // current physics time

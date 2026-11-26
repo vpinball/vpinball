@@ -151,6 +151,9 @@ void InGameUI::Close()
    m_navigationHistory.clear();
    if (GetActivePage())
       GetActivePage()->Close(false);
+   // Closing the loading page does not end a UI session: the startup owns the play state, and no option was edited
+   if (m_player->m_isLoading)
+      return;
    if (!m_player->IsPlaying(false))
       m_player->SetPlayState(true);
    m_player->m_ptable->FireOptionEvent(PinTable::OptionEventType::EndOfEdit);

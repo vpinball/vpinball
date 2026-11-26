@@ -215,10 +215,13 @@ void LoadingPage::RenderLoadingScreen(const ImVec4& rect)
    if (!m_netGenerated)
       GenerateWireNet(size);
 
+   // Overall progress when covering the whole startup, else (texture compression only) the texture loading progress
    const auto& stats = m_player->m_texLoadStats;
    const uint64_t totalPixels = stats.nPixelsTotal.load(std::memory_order_relaxed);
    const uint64_t donePixels = stats.nPixelsDone.load(std::memory_order_relaxed);
-   const float progress = totalPixels > 0 ? std::clamp(static_cast<float>(donePixels) / static_cast<float>(totalPixels), 0.f, 1.f) : 0.f;
+   const float progress = m_player->m_isStartupLoading ? std::clamp(m_player->GetStartupProgress(), 0.f, 1.f)
+      : totalPixels > 0                                ? std::clamp(static_cast<float>(donePixels) / static_cast<float>(totalPixels), 0.f, 1.f)
+                                                       : 0.f;
 
    // Dark gray vertical gradient backdrop
    drawList->AddRectFilledMultiColor(origin, origin + size, IM_COL32(38, 38, 44, 255), IM_COL32(38, 38, 44, 255), IM_COL32(16, 16, 20, 255), IM_COL32(16, 16, 20, 255));
@@ -310,6 +313,7 @@ void LoadingPage::RenderLoadingScreen(const ImVec4& rect)
    const bool canSkip = CanSkipCompression();
    const string info = canSkip                                ? "Compressing textures (one-time operation, results are cached for future launches).\nYou can adjust compression settings by pressing any UI button."s
       : stats.skipCompression.load(std::memory_order_relaxed) ? "Loading the remaining textures with compression skipped."s
+      : m_player->m_isStartupLoading                          ? m_player->m_startupLoadingPhase + "..."s
                                                               : "Loading table textures."s;
    ImFont* const font = ImGui::GetFont();
    const float fontSize = ImGui::GetFontSize();
