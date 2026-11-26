@@ -28,10 +28,10 @@ public:
    void SetWireFrame(bool wireFrame) { m_wireFrame = wireFrame; }
 
 private:
-   uint32_t m_offColor = RGB(20, 20, 20);
-   uint32_t m_lightColor = RGB(254, 90, 50);
-   uint32_t m_glassColor = RGB(254, 50, 25);
-   uint32_t m_glassColorCenter = RGB(254, 50, 25);
+   uint32_t m_offColor = ColorRGB(20, 20, 20);
+   uint32_t m_lightColor = ColorRGB(254, 90, 50);
+   uint32_t m_glassColor = ColorRGB(254, 50, 25);
+   uint32_t m_glassColorCenter = ColorRGB(254, 50, 25);
    int m_glassAlpha = 140;
    uint8_t m_glassAlphaCenter = 255;
    float m_glow = 10.0f;

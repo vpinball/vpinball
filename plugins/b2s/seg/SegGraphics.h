@@ -104,7 +104,7 @@ private:
    int m_translateX = 0;
    int m_translateY = 0;
    Matrix m_pModelMatrix;
-   uint32_t m_color = RGB(0, 0, 0);
+   uint32_t m_color = ColorRGB(0, 0, 0);
    uint8_t m_alpha = 255;
    bool m_needsTextureUpdate = true;
 

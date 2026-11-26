@@ -4,11 +4,6 @@
 
 #include <cstdint>
 
-// <wingdi.h> defines RGB as a macro which would collide with B2S::seg::RGB
-#ifdef RGB
-#undef RGB
-#endif
-
 // Minimal geometry types standing in for the SDL ones used by the retired
 // B2SLegacy plugin this code is ported from (SDL_FPoint/FRect, SDL_Rect).
 
@@ -39,7 +34,7 @@ inline bool IsRectEmpty(const FRect& r) { return r.w <= 0.f || r.h <= 0.f; }
 
 inline bool IsRectEmpty(const IRect& r) { return r.w <= 0 || r.h <= 0; }
 
-// Packed 0x00RRGGBB color (COLORREF layout, as used by the reference implementation)
-inline constexpr uint32_t RGB(uint8_t r, uint8_t g, uint8_t b) { return static_cast<uint32_t>(r) | (static_cast<uint32_t>(g) << 8) | (static_cast<uint32_t>(b) << 16); }
+// Packed 0x00BBGGRR color (COLORREF layout, as the reference implementation).
+inline constexpr uint32_t ColorRGB(uint8_t r, uint8_t g, uint8_t b) { return static_cast<uint32_t>(r) | (static_cast<uint32_t>(g) << 8) | (static_cast<uint32_t>(b) << 16); }
 
 }

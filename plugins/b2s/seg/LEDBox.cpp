@@ -83,7 +83,7 @@ static const vector<vector<FPoint>>& GetLEDSegments(eLEDType ledType)
 LEDBox::LEDBox(const VPXPluginAPI* vpxApi)
    : SegDisplay(vpxApi)
 {
-   SetBackColor(RGB(5, 5, 5));
+   SetBackColor(ColorRGB(5, 5, 5));
    SetVisible(true);
 }
 

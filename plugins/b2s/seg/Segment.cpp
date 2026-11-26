@@ -52,12 +52,12 @@ void Segment::Draw(SegGraphics* pRenderer)
       brush.SetCenterColor(m_pStyle->GetGlassColorCenter(), m_pStyle->GetGlassAlphaCenter());
       brush.SetSurroundColor(m_pStyle->GetGlassColor(), (uint8_t)m_pStyle->GetGlassAlpha());
       brush.SetFocusScales(m_focusScales);
-      PaintSegment(pRenderer, brush, RGB(255, 0, 0), m_pGlassPath);
+      PaintSegment(pRenderer, brush, ColorRGB(255, 0, 0), m_pGlassPath);
    }
    else
    {
       const SolidBrush brush(m_pStyle->GetOffColor());
-      PaintSegment(pRenderer, brush, RGB(169, 169, 169), m_pGlassPath);
+      PaintSegment(pRenderer, brush, ColorRGB(169, 169, 169), m_pGlassPath);
    }
    pRenderer->ResetTransform();
 }
@@ -69,7 +69,7 @@ void Segment::DrawLight(SegGraphics* pRenderer)
 
    SetTransform(pRenderer);
    GetLightData();
-   PaintSegment(pRenderer, *m_pLightBrush, RGB(255, 255, 0), m_pLightPath);
+   PaintSegment(pRenderer, *m_pLightBrush, ColorRGB(255, 255, 0), m_pLightPath);
    pRenderer->ResetTransform();
 }
 
@@ -224,7 +224,7 @@ void Segment::GetLightData()
    if (!m_pLightBrush)
    {
       m_pLightBrush = new PathGradientBrush(m_pLightPath);
-      m_pLightBrush->SetSurroundColor(RGB(255, 255, 255), 0);
+      m_pLightBrush->SetSurroundColor(ColorRGB(255, 255, 255), 0);
       m_pLightBrush->SetCenterColor(m_pStyle->GetLightColor(), 255);
       if (m_focusScales.x != 0.0f || m_focusScales.y != 0.0f)
          m_pLightBrush->SetFocusScales(m_focusScales);

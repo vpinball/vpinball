@@ -57,7 +57,7 @@ protected:
 private:
    IRect m_rect = { 0, 0, 0, 0 };
    bool m_visible = true;
-   uint32_t m_backColor = RGB(0, 0, 0);
+   uint32_t m_backColor = ColorRGB(0, 0, 0);
    bool m_handleCreated = false;
    bool m_invalidated = false;
 };

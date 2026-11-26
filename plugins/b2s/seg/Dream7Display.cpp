@@ -47,7 +47,7 @@ void Dream7Display::OnHandleCreated() { SegmentDisplayHandleCreated(); }
 
 void Dream7Display::OnPaintBackground(SegGraphics* pGraphics)
 {
-   pGraphics->SetColor(RGB(0, 0, 0));
+   pGraphics->SetColor(ColorRGB(0, 0, 0));
    IRect rect = { 0, 0, GetWidth(), GetHeight() };
    pGraphics->FillRectangle(rect);
 }
