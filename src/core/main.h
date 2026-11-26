@@ -116,6 +116,76 @@ using std::wstring;
 #include <atlcom.h>
 #include <atlcomcli.h>
 #include <atlsafe.h>
+
+   #ifdef _MSC_VER
+      // Microsoft's ATL serves the type information from the registered type library, which this build has none of: VBScript's
+      // TypeName then returns "Object" for every scriptable class. Like wine's ATL (libwinevbs, MinGW build), the object is its own
+      // ITypeInfo, which only answers GetDocumentation(MEMBERID_NIL) with the class name (the IDL generated GetDocumentation)
+      template <class T, const IID *piid, const GUID *plibid, WORD wMajor = 1, WORD wMinor = 0>
+      class StandaloneDispatchImpl : public T, public ITypeInfo
+      {
+      public:
+         STDMETHOD(GetTypeInfoCount)(UINT *pctinfo) override
+         {
+            if (pctinfo == nullptr)
+               return E_POINTER;
+            *pctinfo = 1;
+            return S_OK;
+         }
+         STDMETHOD(GetTypeInfo)(UINT iTInfo, LCID lcid, ITypeInfo **ppTInfo) override
+         {
+            if (ppTInfo == nullptr)
+               return E_POINTER;
+            *ppTInfo = static_cast<ITypeInfo *>(this);
+            (*ppTInfo)->AddRef();
+            return S_OK;
+         }
+
+         STDMETHOD(GetTypeAttr)(TYPEATTR **ppTypeAttr) override { return E_NOTIMPL; }
+         STDMETHOD(GetTypeComp)(ITypeComp **ppTComp) override { return E_NOTIMPL; }
+         STDMETHOD(GetFuncDesc)(UINT index, FUNCDESC **ppFuncDesc) override { return E_NOTIMPL; }
+         STDMETHOD(GetVarDesc)(UINT index, VARDESC **ppVarDesc) override { return E_NOTIMPL; }
+         STDMETHOD(GetNames)(MEMBERID memid, BSTR *rgBstrNames, UINT cMaxNames, UINT *pcNames) override { return E_NOTIMPL; }
+         STDMETHOD(GetRefTypeOfImplType)(UINT index, HREFTYPE *pRefType) override { return E_NOTIMPL; }
+         STDMETHOD(GetImplTypeFlags)(UINT index, INT *pImplTypeFlags) override { return E_NOTIMPL; }
+         STDMETHOD(GetIDsOfNames)(LPOLESTR *rgszNames, UINT cNames, MEMBERID *pMemId) override { return E_NOTIMPL; }
+         STDMETHOD(Invoke)(PVOID pvInstance, MEMBERID memid, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr) override { return E_NOTIMPL; }
+         STDMETHOD(GetDocumentation)(MEMBERID memid, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) override { return E_NOTIMPL; }
+         STDMETHOD(GetDllEntry)(MEMBERID memid, INVOKEKIND invKind, BSTR *pBstrDllName, BSTR *pBstrName, WORD *pwOrdinal) override { return E_NOTIMPL; }
+         STDMETHOD(GetRefTypeInfo)(HREFTYPE hRefType, ITypeInfo **ppTInfo) override { return E_NOTIMPL; }
+         STDMETHOD(AddressOfMember)(MEMBERID memid, INVOKEKIND invKind, PVOID *ppv) override { return E_NOTIMPL; }
+         STDMETHOD(CreateInstance)(IUnknown *pUnkOuter, REFIID riid, PVOID *ppvObj) override { return E_NOTIMPL; }
+         STDMETHOD(GetMops)(MEMBERID memid, BSTR *pBstrMops) override { return E_NOTIMPL; }
+         STDMETHOD(GetContainingTypeLib)(ITypeLib **ppTLib, UINT *pIndex) override { return E_NOTIMPL; }
+         STDMETHOD_(void, ReleaseTypeAttr)(TYPEATTR *pTypeAttr) override { }
+         STDMETHOD_(void, ReleaseFuncDesc)(FUNCDESC *pFuncDesc) override { }
+         STDMETHOD_(void, ReleaseVarDesc)(VARDESC *pVarDesc) override { }
+      };
+
+      // VBScript's TypeName asks IProvideClassInfo first: as in wine's ATL, serve the IDispatch's type information
+      template <const CLSID *pcoclsid, const IID *psrcid, const GUID *plibid, WORD wMajor = 1, WORD wMinor = 0>
+      class ATL_NO_VTABLE StandaloneProvideClassInfo2Impl : public IProvideClassInfo2
+      {
+      public:
+         STDMETHOD(GetClassInfo)(ITypeInfo **pptinfo) override
+         {
+            if (pptinfo == nullptr)
+               return E_POINTER;
+            *pptinfo = nullptr;
+            IDispatch *disp = nullptr;
+            if (FAILED(QueryInterface(IID_IDispatch, reinterpret_cast<void **>(&disp))) || disp == nullptr)
+               return E_NOTIMPL;
+            const HRESULT hr = disp->GetTypeInfo(0, 0, pptinfo);
+            disp->Release();
+            return hr;
+         }
+         STDMETHOD(GetGUID)(DWORD dwGuidKind, GUID *pGUID) override { return E_FAIL; }
+      };
+
+      // The scriptable classes name them unqualified (ATL's are reached through its 'using namespace ATL')
+      #define IDispatchImpl StandaloneDispatchImpl
+      #define IProvideClassInfo2Impl StandaloneProvideClassInfo2Impl
+   #endif
 #endif
 
 
