@@ -202,7 +202,7 @@ float3 compute_reflection(const float2 screenSpace, const float3 N)
    // Only apply to faces pointing in the direction of the probe (normal = [0,0,-1])
    // the smoothstep values are *magic* values taken from visual tests
    // dot(mirrorNormal, N) does not really needs to be done per pixel and could be moved to the vertx shader
-   // Offset by half a texel to use GPU filtering for some blur
+   // VPOS is the pixel's top left corner: offset by half a texel to sample the texel center
    return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * mirrorFactor * tex2D(tex_reflection, screenSpace + 0.5 * w_h_height.xy).rgb;
 }
 

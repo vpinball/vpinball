@@ -134,8 +134,8 @@ float3 compute_reflection(const float2 screenSpace, const float3 N, const float 
    // Only apply to faces pointing in the direction of the probe (normal = [0,0,-1])
    // the smoothstep values are *magic* values taken from visual tests
    // dot(mirrorNormal, N) does not really needs to be done per pixel and could be moved to the vertx shader
-   // Offset by half a texel to use GPU filtering for some blur
-   return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * mirrorFactor * texStereo(tex_reflection, screenSpace + 0.5 * w_h_height.xy).rgb;
+   // screenSpace comes from gl_FragCoord, already at the pixel center: no half texel offset (unlike DX9's VPOS)
+   return smoothstep(0.5, 0.9, dot(mirrorNormal, N)) * mirrorFactor * texStereo(tex_reflection, screenSpace).rgb;
 }
 
 // Compute refractions from screen space probe
