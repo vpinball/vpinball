@@ -48,6 +48,10 @@ void BallControl::Update(const int width, const int height)
 {
    using enum Mode;
    const Player *const player = g_pplayer;
+   // Ball control is not supported in VR (it is mouse driven, and would otherwise spuriously
+   // trigger from the VR controller pointer feeding the main context's mouse state)
+   if (player->IsVR())
+      return;
    const bool leftFlipperPressed = player->m_pininput.IsPressed(player->m_pininput.GetLeftFlipperActionId());
    const bool leftFlipperJustPressed = leftFlipperPressed && !m_prevLeftFlipperPressed;
    m_prevLeftFlipperPressed = leftFlipperPressed;
