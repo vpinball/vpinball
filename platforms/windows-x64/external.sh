@@ -603,7 +603,8 @@ if [ "${ZLIB_EXPECTED_SHA}" != "${ZLIB_FOUND_SHA}" ]; then
    cmake \
       -G "Visual Studio 18 2026" \
       -DBUILD_SHARED_LIBS=OFF \
-      -DZLIB_BUILD_EXAMPLES=OFF \
+      -DZLIB_BUILD_SHARED=OFF \
+      -DZLIB_BUILD_TESTING=OFF \
       -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
       -B build
    cmake --build build --config ${BUILD_TYPE}
@@ -716,7 +717,7 @@ if [ "${LIBMYSOFA_EXPECTED_SHA}" != "${LIBMYSOFA_FOUND_SHA}" ]; then
       -DCMAKE_POLICY_DEFAULT_CMP0091=NEW \
       -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded\$<\$<CONFIG:Debug>:Debug>" \
       -DZLIB_INCLUDE_DIR="$PWD/../../zlib/zlib" \
-      -DZLIB_LIBRARY="$PWD/../../zlib/zlib/build/${BUILD_TYPE}/zlibstatic.lib" \
+      -DZLIB_LIBRARY="$PWD/../../zlib/zlib/build/${BUILD_TYPE}/libzs.lib" \
       -B build
    cmake --build build --config ${BUILD_TYPE}
    cp build/src/mysofa_export.h src/hrtf
@@ -862,7 +863,7 @@ cp libwinevbs/libwinevbs/build/winevbs64.dll ../../../third-party/runtime-libs/w
 mkdir -p ../../../third-party/include/libwinevbs
 cp libwinevbs/libwinevbs/include/libwinevbs.h ../../../third-party/include/libwinevbs/
 
-cp zlib/zlib/build/${BUILD_TYPE}/zlibstatic.lib ../../../third-party/build-libs/windows-x64
+cp zlib/zlib/build/${BUILD_TYPE}/libzs.lib ../../../third-party/build-libs/windows-x64/zlibstatic.lib
 
 cp libmysofa/libmysofa/build/src/${BUILD_TYPE}/mysofa.lib ../../../third-party/build-libs/windows-x64
 cp libmysofa/libmysofa/src/hrtf/mysofa.h ../../../third-party/include

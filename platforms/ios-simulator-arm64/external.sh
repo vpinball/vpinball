@@ -559,7 +559,8 @@ if [ "${ZLIB_EXPECTED_SHA}" != "${ZLIB_FOUND_SHA}" ]; then
    cd zlib
    cmake \
       -DBUILD_SHARED_LIBS=OFF \
-      -DZLIB_BUILD_EXAMPLES=OFF \
+      -DZLIB_BUILD_SHARED=OFF \
+      -DZLIB_BUILD_TESTING=OFF \
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
       -DCMAKE_SYSTEM_NAME=iOS \
       -DCMAKE_OSX_SYSROOT=iphonesimulator \
