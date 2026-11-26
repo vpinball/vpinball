@@ -292,7 +292,6 @@ if(PLATFORM STREQUAL "windows")
             "${RUNTIME_LIBS_DIR}/swresample64-*.dll"
             "${RUNTIME_LIBS_DIR}/swscale64-*.dll"
          )
-         set(VPX_TEST_FFMPEG_DEP_DLLS libiconv-2.dll libbz2-1.dll liblzma-5.dll libwinpthread-1.dll libgcc_s_seh-1.dll libz-1.dll zlib1.dll)
       else()
          file(GLOB VPX_TEST_FFMPEG_DLLS
             "${RUNTIME_LIBS_DIR}/avcodec*.dll"
@@ -301,12 +300,13 @@ if(PLATFORM STREQUAL "windows")
             "${RUNTIME_LIBS_DIR}/swresample*.dll"
             "${RUNTIME_LIBS_DIR}/swscale*.dll"
          )
-         set(VPX_TEST_FFMPEG_DEP_DLLS libiconv-2.dll libbz2-1.dll liblzma-5.dll libwinpthread-1.dll libgcc_s_dw2-1.dll libz-1.dll zlib1.dll)
+         # x86: MinGW runtime of the DMDUtil/DOF plugins' libserialport and libftdi1, which find it in the application folder
+         set(VPX_TEST_MINGW_RUNTIME_DLLS libwinpthread-1.dll libgcc_s_dw2-1.dll)
       endif()
       add_custom_command(TARGET vpx-test POST_BUILD
          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${VPX_TEST_FFMPEG_DLLS} "$<TARGET_FILE_DIR:vpx-test>"
       )
-      foreach(_dep IN LISTS VPX_TEST_FFMPEG_DEP_DLLS)
+      foreach(_dep IN LISTS VPX_TEST_MINGW_RUNTIME_DLLS)
          if(EXISTS "${RUNTIME_LIBS_DIR}/${_dep}")
             add_custom_command(TARGET vpx-test POST_BUILD
                COMMAND "${CMAKE_COMMAND}" -E copy "${RUNTIME_LIBS_DIR}/${_dep}" "$<TARGET_FILE_DIR:vpx-test>"

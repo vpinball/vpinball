@@ -431,7 +431,8 @@ fi
 # build ffmpeg
 #
 
-FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}"
+# Decoding of local media files only: no network (protocols), encoders or muxers
+FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_001"
 FFMPEG_FOUND_SHA="$([ -f ffmpeg/cache.txt ] && cat ffmpeg/cache.txt || echo "")"
 
 if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
@@ -460,6 +461,9 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
       --enable-static \
       --disable-shared \
       --disable-programs \
+      --disable-network \
+      --disable-encoders \
+      --disable-muxers \
       --disable-doc \
       --disable-avdevice \
       --disable-avfilter \

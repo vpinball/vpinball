@@ -538,7 +538,9 @@ fi
 # build ffmpeg
 #
 
-FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_001"
+# Decoding of local media files only: no network (protocols, TLS), encoders or muxers. Library autodetection is off, so
+# what happens to be installed on the build machine is never linked in (libcurl was, with FFmpeg 9.1)
+FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_002"
 FFMPEG_FOUND_SHA="$([ -f ffmpeg/cache.txt ] && cat ffmpeg/cache.txt || echo "")"
 
 if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
@@ -573,6 +575,11 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
       --extra-cflags="-O3 -fPIC" \
       --extra-ldflags="-Wl,-z,max-page-size=16384" \
       --disable-programs \
+      --disable-autodetect \
+      --enable-zlib \
+      --disable-network \
+      --disable-encoders \
+      --disable-muxers \
       --disable-doc \
       --disable-avdevice \
       --disable-avfilter \

@@ -507,7 +507,11 @@ fi
 # build ffmpeg
 #
 
-FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_002"
+# Decoding of local media files only: no network (protocols, TLS), encoders or muxers. Library autodetection is off, so
+# what happens to be installed on the build machine is never linked in (libcurl was, with FFmpeg 9.1)
+# Windows: native threads, and the MinGW runtime (libgcc, winpthread) and zlib linked statically, so the DLLs only
+# depend on system DLLs
+FFMPEG_EXPECTED_SHA="${FFMPEG_SHA}_003"
 FFMPEG_FOUND_SHA="$([ -f ffmpeg/cache.txt ] && cat ffmpeg/cache.txt || echo "")"
 
 if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
@@ -528,10 +532,17 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
          --enable-shared \
          --disable-static \
          --disable-programs \
+         --disable-autodetect \
+         --enable-zlib \
+         --enable-w32threads \
+         --disable-network \
+         --disable-encoders \
+         --disable-muxers \
          --disable-doc \
          --disable-debug \
          --disable-avdevice \
          --disable-avfilter \
+         --extra-ldflags=\"-static\" \
          --arch=\"x86_64\" \
          --build-suffix=64 &&
       make -j$(nproc)
@@ -880,10 +891,4 @@ mkdir -p ../../../third-party/include/spatialaudio
 cp -r libspatialaudio/libspatialaudio/include/*.h libspatialaudio/libspatialaudio/include/{adm,dsp,hrtf,kiss_fft} ../../../third-party/include/spatialaudio
 cp libspatialaudio/libspatialaudio/build/include/SpatialaudioConfig.h ../../../third-party/include/spatialaudio
 
-cp "${MSYS2_PATH}/ucrt64/bin/libz-1.dll" ../../../third-party/runtime-libs/windows-x64
-cp "${MSYS2_PATH}/ucrt64/bin/libiconv-2.dll" ../../../third-party/runtime-libs/windows-x64
-cp "${MSYS2_PATH}/ucrt64/bin/libwinpthread-1.dll" ../../../third-party/runtime-libs/windows-x64
-cp "${MSYS2_PATH}/ucrt64/bin/liblzma-5.dll" ../../../third-party/runtime-libs/windows-x64
-cp "${MSYS2_PATH}/ucrt64/bin/libbz2-1.dll" ../../../third-party/runtime-libs/windows-x64
-cp "${MSYS2_PATH}/ucrt64/bin/libgcc_s_seh-1.dll" ../../../third-party/runtime-libs/windows-x64
 cp "${MSYS2_PATH}/ucrt64/bin/libstdc++-6.dll" ../../../third-party/runtime-libs/windows-x64

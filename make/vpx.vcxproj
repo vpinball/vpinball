@@ -70,24 +70,15 @@
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\avutil64-*.dll" "$(TargetDir)"
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\swresample64-*.dll" "$(TargetDir)"
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\swscale64-*.dll" "$(TargetDir)"
-          xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libiconv-2.dll" "$(TargetDir)"
-          xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libbz2-1.dll" "$(TargetDir)"
-          xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\liblzma-5.dll" "$(TargetDir)"
-          xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libwinpthread-1.dll" "$(TargetDir)"
-          xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libgcc_s_seh-1.dll" "$(TargetDir)"
-          xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x64\libz-1.dll" "$(TargetDir)"
         ) else (
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\avcodec*.dll" "$(TargetDir)"
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\avformat*.dll" "$(TargetDir)"
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\avutil*.dll" "$(TargetDir)"
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\swresample*.dll" "$(TargetDir)"
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\swscale*.dll" "$(TargetDir)"
-          xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libiconv-2.dll" "$(TargetDir)"
-          xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libbz2-1.dll" "$(TargetDir)"
-          xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\liblzma-5.dll" "$(TargetDir)"
+          rem MinGW runtime of the DMDUtil/DOF plugins' libserialport and libftdi1, which find it in the application folder
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libwinpthread-1.dll" "$(TargetDir)"
           xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libgcc_s_dw2-1.dll" "$(TargetDir)"
-          xcopy /y /d /q "$(SolutionDir)..\..\third-party\runtime-libs\windows-x86\libz-1.dll" "$(TargetDir)"
         )
         if ".%25VPIN_DIR%25" == "." (
           echo Define VPIN_DIR env. variable if you want to deploy on build
