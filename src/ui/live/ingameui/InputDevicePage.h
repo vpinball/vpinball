@@ -3,9 +3,9 @@
 #pragma once
 
 #include <optional>
-#include <unordered_set>
 
 #include "InGameUIPage.h"
+#include "input/InputAction.h"
 
 
 namespace VPX::InGameUI
@@ -41,15 +41,21 @@ private:
          && (!element.isAxis || (member.GetAxisThreshold() == element.threshold && member.IsAxisReversed() == element.reversed));
    }
 
+   using StoredMappingSnapshot = std::shared_ptr<const vector<InputAction::MappingBindings>>;
+
    void BuildPage() override;
 
-   void BuildActionMappingItems(bool& hasMapping);
+   bool BuildActionMappingItems(bool& hasMapping, const vector<InputAction*>& actions, const StoredMappingSnapshot& storedMappings);
    void BuildSensorMappingItems(bool& hasMapping);
    vector<ElementMapping> CollectElementMappings();
+   vector<ElementMapping> ResolveElementVariants(uint16_t elementId, bool isAxis, const vector<ElementMapping>& bound);
    vector<ElementMapping> ResolveAnchorVariants(const DeviceLayoutAnchor& anchor);
+   bool UseGenericElementRows() const;
+   vector<ElementMapping> CollectGenericElementMappings(const vector<ElementMapping>& bound);
+   vector<ElementMapping> CollectUnmappedStoredElementMappings(const vector<ElementMapping>& rows, const StoredMappingSnapshot& storedMappings);
    void SelectAnchorElement(int anchorIndex);
    void EnsureSelectedElement();
-   void AddElementComboItem(const ElementMapping& element, const vector<InputAction*>& actions);
+   void AddElementComboItem(const ElementMapping& element, const vector<InputAction*>& actions, const StoredMappingSnapshot& storedMappings);
    void RenderDeviceLayout(const ImVec4& rect);
 
    const uint16_t m_deviceId;
@@ -62,7 +68,6 @@ private:
    int m_clickAnchor = -1; // last clicked anchor; repeated clicks cycle its element variants
    int m_hoveredAnchorIndex = -1; // anchor hovered last frame; links caption/callout highlight
    size_t m_clickVariant = 0;
-   std::unordered_set<class InputAction*> m_pendingSaveActions;
 };
 
 }

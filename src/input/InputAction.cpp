@@ -8,12 +8,7 @@
 
 void InputAction::ClearMapping() { m_inputBindings.clear(); }
 
-void InputAction::LoadMapping(const Settings& settings)
-{
-   const auto propId
-      = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, false, m_defaultMappings));
-   SetMapping(settings.GetString(propId));
-}
+void InputAction::LoadMapping(const Settings& settings) { SetMapping(GetStoredMappingString(settings)); }
 
 void InputAction::SaveMapping(Settings& settings) const
 {
@@ -22,9 +17,16 @@ void InputAction::SaveMapping(Settings& settings) const
    settings.Set(propId, GetMappingString(), false);
 }
 
-void InputAction::SetMapping(const string& mappingString)
+string InputAction::GetStoredMappingString(const Settings& settings) const
 {
-   ClearMapping();
+   const auto propId
+      = Settings::GetRegistry().Register(std::make_unique<VPX::Properties::StringPropertyDef>("Input"s, "Mapping." + m_settingId, "Mapping." + m_settingId, ""s, false, m_defaultMappings));
+   return settings.GetString(propId);
+}
+
+InputAction::MappingBindings InputAction::ParseMappingString(const string& mappingString, EventManager* eventManager)
+{
+   MappingBindings bindings;
 
    // Split by '|' which corresponds to different key bindings (any of them triggers the action, so it is a 'or')
    std::istringstream outerStream(mappingString);
@@ -52,8 +54,8 @@ void InputAction::SetMapping(const string& mappingString)
             {
                axisOrButtonIdString = innerToken.substr(pos + 1);
             }
-            
-            uint16_t deviceId = m_eventManager->GetDeviceId(deviceIdString);
+
+            uint16_t deviceId = eventManager->GetDeviceId(deviceIdString);
             if (int axisOrButtonId; try_parse_int(axisOrButtonIdString, axisOrButtonId) && (axisOrButtonId & 0xFFFF) == axisOrButtonId)
             {
                innerVector.emplace_back(nullptr, nullptr, deviceId, axisOrButtonId);
@@ -73,8 +75,16 @@ void InputAction::SetMapping(const string& mappingString)
             PLOGE << "Invalid input mapping: '" << innerToken << '\'';
          }
       }
-      AddMapping(innerVector);
+      bindings.push_back(std::move(innerVector));
    }
+   return bindings;
+}
+
+void InputAction::SetMapping(const string& mappingString)
+{
+   ClearMapping();
+   for (const vector<ButtonMapping>& mapping : ParseMappingString(mappingString, m_eventManager))
+      AddMapping(mapping);
 }
 
 void InputAction::AddMapping(const vector<ButtonMapping>& mapping)

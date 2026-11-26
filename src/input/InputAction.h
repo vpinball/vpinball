@@ -43,7 +43,10 @@ public:
    bool IsMapped() const { return !m_inputBindings.empty(); }
    const string& GetDefaultMappingString() const { return m_defaultMappings; }
    string GetMappingString() const;
+   string GetStoredMappingString(const Settings& settings) const;
    string GetMappingLabel() const;
+   using MappingBindings = vector<vector<ButtonMapping>>;
+   static MappingBindings ParseMappingString(const string& mappingString, EventManager* eventManager);
    static bool IsSameMapping(const vector<ButtonMapping>& mappingA, const vector<ButtonMapping>& mappingB);
 
    void OnInputChanged(ButtonMapping* mapping) override;
