@@ -45,14 +45,12 @@ PropIntDyn(Player, PlayfieldFSHeight, "Fullscreen Height"s, "Fullscreen display 
 PropFloatDyn(Player, PlayfieldRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate (0 = any)"s, 0.f, 1000.f, 0.f);
 PropIntDyn(Player, PlayfieldColorDepth, "Fullscreen Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
 // Backglass Window
-PropEnumDyn(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
-   "Floating"s, "Embedded in playfield"s);
+PropEnumDyn(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s, "Floating"s, "Embedded in playfield"s);
 PropStringDyn(Backglass, BackglassDisplay, "Display"s, "Display used for the Backglass window"s, ""s);
 #ifdef ENABLE_BGFX
 PropEnumDyn(Backglass, BackglassFullScreen, "Display Mode"s, "Select between windowed or borderless fullscreen mode"s, int, 0, "Windowed"s, "Borderless Fullscreen"s);
 #else
-PropEnumDyn(
-   Backglass, BackglassFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or exclusive fullscreen mode (falls back to borderless fullscreen when the requested display mode is not available)"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Exclusive Fullscreen"s);
+PropEnumDyn(Backglass, BackglassFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or exclusive fullscreen mode (falls back to borderless fullscreen when the requested display mode is not available)"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Exclusive Fullscreen"s);
 #endif
 PropIntDyn(Backglass, BackglassWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
 PropIntDyn(Backglass, BackglassWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
@@ -64,14 +62,12 @@ PropFloatDyn(Backglass, BackglassRefreshRate, "Fullscreen Refresh Rate"s, "Fulls
 PropIntDyn(Backglass, BackglassColorDepth, "Fullscreen Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
 PropEnumDyn(Backglass, BackglassRotation, "Rotation"s, "Rotate the rendered content clockwise inside the output, e.g. for screens that are physically mounted rotated without the OS being told about it. Outputs embedded in the playfield window also turn with the playfield"s, int, 0, "0"s, "90"s, "180"s, "270"s);
 // ScoreView Window
-PropEnumDyn(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
-   "Floating"s, "Embedded in playfield"s);
+PropEnumDyn(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s, "Floating"s, "Embedded in playfield"s);
 PropStringDyn(ScoreView, ScoreViewDisplay, "Display"s, "Display used for the ScoreView window"s, ""s);
 #ifdef ENABLE_BGFX
 PropEnumDyn(ScoreView, ScoreViewFullScreen, "Display Mode"s, "Select between windowed or borderless fullscreen mode"s, int, 0, "Windowed"s, "Borderless Fullscreen"s);
 #else
-PropEnumDyn(
-   ScoreView, ScoreViewFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or exclusive fullscreen mode (falls back to borderless fullscreen when the requested display mode is not available)"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Exclusive Fullscreen"s);
+PropEnumDyn(ScoreView, ScoreViewFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or exclusive fullscreen mode (falls back to borderless fullscreen when the requested display mode is not available)"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Exclusive Fullscreen"s);
 #endif
 PropIntDyn(ScoreView, ScoreViewWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
 PropIntDyn(ScoreView, ScoreViewWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
@@ -112,10 +108,8 @@ PropArray(Window, Width, int, Int, Int, m_propPlayer_PlayfieldWidth, m_propBackg
 PropArray(Window, Height, int, Int, Int, m_propPlayer_PlayfieldHeight, m_propBackglass_BackglassHeight, m_propScoreView_ScoreViewHeight, m_propTopper_TopperHeight, m_propInvalid);
 PropArray(Window, FSWidth, int, Int, Int, m_propPlayer_PlayfieldFSWidth, m_propBackglass_BackglassFSWidth, m_propScoreView_ScoreViewFSWidth, m_propTopper_TopperFSWidth, m_propInvalid);
 PropArray(Window, FSHeight, int, Int, Int, m_propPlayer_PlayfieldFSHeight, m_propBackglass_BackglassFSHeight, m_propScoreView_ScoreViewFSHeight, m_propTopper_TopperFSHeight, m_propInvalid);
-PropArray(Window, FSRefreshRate, float, Float, Float, m_propPlayer_PlayfieldRefreshRate, m_propBackglass_BackglassRefreshRate, m_propScoreView_ScoreViewRefreshRate,
-   m_propTopper_TopperRefreshRate, m_propInvalid);
-PropArray(Window, FSColorDepth, int, Int, Int, m_propPlayer_PlayfieldColorDepth, m_propBackglass_BackglassColorDepth, m_propScoreView_ScoreViewColorDepth, m_propTopper_TopperColorDepth,
-   m_propInvalid);
+PropArray(Window, FSRefreshRate, float, Float, Float, m_propPlayer_PlayfieldRefreshRate, m_propBackglass_BackglassRefreshRate, m_propScoreView_ScoreViewRefreshRate, m_propTopper_TopperRefreshRate, m_propInvalid);
+PropArray(Window, FSColorDepth, int, Int, Int, m_propPlayer_PlayfieldColorDepth, m_propBackglass_BackglassColorDepth, m_propScoreView_ScoreViewColorDepth, m_propTopper_TopperColorDepth, m_propInvalid);
 // Only defined for the ancillary windows: the playfield has its own rotation, as part of its view setup
 PropArray(Window, Rotation, int, Enum, Int, m_propInvalid, m_propBackglass_BackglassRotation, m_propScoreView_ScoreViewRotation, m_propTopper_TopperRotation, m_propInvalid);
 
@@ -149,7 +143,7 @@ PropString(Player, GfxBackend, "Graphics Backend"s, "Graphics API/backend used f
 #endif
 #endif
 PropEnum(Player, ShowFPS, "Show FPS"s, "Performance overlay display mode"s, int /* PerfUI::PerfMode */, 0, "Disable"s, "FPS"s, "Full"s);
-PropBool(Player, SSRefl, "Additive Screen Space Reflection"s, "Add global screen space reflections to the entire scene (for tables that enable them)"s, false);
+PropBool(Player, SSRefl, "Additive Screen Space Reflection"s, "Add global screen space reflections to the entire scene (for tables that enable them)"s, true);
 PropBool(Player, HDRDisableToneMapper, "Disable tonemapping on HDR display"s, "Do not perform tonemapping when rendering on a high dynamic range (HDR) capable monitor/gfxboard/OS"s, true);
 PropFloat(Player, HDRGlobalExposure, "HDR Display Global Exposure"s, "Global exposure scale multiplier for high dynamic range (HDR) capable monitors"s, 0.f, 5.f, 1.f);
 PropBool(Player, ForceBloomOff, "Disable Bloom"s, "Disable postprocessed bloom filter (always disabled for HDR)"s, false);
@@ -177,10 +171,9 @@ PropFloatStepped(Player, AAFactor, "Full Scene Anti Aliasing"s,
 PropEnum(Player, MSAASamples, "MSAA level"s,
    "Set the amount of MSAA samples.\nMSAA can help reduce geometry aliasing at the cost of performance and GPU memory.\nThis can improve image quality if not using supersampling.\nNot available with DirectX 9"s, int,
    0, "Disabled"s, "4 Samples"s, "6 Samples"s, "8 Samples"s);
-PropEnum(Player, FXAA, "Post processed antialiasing"s, "Select between different antialiasing techniques that offer different quality vs performance balances"s, int, 0, "Disabled"s,
+PropEnum(Player, FXAA, "Post processed antialiasing"s, "Select between different antialiasing techniques that offer different quality vs performance balances"s, int, 6, "Disabled"s,
    "Fast FXAA"s, "Standard FXAA"s, "Quality FXAA"s, "Fast NFAA"s, "Standard DLAA"s, "Quality SMAA"s, "Quality FAAA"s);
-PropEnum(Player, Sharpen, "Post processed sharpening"s, "Select between different sharpening techniques that offer different quality vs performance balances"s, int, 0, "Disabled"s, "CAS"s,
-   "Bilateral CAS"s);
+PropEnum(Player, Sharpen, "Post processed sharpening"s, "Select between different sharpening techniques that offer different quality vs performance balances"s, int, 0, "Disabled"s, "CAS"s, "Bilateral CAS"s);
 
 // Ball rendering
 PropBool(Player, BallAntiStretch, "Unstretch Ball"s, "Compensate ball stretching"s, false);
@@ -188,7 +181,7 @@ PropBool(Player, DisableLightingForBalls, "Disable Ball Lighting"s, "Disable lig
 PropBool(Player, LegacyTableBallShadows, "Ball Shadows heuristic for pre-10.8 tables"s,
    "Heuristic to enable Ball Shadows for certain lights only (can lead to rendering quirks though).\n"
    "Note that an older table loaded with the setting enabled will save the shadow-enable flag for these selected lights, too.\n"
-   "Applied when a table is loaded"s, false);
+   "Applied when a table is loaded (so reload needed)"s, false);
 PropBool(Player, BallTrail, "Ball Trail"s, "Legacy Ball Trails, use as a replacement for ball motion blur on DirectX 9 or GL"s, false);
 PropFloat(Player, BallTrailStrength, "Ball Trail Strength"s, "Strength of the legacy Ball Trail"s, 0.f, 5.f, 0.5f);
 PropBool(Player, OverwriteBallImage, "Overwrite ball image"s, "Allow to define images that will be used instead of the table's provided one"s, false);
@@ -234,8 +227,7 @@ PropFloat(Player, NudgeStrength, "Visual Nudge Strength"s, "Changes the visual e
 PropInt(Input, NudgeSensorCount, "Nudge Sensor Count"s, "Number of hardware nudge sensors defined"s, 0, 100, 0);
 
 // Plunger settings
-PropBool(Player, PlungerRetract, "One Second Retract"s, "Enable retracting the plunger after a 1 second press when using the digital plunger emulation through keyboard or joystick button"s,
-   false);
+PropBool(Player, PlungerRetract, "One Second Retract"s, "Enable retracting the plunger after a 1 second press when using the digital plunger emulation through keyboard or joystick button"s, false);
 PropInt(Input, PlungerSensorCount, "Plunger Sensor Count"s, "Number of hardware plunger sensors defined"s, 0, 100, 0);
 
 // VR settings
@@ -527,8 +519,7 @@ PropFloat(Player, Anaglyph8DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturati
 PropFloat(Player, Anaglyph9DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturates (turns to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other). Not used with the 'Deghost' filter."s, 0.f, 1.f, 1.f);
 PropFloat(Player, Anaglyph10DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturates (turns to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other). Not used with the 'Deghost' filter."s, 0.f, 1.f, 1.f);
 PropArray(Player, AnaglyphDynDesat, float, Float, Float, m_propPlayer_Anaglyph1DynDesat, m_propPlayer_Anaglyph2DynDesat, m_propPlayer_Anaglyph3DynDesat, m_propPlayer_Anaglyph4DynDesat,
-   m_propPlayer_Anaglyph5DynDesat, m_propPlayer_Anaglyph6DynDesat, m_propPlayer_Anaglyph7DynDesat, m_propPlayer_Anaglyph8DynDesat, m_propPlayer_Anaglyph9DynDesat,
-   m_propPlayer_Anaglyph10DynDesat);
+   m_propPlayer_Anaglyph5DynDesat, m_propPlayer_Anaglyph6DynDesat, m_propPlayer_Anaglyph7DynDesat, m_propPlayer_Anaglyph8DynDesat, m_propPlayer_Anaglyph9DynDesat, m_propPlayer_Anaglyph10DynDesat);
 PropFloat(Player, Anaglyph1Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
 PropFloat(Player, Anaglyph2Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
 PropFloat(Player, Anaglyph3Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
@@ -725,10 +716,8 @@ PropFloatDyn(TableOverride, ViewFSSPlayerY, "Camera Y"s, "View point height offs
 PropFloatDyn(TableOverride, ViewFSSPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
 PropFloatDyn(TableOverride, ViewFSSHOfs, "Horizontal Offset"s, "Shifts the view horizontally (Camera mode: lens shift. Window mode: offset of the virtual table behind the screen 'window', in centimeters)"s, -30.f, 30.f, 0.f);
 PropFloatDyn(TableOverride, ViewFSSVOfs, "Vertical Offset"s, "Shifts the view vertically (Camera mode: lens shift. Window mode: offset of the virtual table behind the screen 'window', in centimeters)"s, -20.f, 50.f, 0.f);
-PropFloatDyn(
-   TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Height of the 'window' (i.e. the screen) above the top of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-PropFloatDyn(
-   TableOverride, ViewFSSWindowBot, "Window Bottom Z Ofs."s, "Height of the 'window' (i.e. the screen) above the bottom of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+PropFloatDyn(TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Height of the 'window' (i.e. the screen) above the top of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+PropFloatDyn(TableOverride, ViewFSSWindowBot, "Window Bottom Z Ofs."s, "Height of the 'window' (i.e. the screen) above the bottom of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
 PropFloatSteppedDyn(TableOverride, ViewFSSRotation, "Viewport Rotation"s, "Rotation of the rendered view in degrees (snapped to multiples of 90 degrees in Window mode)"s, 0.f, 360.f, 90.0f, 0.f);
 
 PropEnumDyn(TableOverride, ViewCabMode, "View mode"s,
@@ -745,17 +734,14 @@ PropFloatDyn(TableOverride, ViewCabPlayerY, "Camera Y"s, "View point height offs
 PropFloatDyn(TableOverride, ViewCabPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
 PropFloatDyn(TableOverride, ViewCabHOfs, "Horizontal Offset"s, "Shifts the view horizontally (Camera mode: lens shift. Window mode: offset of the virtual table behind the screen 'window', in centimeters)"s, -30.f, 30.f, 0.f);
 PropFloatDyn(TableOverride, ViewCabVOfs, "Vertical Offset"s, "Shifts the view vertically (Camera mode: lens shift. Window mode: offset of the virtual table behind the screen 'window', in centimeters)"s, -20.f, 50.f, 0.f);
-PropFloatDyn(
-   TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Height of the 'window' (i.e. the screen) above the top of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-PropFloatDyn(
-   TableOverride, ViewCabWindowBot, "Window Bottom Z Ofs."s, "Height of the 'window' (i.e. the screen) above the bottom of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+PropFloatDyn(TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Height of the 'window' (i.e. the screen) above the top of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+PropFloatDyn(TableOverride, ViewCabWindowBot, "Window Bottom Z Ofs."s, "Height of the 'window' (i.e. the screen) above the bottom of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
 PropFloatSteppedDyn(TableOverride, ViewCabRotation, "Viewport Rotation"s, "Rotation of the rendered view in degrees (snapped to multiples of 90 degrees in Window mode)"s, 0.f, 360.f, 90.0f, 0.f);
 
 PropFloatDyn(TableOverride, Difficulty, "Difficulty"s, "Overall difficulty (affects slope, flipper size, ball trajectories scattering,...)"s, 0.f, 1.f, 1.f);
 PropFloatDyn(TableOverride, Exposure, "Camera Exposure"s, "Overall brightness scale for the rendered scene/table"s, 0.f, 2.f, 1.f);
 
-PropEnumDyn(
-   TableOverride, ToneMapper, "Tonemapper"s, "Colors too bright to be displayed by low dynamic range monitors need to be mapped into a normalized range. Different mappers come at different tradeoffs, depending on each table's setup/lighting."s, int, 0, "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s);
+PropEnumDyn(TableOverride, ToneMapper, "Tonemapper"s, "Colors too bright to be displayed by low dynamic range monitors need to be mapped into a normalized range. Different mappers come at different tradeoffs, depending on each table's setup/lighting."s, int, 0, "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s);
 
 // DMD Display profiles
 // Legacy
