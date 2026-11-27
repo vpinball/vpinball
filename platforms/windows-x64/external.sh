@@ -560,7 +560,8 @@ fi
 # makes the import library (see make/winevbs64-msvc.def)
 #
 
-LIBWINEVBS_EXPECTED_SHA="${LIBWINEVBS_SHA}-001"
+# MinGW runtime (libgcc, winpthread) linked statically like ffmpeg's, so the DLL only depends on system DLLs
+LIBWINEVBS_EXPECTED_SHA="${LIBWINEVBS_SHA}-002"
 LIBWINEVBS_FOUND_SHA="$([ -f libwinevbs/cache.txt ] && cat libwinevbs/cache.txt || echo "")"
 
 if [ "${LIBWINEVBS_EXPECTED_SHA}" != "${LIBWINEVBS_FOUND_SHA}" ]; then
@@ -582,6 +583,7 @@ if [ "${LIBWINEVBS_EXPECTED_SHA}" != "${LIBWINEVBS_FOUND_SHA}" ]; then
          -DPLATFORM=win-mingw \
          -DARCH=x64 \
          -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+         -DCMAKE_SHARED_LINKER_FLAGS=-static \
          -B build &&
       cmake --build build -- -j$(nproc)
    "
