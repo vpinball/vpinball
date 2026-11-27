@@ -198,6 +198,7 @@ private:
    // Rendering
    RenderDevice* const m_rd;
    int m_rotate = 0;
+   std::array<int, 11> m_lastUILayout {}; //!! REMOVE AGAIN Last logged UI orientation and its inputs (see NewFrame)
    void HandleTrackpadFingers(const SDL_TouchFingerEvent &e);
    float m_pendingPinchScale = 1.f;
    float m_pinchScale = 1.f;

@@ -560,6 +560,26 @@ void LiveUI::NewFrame()
          std::swap(io.DisplaySize.x, io.DisplaySize.y);
          std::swap(io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
       }
+
+      //!! REMOVE AGAIN Log each change of the UI orientation or of its inputs (diagnoses #4525: wrong orientation while loading, on Wayland)
+      {
+         int wndW = 0, wndH = 0, pixW = 0, pixH = 0;
+         if (SDL_Window *const wnd = m_player->m_playfieldWnd->GetCore())
+         {
+            SDL_GetWindowSize(wnd, &wndW, &wndH);
+            SDL_GetWindowSizeInPixels(wnd, &pixW, &pixH);
+         }
+         const ViewSetup &viewSetup = m_player->m_ptable->GetViewSetup();
+         const std::array<int, 11> layout { m_rotate, static_cast<int>(renderWidth), static_cast<int>(renderHeight), wndW, wndH, pixW, pixH,
+            static_cast<int>(m_player->m_ptable->GetViewMode()), static_cast<int>(viewSetup.mMode), static_cast<int>(viewSetup.mViewportRotation), m_player->m_isLoading ? 1 : 0 };
+         if (layout != m_lastUILayout)
+         {
+            m_lastUILayout = layout;
+            PLOGI << std::format("UI rotation {} for render target {}x{} ({}), SDL window {}x{}, pixels {}x{}, view mode {} (layout {}, rotation {}){}", m_rotate * 90,
+               layout[1], layout[2], m_rd->GetCurrentPass() ? m_rd->GetCurrentPass()->m_name : "no pass"s, wndW, wndH, pixW, pixH, layout[7], layout[8],
+               viewSetup.mViewportRotation, m_player->m_isLoading ? ", loading" : "");
+         }
+      }
    }
 
    // Enable mouse capture when dragging (needed when dragging main windows)

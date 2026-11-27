@@ -940,6 +940,7 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
             const bool isMainSwpachain = wnd == m_outputWnd[0];
             if ((windowWidth != wnd->GetBackBuffer()->GetWidth()) || (windowHeight != wnd->GetBackBuffer()->GetHeight()))
             {
+               PLOGI << "Resizing the back buffer from " << wnd->GetBackBuffer()->GetWidth() << 'x' << wnd->GetBackBuffer()->GetHeight() << " to " << windowWidth << 'x' << windowHeight << (isMainSwpachain ? " (playfield)" : "");
                // Request BGFX to process the submitted render frame before reseting / deleting the swapchain it rely on
                Flip();
                if (isMainSwpachain)
