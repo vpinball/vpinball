@@ -66,7 +66,7 @@ static bool gameEnded = false;
 static std::string prefPath;
 static std::string basePath;
 
-MSGPI_FOLDER_VAL_SETTING(dofPathProp, "DOFPath", "DOF Path", "Folder that contains the directoutputconfig folder (empty = VPX preference folder)", true, "", 1024);
+MSGPI_FOLDER_VAL_SETTING(dofPathProp, "DOFPath", "DOF Folder", "Folder that contains the directoutputconfig folder (empty = VPX preference folder)", true, "", 1024);
 
 LPI_USE_CPP();
 #define LOGD DOFPlugin::LPI_LOGD_CPP

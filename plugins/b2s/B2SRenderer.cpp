@@ -16,7 +16,7 @@ namespace B2S {
 // sRGB to linear conversion (duplicate from the main VPX codebase, see utils/color.h)
 static inline float InvsRGB(const float x) { return (x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)); }
 
-MSGPI_BOOL_VAL_SETTING(showGrillProp, "ShowGrill", "Show Grill", "Show Grill", true, false);
+MSGPI_BOOL_VAL_SETTING(showGrillProp, "ShowGrill", "Show Grill", "Show the grill part at the bottom of the backglass image (when disabled, it is cropped)", true, false);
 MSGPI_BOOL_VAL_SETTING(upgradedSegRenderingProp, "UpgradedSegmentRendering", "Upgraded segment rendering",
    "Render LED score displays with the upgraded segment renderer (turn off for the original B2S segment rendering)", true, true);
 

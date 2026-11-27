@@ -112,7 +112,7 @@ static void SetUpscalerMode(int v)
       dmdSource->Subscribe();
    }
 }
-MSGPI_ENUM_SETTING(upscaleModeProp, "UpscaleMode", "Mode", "Select upscaler", true, 0, std::size(scaleFactors), upscalerNames, 0, GetUpscalerMode, SetUpscalerMode);
+MSGPI_ENUM_SETTING(upscaleModeProp, "UpscaleMode", "Mode", "Upscaling filter and factor applied to the DMD (Disabled = original resolution)", true, 0, std::size(scaleFactors), upscalerNames, 0, GetUpscalerMode, SetUpscalerMode);
 
 LPI_USE_CPP();
 LPI_IMPLEMENT_CPP // Implement shared log support

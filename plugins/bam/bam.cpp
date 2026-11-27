@@ -71,10 +71,10 @@ static void SetStaticPrepassDisabled(const bool disable)
 // VPX window (cabinet) view layout mode, see ViewLayoutMode in src/renderer/ViewSetup.h
 constexpr int VLM_WINDOW = 2;
 
-static const char* rotationValues[] = { "0", "90", "180", "270" };
+static const char* rotationValues[] = { "0 degrees", "90 degrees", "180 degrees", "270 degrees" };
 MSGPI_ENUM_VAL_SETTING(trackerRotationProp, "TrackerOrientation", "Tracker orientation",
    "Rotation between the coordinate system of the BAM Tracker screen and the cabinet screen. "
-   "Adjust this setting if the head position is applied on wrong axis.",
+   "Adjust this setting if the head position is applied on the wrong axis.",
    true, 0, 4, rotationValues, 0);
 
 LPI_USE_CPP();

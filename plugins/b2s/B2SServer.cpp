@@ -35,7 +35,7 @@ namespace B2S
 static const char* usedLEDTypeValues[] = { "Auto", "Rendered", "Dream7" };
 MSGPI_ENUM_VAL_SETTING(usedLEDTypeProp, "UsedLEDType", "Used LED type", "Force the LED display type (Auto = as declared by the .directb2s file)", true, 0, 3, usedLEDTypeValues, 0);
 MSGPI_INT_VAL_SETTING(allAnimationSlowDownProp, "AllAnimationSlowDown", "Global animation slowdown", "Slowdown factor applied to all backglass animations", true, 1, 100, 1);
-MSGPI_STRING_VAL_SETTING(animationSlowDownsProp, "AnimationSlowDowns", "Per-animation slowdowns", "Semicolon separated 'name=factor' animation slowdown overrides", true, "", 1024);
+MSGPI_STRING_VAL_SETTING(animationSlowDownsProp, "AnimationSlowDowns", "Per-animation slowdowns", "Semicolon separated 'name=factor' animation slowdown overrides (not used when the global animation slowdown is above 1)", true, "", 1024);
 
 void B2SServer::RegisterSettings(const MsgPluginAPI* const msgApi, unsigned int endpointId)
 {
@@ -102,7 +102,7 @@ namespace
       slowdowns.type = PAGEDUI_ITEM_STRING;
       slowdowns.id = "AnimationSlowDowns";
       slowdowns.label = "Per-animation slowdowns";
-      slowdowns.tooltip = "Semicolon separated 'name=factor' animation slowdown overrides";
+      slowdowns.tooltip = "Semicolon separated 'name=factor' animation slowdown overrides (not used when the global animation slowdown is above 1)";
       slowdowns.storage = PAGEDUI_STORAGE_HOST;
       slowdowns.stringProp = { "", &SlowdownsGet, &SlowdownsSet };
       FillHeader(items[pos++], "Modify Backglass");

@@ -3,7 +3,7 @@ PropString(Version, VPinball, "VPX Version"s, "VPX version that saved this file"
 
 // Global settings
 // Log settings
-PropBool(Global, EnableLog, "Enable Log"s, "Enable general logging to the vinball.log file"s, true);
+PropBool(Global, EnableLog, "Enable Log"s, "Enable general logging to the vpinball.log file"s, true);
 PropBool(Global, LogScriptOutput, "Log Script Output"s, "Enable script logging output"s, true);
 PropBool(Global, ResetLogOnPlay, "Reset Log on Play"s, "Reset the log file when a table is played"s, g_isMobile);
 // Profile settings
@@ -34,7 +34,7 @@ PropStringDyn(Player, PlayfieldDisplay, "Display"s, "Display used for the main P
 #ifdef ENABLE_BGFX
 PropEnumDyn(Player, PlayfieldFullScreen, "Display Mode"s, "Select between windowed or borderless fullscreen mode"s, int, 0, "Windowed"s, "Borderless Fullscreen"s);
 #else
-PropEnumDyn(Player, PlayfieldFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or fullscreen mode"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Fullscreen"s);
+PropEnumDyn(Player, PlayfieldFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or exclusive fullscreen mode (falls back to borderless fullscreen when the requested display mode is not available)"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Exclusive Fullscreen"s);
 #endif
 PropIntDyn(Player, PlayfieldWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
 PropIntDyn(Player, PlayfieldWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
@@ -42,17 +42,17 @@ PropIntDyn(Player, PlayfieldWidth, "Width"s, "Width of the window"s, 0, 16384, 1
 PropIntDyn(Player, PlayfieldHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
 PropIntDyn(Player, PlayfieldFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
 PropIntDyn(Player, PlayfieldFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
-PropFloatDyn(Player, PlayfieldRefreshRate, "Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
-PropIntDyn(Player, PlayfieldColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
+PropFloatDyn(Player, PlayfieldRefreshRate, "Refresh Rate"s, "Fullscreen display mode refresh rate (0 = any)"s, 0.f, 1000.f, 0.f);
+PropIntDyn(Player, PlayfieldColorDepth, "Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
 // Backglass Window
 PropEnumDyn(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
    "Floating"s, "Embedded in playfield"s);
-PropStringDyn(Backglass, BackglassDisplay, "Display"s, "Display used for the main Backglass window"s, ""s);
+PropStringDyn(Backglass, BackglassDisplay, "Display"s, "Display used for the Backglass window"s, ""s);
 #ifdef ENABLE_BGFX
 PropEnumDyn(Backglass, BackglassFullScreen, "Display Mode"s, "Select between windowed or borderless fullscreen mode"s, int, 0, "Windowed"s, "Borderless Fullscreen"s);
 #else
 PropEnumDyn(
-   Backglass, BackglassFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or fullscreen mode"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Fullscreen"s);
+   Backglass, BackglassFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or exclusive fullscreen mode (falls back to borderless fullscreen when the requested display mode is not available)"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Exclusive Fullscreen"s);
 #endif
 PropIntDyn(Backglass, BackglassWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
 PropIntDyn(Backglass, BackglassWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
@@ -60,18 +60,18 @@ PropIntDyn(Backglass, BackglassWidth, "Width"s, "Width of the window"s, 0, 16384
 PropIntDyn(Backglass, BackglassHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
 PropIntDyn(Backglass, BackglassFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
 PropIntDyn(Backglass, BackglassFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
-PropFloatDyn(Backglass, BackglassRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
-PropIntDyn(Backglass, BackglassColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
+PropFloatDyn(Backglass, BackglassRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate (0 = any)"s, 0.f, 1000.f, 0.f);
+PropIntDyn(Backglass, BackglassColorDepth, "Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
 PropEnumDyn(Backglass, BackglassRotation, "Rotation"s, "Rotate the rendered content clockwise inside the output, e.g. for screens that are physically mounted rotated without the OS being told about it. Outputs embedded in the playfield window also turn with the playfield"s, int, 0, "0"s, "90"s, "180"s, "270"s);
 // ScoreView Window
 PropEnumDyn(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
    "Floating"s, "Embedded in playfield"s);
-PropStringDyn(ScoreView, ScoreViewDisplay, "Display"s, "Display used for the main ScoreView window"s, ""s);
+PropStringDyn(ScoreView, ScoreViewDisplay, "Display"s, "Display used for the ScoreView window"s, ""s);
 #ifdef ENABLE_BGFX
 PropEnumDyn(ScoreView, ScoreViewFullScreen, "Display Mode"s, "Select between windowed or borderless fullscreen mode"s, int, 0, "Windowed"s, "Borderless Fullscreen"s);
 #else
 PropEnumDyn(
-   ScoreView, ScoreViewFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or fullscreen mode"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Fullscreen"s);
+   ScoreView, ScoreViewFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or exclusive fullscreen mode (falls back to borderless fullscreen when the requested display mode is not available)"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Exclusive Fullscreen"s);
 #endif
 PropIntDyn(ScoreView, ScoreViewWndX, "X Position"s, "Horizontal position of the window on the selected display"s, 0, 16384, 0);
 PropIntDyn(ScoreView, ScoreViewWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
@@ -79,8 +79,8 @@ PropIntDyn(ScoreView, ScoreViewWidth, "Width"s, "Width of the window"s, 0, 16384
 PropIntDyn(ScoreView, ScoreViewHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
 PropIntDyn(ScoreView, ScoreViewFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
 PropIntDyn(ScoreView, ScoreViewFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
-PropFloatDyn(ScoreView, ScoreViewRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
-PropIntDyn(ScoreView, ScoreViewColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
+PropFloatDyn(ScoreView, ScoreViewRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate (0 = any)"s, 0.f, 1000.f, 0.f);
+PropIntDyn(ScoreView, ScoreViewColorDepth, "Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
 PropEnumDyn(ScoreView, ScoreViewRotation, "Rotation"s, "Rotate the rendered content clockwise inside the output, e.g. for screens that are physically mounted rotated without the OS being told about it. Outputs embedded in the playfield window also turn with the playfield"s, int, 0, "0"s, "90"s, "180"s, "270"s);
 // Topper Window
 PropEnumDyn(Topper, TopperOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s, "Floating"s,
@@ -89,7 +89,7 @@ PropStringDyn(Topper, TopperDisplay, "Display"s, "Display used for the Topper wi
 #ifdef ENABLE_BGFX
 PropEnumDyn(Topper, TopperFullScreen, "Display Mode"s, "Select between windowed or borderless fullscreen mode"s, int, 0, "Windowed"s, "Borderless Fullscreen"s);
 #else
-PropEnumDyn(Topper, TopperFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or fullscreen mode"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Fullscreen"s);
+PropEnumDyn(Topper, TopperFullScreen, "Display Mode"s, "Select between windowed, borderless fullscreen or exclusive fullscreen mode (falls back to borderless fullscreen when the requested display mode is not available)"s, int, 0, "Windowed"s, "Borderless Fullscreen"s, "Exclusive Fullscreen"s);
 #endif
 PropIntDyn(Topper, TopperWndX, "X Position"s, "Horizontal position of the Topper window on the selected display"s, 0, 16384, 0);
 PropIntDyn(Topper, TopperWndY, "Y Position"s, "Vertical position of the Topper window on the selected display"s, 0, 16384, 0);
@@ -97,8 +97,8 @@ PropIntDyn(Topper, TopperWidth, "Width"s, "Width of the Topper window"s, 0, 1638
 PropIntDyn(Topper, TopperHeight, "Height"s, "Height of the Topper window"s, 0, 16384, 16384);
 PropIntDyn(Topper, TopperFSWidth, "Width"s, "Fullscreen display mode width for the Topper window"s, 0, 16384, 16384);
 PropIntDyn(Topper, TopperFSHeight, "Height"s, "Fullscreen display mode height for the Topper window"s, 0, 16384, 16384);
-PropFloatDyn(Topper, TopperRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate"s, 0.f, 1000.f, 0.f);
-PropIntDyn(Topper, TopperColorDepth, "Color Depth"s, "Fullscreen display mode color depth"s, 0, 64, 32);
+PropFloatDyn(Topper, TopperRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate (0 = any)"s, 0.f, 1000.f, 0.f);
+PropIntDyn(Topper, TopperColorDepth, "Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
 PropEnumDyn(Topper, TopperRotation, "Rotation"s, "Rotate the rendered content clockwise inside the output, e.g. for screens that are physically mounted rotated without the OS being told about it. Outputs embedded in the playfield window also turn with the playfield"s, int, 0, "0"s, "90"s, "180"s, "270"s);
 // Array access (using VPXWindowId)
 PropArray(Window, Mode, int, Enum, Int, m_propInvalid, m_propBackglass_BackglassOutput, m_propScoreView_ScoreViewOutput, m_propTopper_TopperOutput, m_propInvalid);
@@ -122,11 +122,12 @@ PropArray(Window, Rotation, int, Enum, Int, m_propInvalid, m_propBackglass_Backg
 // Graphics synchronisation and latency reduction
 PropEnum(Player, SyncMode, "Synchronization"s,
    "None: No synchronization.\nVertical Sync: Synchronize on video sync, avoids video tearing at the price of high visual latency.\nAdaptive Sync: Synchronize on video sync, "
-   "except for late frames (below target FPS), also features higher visual latency.\nFrame Pacing: pace the frame rendering to limit visual latency, comes with the risk of introducing more stutters if the computer is not powerful enough."s,
+   "except for late frames (below target FPS), also features higher visual latency (DirectX 9/OpenGL only, BGFX uses Vertical Sync instead).\nFrame Pacing: pace the frame rendering to limit visual latency, comes with the risk of introducing more stutters if the computer is not powerful enough.\n"
+   "Not used in VR (synchronized by the VR runtime)."s,
    int, 3, "No Sync"s, "Vertical Sync"s, "Adaptive Sync"s, "Frame Pacing"s);
 PropFloat(Player, MaxFramerate, "Limit Framerate"s,
-   "-1 will limit FPS to the display refresh rate\n0 will not limit the display refresh rate\nOther values will limit the FPS to it (energy saving/less heat, framerate stability)"s, -1.f,
-   1000.f, -1.f);
+   "-1 limits the FPS to the display refresh rate\n0 does not limit the FPS\nOther values limit the FPS to it, at least 24 (energy saving/less heat, framerate stability).\n"
+   "With a synchronization mode, the limit is rounded to an integer divider of the display refresh rate. Not used in VR."s, -1.f, 1000.f, -1.f);
 PropInt(Player, MaxPrerenderedFrames, "Max. Prerendered Frames"s, "Maximum number of 'frames in flight' (frames pushed to the GPU queue waiting for rendering).\nHigher values may lead to higher FPS, but at higher input latency.\nRecommended to be adjusted to the lowest value that allows a stable framerate.\n(Not supported in OpenGL version)"s, 1, 3, 1);
 
 // Graphics settings
@@ -148,23 +149,23 @@ PropString(Player, GfxBackend, "Graphics Backend"s, "Graphics API/backend used f
 #endif
 #endif
 PropEnum(Player, ShowFPS, "Show FPS"s, "Performance overlay display mode"s, int /* PerfUI::PerfMode */, 0, "Disable"s, "FPS"s, "Full"s);
-PropBool(Player, SSRefl, "Additive Screen Space Reflection"s, "Add global reflection to the entire scene"s, false);
+PropBool(Player, SSRefl, "Additive Screen Space Reflection"s, "Add global screen space reflections to the entire scene (for tables that enable them)"s, false);
 PropBool(Player, HDRDisableToneMapper, "Disable tonemapping on HDR display"s, "Do not perform tonemapping when rendering on a high dynamic range (HDR) capable monitor/gfxboard/OS"s, true);
 PropFloat(Player, HDRGlobalExposure, "HDR Display Global Exposure"s, "Global exposure scale multiplier for high dynamic range (HDR) capable monitors"s, 0.f, 5.f, 1.f);
-PropBool(Player, ForceBloomOff, "Disable Bloom"s, "Disable postprocessed bloom filter"s, false);
-PropBool(Player, ForceMotionBlurOff, "Disable Motion Blur"s, "Disable ball motion blur.\nThis feature is BGFX only (and not supported in VR or headtracking)"s, false);
+PropBool(Player, ForceBloomOff, "Disable Bloom"s, "Disable postprocessed bloom filter (always disabled for HDR)"s, false);
+PropBool(Player, ForceMotionBlurOff, "Disable Motion Blur"s, "Disable ball motion blur.\nThis feature is BGFX only (and not supported in VR, stereo or headtracking)"s, false);
 PropBool(Player, ForceAnisotropicFiltering, "Force Anisotropic Filtering"s, "Force anisotropic filtering for better rendering quality/texture clarity at the cost of a bit of performance"s, true);
-PropBool(Player, CompressTextures, "Compress Textures"s, "Compress textures to GPU formats to reduce memory use (slow on first load, cached afterwards)"s, true);
-PropBool(Player, UseNVidiaAPI, "Alternative Depth Buffer"s, "Use NVidia API to manage Depth Buffer on a DirectX 9 build. May solve some rendering issues"s, false);
-PropBool(Player, SoftwareVertexProcessing, "Software Vertex Processing"s, "Activate this on a DirectX 9 build, if you have issues using an old Intel graphics chip"s, false);
+PropBool(Player, CompressTextures, "Compress Textures"s, "Compress textures to GPU formats to reduce memory use (pre-processed on first load, cached afterwards). BGFX only"s, true);
+PropBool(Player, UseNVidiaAPI, "Alternative Depth Buffer"s, "Use NVidia API to manage Depth Buffer on DirectX 9 only. May solve some rendering issues"s, false);
+PropBool(Player, SoftwareVertexProcessing, "Software Vertex Processing"s, "Activate this on DirectX 9 only, if you have issues using an old Intel graphics chip"s, false);
 PropBool(Player, DisableAO, "Disable Ambient Occlusion"s, ""s, false);
 PropBool(Player, DynamicAO, "Dynamic Ambient Occlusion"s, ""s, true);
 PropEnum(Player, PFReflection, "Reflection Quality"s,
    "Limit the quality of reflections for better performance.\n'Dynamic' is recommended and will give the best results, but may harm performance.\n'Static Only' has no performance cost (except for VR rendering).\nOther options feature different trade-offs between quality and performance."s,
    int, 5, "Disable Reflections"s, "Balls Only"s, "Static Only"s, "Static & Balls"s, "Static & Unsynced Dynamic"s, "Dynamic"s);
 PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load"s, 512, 16384, g_isMobile ? 3072 : 16384);
-PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Level of detail for balls and ramps"s, 1, 10, 10);
-PropEnum(Player, BGSet, "View Mode"s, "Select between desktop, cabinet or 'full single screen' viewing mode configurations (if a table has set them up correctly)"s, int, 0, "Desktop / Full Single Screen"s, "Cabinet"s, "Full Single Screen"s);
+PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Level of detail of the ramp and rubber meshes"s, 1, 10, 10);
+PropEnum(Player, BGSet, "View Mode"s, "Select the view setup of the table used for playing: 'Desktop / Full Single Screen' uses the Full Single Screen view for tables that enable it, the desktop view otherwise. 'Cabinet' uses the cabinet view. 'Desktop (no FSS)' always uses the desktop view"s, int, 0, "Desktop / Full Single Screen"s, "Cabinet"s, "Desktop (no FSS)"s);
 PropEnum(Player, CabinetAutofitMode, "Cabinet Autofit Mode"s, "Select between manual setup, automatic fitting without visual stretch or automatic fitting with table stretching"s, int, 0,
    "Manual"s, "Fit Table"s, "Fit Screen"s);
 PropFloat(Player, CabinetAutofitPos, "Cabinet Autofit Pos"s, "Relative lower flipper bat position when using automatic view fitting (0% for bottom of screen, 100% for top)"s, 0.f, 0.2f, 0.05f);
@@ -174,7 +175,7 @@ PropFloatStepped(Player, AAFactor, "Full Scene Anti Aliasing"s,
    "Enables brute-force Up/Downsampling (similar to DSR).\nThis delivers very good quality but has a significant impact on performance.\n200% means twice the resolution to be handled while rendering"s,
    0.5f, 2.f, 0.25f, 1.f);
 PropEnum(Player, MSAASamples, "MSAA level"s,
-   "Set the amount of MSAA samples.\nMSAA can help reduce geometry aliasing at the cost of performance and GPU memory.\nThis can improve image quality if not using supersampling"s, int,
+   "Set the amount of MSAA samples.\nMSAA can help reduce geometry aliasing at the cost of performance and GPU memory.\nThis can improve image quality if not using supersampling.\nNot available with DirectX 9"s, int,
    0, "Disabled"s, "4 Samples"s, "6 Samples"s, "8 Samples"s);
 PropEnum(Player, FXAA, "Post processed antialiasing"s, "Select between different antialiasing techniques that offer different quality vs performance balances"s, int, 0, "Disabled"s,
    "Fast FXAA"s, "Standard FXAA"s, "Quality FXAA"s, "Fast NFAA"s, "Standard DLAA"s, "Quality SMAA"s, "Quality FAAA"s);
@@ -186,12 +187,13 @@ PropBool(Player, BallAntiStretch, "Unstretch Ball"s, "Compensate ball stretching
 PropBool(Player, DisableLightingForBalls, "Disable Ball Lighting"s, "Disable lighting and reflection effects on balls, e.g. to help the visually handicapped"s, false);
 PropBool(Player, LegacyTableBallShadows, "Ball Shadows heuristic for pre-10.8 tables"s,
    "Heuristic to enable Ball Shadows for certain lights only (can lead to rendering quirks though).\n"
-   "Note that an older table loaded with the setting enabled will save the shadow-enable flag for these selected lights, too"s, false);
-PropBool(Player, BallTrail, "Ball Trail"s, "Legacy Ball Trails.\nWill/should be replaced by ForceMotionBlurOff with the next release"s, false);
+   "Note that an older table loaded with the setting enabled will save the shadow-enable flag for these selected lights, too.\n"
+   "Applied when a table is loaded"s, false);
+PropBool(Player, BallTrail, "Ball Trail"s, "Legacy Ball Trails, use as a replacement for ball motion blur on DirectX 9 or GL"s, false);
 PropFloat(Player, BallTrailStrength, "Ball Trail Strength"s, "Strength of the legacy Ball Trail"s, 0.f, 5.f, 0.5f);
 PropBool(Player, OverwriteBallImage, "Overwrite ball image"s, "Allow to define images that will be used instead of the table's provided one"s, false);
-PropString(Player, BallImage, "Ball image override"s, "Image to use for the ball instead of the table's provide one"s, ""s);
-PropString(Player, DecalImage, "Decal image override"s, "Image to use for the ball's decal instead of the table's provide one"s, ""s);
+PropString(Player, BallImage, "Ball image override"s, "Image file to use for the ball instead of the table's provided one"s, ""s);
+PropString(Player, DecalImage, "Decal image override"s, "Image file to use for the ball's decal instead of the table's provided one"s, ""s);
 
 // Misc player settings
 PropBool(Player, TouchOverlay, "Touch Overlay"s, "Display an overlay showing touch regions"s, false);
@@ -200,7 +202,7 @@ PropInt(Player, SecurityLevel, "Security Level"s, ""s, 0, 4, DEFAULT_SECURITY_LE
 PropInt(Player, NumberOfTimesToShowTouchMessage, "NumberOfTimesToShowTouchMessage"s, "Number of times to re-display the touch display message"s, 0, 100, 10);
 PropBool(Player, Mirror, "Mirror"s, "Mirror the table (left <-> right)"s, false);
 PropEnum(Player, CacheMode, "Cache Mode"s, "Use cache to limit stutters and speedup loading"s, int, 1, "Disabled"s, "Preload Textures"s);
-PropEnum(Player, RumbleMode, "RumbleMode"s, "Use rumble motor(s) in attached input devices"s, int, 3, "Off"s, "Table only (N/A yet)"s, "Generic only (N/A yet)"s, "Table with generic fallback"s);
+PropEnum(Player, RumbleMode, "Rumble Mode"s, "Use rumble motor(s) in attached input devices"s, int, 3, "Off"s, "Table only (N/A yet)"s, "Generic only (N/A yet)"s, "Table with generic fallback"s);
 PropFloat(Player, RumbleFlipperContact, "Flipper Contact Rumble"s, "Strength of the rumble played when a ball hits a flipper, scaled by the impact speed (0 disables it)"s, 0.f, 3.f, 1.f);
 PropFloat(Player, RumbleBumper, "Bumper Rumble"s, "Strength of the rumble played when a bumper fires (0 disables it)"s, 0.f, 3.f, 1.f);
 PropFloat(Player, RumbleSlingshot, "Slingshot Rumble"s, "Strength of the rumble played when a slingshot fires (0 disables it)"s, 0.f, 3.f, 1.f);
@@ -210,19 +212,19 @@ PropFloat(Player, RumbleNudge, "Nudge Rumble"s, "Strength of the rumble played w
 PropFloat(Player, RumbleBallBall, "Ball Collision Rumble"s, "Strength of the rumble played when two balls collide, scaled by the impact speed (0 disables it)"s, 0.f, 3.f, 1.f);
 PropInt(Player, MinPhysLoopTime, "MinPhysLoopTime"s, ""s, 0, 1000, 0); // Legacy lag reduction hack (e.g. if script execution or physics takes very long, comes at the price of "slower" gameplay). Not supported by BGFX variant (due to its multithreaded loop)
 PropIntUnbounded(Player, PhysicsMaxLoops, "Physics Max Loops"s,
-   "Maximum number of physics iteration above which physics engine just skip to stay playable.\nThis is somewhat hacky, override table setup, and may cause gameplay issues. This should not be used anymore."s,
+   "Default maximum number of physics iterations per frame, above which the physics engine skips time to stay playable. Only used for tables that do not define their own value.\n"
+   "This is somewhat hacky, and may cause gameplay issues. This should not be used anymore."s,
    (int)0xFFFFFFFFu);
 PropIntUnbounded(Player, Autostart, "Autostart"s, ""s, 0);
 PropIntUnbounded(Player, AutostartRetry, "AutostartRetry"s, ""s, 0);
 PropBool(Player, asenable, "AutostartEnable"s, ""s, false);
 
 // UI & input settings
-PropInt(Player, Exitconfirm, "Direct Exit Length"s, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60"s, 0, 30 * 60, 120);
 PropString(Input, Devices, "Devices"s, "List of known devices"s, ""s);
 
 // Plumb settings
 PropBool(Player, SimulatedPlumb, "Plumb Simulation"s, "Enable/Disable mechanical Tilt plumb simulation"s, true);
-PropFloat(Player, PlumbDamping, "Plumb Damping"s, "Adjust plumb damping (how fast the pumb gets back to rest)"s, 0.f, 2.f, 0.2f);
+PropFloat(Player, PlumbDamping, "Plumb Damping"s, "Adjust plumb damping (how fast the plumb gets back to rest)"s, 0.f, 2.f, 0.2f);
 PropFloat(Player, PlumbThresholdAngle, "Plumb Threshold"s, "Define threshold angle at which a Tilt is triggered"s, 0.15f, 15.f, 4.f);
 
 // Nudge settings
@@ -234,16 +236,14 @@ PropInt(Input, NudgeSensorCount, "Nudge Sensor Count"s, "Number of hardware nudg
 // Plunger settings
 PropBool(Player, PlungerRetract, "One Second Retract"s, "Enable retracting the plunger after a 1 second press when using the digital plunger emulation through keyboard or joystick button"s,
    false);
-PropInt(Player, PlungerNormalize, "Plunger normalize override"s, "This value may be defined to override the table's plunger normalization"s, 0, 100,
-   100); // Hacky: This should be a table override, not a player property as it overrides table data
-PropInt(Input, PlungerSensorCount, "Plunger Sensor Count"s, "Number of hardware plunger sensor defined"s, 0, 100, 0);
+PropInt(Input, PlungerSensorCount, "Plunger Sensor Count"s, "Number of hardware plunger sensors defined"s, 0, 100, 0);
 
 // VR settings
 #if SDL_PLATFORM_ANDROID && defined(ENABLE_XR)
 // Android with VR is native Quest build, so force VR mode
-PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, "Ask to turn on VR"s, int, 0, "Enabled"s, "Autodetect"s, "Disabled"s);
+PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, "Enabled: always use VR (asks to retry when the headset is not found)\nAutodetect: use VR when a headset is detected\nDisabled: never use VR\nVR is always off when playing from the editor"s, int, 0, "Enabled"s, "Autodetect"s, "Disabled"s);
 #else
-PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, "Ask to turn on VR"s, int, 2, "Enabled"s, "Autodetect"s, "Disabled"s);
+PropEnum(PlayerVR, AskToTurnOn, "Enable VR"s, "Enabled: always use VR (asks to retry when the headset is not found)\nAutodetect: use VR when a headset is detected\nDisabled: never use VR\nVR is always off when playing from the editor"s, int, 2, "Enabled"s, "Autodetect"s, "Disabled"s);
 #endif
 PropEnum(PlayerVR, DisplayRefreshRate, "Headset Refresh Rate"s, "Refresh rate requested from the headset when supported. Lower rates give the renderer more time per frame and avoid reprojected frames on standalone headsets"s, int, 0, "Runtime default"s, "72 Hz"s, "80 Hz"s, "90 Hz"s, "120 Hz"s);
 PropFloatDyn(PlayerVR, RoomYaw, "Room Yaw"s, "VR room orientation around the vertical axis (headset tracking calibration)"s, -180.f, 180.f, 0.f);
@@ -258,7 +258,7 @@ PropFloat(PlayerVR, SeatedTilt, "Seated Play Tilt"s,
    "Tilt the cabinet toward the player for seated or reclined play (only changes the view, physics are unchanged)"s,
    -90.f, 90.f, 0.f);
 PropBool(
-   PlayerVR, UsePassthroughColor, "Color Keyed Passthrough"s, "Replace VR background by full black to allow color keyed passthrough (for example using Virtual Desktop, setting passthrough to sharp full black)"s, false);
+   PlayerVR, UsePassthroughColor, "Color Keyed Passthrough"s, "Replace VR background by full black to allow color keyed passthrough (for example using Virtual Desktop, setting passthrough to sharp full black). On headsets with native passthrough (Meta Quest), the native passthrough is used instead"s, false);
 PropEnum(PlayerVR, DesktopDisplay, "Desktop display"s, "Select the content to show on the desktop display while playing in VR"s, int, 1, "Disabled"s,
    "Playfield and other displays"s, "Playfield only"s, "Left eye"s, "Right eye"s, "Both eyes"s);
 PropBool(PlayerVR, ShrinkDesktopDisplay, "Shrink desktop display"s, "Shrink the mirrored eye view to fit inside the desktop display"s, false);
@@ -494,14 +494,14 @@ PropArray(Player, PhysicsSetName, string, String, String, m_propPlayer_PhysicsSe
    m_propPlayer_PhysicsSetName4, m_propPlayer_PhysicsSetName5, m_propPlayer_PhysicsSetName6, m_propPlayer_PhysicsSetName7);
 
 // Stereo settings
-PropBool(Player, Stereo3DEnabled, "Enable Stereo Rendering"s, "Allow to temporarily disable stereo rendering"s, true);
+PropBool(Player, Stereo3DEnabled, "Enable Stereo Rendering"s, "Allow to temporarily disable stereo rendering (currently unused: stereo starts enabled, and is toggled with the 'Select Stereo Mode' key while playing)"s, true);
 PropEnum(Player, Stereo3D, "Stereo rendering"s, "Stereo rendering mode"s, StereoMode, 0, "Disabled"s, "Top / Bottom"s, "Interlaced (e.g. LG TVs)"s, "Flipped Interlaced (e.g. LG TVs)"s,
    "Side by Side"s, "Anaglyph Red/Cyan"s, "Anaglyph Green/Magenta"s, "Anaglyph Blue/Amber"s, "Anaglyph Cyan/Red"s, "Anaglyph Magenta/Green"s, "Anaglyph Amber/Blue"s, "Anaglyph Custom 1"s,
    "Anaglyph Custom 2"s, "Anaglyph Custom 3"s, "Anaglyph Custom 4"s);
 PropFloat(Player, Stereo3DEyeSeparation, "Eye distance"s, "Physical distance (mm) between eyes"s, 5.f, 200.f, 63.f);
-PropFloat(Player, Stereo3DBrightness, "Stereo Brightness"s, "Brightness adjustment applied to stereo rendering"s, 0.f, 2.f, 1.f);
-PropFloat(Player, Stereo3DSaturation, "Stereo Saturation"s, "Saturation adjustment applied to stereo rendering"s, 0.f, 2.f, 1.f);
-PropFloat(Player, Stereo3DDefocus, "Anaglyph Defocus"s, "Defocusing of the lesser eye (non dominant eye) applied to anaglyph stereo rendering.\nThis may help to keep the depth perception with less ghosting/retinal rivalry."s, 0.f, 1.f, 0.f);
+PropFloat(Player, Stereo3DBrightness, "Stereo Brightness"s, "Brightness adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 1.f);
+PropFloat(Player, Stereo3DSaturation, "Stereo Saturation"s, "Saturation adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 1.f);
+PropFloat(Player, Stereo3DDefocus, "Anaglyph Defocus"s, "Defocusing of the eye behind the darker filter of the glasses, applied to anaglyph stereo rendering.\nThis may help to keep the depth perception with less ghosting/retinal rivalry."s, 0.f, 1.f, 0.f);
 PropFloat(Player, Stereo3DLeftContrast, "Anaglyph Left Contrast"s, "Left eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 1.f);
 PropFloat(Player, Stereo3DRightContrast, "Anaglyph Right Contrast"s, "Right eye contrast adjustment applied to anaglyph stereo rendering"s, 0.f, 2.f, 1.f);
 PropEnum(Player, Anaglyph1Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
@@ -513,19 +513,19 @@ PropEnum(Player, Anaglyph6Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2
 PropEnum(Player, Anaglyph7Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
 PropEnum(Player, Anaglyph8Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
 PropEnum(Player, Anaglyph9Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
-PropEnum(Player, Anaglyph10Filter, "Anaglyph Filter"s, "Anaglyph filter applied to anaglyph profile #10"s, int, 0, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
+PropEnum(Player, Anaglyph10Filter, "Anaglyph Filter"s, "Anaglyph filter"s, int, 2, "None"s, "Dubois"s, "Luminance"s, "Deghost"s);
 PropArray(Player, AnaglyphFilter, int, Int, Int, m_propPlayer_Anaglyph1Filter, m_propPlayer_Anaglyph2Filter, m_propPlayer_Anaglyph3Filter, m_propPlayer_Anaglyph4Filter,
    m_propPlayer_Anaglyph5Filter, m_propPlayer_Anaglyph6Filter, m_propPlayer_Anaglyph7Filter, m_propPlayer_Anaglyph8Filter, m_propPlayer_Anaglyph9Filter, m_propPlayer_Anaglyph10Filter);
-PropFloat(Player, Anaglyph1DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph2DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph3DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph4DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph5DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph6DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph7DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph8DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph9DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
-PropFloat(Player, Anaglyph10DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturate (turn to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other)."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph1DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturates (turns to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other). Not used with the 'Deghost' filter."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph2DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturates (turns to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other). Not used with the 'Deghost' filter."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph3DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturates (turns to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other). Not used with the 'Deghost' filter."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph4DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturates (turns to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other). Not used with the 'Deghost' filter."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph5DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturates (turns to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other). Not used with the 'Deghost' filter."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph6DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturates (turns to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other). Not used with the 'Deghost' filter."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph7DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturates (turns to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other). Not used with the 'Deghost' filter."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph8DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturates (turns to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other). Not used with the 'Deghost' filter."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph9DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturates (turns to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other). Not used with the 'Deghost' filter."s, 0.f, 1.f, 1.f);
+PropFloat(Player, Anaglyph10DynDesat, "Anaglyph Dyn. Desat"s, "Dynamic desaturation selectively desaturates (turns to greyscale) colors that would otherwise cause retinal rivalry (when something is seen by one eye but not by the other). Not used with the 'Deghost' filter."s, 0.f, 1.f, 1.f);
 PropArray(Player, AnaglyphDynDesat, float, Float, Float, m_propPlayer_Anaglyph1DynDesat, m_propPlayer_Anaglyph2DynDesat, m_propPlayer_Anaglyph3DynDesat, m_propPlayer_Anaglyph4DynDesat,
    m_propPlayer_Anaglyph5DynDesat, m_propPlayer_Anaglyph6DynDesat, m_propPlayer_Anaglyph7DynDesat, m_propPlayer_Anaglyph8DynDesat, m_propPlayer_Anaglyph9DynDesat,
    m_propPlayer_Anaglyph10DynDesat);
@@ -541,16 +541,16 @@ PropFloat(Player, Anaglyph9Deghost, "Anaglyph Deghosting"s, "Adjust colors to av
 PropFloat(Player, Anaglyph10Deghost, "Anaglyph Deghosting"s, "Adjust colors to avoid color clamping as color clamping always results in visible ghosting. The drawback is that it makes images brighter and less saturated."s, 0.f, 1.f, 0.f);
 PropArray(Player, AnaglyphDeghost, float, Float, Float, m_propPlayer_Anaglyph1Deghost, m_propPlayer_Anaglyph2Deghost, m_propPlayer_Anaglyph3Deghost, m_propPlayer_Anaglyph4Deghost,
    m_propPlayer_Anaglyph5Deghost, m_propPlayer_Anaglyph6Deghost, m_propPlayer_Anaglyph7Deghost, m_propPlayer_Anaglyph8Deghost, m_propPlayer_Anaglyph9Deghost, m_propPlayer_Anaglyph10Deghost);
-PropBool(Player, Anaglyph1sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
-PropBool(Player, Anaglyph2sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
-PropBool(Player, Anaglyph3sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
-PropBool(Player, Anaglyph4sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
-PropBool(Player, Anaglyph5sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
-PropBool(Player, Anaglyph6sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
-PropBool(Player, Anaglyph7sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
-PropBool(Player, Anaglyph8sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
-PropBool(Player, Anaglyph9sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
-PropBool(Player, Anaglyph10sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and uses standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph1sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and use the standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph2sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and use the standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph3sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and use the standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph4sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and use the standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph5sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and use the standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph6sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and use the standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph7sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and use the standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph8sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and use the standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph9sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and use the standard sRGB gamma curve."s, true);
+PropBool(Player, Anaglyph10sRGB, "Calibrated sRGB Display"s, "If enabled, bypass display gamma evaluation from calibration and use the standard sRGB gamma curve."s, true);
 PropArray(Player, AnaglyphsRGB, bool, Int, Int, m_propPlayer_Anaglyph1sRGB, m_propPlayer_Anaglyph2sRGB, m_propPlayer_Anaglyph3sRGB, m_propPlayer_Anaglyph4sRGB, m_propPlayer_Anaglyph5sRGB,
    m_propPlayer_Anaglyph6sRGB, m_propPlayer_Anaglyph7sRGB, m_propPlayer_Anaglyph8sRGB, m_propPlayer_Anaglyph9sRGB, m_propPlayer_Anaglyph10sRGB);
 // Red Cyan
@@ -646,120 +646,120 @@ PropArray(Player, AnaglyphRightBlue, float, Float, Float, m_propPlayer_Anaglyph1
 PropFloat(Player, ScreenWidth, "Screen Width"s, "Physical width (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 95.89f);
 PropFloat(Player, ScreenHeight, "Screen Height"s, "Physical height (cm) of the display area of the playfield (main) screen (width > height)"s, 5.f, 200.f, 53.94f);
 PropFloat(Player, ScreenInclination, "Screen Inclination"s, "Inclination (degree) of the playfield (main) screen, 0 is horizontal"s, -30.f, 30.f, 0.f);
-PropFloat(Player, LockbarWidth, "Lockbar Width"s, "Lockbar width in centimeters (measured on the cabinet)"s, 10.f, 150.f, 70.f);
-PropFloat(Player, LockbarHeight, "Lockbar Height"s, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar)"s, 0.f, 250.f, 85.f);
-PropFloat(Player, ScreenPlayerX, "Player X"s, "Player X position in real world, expressed from the bottom center of the playfield, in centimeters"s, -30.f, 30.f, 0.f);
-PropFloat(Player, ScreenPlayerY, "Player Y"s, "Player Y position in real world, expressed from the bottom center of the playfield, in centimeters"s, -70.f, 30.f, -10.f);
-PropFloat(Player, ScreenPlayerZ, "Player Z"s, "Player Z position in real world, expressed from the bottom center of the playfield, in centimeters"s, 30.f, 100.f, 70.f);
+PropFloat(Player, LockbarWidth, "Lockbar Width"s, "Lockbar width in centimeters (measured on the cabinet). Used in VR when 'Custom Lockbar Width' is enabled"s, 10.f, 150.f, 70.f);
+PropFloat(Player, LockbarHeight, "Lockbar Height"s, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar). Used in VR when 'Custom Lockbar Height' is enabled"s, 0.f, 250.f, 85.f);
+PropFloat(Player, ScreenPlayerX, "Player X"s, "Player X position in real world, relative to the bottom center of the playfield screen, in centimeters"s, -30.f, 30.f, 0.f);
+PropFloat(Player, ScreenPlayerY, "Player Y"s, "Player Y position in real world, relative to the bottom center of the playfield screen, in centimeters"s, -70.f, 30.f, -10.f);
+PropFloat(Player, ScreenPlayerZ, "Player Z"s, "Player Z position in real world, relative to the bottom center of the playfield screen, in centimeters"s, 30.f, 100.f, 70.f);
 
 // Overall scene lighting settings
 PropBool(Player, OverrideTableEmissionScale, "Override Table Light Level"s, "Replace default table light level by a fixed/custom one"s, false);
-PropFloatDyn(Player, EmissionScale, "Day/Night"s, "Select a custom ambient lighting level, ranging from daylight to night time"s, 0.f, 1.f, 1.f);
+PropFloatDyn(Player, EmissionScale, "Day/Night"s, "Select a custom ambient lighting level, from night time (0%) to daylight (100%)"s, 0.f, 1.f, 1.f);
 PropBool(Player, DynamicDayNight, "Use Automatic Light Level"s, "Automatically compute/match scene lighting based on geographic coordinates/localized sun position"s, false);
 PropFloat(Player, Latitude, "Latitude"s, "Local geographic latitude used to derive the sun position for automatically computed/matching scene lighting"s, -90.f, 90.f, 52.52f);
 PropFloat(Player, Longitude, "Longitude"s, "Local geographic longitude used to derive the sun position for automatically computed/matching scene lighting"s, -180.f, 180.f, 13.37f);
 
 // Debugging & Live editing settings
 PropBool(Editor, ThrowBallsAlwaysOn, "Throw Balls Always On"s, "Permanently enable 'throw ball' debugging mode"s, false);
-PropBool(Editor, BallControlAlwaysOn, "Ball COntrol Always On"s, "Permanently enable 'ball control' debugging mode"s, false);
+PropBool(Editor, BallControlAlwaysOn, "Ball Control Always On"s, "Permanently enable 'ball control' debugging mode"s, false);
 
 // Default camera setup
 PropEnum(DefaultCamera, DesktopMode, "View mode"s,
-   "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
+   "Select between 'Legacy' (old rendering mode with visually incorrect stretches), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
    int, 1, "Legacy"s, "Camera"s, "Window"s);
-PropFloat(DefaultCamera, DesktopLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 25.f);
-PropFloat(DefaultCamera, DesktopFov, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 50.f);
+PropFloat(DefaultCamera, DesktopLookAt, "Look at"s, "Camera mode: point of the playfield the camera looks at, in % of the playfield length. Legacy mode: camera inclination in degrees"s, 0.f, 100.f, 25.f);
+PropFloat(DefaultCamera, DesktopFov, "Field Of View"s, "Vertical field of view of the camera, in degrees (Legacy and Camera modes)"s, 25.f, 90.f, 50.f);
 PropFloat(DefaultCamera, DesktopScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
 PropFloat(DefaultCamera, DesktopScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
 PropFloat(DefaultCamera, DesktopScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
 PropFloat(DefaultCamera, DesktopCamX, "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.f);
 PropFloat(DefaultCamera, DesktopCamY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 20.f);
 PropFloat(DefaultCamera, DesktopCamZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 70.f);
-PropFloat(DefaultCamera, DesktopViewVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 14.f);
+PropFloat(DefaultCamera, DesktopViewVOfs, "Vertical Offset"s, "Shifts the view vertically (Camera mode: lens shift. Window mode: offset of the virtual table behind the screen 'window', in centimeters)"s, -20.f, 50.f, 14.f);
 PropEnum(DefaultCamera, FSSMode, "View mode"s,
-   "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
+   "Select between 'Legacy' (old rendering mode with visually incorrect stretches), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
    int, 1, "Legacy"s, "Camera"s, "Window"s);
-PropFloat(DefaultCamera, FSSLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 50.f);
-PropFloat(DefaultCamera, FSSFov, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 77.f);
+PropFloat(DefaultCamera, FSSLookAt, "Look at"s, "Camera mode: point of the playfield the camera looks at, in % of the playfield length. Legacy mode: camera inclination in degrees"s, 0.f, 100.f, 50.f);
+PropFloat(DefaultCamera, FSSFov, "Field Of View"s, "Vertical field of view of the camera, in degrees (Legacy and Camera modes)"s, 25.f, 90.f, 77.f);
 PropFloat(DefaultCamera, FSSScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
 PropFloat(DefaultCamera, FSSScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
 PropFloat(DefaultCamera, FSSScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
 PropFloat(DefaultCamera, FSSCamX, "Camera X"s, "View point width offset, in centimeters"s, -30.f, 30.f, 0.f);
 PropFloat(DefaultCamera, FSSCamY, "Camera Y"s, "View point height offset, in centimeters"s, -30.f, 100.f, 20.f);
 PropFloat(DefaultCamera, FSSCamZ, "Camera Z"s, "View point vertical offset, in centimeters"s, 10.f, 100.f, 70.f);
-PropFloat(DefaultCamera, FSSViewVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window' in centimeters"s, -20.f, 50.f, 22.f);
+PropFloat(DefaultCamera, FSSViewVOfs, "Vertical Offset"s, "Shifts the view vertically (Camera mode: lens shift. Window mode: offset of the virtual table behind the screen 'window', in centimeters)"s, -20.f, 50.f, 22.f);
 
 // Table override settings
 // These properties are specials as they are meant to override table data at play time. They are not meant to be saved to the application setting file, but
 // only to table override settings. Also, their defaults are redefined when a table is played, depending on the table data and UI options.
 PropEnumDyn(TableOverride, ViewDTMode, "View mode"s,
-   "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
+   "Select between 'Legacy' (old rendering mode with visually incorrect stretches), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
    int, 1, "Legacy"s, "Camera"s, "Window"s);
-PropFloatDyn(TableOverride, ViewDTLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 25.f);
-PropFloatDyn(TableOverride, ViewDTFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 50.f);
-PropFloatDyn(TableOverride, ViewDTLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, -90.f, 90.f, 0.f);
+PropFloatDyn(TableOverride, ViewDTLookAt, "Look at"s, "Camera mode: point of the playfield the camera looks at, in % of the playfield length. Legacy mode: camera inclination in degrees"s, 0.f, 100.f, 25.f);
+PropFloatDyn(TableOverride, ViewDTFOV, "Field Of View"s, "Vertical field of view of the camera, in degrees (Legacy and Camera modes)"s, 25.f, 90.f, 50.f);
+PropFloatDyn(TableOverride, ViewDTLayback, "Layback"s, "Fake visual stretch of the table to give more depth (Legacy mode only)"s, -90.f, 90.f, 0.f);
 PropFloatDyn(TableOverride, ViewDTScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
 PropFloatDyn(TableOverride, ViewDTScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
 PropFloatDyn(TableOverride, ViewDTScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
 PropFloatDyn(TableOverride, ViewDTPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.f));
 PropFloatDyn(TableOverride, ViewDTPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(20.f));
 PropFloatDyn(TableOverride, ViewDTPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
-PropFloatDyn(TableOverride, ViewDTHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
-PropFloatDyn(TableOverride, ViewDTVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
-PropFloatDyn(TableOverride, ViewDTWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+PropFloatDyn(TableOverride, ViewDTHOfs, "Horizontal Offset"s, "Shifts the view horizontally (Camera mode: lens shift. Window mode: offset of the virtual table behind the screen 'window', in centimeters)"s, -30.f, 30.f, 0.f);
+PropFloatDyn(TableOverride, ViewDTVOfs, "Vertical Offset"s, "Shifts the view vertically (Camera mode: lens shift. Window mode: offset of the virtual table behind the screen 'window', in centimeters)"s, -20.f, 50.f, 0.f);
+PropFloatDyn(TableOverride, ViewDTWindowTop, "Window Top Z Ofs."s, "Height of the 'window' (i.e. the screen) above the top of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
 PropFloatDyn(
-   TableOverride, ViewDTWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-PropFloatSteppedDyn(TableOverride, ViewDTRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
+   TableOverride, ViewDTWindowBot, "Window Bottom Z Ofs."s, "Height of the 'window' (i.e. the screen) above the bottom of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+PropFloatSteppedDyn(TableOverride, ViewDTRotation, "Viewport Rotation"s, "Rotation of the rendered view in degrees (snapped to multiples of 90 degrees in Window mode)"s, 0.f, 360.f, 90.0f, 0.f);
 
 PropEnumDyn(TableOverride, ViewFSSMode, "View mode"s,
-   "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
+   "Select between 'Legacy' (old rendering mode with visually incorrect stretches), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
    int, 1, "Legacy"s, "Camera"s, "Window"s);
-PropFloatDyn(TableOverride, ViewFSSLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.f);
-PropFloatDyn(TableOverride, ViewFSSFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 25.f);
-PropFloatDyn(TableOverride, ViewFSSLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, -90.f, 90.f, 0.f);
+PropFloatDyn(TableOverride, ViewFSSLookAt, "Look at"s, "Camera mode: point of the playfield the camera looks at, in % of the playfield length. Legacy mode: camera inclination in degrees"s, 0.f, 100.f, 0.f);
+PropFloatDyn(TableOverride, ViewFSSFOV, "Field Of View"s, "Vertical field of view of the camera, in degrees (Legacy and Camera modes)"s, 25.f, 90.f, 25.f);
+PropFloatDyn(TableOverride, ViewFSSLayback, "Layback"s, "Fake visual stretch of the table to give more depth (Legacy mode only)"s, -90.f, 90.f, 0.f);
 PropFloatDyn(TableOverride, ViewFSSScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
 PropFloatDyn(TableOverride, ViewFSSScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
 PropFloatDyn(TableOverride, ViewFSSScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
 PropFloatDyn(TableOverride, ViewFSSPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.f));
 PropFloatDyn(TableOverride, ViewFSSPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.f));
-PropFloatDyn(TableOverride, ViewFSSPlayerZ, "Camera Z"s, "View point vertical offsets"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
-PropFloatDyn(TableOverride, ViewFSSHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
-PropFloatDyn(TableOverride, ViewFSSVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
+PropFloatDyn(TableOverride, ViewFSSPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
+PropFloatDyn(TableOverride, ViewFSSHOfs, "Horizontal Offset"s, "Shifts the view horizontally (Camera mode: lens shift. Window mode: offset of the virtual table behind the screen 'window', in centimeters)"s, -30.f, 30.f, 0.f);
+PropFloatDyn(TableOverride, ViewFSSVOfs, "Vertical Offset"s, "Shifts the view vertically (Camera mode: lens shift. Window mode: offset of the virtual table behind the screen 'window', in centimeters)"s, -20.f, 50.f, 0.f);
 PropFloatDyn(
-   TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   TableOverride, ViewFSSWindowTop, "Window Top Z Ofs."s, "Height of the 'window' (i.e. the screen) above the top of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
 PropFloatDyn(
-   TableOverride, ViewFSSWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-PropFloatSteppedDyn(TableOverride, ViewFSSRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
+   TableOverride, ViewFSSWindowBot, "Window Bottom Z Ofs."s, "Height of the 'window' (i.e. the screen) above the bottom of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+PropFloatSteppedDyn(TableOverride, ViewFSSRotation, "Viewport Rotation"s, "Rotation of the rendered view in degrees (snapped to multiples of 90 degrees in Window mode)"s, 0.f, 360.f, 90.0f, 0.f);
 
 PropEnumDyn(TableOverride, ViewCabMode, "View mode"s,
-   "Select between 'Legacy' (old rendering mode with visually incorrect stretchs), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
+   "Select between 'Legacy' (old rendering mode with visually incorrect stretches), 'Camera' (classic camera, for desktop) and 'Window' (custom projection designed for cabinet users) rendering mode"s,
    int, 2, "Legacy"s, "Camera"s, "Window"s);
-PropFloatDyn(TableOverride, ViewCabLookAt, "Look at"s, "Relative point of playfield where the camera is looking at"s, 0.f, 100.f, 0.f);
-PropFloatDyn(TableOverride, ViewCabFOV, "Field Of View (overall scale)"s, "Global view scale (same as XYZ scale)"s, 25.f, 90.f, 25.f);
-PropFloatDyn(TableOverride, ViewCabLayback, "Layback"s, "Fake visual stretch of the table to give more depth"s, 0.f, 90.f, 0.f);
+PropFloatDyn(TableOverride, ViewCabLookAt, "Look at"s, "Camera mode: point of the playfield the camera looks at, in % of the playfield length. Legacy mode: camera inclination in degrees"s, 0.f, 100.f, 0.f);
+PropFloatDyn(TableOverride, ViewCabFOV, "Field Of View"s, "Vertical field of view of the camera, in degrees (Legacy and Camera modes)"s, 25.f, 90.f, 25.f);
+PropFloatDyn(TableOverride, ViewCabLayback, "Layback"s, "Fake visual stretch of the table to give more depth (Legacy mode only)"s, -90.f, 90.f, 0.f);
 PropFloatDyn(TableOverride, ViewCabScaleX, "Table X Scale"s, "Stretch the scene along the playfield width axis"s, 0.5f, 1.5f, 1.f);
 PropFloatDyn(TableOverride, ViewCabScaleY, "Table Y Scale"s, "Stretch the scene along the playfield height axis"s, 0.5f, 1.5f, 1.f);
 PropFloatDyn(TableOverride, ViewCabScaleZ, "Table Z Scale"s, "Stretch the scene along the vertical axis (perpendicular to playfield)"s, 0.5f, 1.5f, 1.f);
 PropFloatDyn(TableOverride, ViewCabPlayerX, "Camera X"s, "View point width offset"s, CMTOVPU(-30.f), CMTOVPU(30.f), CMTOVPU(0.f));
 PropFloatDyn(TableOverride, ViewCabPlayerY, "Camera Y"s, "View point height offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(0.f));
 PropFloatDyn(TableOverride, ViewCabPlayerZ, "Camera Z"s, "View point vertical offset"s, CMTOVPU(-100.f), CMTOVPU(100.f), CMTOVPU(70.f));
-PropFloatDyn(TableOverride, ViewCabHOfs, "Horizontal Offset"s, "Horizontal offset of the virtual table behind the screen 'window'"s, -30.f, 30.f, 0.f);
-PropFloatDyn(TableOverride, ViewCabVOfs, "Vertical Offset"s, "Vertical offset of the virtual table behind the screen 'window'"s, -20.f, 50.f, 0.f);
+PropFloatDyn(TableOverride, ViewCabHOfs, "Horizontal Offset"s, "Shifts the view horizontally (Camera mode: lens shift. Window mode: offset of the virtual table behind the screen 'window', in centimeters)"s, -30.f, 30.f, 0.f);
+PropFloatDyn(TableOverride, ViewCabVOfs, "Vertical Offset"s, "Shifts the view vertically (Camera mode: lens shift. Window mode: offset of the virtual table behind the screen 'window', in centimeters)"s, -20.f, 50.f, 0.f);
 PropFloatDyn(
-   TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the top of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+   TableOverride, ViewCabWindowTop, "Window Top Z Ofs."s, "Height of the 'window' (i.e. the screen) above the top of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
 PropFloatDyn(
-   TableOverride, ViewCabWindowBot, "Window Bottom Z Ofs."s, "Distance between the 'window' (i.e. the screen) at the bottom of the playfield"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
-PropFloatSteppedDyn(TableOverride, ViewCabRotation, "Viewport Rotation"s, ""s, 0.f, 360.f, 90.0f, 0.f);
+   TableOverride, ViewCabWindowBot, "Window Bottom Z Ofs."s, "Height of the 'window' (i.e. the screen) above the bottom of the playfield (Window mode only)"s, CMTOVPU(0.f), CMTOVPU(50.f), CMTOVPU(0.f));
+PropFloatSteppedDyn(TableOverride, ViewCabRotation, "Viewport Rotation"s, "Rotation of the rendered view in degrees (snapped to multiples of 90 degrees in Window mode)"s, 0.f, 360.f, 90.0f, 0.f);
 
 PropFloatDyn(TableOverride, Difficulty, "Difficulty"s, "Overall difficulty (affects slope, flipper size, ball trajectories scattering,...)"s, 0.f, 1.f, 1.f);
 PropFloatDyn(TableOverride, Exposure, "Camera Exposure"s, "Overall brightness scale for the rendered scene/table"s, 0.f, 2.f, 1.f);
 
 PropEnumDyn(
-   TableOverride, ToneMapper, "Tonemapper"s, "Colors too bright to be displayed by low dynamic range monitors need to be mapped into a normalized range. Different mappers come at different tradeoffs, depending on each tables setup/lighting."s, int, 0, "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s);
+   TableOverride, ToneMapper, "Tonemapper"s, "Colors too bright to be displayed by low dynamic range monitors need to be mapped into a normalized range. Different mappers come at different tradeoffs, depending on each table's setup/lighting."s, int, 0, "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s);
 
 // DMD Display profiles
 // Legacy
-PropBool(DMD, Profile1Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, true);
+PropBool(DMD, Profile1Legacy, "Legacy Renderer"s, "Use legacy DMD renderer (which ignores the dot size, sharpness, glow and unlit dot color). Other backends than BGFX always use it"s, true);
 PropInt(DMD, Profile1DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x2D52FF);
 PropInt(DMD, Profile1UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
 PropFloat(DMD, Profile1DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
@@ -767,7 +767,7 @@ PropFloat(DMD, Profile1DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.75f);
 PropFloat(DMD, Profile1DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
 PropFloat(DMD, Profile1DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
 // Classic Neon plasma DMD
-PropBool(DMD, Profile2Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
+PropBool(DMD, Profile2Legacy, "Legacy Renderer"s, "Use legacy DMD renderer (which ignores the dot size, sharpness, glow and unlit dot color). Other backends than BGFX always use it"s, false);
 PropInt(DMD, Profile2DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x2D52FF);
 PropInt(DMD, Profile2UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
 PropFloat(DMD, Profile2DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
@@ -775,7 +775,7 @@ PropFloat(DMD, Profile2DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.6f);
 PropFloat(DMD, Profile2DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
 PropFloat(DMD, Profile2DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
 // Red Led DMD (used after RoHS regulation entry into force)
-PropBool(DMD, Profile3Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
+PropBool(DMD, Profile3Legacy, "Legacy Renderer"s, "Use legacy DMD renderer (which ignores the dot size, sharpness, glow and unlit dot color). Other backends than BGFX always use it"s, false);
 PropInt(DMD, Profile3DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x1523FF);
 PropInt(DMD, Profile3UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
 PropFloat(DMD, Profile3DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
@@ -783,7 +783,7 @@ PropFloat(DMD, Profile3DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.75f);
 PropFloat(DMD, Profile3DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
 PropFloat(DMD, Profile3DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
 // Green Led
-PropBool(DMD, Profile4Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
+PropBool(DMD, Profile4Legacy, "Legacy Renderer"s, "Use legacy DMD renderer (which ignores the dot size, sharpness, glow and unlit dot color). Other backends than BGFX always use it"s, false);
 PropInt(DMD, Profile4DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x23FF15);
 PropInt(DMD, Profile4UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
 PropFloat(DMD, Profile4DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
@@ -791,7 +791,7 @@ PropFloat(DMD, Profile4DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.75f);
 PropFloat(DMD, Profile4DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
 PropFloat(DMD, Profile4DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
 // Yellow Led
-PropBool(DMD, Profile5Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
+PropBool(DMD, Profile5Legacy, "Legacy Renderer"s, "Use legacy DMD renderer (which ignores the dot size, sharpness, glow and unlit dot color). Other backends than BGFX always use it"s, false);
 PropInt(DMD, Profile5DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0x23FFFF);
 PropInt(DMD, Profile5UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
 PropFloat(DMD, Profile5DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
@@ -799,7 +799,7 @@ PropFloat(DMD, Profile5DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.75f);
 PropFloat(DMD, Profile5DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
 PropFloat(DMD, Profile5DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
 // Generic Plasma
-PropBool(DMD, Profile6Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
+PropBool(DMD, Profile6Legacy, "Legacy Renderer"s, "Use legacy DMD renderer (which ignores the dot size, sharpness, glow and unlit dot color). Other backends than BGFX always use it"s, false);
 PropInt(DMD, Profile6DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0xFFFFFF);
 PropInt(DMD, Profile6UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
 PropFloat(DMD, Profile6DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
@@ -807,7 +807,7 @@ PropFloat(DMD, Profile6DotSize, "Dot Size"s, "Dot size"s, 0.001f, 1.f, 0.6f);
 PropFloat(DMD, Profile6DotSharpness, "Dot Sharpness"s, "Sharpness of the dots (from round to squares)"s, 0.f, 1.f, 0.90f);
 PropFloat(DMD, Profile6DiffuseGlow, "DMD Diffuse Glow"s, "Glow of dots on the back of the DMD (between dots, against glass)"s, 0.f, 10.f, 0.1f);
 // Generic Led
-PropBool(DMD, Profile7Legacy, "Legacy Renderer"s, "Use legacy DMD renderer"s, false);
+PropBool(DMD, Profile7Legacy, "Legacy Renderer"s, "Use legacy DMD renderer (which ignores the dot size, sharpness, glow and unlit dot color). Other backends than BGFX always use it"s, false);
 PropInt(DMD, Profile7DotTint, "Dot Tint"s, "Color of lit dots"s, 0x000000, 0xFFFFFF, 0xFFFFFF);
 PropInt(DMD, Profile7UnlitDotColor, "Unlit Dot Tint"s, "Color of unlit dots"s, 0x000000, 0xFFFFFF, 0x404040);
 PropFloat(DMD, Profile7DotBrightness, "Dot Brightness"s, "Dot brightness level"s, 0.001f, 100.f, 25.f);
@@ -914,8 +914,8 @@ PropEnum(Controller, DOFDropTargets, "DOF Drop Targets"s, "Hints the table scrip
 PropBool(Controller, ForceDisableB2S, "Disable B2S"s, "Legacy 'Disable B2S' hints script to avoid using B2S controller. Only works with tables using 'controller.vbs' and not using plugins for backglass rendering"s, false);
 
 // Parts Defaults: Balls
-PropFloat(DefaultPropsBall, Mass, "Ball Mass"s, ""s, 0.1f, 2.f, 1.f);
-PropFloat(DefaultPropsBall, Radius, "Ball Radius"s, ""s, 0.1f, 50.f, 25.f);
+PropFloatUnbounded(DefaultPropsBall, Mass, "Ball Mass"s, "Ball mass (1 = standard ball)"s, 1.f);
+PropFloatUnbounded(DefaultPropsBall, Radius, "Ball Radius"s, "Ball radius in VP units (25 = standard ball)"s, 25.f);
 PropBool(DefaultPropsBall, ForceReflection, "Force Reflection"s, ""s, false);
 PropBool(DefaultPropsBall, DecalMode, "Decal Mode"s, ""s, false);
 PropString(DefaultPropsBall, Image, "Ball Image"s, ""s, ""s);
@@ -926,26 +926,26 @@ PropInt(DefaultPropsBall, Color, "Color"s, ""s, 0x000000, 0xFFFFFF, 0xFFFFFF);
 PropBool(DefaultPropsBall, SphereMap, "Use Sphere Mapping"s, "Use sphere mapped 3D texturing"s, true);
 PropBool(DefaultPropsBall, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
 PropBool(DefaultPropsBall, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsBall, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsBall, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Bumper
 PropFloatUnbounded(DefaultPropsBumper, Radius, "Radius"s, ""s, 45.f);
 PropFloatUnbounded(DefaultPropsBumper, HeightScale, "HeightScale"s, ""s, 90.f);
 PropFloatUnbounded(DefaultPropsBumper, RingSpeed, "RingSpeed"s, ""s, 0.5f);
 PropFloatUnbounded(DefaultPropsBumper, Orientation, "Orientation"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsBumper, Threshold, "Threshold"s, ""s, 1.f);
+PropFloatUnbounded(DefaultPropsBumper, Threshold, "Hit Threshold"s, ""s, 1.f);
 PropString(DefaultPropsBumper, Surface, "Surface"s, ""s, ""s);
 PropBool(DefaultPropsBumper, CapVisible, "CapVisible"s, ""s, true);
 PropBool(DefaultPropsBumper, BaseVisible, "BaseVisible"s, ""s, true);
 PropBool(DefaultPropsBumper, RingVisible, "RingVisible"s, ""s, true);
 PropBool(DefaultPropsBumper, SkirtVisible, "SkirtVisible"s, ""s, true);
-PropBool(DefaultPropsBumper, HasHitEvent, "HasHitEvent"s, ""s, true);
+PropBool(DefaultPropsBumper, HasHitEvent, "Has Hit Event"s, ""s, true);
 PropBool(DefaultPropsBumper, Collidable, "Collidable"s, ""s, true);
 PropFloatUnbounded(DefaultPropsBumper, Force, "Force"s, ""s, 15.f);
 PropFloatUnbounded(DefaultPropsBumper, Scatter, "Scatter"s, ""s, 0.f);
 PropBool(DefaultPropsBumper, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
 PropBool(DefaultPropsBumper, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsBumper, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsBumper, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Decal
 PropFloatUnbounded(DefaultPropsDecal, Width, "Width"s, ""s, 100.f);
@@ -960,7 +960,7 @@ PropIntUnbounded(DefaultPropsDecal, Color, "Color"s, ""s, 0x000000);
 PropBool(DefaultPropsDecal, VerticalText, "VerticalText"s, ""s, false);
 PropFloatUnbounded(DefaultPropsDecal, FontSize, "FontSize"s, ""s, 14.25f);
 PropString(DefaultPropsDecal, FontName, "FontName"s, ""s, "Arial Black"s);
-PropInt(DefaultPropsDecal, FontWeight, "FontWeight"s, ""s, 0, 900, 400); // FW_NORMAL
+PropInt(DefaultPropsDecal, FontWeight, "FontWeight"s, ""s, 0, 1000, 400); // FW_NORMAL
 PropIntUnbounded(DefaultPropsDecal, FontCharSet, "FontCharSet"s, ""s, 0);
 PropBool(DefaultPropsDecal, FontItalic, "FontItalic"s, ""s, false);
 PropBool(DefaultPropsDecal, FontUnderline, "FontUnderline"s, ""s, false);
@@ -982,7 +982,7 @@ PropIntUnbounded(DefaultPropsDispReel, DigitRange, "DigitRange"s, ""s, 9);
 PropIntUnbounded(DefaultPropsDispReel, UpdateInterval, "UpdateInterval"s, ""s, 50);
 PropInt(DefaultPropsDispReel, BackColor, "BackColor"s, ""s, 0x000000, 0xFFFFFF, RGB(64, 64, 64));
 PropBool(DefaultPropsDispReel, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsDispReel, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsDispReel, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Flasher
 PropFloatUnbounded(DefaultPropsFlasher, Height, "Height"s, ""s, 50.f);
@@ -1002,21 +1002,21 @@ PropBool(DefaultPropsFlasher, DisplayTexture, "DisplayTexture"s, ""s, false);
 PropEnum(DefaultPropsFlasher, ImageMode, "ImageMode"s, ""s, RampImageAlignment, ImageModeWrap, "ImageModeWorld"s, "ImageModeWrap"s);
 PropEnum(DefaultPropsFlasher, Filter, "Filter"s, ""s, Filters, Filter_Overlay, "Filter_None"s, "Filter_Additive"s, "Filter_Overlay"s, "Filter_Multiply"s, "Filter_Screen"s);
 PropBool(DefaultPropsFlasher, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsFlasher, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsFlasher, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Flipper
 PropFloatUnbounded(DefaultPropsFlipper, StartAngle, "StartAngle"s, ""s, 121.f);
 PropFloatUnbounded(DefaultPropsFlipper, EndAngle, "EndAngle"s, ""s, 70.f);
 PropFloatUnbounded(DefaultPropsFlipper, BaseRadius, "BaseRadius"s, ""s, 21.5f); // 15
 PropFloatUnbounded(DefaultPropsFlipper, EndRadius, "EndRadius"s, ""s, 13.f); // 6
-PropFloatUnbounded(DefaultPropsFlipper, Length, "Length"s, ""s, 130.f); // 80
-PropFloatUnbounded(DefaultPropsFlipper, MaxDifLength, "MaxDifLength"s, ""s, 0.f);
+PropFloatUnbounded(DefaultPropsFlipper, Length, "Length (min difficulty)"s, ""s, 130.f); // 80
+PropFloatUnbounded(DefaultPropsFlipper, MaxDifLength, "Length (max difficulty)"s, "Flipper length at maximum difficulty (0 = same as Length)"s, 0.f);
 PropIntUnbounded(DefaultPropsFlipper, Color, "Color"s, ""s, (int)RGB(255, 255, 255));
 PropIntUnbounded(DefaultPropsFlipper, RubberColor, "RubberColor"s, ""s, (int)RGB(128, 50, 50));
 PropString(DefaultPropsFlipper, Surface, "Surface"s, ""s, ""s);
 PropFloatUnbounded(DefaultPropsFlipper, Height, "Height"s, ""s, 50.f);
 PropFloatUnbounded(DefaultPropsFlipper, RubberThickness, "RubberThickness"s, ""s, 7.f);
-PropFloatUnbounded(DefaultPropsFlipper, RubberHeight, "RubberHeight"s, ""s, 19.f);
+PropFloatUnbounded(DefaultPropsFlipper, RubberHeight, "Rubber Offset"s, ""s, 19.f);
 PropFloatUnbounded(DefaultPropsFlipper, RubberWidth, "RubberWidth"s, ""s, 24.f);
 PropBool(DefaultPropsFlipper, Visible, "Visible"s, ""s, true);
 PropBool(DefaultPropsFlipper, Enabled, "Enabled"s, ""s, true);
@@ -1032,7 +1032,7 @@ PropFloatUnbounded(DefaultPropsFlipper, Friction, "Friction"s, ""s, 0.6f);
 PropFloatUnbounded(DefaultPropsFlipper, RampUp, "RampUp"s, ""s, 3.0f);
 PropBool(DefaultPropsFlipper, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
 PropBool(DefaultPropsFlipper, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsFlipper, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsFlipper, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Gate
 PropFloatUnbounded(DefaultPropsGate, Length, "Length"s, ""s, 100.f);
@@ -1041,19 +1041,19 @@ PropFloatUnbounded(DefaultPropsGate, Rotation, "Rotation"s, ""s, -90.f);
 PropBool(DefaultPropsGate, ShowBracket, "ShowBracket"s, ""s, true);
 PropEnum1(DefaultPropsGate, GateType, "GateType"s, ""s, GateType, GateWireW, "GateWireW"s, "GateWireRectangle"s, "GatePlate"s, "GateLongPlate"s);
 PropBool(DefaultPropsGate, Collidable, "Collidable"s, ""s, true);
-PropFloatUnbounded(DefaultPropsGate, AngleMin, "AngleMin"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsGate, AngleMax, "AngleMax"s, ""s, (float)(M_PI / 2.0));
+PropFloatUnbounded(DefaultPropsGate, AngleMin, "Close Angle"s, "Close angle, in radians"s, 0.f);
+PropFloatUnbounded(DefaultPropsGate, AngleMax, "Open Angle"s, "Open angle, in radians"s, (float)(M_PI / 2.0));
 PropBool(DefaultPropsGate, Visible, "Visible"s, ""s, true);
 PropString(DefaultPropsGate, Surface, "Surface"s, ""s, ""s);
 PropBool(DefaultPropsGate, TwoWay, "TwoWay"s, ""s, true);
 PropFloatUnbounded(DefaultPropsGate, Elasticity, "Elasticity"s, ""s, 0.3f);
 PropFloatUnbounded(DefaultPropsGate, Friction, "Friction"s, ""s, 0.02f);
-PropFloatUnbounded(DefaultPropsGate, AntiFriction, "AntiFriction"s, ""s, 0.985f);
+PropFloatUnbounded(DefaultPropsGate, AntiFriction, "Damping"s, ""s, 0.985f);
 PropFloatUnbounded(DefaultPropsGate, Scatter, "Scatter"s, ""s, 0.f);
 PropFloatUnbounded(DefaultPropsGate, GravityFactor, "GravityFactor"s, ""s, 0.25f);
 PropBool(DefaultPropsGate, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
 PropBool(DefaultPropsGate, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsGate, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsGate, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: HitTarget
 PropBool(DefaultPropsHitTarget, LegacyMode, "LegacyMode"s, ""s, false);
@@ -1069,7 +1069,7 @@ PropString(DefaultPropsHitTarget, Image, "Image"s, ""s, ""s);
 PropEnum1(DefaultPropsHitTarget, TargetType, "TargetType"s, ""s, TargetType, DropTargetSimple, "DropTargetBeveled"s, "DropTargetSimple"s, "HitTargetRound"s, "HitTargetRectangle"s,
    "HitFatTargetRectangle"s, "HitFatTargetSquare"s, "DropTargetFlatSimple"s, "HitFatTargetSlim"s, "HitTargetSlim"s);
 PropFloatUnbounded(DefaultPropsHitTarget, HitThreshold, "HitThreshold"s, ""s, 2.f);
-PropFloatUnbounded(DefaultPropsHitTarget, DropSpeed, "DropSpeed"s, ""s, 0.2f); // Default should depend on target type: 0.5 for beveled, simple & flat simple, 0.2 otherwise
+PropFloatUnbounded(DefaultPropsHitTarget, DropSpeed, "Drop Speed"s, "Speed of the drop/raise animation (negative: default of the target type, 0.5 for drop targets, 0.2 for hit targets)"s, -1.f);
 PropBool(DefaultPropsHitTarget, Collidable, "Collidable"s, ""s, true);
 PropFloatUnbounded(DefaultPropsHitTarget, DisableLighting, "DisableLighting"s, ""s, 0.f);
 PropFloatUnbounded(DefaultPropsHitTarget, DisableLightingBelow, "DisableLightingBelow"s, ""s, 1.f);
@@ -1080,7 +1080,7 @@ PropFloatUnbounded(DefaultPropsHitTarget, Friction, "Friction"s, ""s, 0.2f);
 PropFloatUnbounded(DefaultPropsHitTarget, Scatter, "Scatter"s, ""s, 5.f);
 PropBool(DefaultPropsHitTarget, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
 PropBool(DefaultPropsHitTarget, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsHitTarget, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsHitTarget, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Kicker
 PropFloatUnbounded(DefaultPropsKicker, Radius, "Radius"s, ""s, 25.f);
@@ -1095,7 +1095,7 @@ PropBool(DefaultPropsKicker, FallThrough, "FallThrough"s, ""s, false);
 PropBool(DefaultPropsKicker, Legacy, "Legacy"s, ""s, true);
 PropFloatUnbounded(DefaultPropsKicker, Scatter, "Scatter"s, ""s, 0.f);
 PropBool(DefaultPropsKicker, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsKicker, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsKicker, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Light
 PropFloatUnbounded(DefaultPropsLight, Falloff, "Falloff"s, ""s, 50.f);
@@ -1107,21 +1107,21 @@ PropString(DefaultPropsLight, OffImage, "OffImage"s, ""s, ""s);
 PropString(DefaultPropsLight, BlinkPattern, "BlinkPattern"s, ""s, "10"s);
 PropIntUnbounded(DefaultPropsLight, BlinkInterval, "BlinkInterval"s, ""s, 125);
 PropFloatUnbounded(DefaultPropsLight, Intensity, "Intensity"s, ""s, 10.f);
-PropFloatUnbounded(DefaultPropsLight, TransmissionScale, "TransmissionScale"s, ""s, 0.f); // FIXME used to be 0.5 as a default unless from click, then 0
+PropFloatUnbounded(DefaultPropsLight, TransmissionScale, "TransmissionScale"s, ""s, 0.5f);
 PropString(DefaultPropsLight, Surface, "Surface"s, ""s, ""s);
-PropFloatUnbounded(DefaultPropsLight, FadeSpeedUp, "FadeSpeedUp"s, ""s, 10.f * (float)(1.0 / 200.0)); // Default: 200ms up (slow incandescent bulb)
-PropFloatUnbounded(DefaultPropsLight, FadeSpeedDown, "FadeSpeedDown"s, ""s, 10.f * (float)(1.0 / 500.0)); // Default: 500ms down (slow incandescent bulb)
+PropFloatUnbounded(DefaultPropsLight, FadeSpeedUp, "FadeSpeedUp"s, "Fade-in speed, in intensity per ms (fade time = Intensity / value)"s, 10.f * (float)(1.0 / 200.0)); // Default: 200ms up at intensity 10 (slow incandescent bulb)
+PropFloatUnbounded(DefaultPropsLight, FadeSpeedDown, "FadeSpeedDown"s, "Fade-out speed, in intensity per ms (fade time = Intensity / value)"s, 10.f * (float)(1.0 / 500.0)); // Default: 500ms down at intensity 10 (slow incandescent bulb)
 PropBool(DefaultPropsLight, Bulb, "Bulb"s, ""s, false);
 PropBool(DefaultPropsLight, ImageMode, "ImageMode"s, ""s, false);
 PropBool(DefaultPropsLight, ShowBulbMesh, "ShowBulbMesh"s, ""s, false);
 PropBool(DefaultPropsLight, StaticBulbMesh, "StaticBulbMesh"s, ""s, true);
 PropBool(DefaultPropsLight, ShowReflectionOnBall, "ShowReflectionOnBall"s, ""s, true);
-PropFloatUnbounded(DefaultPropsLight, ScaleBulbMesh, "ScaleBulbMesh"s, ""s, 20.f);
+PropFloatUnbounded(DefaultPropsLight, ScaleBulbMesh, "Bulb Mesh Radius"s, ""s, 20.f);
 PropFloatUnbounded(DefaultPropsLight, BulbModulateVsAdd, "BulbModulateVsAdd"s, ""s, 0.9f);
 PropFloatUnbounded(DefaultPropsLight, BulbHaloHeight, "BulbHaloHeight"s, ""s, 28.f);
 PropBool(DefaultPropsLight, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
 PropBool(DefaultPropsLight, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsLight, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsLight, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: LightSeq
 PropIntUnbounded(DefaultPropsLightSeq, UpdateInterval, "UpdateInterval"s, ""s, 25);
@@ -1129,20 +1129,19 @@ PropString(DefaultPropsLightSeq, Collection, "Collection"s, ""s, ""s);
 PropFloatUnbounded(DefaultPropsLightSeq, CenterX, "CenterX"s, ""s, (float)(EDITOR_BG_WIDTH / 2));
 PropFloatUnbounded(DefaultPropsLightSeq, CenterY, "CenterY"s, ""s, (float)((2 * EDITOR_BG_WIDTH) / 2));
 PropBool(DefaultPropsLightSeq, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsLightSeq, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsLightSeq, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: PartGroup
 PropBool(DefaultPropsPartGroup, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsPartGroup, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsPartGroup, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Plunger
-PropFloatUnbounded(DefaultPropsPlunger, Height, "Height"s, ""s, 20.f);
-PropFloatUnbounded(DefaultPropsPlunger, Width, "Width"s, ""s, 25.f);
+PropFloatUnbounded(DefaultPropsPlunger, Height, "Bottom Margin"s, "Length of the plunger housing behind the tip"s, 20.f);
+PropFloatUnbounded(DefaultPropsPlunger, Width, "Half Width"s, ""s, 25.f);
 PropFloatUnbounded(DefaultPropsPlunger, ZAdjust, "ZAdjust"s, ""s, 0.f);
 PropFloatUnbounded(DefaultPropsPlunger, Stroke, "Stroke"s, ""s, 80.f);
 PropFloatUnbounded(DefaultPropsPlunger, PullSpeed, "PullSpeed"s, ""s, 5.f);
 PropEnum1(DefaultPropsPlunger, PlungerType, "PlungerType"s, ""s, PlungerType, PlungerTypeModern, "PlungerTypeModern"s, "PlungerTypeFlat"s, "PlungerTypeCustom"s);
-PropInt(DefaultPropsPlunger, Color, "Color"s, ""s, 0x000000, 0xFFFFFF, RGB(76, 76, 76));
 PropString(DefaultPropsPlunger, Image, "Image"s, ""s, ""s);
 PropIntUnbounded(DefaultPropsPlunger, AnimFrames, "AnimFrames"s, ""s, 1);
 PropString(DefaultPropsPlunger, Surface, "Surface"s, ""s, ""s);
@@ -1159,17 +1158,17 @@ PropFloatUnbounded(DefaultPropsPlunger, CustomSpringGauge, "CustomSpringGauge"s,
 PropFloatUnbounded(DefaultPropsPlunger, CustomSpringLoops, "CustomSpringLoops"s, ""s, 8.0f);
 PropFloatUnbounded(DefaultPropsPlunger, CustomSpringEndLoops, "CustomSpringEndLoops"s, ""s, 2.5f);
 PropFloatUnbounded(DefaultPropsPlunger, ReleaseSpeed, "ReleaseSpeed"s, ""s, 80.f);
-PropFloatUnbounded(DefaultPropsPlunger, MechStrength, "MechStrength"s, ""s, 85.f);
-PropFloatUnbounded(DefaultPropsPlunger, ParkPosition, "ParkPosition"s, ""s,
+PropFloatUnbounded(DefaultPropsPlunger, MechStrength, "Mech Strength"s, "Spring strength coupling the plunger to a mechanical (analog) plunger input"s, 85.f);
+PropFloatUnbounded(DefaultPropsPlunger, ParkPosition, "Park Position"s, "Rest position, as a fraction of the stroke (0..1)"s,
    (float)(0.5 / 3.0)); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position //!! 0.01f better for some HW-plungers, but this seems to be rather a firmware/config issue
 PropFloatUnbounded(DefaultPropsPlunger, ScatterVelocity, "ScatterVelocity"s, ""s, 0.f);
 PropFloatUnbounded(DefaultPropsPlunger, MomentumXfer, "MomentumXfer"s, ""s, 1.f);
 PropBool(DefaultPropsPlunger, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
 PropBool(DefaultPropsPlunger, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsPlunger, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsPlunger, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Primitive
-PropInt(DefaultPropsPrimitive, Sides, "Sides"s, ""s, 0, 100 /* Max_Primitive_Sides */, 4);
+PropInt(DefaultPropsPrimitive, Sides, "Sides"s, "Number of sides of the legacy (built-in) primitive mesh"s, 3, 100 /* Max_Primitive_Sides */, 4);
 PropInt(DefaultPropsPrimitive, SideColor, "SideColor"s, ""s, 0x000000, 0xFFFFFF, RGB(150, 150, 150));
 PropBool(DefaultPropsPrimitive, Visible, "Visible"s, ""s, true);
 PropBool(DefaultPropsPrimitive, StaticRendering, "StaticRendering"s, ""s, true);
@@ -1178,15 +1177,15 @@ PropFloatUnbounded(DefaultPropsPrimitive, Position_Z, "Position_Z"s, ""s, 0.f);
 PropFloatUnbounded(DefaultPropsPrimitive, Size_X, "Size_X"s, ""s, 100.f);
 PropFloatUnbounded(DefaultPropsPrimitive, Size_Y, "Size_Y"s, ""s, 100.f);
 PropFloatUnbounded(DefaultPropsPrimitive, Size_Z, "Size_Z"s, ""s, 100.f);
-PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra0, "RotAndTra0"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra1, "RotAndTra1"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra2, "RotAndTra2"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra3, "RotAndTra3"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra4, "RotAndTra4"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra5, "RotAndTra5"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra6, "RotAndTra6"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra7, "RotAndTra7"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra8, "RotAndTra8"s, ""s, 0.f);
+PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra0, "Orientation X"s, "Orientation around X, in degrees"s, 0.f);
+PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra1, "Orientation Y"s, "Orientation around Y, in degrees"s, 0.f);
+PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra2, "Orientation Z"s, "Orientation around Z, in degrees"s, 0.f);
+PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra3, "Translation X"s, "Additional X offset applied after the base transform"s, 0.f);
+PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra4, "Translation Y"s, "Additional Y offset applied after the base transform"s, 0.f);
+PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra5, "Translation Z"s, "Additional Z offset applied after the base transform"s, 0.f);
+PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra6, "Rotation X"s, "Additional rotation around X, in degrees"s, 0.f);
+PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra7, "Rotation Y"s, "Additional rotation around Y, in degrees"s, 0.f);
+PropFloatUnbounded(DefaultPropsPrimitive, RotAndTra8, "Rotation Z"s, "Additional rotation around Z, in degrees"s, 0.f);
 PropString(DefaultPropsPrimitive, Image, "Image"s, ""s, ""s);
 PropString(DefaultPropsPrimitive, NormalMap, "NormalMap"s, ""s, ""s);
 PropBool(DefaultPropsPrimitive, HitEvent, "HitEvent"s, ""s, false);
@@ -1210,7 +1209,7 @@ PropFloatUnbounded(DefaultPropsPrimitive, Friction, "Friction"s, ""s, 0.3f);
 PropFloatUnbounded(DefaultPropsPrimitive, Scatter, "Scatter"s, ""s, 0.f);
 PropBool(DefaultPropsPrimitive, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
 PropBool(DefaultPropsPrimitive, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsPrimitive, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsPrimitive, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Ramp
 PropFloatUnbounded(DefaultPropsRamp, Length, "Length"s, ""s, 400.f);
@@ -1239,7 +1238,7 @@ PropFloatUnbounded(DefaultPropsRamp, Friction, "Friction"s, ""s, 0.3f);
 PropFloatUnbounded(DefaultPropsRamp, Scatter, "Scatter"s, ""s, 0.f);
 PropBool(DefaultPropsRamp, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
 PropBool(DefaultPropsRamp, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsRamp, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsRamp, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Rubber
 PropFloatUnbounded(DefaultPropsRubber, HitHeight, "HitHeight"s, ""s, 25.f);
@@ -1260,29 +1259,29 @@ PropFloatUnbounded(DefaultPropsRubber, ElasticityFalloff, "ElasticityFalloff"s, 
 PropFloatUnbounded(DefaultPropsRubber, Friction, "Friction"s, ""s, 0.6f);
 PropFloatUnbounded(DefaultPropsRubber, Scatter, "Scatter"s, ""s, 5.f);
 PropBool(DefaultPropsRubber, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsRubber, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsRubber, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Spinner
 PropFloatUnbounded(DefaultPropsSpinner, Length, "Length"s, ""s, 80.f);
 PropFloatUnbounded(DefaultPropsSpinner, Rotation, "Rotation"s, ""s, 0.f);
 PropBool(DefaultPropsSpinner, ShowBracket, "ShowBracket"s, ""s, true);
 PropFloatUnbounded(DefaultPropsSpinner, Height, "Height"s, ""s, 60.f); // Note: this property used to be an int (scaled by 1000)
-PropFloatUnbounded(DefaultPropsSpinner, AngleMax, "AngleMax"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsSpinner, AngleMin, "AngleMin"s, ""s, 0.f);
+PropFloatUnbounded(DefaultPropsSpinner, AngleMax, "Angle Max"s, "Maximum angle, in degrees"s, 0.f);
+PropFloatUnbounded(DefaultPropsSpinner, AngleMin, "Angle Min"s, "Minimum angle, in degrees"s, 0.f);
 PropBool(DefaultPropsSpinner, Visible, "Visible"s, ""s, true);
 PropString(DefaultPropsSpinner, Image, "Image"s, ""s, ""s);
 PropString(DefaultPropsSpinner, Surface, "Surface"s, ""s, ""s);
 PropFloatUnbounded(DefaultPropsSpinner, Elasticity, "Elasticity"s, ""s, 0.3f);
-PropFloatUnbounded(DefaultPropsSpinner, AntiFriction, "AntiFriction"s, ""s, 0.9879f);
+PropFloatUnbounded(DefaultPropsSpinner, AntiFriction, "Damping"s, ""s, 0.9879f);
 PropBool(DefaultPropsSpinner, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
 PropBool(DefaultPropsSpinner, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsSpinner, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsSpinner, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
-// Parts Defaults: Surface => Wall or Target
+// Parts Defaults: Surface (Wall)
 PropFloatUnbounded(DefaultPropsWall, Width, "Width"s, ""s, 50.f);
 PropFloatUnbounded(DefaultPropsWall, Length, "Length"s, ""s, 50.f);
 PropFloatUnbounded(DefaultPropsWall, Elasticity, "Elasticity"s, ""s, 0.3f);
-PropFloatUnbounded(DefaultPropsWall, ElasticityFallOff, "ElasticityFallOff"s, ""s, 0.0f);
+PropFloatUnbounded(DefaultPropsWall, ElasticityFallOff, "Elasticity Falloff"s, ""s, 0.0f);
 PropFloatUnbounded(DefaultPropsWall, Friction, "Friction"s, ""s, 0.3f);
 PropFloatUnbounded(DefaultPropsWall, Scatter, "Scatter"s, ""s, 0.f);
 PropBool(DefaultPropsWall, HitEvent, "HitEvent"s, ""s, false);
@@ -1292,10 +1291,10 @@ PropString(DefaultPropsWall, TopImage, "TopImage"s, ""s, ""s);
 PropString(DefaultPropsWall, SideImage, "SideImage"s, ""s, ""s);
 PropBool(DefaultPropsWall, Droppable, "Droppable"s, ""s, false);
 PropBool(DefaultPropsWall, Flipbook, "Flipbook"s, ""s, false);
-PropBool(DefaultPropsWall, IsBottomSolid, "IsBottomSolid"s, ""s, false);
+PropBool(DefaultPropsWall, IsBottomSolid, "IsBottomSolid"s, ""s, true);
 PropFloatUnbounded(DefaultPropsWall, HeightBottom, "HeightBottom"s, ""s, 0.f);
 PropFloatUnbounded(DefaultPropsWall, HeightTop, "HeightTop"s, ""s, 50.f);
-PropBool(DefaultPropsWall, DisplayTexture, "DisplayTexture"s, ""s, true);
+PropBool(DefaultPropsWall, DisplayTexture, "DisplayTexture"s, ""s, false);
 PropFloatUnbounded(DefaultPropsWall, SlingshotForce, "SlingshotForce"s, ""s, 80.f);
 PropBool(DefaultPropsWall, SlingshotAnimation, "SlingshotAnimation"s, ""s, true);
 PropBool(DefaultPropsWall, Visible, "Visible"s, ""s, true);
@@ -1305,35 +1304,7 @@ PropFloatUnbounded(DefaultPropsWall, DisableLighting, "DisableLighting"s, ""s, 0
 PropFloatUnbounded(DefaultPropsWall, DisableLightingBelow, "DisableLightingBelow"s, ""s, 1.f);
 PropBool(DefaultPropsWall, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
 PropBool(DefaultPropsWall, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsWall, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
-
-PropFloatUnbounded(DefaultPropsTarget, Width, "Width"s, ""s, 50.f);
-PropFloatUnbounded(DefaultPropsTarget, Length, "Length"s, ""s, 50.f);
-PropFloatUnbounded(DefaultPropsTarget, Elasticity, "Elasticity"s, ""s, 0.3f);
-PropFloatUnbounded(DefaultPropsTarget, ElasticityFallOff, "ElasticityFallOff"s, ""s, 0.0f);
-PropFloatUnbounded(DefaultPropsTarget, Friction, "Friction"s, ""s, 0.3f);
-PropFloatUnbounded(DefaultPropsTarget, Scatter, "Scatter"s, ""s, 0.f);
-PropBool(DefaultPropsTarget, HitEvent, "HitEvent"s, ""s, false);
-PropFloatUnbounded(DefaultPropsTarget, HitThreshold, "HitThreshold"s, ""s, 2.0f);
-PropFloatUnbounded(DefaultPropsTarget, SlingshotThreshold, "SlingshotThreshold"s, ""s, 0.0f);
-PropString(DefaultPropsTarget, TopImage, "TopImage"s, ""s, ""s);
-PropString(DefaultPropsTarget, SideImage, "SideImage"s, ""s, ""s);
-PropBool(DefaultPropsTarget, Droppable, "Droppable"s, ""s, false);
-PropBool(DefaultPropsTarget, Flipbook, "Flipbook"s, ""s, false);
-PropBool(DefaultPropsTarget, IsBottomSolid, "IsBottomSolid"s, ""s, false);
-PropFloatUnbounded(DefaultPropsTarget, HeightBottom, "HeightBottom"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsTarget, HeightTop, "HeightTop"s, ""s, 50.f);
-PropBool(DefaultPropsTarget, DisplayTexture, "DisplayTexture"s, ""s, true);
-PropFloatUnbounded(DefaultPropsTarget, SlingshotForce, "SlingshotForce"s, ""s, 80.f);
-PropBool(DefaultPropsTarget, SlingshotAnimation, "SlingshotAnimation"s, ""s, true);
-PropBool(DefaultPropsTarget, Visible, "Visible"s, ""s, true);
-PropBool(DefaultPropsTarget, SideVisible, "SideVisible"s, ""s, true);
-PropBool(DefaultPropsTarget, Collidable, "Collidable"s, ""s, true);
-PropFloatUnbounded(DefaultPropsTarget, DisableLighting, "DisableLighting"s, ""s, 0.f);
-PropFloatUnbounded(DefaultPropsTarget, DisableLightingBelow, "DisableLightingBelow"s, ""s, 1.f);
-PropBool(DefaultPropsTarget, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
-PropBool(DefaultPropsTarget, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsTarget, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsWall, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Textbox
 PropFloatUnbounded(DefaultPropsTextbox, Width, "Width"s, ""s, 100.f);
@@ -1347,17 +1318,17 @@ PropBool(DefaultPropsTextbox, DMD, "DMD"s, ""s, false);
 PropString(DefaultPropsTextbox, Text, "Text"s, ""s, ""s);
 PropFloatUnbounded(DefaultPropsTextbox, FontSize, "FontSize"s, ""s, 14.25f);
 PropString(DefaultPropsTextbox, FontName, "FontName"s, ""s, "Arial Black"s);
-PropInt(DefaultPropsTextbox, FontWeight, "FontWeight"s, ""s, 0, 900, 400); // FW_NORMAL
+PropInt(DefaultPropsTextbox, FontWeight, "FontWeight"s, ""s, 0, 1000, 400); // FW_NORMAL
 PropIntUnbounded(DefaultPropsTextbox, FontCharSet, "FontCharSet"s, ""s, 0);
 PropBool(DefaultPropsTextbox, FontItalic, "FontItalic"s, ""s, false);
 PropBool(DefaultPropsTextbox, FontUnderline, "FontUnderline"s, ""s, false);
 PropBool(DefaultPropsTextbox, FontStrikeThrough, "FontStrikeThrough"s, ""s, false);
 PropBool(DefaultPropsTextbox, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsTextbox, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsTextbox, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Timer
 PropBool(DefaultPropsTimer, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsTimer, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsTimer, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Parts Defaults: Trigger
 PropFloatUnbounded(DefaultPropsTrigger, Radius, "Radius"s, ""s, 25.f);
@@ -1373,7 +1344,7 @@ PropString(DefaultPropsTrigger, Surface, "Surface"s, ""s, ""s);
 PropFloatUnbounded(DefaultPropsTrigger, AnimSpeed, "AnimSpeed"s, ""s, 1.f);
 PropBool(DefaultPropsTrigger, ReflectionEnabled, "Reflection Enabled"s, ""s, true);
 PropBool(DefaultPropsTrigger, TimerEnabled, "Timer Enabled"s, ""s, false);
-PropInt(DefaultPropsTrigger, TimerInterval, "Timer Interval"s, ""s, -2, 10000, 100);
+PropInt(DefaultPropsTrigger, TimerInterval, "Timer Interval"s, "Timer interval in milliseconds (-1 = once per frame, -2 = on each game logic update)"s, -2, 10000, 100);
 
 // Default core plugins enable state
 PropBoolDyn(PluginAltSound, Enable, "Enable"s, "Enable AltSound plugin"s, true);
@@ -1388,7 +1359,7 @@ PropBoolDyn(PluginWMP, Enable, "Enable"s, "Enable WMP plugin"s, true);
 PropBoolDyn(PluginVNI, Enable, "Enable"s, "Enable VNI plugin"s, true);
 
 // Standalone
-PropEnumWithMin(Standalone, RenderingModeOverride, "Override rendering mode"s, ""s, int, -1, -1, "Default"s, "2D"s, "Stereo 3D"s, "VR"s);
+PropEnumWithMin(Standalone, RenderingModeOverride, "Override rendering mode"s, "Rendering mode reported to table scripts (Table.RenderingMode). Does not change the actual rendering"s, int, -1, -1, "Default"s, "2D"s, "Stereo 3D"s, "VR"s);
 
 // Editor settings
 PropIntUnbounded(Editor, WindowLeft, "WindowLeft"s, "Main window left"s, -1);
@@ -1455,12 +1426,12 @@ PropIntUnbounded(Editor, WhereUsedWidth, "WhereUsedWidth"s, "Where-used window w
 PropIntUnbounded(Editor, WhereUsedHeight, "WhereUsedHeight"s, "Where-used window height"s, 800);
 PropIntUnbounded(Editor, CollectionMngPosX, "CollectionMngPosX"s, "Collection Manager window X position"s, 0);
 PropIntUnbounded(Editor, CollectionMngPosY, "CollectionMngPosY"s, "Collection Manager window Y position"s, 0);
-PropBool(Editor, SelectTableOnStart, "SelectTableOnStart"s, "Open a file/table select dialog on editor startup"s, true);
-PropBool(Editor, SelectTableOnPlayerClose, "SelectTableOnPlayerClose"s, "Open a file/table select dialog on player close"s, true); // FIXME does not seem to be used anywhere
+PropBool(Editor, SelectTableOnStart, "Select Table on Start"s, "Open a file/table select dialog on editor startup"s, true);
+PropBool(Editor, SelectTableOnPlayerClose, "Select Table on Player Close"s, "When a table was selected at startup ('Select Table on Start'), closing the player closes it and opens the table selection again"s, true);
 PropBool(Editor, ShowDragPoints, "ShowDragPoints"s, "Show Drag points in viewport/editor"s, false);
 PropBool(Editor, DrawLightCenters, "DrawLightCenters"s, "Show Light centers in viewport/editor"s, false);
 PropBool(Editor, AutoSaveOn, "AutoSaveOn"s, "Enable Autosave for table(s)"s, true);
-PropIntUnbounded(Editor, AutoSaveTime, "AutoSaveTime"s, "Time for the Autosave intervals"s, 10);
+PropIntUnbounded(Editor, AutoSaveTime, "AutoSave Time"s, "Autosave interval in minutes"s, 10);
 PropIntUnbounded(Editor, GridSize, "GridSize"s, "Grid size in viewport/editor"s, 50);
 PropBool(Editor, GroupElementsInCollection, "GroupElementsInCollection"s, "Group Elements in a collection in viewport/editor"s, true);
 PropInt(Editor, DefaultMaterialColor, "DefaultMaterialColor"s, "Default material color in viewport/editor"s, 0x000000, 0xFFFFFF, 0xB469FF);
@@ -1479,7 +1450,7 @@ PropBool(Editor, ScriptEditorWordWrap, "Script Editor Word Wrap"s, "Wrap long li
 PropBool(Editor, ScriptEditorShowMinimap, "Script Editor Minimap"s, "Show the document minimap in the script code editor"s, false);
 PropBool(Editor, ScriptEditorShowWhitespace, "Script Editor Whitespace"s, "Show whitespace and tabulation glyphs in the script code editor"s, false);
 PropFloatUnbounded(Editor, ThrowBallMass, "ThrowBallMass"s, "Mass of thrown ball in 'throw ball' debugging mode"s, 1.f);
-PropIntUnbounded(Editor, ThrowBallSize, "ThrowBallSize"s, "Size of thrown ball in 'throw ball' debugging mode"s, 50);
+PropIntUnbounded(Editor, ThrowBallSize, "ThrowBallSize"s, "Diameter of the thrown ball in 'throw ball' debugging mode (VP units)"s, 50);
 PropBool(Editor, RenderSolid, "RenderSolid"s, "Render solid in viewport/editor"s, true);
 
 // Live Editor (ImGui based live table editor)
@@ -1507,7 +1478,7 @@ PropString(CVEdit, EverythingElse_Font, "EverythingElse_Font"s, ""s, "Consolas"s
 PropInt(CVEdit, EverythingElse_FontWeight, "EverythingElse_FontWeight"s, ""s, 0, 1000, 400);
 PropBool(CVEdit, EverythingElse_FontItalic, "EverythingElse_FontItalic"s, ""s, false);
 PropBool(CVEdit, EverythingElse_FontUnderline, "EverythingElse_FontUnderline"s, ""s, false);
-PropBool(CVEdit, EverythingElse_FontStrike, "EverythingElse"s, ""s, false);
+PropBool(CVEdit, EverythingElse_FontStrike, "EverythingElse_FontStrike"s, ""s, false);
 
 PropBool(CVEdit, Default, "Default"s, ""s, true);
 PropInt(CVEdit, Default_color, "Default_color"s, ""s, 0x000000, 0xFFFFFF, RGB(0, 0, 0));
@@ -1516,25 +1487,25 @@ PropString(CVEdit, Default_Font, "Default_Font"s, ""s, "Consolas"s);
 PropInt(CVEdit, Default_FontWeight, "Default_FontWeight"s, ""s, 0, 1000, 400);
 PropBool(CVEdit, Default_FontItalic, "Default_FontItalic"s, ""s, false);
 PropBool(CVEdit, Default_FontUnderline, "Default_FontUnderline"s, ""s, false);
-PropBool(CVEdit, Default_FontStrike, "Default"s, ""s, false);
+PropBool(CVEdit, Default_FontStrike, "Default_FontStrike"s, ""s, false);
 
 PropBool(CVEdit, ShowVBS, "ShowVBS"s, ""s, true);
-PropInt(CVEdit, ShowVBS_color, "ShowVBS_color"s, ""s, 0x000000, 0xFFFFFF, RGB(0, 0, 0));
+PropInt(CVEdit, ShowVBS_color, "ShowVBS_color"s, ""s, 0x000000, 0xFFFFFF, RGB(0, 0, 160));
 PropIntUnbounded(CVEdit, ShowVBS_FontPointSize, "ShowVBS_FontPointSize"s, ""s, 10);
 PropString(CVEdit, ShowVBS_Font, "ShowVBS_Font"s, ""s, "Consolas"s);
 PropInt(CVEdit, ShowVBS_FontWeight, "ShowVBS_FontWeight"s, ""s, 0, 1000, 400);
 PropBool(CVEdit, ShowVBS_FontItalic, "ShowVBS_FontItalic"s, ""s, false);
 PropBool(CVEdit, ShowVBS_FontUnderline, "ShowVBS_FontUnderline"s, ""s, false);
-PropBool(CVEdit, ShowVBS_FontStrike, "ShowVBS"s, ""s, false);
+PropBool(CVEdit, ShowVBS_FontStrike, "ShowVBS_FontStrike"s, ""s, false);
 
 PropBool(CVEdit, ShowComponents, "ShowComponents"s, ""s, true);
-PropInt(CVEdit, ShowComponents_color, "ShowComponents_color"s, ""s, 0x000000, 0xFFFFFF, RGB(0, 0, 0));
+PropInt(CVEdit, ShowComponents_color, "ShowComponents_color"s, ""s, 0x000000, 0xFFFFFF, RGB(120, 120, 0));
 PropIntUnbounded(CVEdit, ShowComponents_FontPointSize, "ShowComponents_FontPointSize"s, ""s, 10);
 PropString(CVEdit, ShowComponents_Font, "ShowComponents_Font"s, ""s, "Consolas"s);
 PropInt(CVEdit, ShowComponents_FontWeight, "ShowComponents_FontWeight"s, ""s, 0, 1000, 400);
 PropBool(CVEdit, ShowComponents_FontItalic, "ShowComponents_FontItalic"s, ""s, false);
 PropBool(CVEdit, ShowComponents_FontUnderline, "ShowComponents_FontUnderline"s, ""s, false);
-PropBool(CVEdit, ShowComponents_FontStrike, "ShowComponents"s, ""s, false);
+PropBool(CVEdit, ShowComponents_FontStrike, "ShowComponents_FontStrike"s, ""s, false);
 
 PropBool(CVEdit, ShowSubs, "ShowSubs"s, ""s, true);
 PropInt(CVEdit, ShowSubs_color, "ShowSubs_color"s, ""s, 0x000000, 0xFFFFFF, RGB(120, 0, 120));
@@ -1543,7 +1514,7 @@ PropString(CVEdit, ShowSubs_Font, "ShowSubs_Font"s, ""s, "Consolas"s);
 PropInt(CVEdit, ShowSubs_FontWeight, "ShowSubs_FontWeight"s, ""s, 0, 1000, 400);
 PropBool(CVEdit, ShowSubs_FontItalic, "ShowSubs_FontItalic"s, ""s, false);
 PropBool(CVEdit, ShowSubs_FontUnderline, "ShowSubs_FontUnderline"s, ""s, false);
-PropBool(CVEdit, ShowSubs_FontStrike, "ShowSubs"s, ""s, false);
+PropBool(CVEdit, ShowSubs_FontStrike, "ShowSubs_FontStrike"s, ""s, false);
 
 PropBool(CVEdit, ShowRemarks, "ShowRemarks"s, ""s, true);
 PropInt(CVEdit, ShowRemarks_color, "ShowRemarks_color"s, ""s, 0x000000, 0xFFFFFF, RGB(0, 120, 0));
@@ -1552,7 +1523,7 @@ PropString(CVEdit, ShowRemarks_Font, "ShowRemarks_Font"s, ""s, "Consolas"s);
 PropInt(CVEdit, ShowRemarks_FontWeight, "ShowRemarks_FontWeight"s, ""s, 0, 1000, 400);
 PropBool(CVEdit, ShowRemarks_FontItalic, "ShowRemarks_FontItalic"s, ""s, false);
 PropBool(CVEdit, ShowRemarks_FontUnderline, "ShowRemarks_FontUnderline"s, ""s, false);
-PropBool(CVEdit, ShowRemarks_FontStrike, "ShowRemarks"s, ""s, false);
+PropBool(CVEdit, ShowRemarks_FontStrike, "ShowRemarks_FontStrike"s, ""s, false);
 
 PropBool(CVEdit, ShowLiterals, "ShowLiterals"s, ""s, true);
 PropInt(CVEdit, ShowLiterals_color, "ShowLiterals_color"s, ""s, 0x000000, 0xFFFFFF, RGB(0, 120, 160));
@@ -1561,7 +1532,7 @@ PropString(CVEdit, ShowLiterals_Font, "ShowLiterals_Font"s, ""s, "Consolas"s);
 PropInt(CVEdit, ShowLiterals_FontWeight, "ShowLiterals_FontWeight"s, ""s, 0, 1000, 400);
 PropBool(CVEdit, ShowLiterals_FontItalic, "ShowLiterals_FontItalic"s, ""s, false);
 PropBool(CVEdit, ShowLiterals_FontUnderline, "ShowLiterals_FontUnderline"s, ""s, false);
-PropBool(CVEdit, ShowLiterals_FontStrike, "ShowLiterals"s, ""s, false);
+PropBool(CVEdit, ShowLiterals_FontStrike, "ShowLiterals_FontStrike"s, ""s, false);
 
 PropBool(CVEdit, ShowVPcore, "ShowVPcore"s, ""s, true);
 PropInt(CVEdit, ShowVPcore_color, "ShowVPcore_color"s, ""s, 0x000000, 0xFFFFFF, RGB(200, 50, 60));
@@ -1570,4 +1541,4 @@ PropString(CVEdit, ShowVPcore_Font, "ShowVPcore_Font"s, ""s, "Consolas"s);
 PropInt(CVEdit, ShowVPcore_FontWeight, "ShowVPcore_FontWeight"s, ""s, 0, 1000, 400);
 PropBool(CVEdit, ShowVPcore_FontItalic, "ShowVPcore_FontItalic"s, ""s, false);
 PropBool(CVEdit, ShowVPcore_FontUnderline, "ShowVPcore_FontUnderline"s, ""s, false);
-PropBool(CVEdit, ShowVPcore_FontStrike, "ShowVPcore"s, ""s, false);
+PropBool(CVEdit, ShowVPcore_FontStrike, "ShowVPcore_FontStrike"s, ""s, false);

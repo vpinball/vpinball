@@ -263,9 +263,9 @@ enum class ConnectionState
 std::atomic<ConnectionState> connectionState { ConnectionState::Unconnected };
 
 const char* runModeLiterals[] = { "Controller", "Player" };
-MSGPI_ENUM_VAL_SETTING(runModeProp, "RunMode", "Mode", "Select between Controller and Player mode", true, 1, 2, runModeLiterals, 1);
-MSGPI_INT_VAL_SETTING(portProp, "Port", "Port", "", true, 0, 0xFFFF, 0);
-MSGPI_STRING_VAL_SETTING(hostProp, "Host", "Host", "", true, "", 1024);
+MSGPI_ENUM_VAL_SETTING(runModeProp, "RunMode", "Mode", "Controller: this computer controls a remote Player (connects to Host and Port). Player: this computer runs the table, controlled by a remote Controller (listens on Port)", true, 1, 2, runModeLiterals, 1);
+MSGPI_INT_VAL_SETTING(portProp, "Port", "Port", "UDP port used for the connection (must be defined in both modes)", true, 0, 0xFFFF, 0);
+MSGPI_STRING_VAL_SETTING(hostProp, "Host", "Host", "Address of the Player computer (Controller mode only)", true, "", 1024);
 
 
 static void onPrepareFrame(const unsigned int eventId, void* userData, void* eventData)
