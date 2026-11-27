@@ -1191,6 +1191,8 @@ void WinEditor::SetEnableMenuItems()
 
       mainMenu.CheckMenuItem(ID_VIEW_GRID, MF_BYCOMMAND | (editor->GetDisplayGrid() ? MF_CHECKED : MF_UNCHECKED));
       mainMenu.CheckMenuItem(ID_VIEW_BACKDROP, MF_BYCOMMAND | (editor->GetDisplayBackdrop() ? MF_CHECKED : MF_UNCHECKED));
+
+      mainMenu.EnableMenuItem(ID_EDIT_PHYSICSOPTIONS, enabled);
    }
    else
    {
@@ -1252,6 +1254,8 @@ void WinEditor::SetEnableMenuItems()
       mainMenu.EnableMenuItem(ID_INSERT_PRIMITIVE, grayed);
       mainMenu.EnableMenuItem(ID_INSERT_FLASHER, grayed);
       mainMenu.EnableMenuItem(ID_INSERT_RUBBER, grayed);
+
+      mainMenu.EnableMenuItem(ID_EDIT_PHYSICSOPTIONS, grayed);
    }
 }
 
