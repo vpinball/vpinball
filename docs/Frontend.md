@@ -9,9 +9,16 @@ Start it with:
     VPinballX -Frontend
 
 The frontend scans the folders listed in the `Frontend.TableFolders` setting for `.vpx` tables, `.vpz`
-packs and VPZ folder packs, reads their `.info` sidecar files and `medias` folders (see
+packs and VPZ folder packs, then presents them as a table wheel. Large collections stay responsive through
+a private scan cache (`table-catalog.cache` in the preferences folder): startup first shows the previous
+scan snapshot, then an asynchronous scan publishes newly discovered tables in batches, reuses unchanged
+sidecar/media details using filesystem stamps, and reconciles the catalog at the end so deleted or moved
+tables disappear. Table folders are watched while the frontend runs (with a low-frequency fallback where
+OS notifications are unavailable), debounced, and rescanned incrementally after user changes. The cached
+catalog is therefore never treated as authoritative: launch/edit/capture actions validate that the table
+still exists, stale media fail gracefully, and metadata is reread before being written back (see
 [FileLayout.md](FileLayout.md) for the conventions, e.g. `(Wheel)`, `(Playfield)`, `(Backglass)`,
-`(Topper)`, `(GameInfo)` media files) and presents them as a table wheel.
+`(Topper)`, `(GameInfo)` media files).
 
 ## Media
 

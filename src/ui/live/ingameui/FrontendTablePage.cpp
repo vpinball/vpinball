@@ -14,6 +14,7 @@ namespace VPX::InGameUI
 static string PageTitle()
 {
    // The page is built on each navigation: pick up the entry the wheel is on
+   g_pplayer->m_liveUI->m_frontendUI.EnsureSelectedDetails();
    const TableCatalog::Entry *const selected = g_pplayer->m_liveUI->m_frontendUI.GetSelected();
    return selected != nullptr ? selected->title : "Table Actions"s;
 }
@@ -26,10 +27,12 @@ FrontendTablePage::FrontendTablePage()
 void FrontendTablePage::BuildPage()
 {
    VPX::Frontend::FrontendUI &frontend = m_player->m_liveUI->m_frontendUI;
-   if (frontend.HasSelection())
+   const TableCatalog::Entry *const selected = frontend.GetSelected();
+   if (selected != nullptr && TableCatalog::TableExists(*selected))
    {
-      AddItem(std::make_unique<InGameUIItem>("Play"s, ""s, [&frontend]() { frontend.LaunchSession(Player::PlayMode::Play); }));
-      AddItem(std::make_unique<InGameUIItem>("Edit in live editor"s, ""s, [&frontend]() { frontend.LaunchSession(Player::PlayMode::FullEdit); }));
+      const std::filesystem::path tablePath = selected->tablePath;
+      AddItem(std::make_unique<InGameUIItem>("Play"s, ""s, [&frontend, tablePath]() { frontend.LaunchSession(Player::PlayMode::Play, tablePath); }));
+      AddItem(std::make_unique<InGameUIItem>("Edit in live editor"s, ""s, [&frontend, tablePath]() { frontend.LaunchSession(Player::PlayMode::FullEdit, tablePath); }));
    }
    AddItem(std::make_unique<InGameUIItem>("Rescan tables"s, ""s,
       [this, &frontend]()

@@ -12,6 +12,8 @@
 #include "FrontendMedia.h"
 #include "FrontendTheme.h"
 
+#include <deque>
+
 class LiveUI;
 
 namespace VPX::InGameUI
@@ -21,6 +23,8 @@ class LoadingPage;
 
 namespace VPX::Frontend
 {
+
+class CatalogFolderWatcher;
 
 // The mini frontend's main window, rendered with ImGui on top of a player session running on a
 // synthetic empty table. For now it shows a text-only table wheel and a small action menu; media
@@ -47,14 +51,16 @@ public:
    // Loads the selected catalog entry's table file asynchronously, the loading screen giving
    // feedback while it parses, then requests the host to end this frontend session and start
    // a play or edit session on it.
-   void LaunchSession(Player::PlayMode playMode);
+   void LaunchSession(Player::PlayMode playMode, const std::filesystem::path &tablePath = {});
    // Restarts the frontend session on the same synthetic table with a different VR mode, to enter
    // (ForceOn) or leave (ForceOff) XR. In XR, LiveUI is submitted to the HMD as a head locked quad
    // composition layer, so the whole frontend (wheel, media, overlays) shows inside the headset
    void RestartFrontendSession(Player::VROverride vr);
    bool IsVRAvailable() const { return m_vrAvailable || (m_player != nullptr && m_player->IsVR()); }
    bool HasSelection() const;
-   const TableCatalog::Entry *GetSelected() const;
+   const TableCatalog::Entry *GetSelected();
+   void EnsureSelectedDetails();
+   const TableCatalog::Entry *FindEntry(const std::filesystem::path &tablePath);
 
 private:
    void HandleInput();
@@ -106,6 +112,7 @@ private:
    // (wrap and font scale together with the cell so the breaks stay valid), then just rescaled
    struct WheelTitle
    {
+      string title;
       float size0 = 0.f;
       vector<string> lines;
       vector<float> widths; // Line widths at size0
@@ -147,8 +154,42 @@ private:
    Player *m_player = nullptr; // Resolved lazily, after g_pplayer is initialized
    std::unique_ptr<FrontendMedia> m_media; // Created lazily, once the render device exists
 
+   // The catalog scan runs fully in the background. Path batches are published while folders are
+   // enumerated, a final path update removes stale cached entries, then invalidated companion/media
+   // details are published in batches. The foreground merges these updates around the stable
+   // selection path instead of waiting for the scan to finish.
+   struct CatalogScanUpdate
+   {
+      enum class Type
+      {
+         Upsert,
+         Reconcile
+      };
+      Type type = Type::Upsert;
+      vector<TableCatalog::Entry> entries;
+   };
+   struct PendingCatalogScan
+   {
+      TableCatalog initial;
+      std::mutex updateMutex;
+      std::deque<CatalogScanUpdate> updates;
+      std::atomic<bool> detailsReady { false };
+      std::atomic<bool> abandoned { false };
+   };
+   void PollCatalogScan();
+   void AdoptCatalog(TableCatalog &&catalog, bool restoreResumeSelection);
+   void ApplyCatalogScanUpdate(const CatalogScanUpdate &update);
+   void UpdateCatalogWatcher(const vector<std::filesystem::path> &roots);
+   void PollCatalogWatcher();
+
    TableCatalog m_catalog;
+   std::shared_ptr<PendingCatalogScan> m_catalogScan;
    bool m_scanned = false;
+   bool m_catalogCacheLoadAttempted = false;
+   std::unique_ptr<CatalogFolderWatcher> m_catalogWatcher;
+   uint32_t m_catalogWatchEventSeen = 0;
+   uint32_t m_catalogWatchDirtySince = 0;
+   uint32_t m_catalogScanStartedAt = 0;
    int m_selected = 0;
 
    // XR: one time OpenXR headset probe (lazily on first frame) gating the Enter VR action
