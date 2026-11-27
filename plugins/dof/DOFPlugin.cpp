@@ -233,7 +233,16 @@ private:
    void Run()
    {
       SetThreadName("DOF.EventQueue"s);
-      pDOF->Init(m_tablePath.c_str(), m_gameId.c_str());
+      bool initialized = false;
+      try
+      {
+         pDOF->Init(m_tablePath.c_str(), m_gameId.c_str());
+         initialized = true;
+      }
+      catch (const std::exception& e)
+      {
+         LOGE("DOF init failed: "s + e.what());
+      }
       while (!m_stopRequested)
       {
          std::unique_lock lock(m_mutex);
@@ -247,12 +256,21 @@ private:
          {
             B2SPluginEvent ev = m_queue.front();
             m_queue.pop();
+            if (!initialized)
+               continue;
             lock.unlock();
             pDOF->DataReceive(ev.type, ev.index, ev.value);
             lock.lock();
          }
       }
-      pDOF->Finish();
+      try
+      {
+         pDOF->Finish();
+      }
+      catch (const std::exception& e)
+      {
+         LOGE("DOF finish failed: "s + e.what());
+      }
    }
 
    const string m_tablePath;
