@@ -65,6 +65,7 @@ FEATURES:
 - improved ball trail, also exposing strength control
 - the balls are now raytraced analytically per pixel (exact silhouette and shading, no more mesh facets)
 - also add a raytraced/true ball motion blur (BGFX only, not supported in VR or headtracking)
+- native ball shadows for certain bulb lights can now optionally be auto-enabled for pre-10.8 era tables (default off to avoid potential compatibility issues, see setting in UI)
 
 - nudging was redesigned with support for the following modes:
   . gamecontroller nudge, a new mode designed for gamepads and VR controllers, which evaluates the intent of the player from stick moves and uses a simulated cabinet model to emulate the nudge physically plausible
