@@ -18,7 +18,6 @@
 
 #include <atomic>
 #include <bit>
-#include <chrono>
 #include <fstream>
 #include <iomanip>
 #include <limits>
@@ -618,13 +617,13 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::Compress(const BaseT
 
 std::shared_ptr<BaseTexture> TextureCompressor::LoadCacheFile(const std::filesystem::path& cacheFile)
 {
-   const auto start = std::chrono::steady_clock::now();
+   const uint64_t start = SDL_GetTicksNS();
    CacheHeader header;
    std::shared_ptr<const CompressedTexture> compressed = ReadCacheFile(cacheFile, header);
    if (compressed == nullptr || header.format != static_cast<uint32_t>(SelectFormatFor(static_cast<BaseTexture::Format>(header.srcFormat), header.opaque != 0, header.width, header.height)))
       return nullptr;
    m_nLoaded++;
-   m_loadMs += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+   m_loadUs += (SDL_GetTicksNS() - start) / 1000;
    m_rawBytes += (static_cast<uint64_t>(header.width) * header.height * UncompressedPixelSize(static_cast<BaseTexture::Format>(header.srcFormat)) * 4) / 3;
    m_compressedBytes += compressed->data.size();
    return BaseTexture::CreateCompressedOnly(std::move(compressed), static_cast<BaseTexture::Format>(header.srcFormat), header.opaque != 0);
@@ -640,12 +639,12 @@ std::shared_ptr<const CompressedTexture> TextureCompressor::CompressToCache(cons
       return nullptr;
    const uint64_t rawBytes = (static_cast<uint64_t>(tex.width()) * tex.height() * UncompressedPixelSize(tex.m_format) * 4) / 3;
 
-   const auto start = std::chrono::steady_clock::now();
+   const uint64_t start = SDL_GetTicksNS();
    auto result = Compress(tex, format, isCompressionDiscarded);
    if (result == nullptr)
       return nullptr;
    m_nCompressed++;
-   m_compressMs += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
+   m_compressUs += (SDL_GetTicksNS() - start) / 1000;
    m_rawBytes += rawBytes;
    m_compressedBytes += result->data.size();
    PLOGI << std::format("Texture '{}' was compressed ({}x{} {})", tex.GetName(), tex.width(), tex.height(), GetFormatName(format));
@@ -761,7 +760,7 @@ std::shared_ptr<const BaseTexture> TextureCompressor::LoadOrCompress(Texture* im
 
 void TextureCompressor::LogStats() const
 {
-   PLOGI << "Texture compression: " << m_nCompressed << " compressed (" << m_compressMs << "ms cumulated), " << m_nLoaded << " loaded from cache (" << m_loadMs
+   PLOGI << "Texture compression: " << m_nCompressed << " compressed (" << m_compressUs / 1000 << "ms cumulated), " << m_nLoaded << " loaded from cache (" << m_loadUs / 1000
          << "ms cumulated), GPU memory " << (m_rawBytes / (1024 * 1024)) << "MB uncompressed -> " << (m_compressedBytes / (1024 * 1024)) << "MB compressed";
 }
 

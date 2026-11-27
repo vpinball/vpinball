@@ -113,15 +113,16 @@ void StereoSettingsPage::AdjustItem(float direction, bool isInitialPress)
 {
    if (IsAnaglyphStereoMode(m_editedStereoMode) && m_calibrationStep >= 0)
    {
-      const uint32_t now = msec();
+      const uint64_t nowNs = SDL_GetTicksNS();
+      const uint64_t now = nowNs / 1000000;
       if (isInitialPress)
       {
          m_pressStartMs = now;
-         m_lastUpdateMs = now;
+         m_lastUpdateNs = nowNs;
       }
-      const float elapsed = static_cast<float>(now - m_lastUpdateMs) / 1000.f;
-      m_lastUpdateMs = now;
-      const uint32_t elapsedSincePress = now - m_pressStartMs;
+      const float elapsed = static_cast<float>(static_cast<double>(nowNs - m_lastUpdateNs) / 1000000000.);
+      m_lastUpdateNs = nowNs;
+      const uint64_t elapsedSincePress = now - m_pressStartMs;
       float speedFactor;
       if (elapsedSincePress < 250)
          speedFactor = 1.0f;

@@ -19,7 +19,7 @@ private:
    {
       unsigned int id;
       string message;
-      uint32_t disappearTick;
+      uint64_t disappearTick;
    };
    std::mutex m_mutex; // Notifications may be pushed from any thread (e.g. worker threads reporting load errors)
    vector<Notification> m_notifications;

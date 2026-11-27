@@ -139,7 +139,7 @@ private:
    std::deque<std::pair<uint32_t, int64_t>> m_pendingFree; // Evicted bytes not yet freed by the driver (frame, bytes)
    unsigned int m_pressureNotifId = 0;
    unsigned int m_downsizeNotifId = 0;
-   uint32_t m_pressureNotifCooldown = 0;
+   uint64_t m_pressureNotifCooldown = 0;
 
 #pragma endregion
 #endif

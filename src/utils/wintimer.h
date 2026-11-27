@@ -13,25 +13,16 @@
 
 #include "unordered_dense.h"
 
-// call if msec,usec or uSleep, etc. should be more precise
+// Real time: SDL_GetTicksNS() (us: SDL_GetTicksNS() / 1000) and SDL_GetTicks() (ms), the performance counter (QPC on Windows)
+// since SDL's start, also the time base of the SDL event timestamps
+
+// call if uSleep, etc. should be more precise
 void set_lowest_possible_win_timer_resolution();
 // and then call this after being finished with precise measurements to allow the OS to better save power
 void restore_win_timer_resolution();
 
-// call before 1st use of msec,usec or uSleep
-void wintimer_init();
-
-uint32_t msec();
-uint64_t usec();
-
-// needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
+// Waits the given number of microseconds as exactly as possible (spins at the end)
 void uSleep(const uint64_t u);
-
-// allowed to sleep longer, experiments on Windows 11 show a minimum oversleep of around 300-500us (half a ms)
-inline void uOverSleep(const uint64_t u)
-{
-   SDL_DelayNS(u);
-}
 
 double TheoreticRadiation(const unsigned int day, const unsigned int month, const unsigned int year, const double rlat);
 double MaxTheoreticRadiation(const unsigned int year, const double rlat);
@@ -147,7 +138,7 @@ public:
    {
       // assert(m_threadLock == std::this_thread::get_id()); // Not asserted as NewFrame happens in a critical section (guarded by frameMutex)
       assert(m_profileSectionStackPos == 0);
-      m_profileTimeStamp = usec();
+      m_profileTimeStamp = SDL_GetTicksNS() / 1000;
       m_frameIndex++;
 
       if (m_frameIndex > 0)
@@ -217,7 +208,7 @@ public:
    {
       assert(m_threadLock == std::this_thread::get_id());
       assert(0 <= section && section < PROFILE_COUNT);
-      const uint64_t ts = usec();
+      const uint64_t ts = SDL_GetTicksNS() / 1000;
       m_profileDataEnd[m_profileIndex][m_profileSection] = ts;
       m_profileData[m_profileIndex][m_profileSection] += (unsigned int)(ts - m_profileTimeStamp);
       m_profileTimeStamp = ts;
@@ -453,7 +444,7 @@ public:
 
    void OnProcessInput()
    {
-      const uint64_t ts = usec();
+      const uint64_t ts = SDL_GetTicksNS() / 1000;
       if (m_processInputTimeStamp != 0)
       {
          unsigned int elapsed = (unsigned int)(ts - m_processInputTimeStamp);

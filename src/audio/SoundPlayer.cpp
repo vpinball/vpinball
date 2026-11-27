@@ -506,10 +506,10 @@ void SoundPlayer::UpdateDoppler(float x, float y, float z)
    const float dy = (y - ly) * kVPUToMeters;
    const float dz = (z - lz) * kVPUToMeters;
    const float distance = sqrtf(dx * dx + dy * dy + dz * dz);
-   const auto now = std::chrono::steady_clock::now();
+   const uint64_t now = SDL_GetTicksNS();
    if (m_hasLastDistance)
    {
-      const float dt = std::chrono::duration<float>(now - m_lastPosTime).count();
+      const float dt = static_cast<float>(static_cast<double>(now - m_lastPosTimeNs) / 1000000000.);
       if (dt > 0.001f && dt < 0.5f)
       {
          const float radialVelocity = (distance - m_lastDistance) / dt; // m/s, positive = moving away from the listener
@@ -520,7 +520,7 @@ void SoundPlayer::UpdateDoppler(float x, float y, float z)
          m_dopplerFactor = 1.f; // Position jumped, not a continuous movement
    }
    m_lastDistance = distance;
-   m_lastPosTime = now;
+   m_lastPosTimeNs = now;
    m_hasLastDistance = true;
 }
 }

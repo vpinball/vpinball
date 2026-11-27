@@ -516,7 +516,7 @@ void Ball::Render(const unsigned int renderMask)
    Vertex3D_NoTex2 *const quadVerts = static_cast<Vertex3D_NoTex2 *>(m_renderer->m_renderDevice->GetCurrentPass()->m_commands.back()->GetQuadVertices());
    AddRef(); // The ball may be destroyed by the script, so we need to hold a ref on it until the end of frame command below releases it
    m_renderer->m_renderDevice->AddBeginOfFrameCmd(
-      [this, rotScale = rot * scale, ss, quadVerts, worldViewInverse, worldViewProj, nEyes, rd = m_renderer->m_renderDevice, scheduleTimestamp = usec()]()
+      [this, rotScale = rot * scale, ss, quadVerts, worldViewInverse, worldViewProj, nEyes, rd = m_renderer->m_renderDevice, scheduleTimestamp = SDL_GetTicksNS() / 1000]()
       {
          // Adjust ball position to latest physics position
          vec3 posl = m_hitBall.m_d.m_pos;
@@ -526,7 +526,7 @@ void Ball::Render(const unsigned int renderMask)
          // - the time the display will need to actually show it (1ms is just a magic number here)
          if (g_pplayer->IsPlaying())
          {
-            const float delay = (float)(static_cast<double>(usec() - g_pplayer->m_timeUpdateTimeStamp) / 1000000.) + rd->GetPredictedDisplayDelay() + 0.001f;
+            const float delay = (float)(static_cast<double>(SDL_GetTicksNS() / 1000 - g_pplayer->m_timeUpdateTimeStamp) / 1000000.) + rd->GetPredictedDisplayDelay() + 0.001f;
             posl += delay * m_hitBall.m_d.m_vel;
          }
          if (m_hitBall.m_d.m_lockedInKicker)

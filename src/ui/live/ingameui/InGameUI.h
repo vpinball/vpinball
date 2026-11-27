@@ -60,12 +60,12 @@ private:
    bool m_useFlipperNav = false;
    bool m_itemAdjustWasPressed = false;
    int m_flipperNavRepeatCount = 0;
-   uint32_t m_flipperNavStart = 0;
+   uint64_t m_flipperNavStart = 0;
    ankerl::unordered_dense::map<string, std::function<std::unique_ptr<InGameUIPage>()>> m_pages;
    vector<string> m_navigationHistory;
    InGameUIPage* m_rootPage = nullptr; // Instance of the first navigation history entry (may have been closed and discarded)
    vector<std::unique_ptr<InGameUIPage>> m_activePages;
-   uint32_t m_lastRenderMs = 0;
+   uint64_t m_lastRenderNs = 0; // SDL_GetTicksNS() of the last Update (ns, as whole ms deltas make the animations uneven at high refresh rates)
 
    // Renders the active pages; implementations selected per running target
    // (mobile touch, desktop, cabinet, VR) through InGameUIRenderer::Create

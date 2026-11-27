@@ -64,8 +64,8 @@ private:
 
    std::atomic<uint64_t> m_nCompressed { 0 };
    std::atomic<uint64_t> m_nLoaded { 0 };
-   std::atomic<uint64_t> m_compressMs { 0 };
-   std::atomic<uint64_t> m_loadMs { 0 };
+   std::atomic<uint64_t> m_compressUs { 0 }; // Summed in us, as single loads often take less than a millisecond
+   std::atomic<uint64_t> m_loadUs { 0 };
    std::atomic<uint64_t> m_rawBytes { 0 };
    std::atomic<uint64_t> m_compressedBytes { 0 };
 };

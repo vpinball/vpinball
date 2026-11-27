@@ -127,7 +127,7 @@ void NudgeSettingsPage::Close(bool isBackwardAnimation)
 
 void NudgeSettingsPage::AppendPlot()
 {
-   const float t = static_cast<float>((double)msec() / 1000.);
+   const float t = GetPlotTime();
    constexpr float g = 9.80665f;
 
    Vertex2D nudge = m_player->m_pininput.m_nudgeHandler->GetCabinetAcceleration();

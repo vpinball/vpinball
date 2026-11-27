@@ -292,10 +292,9 @@ void AsyncDynamicQuadTree::UpdateQuadtreeThread()
          return;
 
       /* static int nCall = 0;
-      static std::chrono::duration<double> total;
+      static uint64_t totalUs = 0;
       nCall++;
-      const auto start = std::chrono::steady_clock::now();
-      std::chrono::duration<double> elapsed;*/
+      const uint64_t start = SDL_GetTicksNS();*/
 
       // Move pending hit objects into the static quadtree, reusing free slots if possible.
       // m_updatedEditables is read-only here: the main thread still hit tests against it and releases it in UpdateAsync
@@ -324,8 +323,8 @@ void AsyncDynamicQuadTree::UpdateQuadtreeThread()
       // Reset quadtree with the updated hit object list
       m_pendingQuadTree->EndReset();
 
-      /* elapsed = std::chrono::steady_clock::now() - start; total += elapsed;
-      PLOGD << "UI quadtree update: " << (total / nCall) << " (" << m_pendingUIOctree->GetHitObjects().size() << " objects)";*/
+      /* totalUs += (SDL_GetTicksNS() - start) / 1000;
+      PLOGD << "UI quadtree update: " << (totalUs / nCall) << "us (" << m_pendingUIOctree->GetHitObjects().size() << " objects)";*/
 
       m_quadtreeUpdateReady.release();
    }

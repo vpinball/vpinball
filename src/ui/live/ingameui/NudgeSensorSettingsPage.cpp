@@ -171,7 +171,7 @@ void NudgeSensorSettingsPage::Close(bool isBackwardAnimation)
 
 void NudgeSensorSettingsPage::AppendPlot()
 {
-   const float t = static_cast<float>((double)msec() / 1000.);
+   const float t = GetPlotTime();
    constexpr float g = 9.80665f;
 
    Vertex2D nudge = m_player->m_pininput.m_nudgeHandler->GetCabinetAcceleration();
@@ -199,7 +199,7 @@ void NudgeSensorSettingsPage::Update(float elapsedS)
    if (m_removed)
       return;
 
-   if (const uint32_t ms = msec(); ms - m_resetTimestampMs > 2000)
+   if (const uint64_t ms = SDL_GetTicks(); ms - m_resetTimestampMs > 2000)
    {
       m_resetTimestampMs = ms;
       m_sensorAcqPeriod.x = 0;

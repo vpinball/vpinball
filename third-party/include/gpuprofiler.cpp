@@ -286,8 +286,7 @@ void CGpuProfiler::WaitForDataAndUpdate ()
 	}
 
 	++m_frameCountAvg;
-	const unsigned int ms = msec();
-	const double t = (double)ms*1e-3;
+	const double t = (double)SDL_GetTicks()*1e-3;
 	if (t > m_tBeginAvg + 0.5)
 	{
 		for (GTS gts = GTS_BeginFrame; gts < GTS_Max; gts = GTS(gts + 1))

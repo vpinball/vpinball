@@ -394,12 +394,12 @@ void PhysicsEngine::ResetPerFrameStats()
 
 void PhysicsEngine::OnFinishFrame()
 {
-   m_lastFlipTime = usec();
+   m_lastFlipTime = SDL_GetTicksNS() / 1000;
 }
 
 void PhysicsEngine::StartPhysics()
 {
-   m_startTime_usec = usec();
+   m_startTime_usec = SDL_GetTicksNS() / 1000;
    m_curPhysicsFrameTime = m_startTime_usec;
    m_nextPhysicsFrameTime = m_curPhysicsFrameTime + PHYSICS_STEPTIME;
    m_physicsStarted = true;
@@ -500,7 +500,7 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
       m_time_msec = (uint32_t)((m_curPhysicsFrameTime - m_startTime_usec) / 1000); // Get time in milliseconds for timers
       if (g_pplayer)
       {
-         g_pplayer->m_timeUpdateTimeStamp = usec();
+         g_pplayer->m_timeUpdateTimeStamp = SDL_GetTicksNS() / 1000;
          g_pplayer->m_time_sec = m_time_sec;
          g_pplayer->m_time_msec = m_time_msec;
       }
@@ -529,7 +529,7 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
       #if !defined(ENABLE_BGFX)
       if (g_pplayer && g_pplayer->m_minphyslooptime > 0)
       {
-         const uint64_t basetime = usec();
+         const uint64_t basetime = SDL_GetTicksNS() / 1000;
          const uint64_t targettime = ((uint64_t)g_pplayer->m_minphyslooptime * m_phys_iterations) + m_lastFlipTime;
          // If we're 3/4 of the way through the loop, fire a "controller sync" timer (timers with an interval set to -2) event so VPM can react to input.
          if (m_phys_iterations == 750 / ((int)g_pplayer->m_fps + 1))
@@ -547,7 +547,7 @@ void PhysicsEngine::UpdatePhysics(uint64_t targetTimeUs)
       // Anti hung mechanism
       if (g_pplayer && g_pplayer->m_playMode != Player::PlayMode::CaptureAttract)
       {
-         const uint64_t cur_time_usec = usec()
+         const uint64_t cur_time_usec = SDL_GetTicksNS() / 1000
             - delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
 
          // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)

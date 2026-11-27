@@ -222,7 +222,7 @@ public:
             if (state.isActive && state.changedSinceLastSync)
             {
                //PLOGI << "[BTN] " << t.path << " -> " << (state.currentState ? "ON" : "OFF");
-               m_pininput.PushButtonEvent(m_joyId, t.pinInputId, usec() * 1000ULL, state.currentState);
+               m_pininput.PushButtonEvent(m_joyId, t.pinInputId, SDL_GetTicksNS(), state.currentState);
             }
          }
          else if (t.type == XR_ACTION_TYPE_FLOAT_INPUT)
@@ -234,7 +234,7 @@ public:
             {
                // -1 .. 1 for sticks / 0 (unpressed) .. 1 (pressed) for triggers
                //PLOGI << "[ANA] " << t.path << " -> " << state.currentState;
-               m_pininput.PushAxisEvent(m_joyId, t.pinInputId, usec() * 1000ULL, state.currentState);
+               m_pininput.PushAxisEvent(m_joyId, t.pinInputId, SDL_GetTicksNS(), state.currentState);
             }
          }
       }

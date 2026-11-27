@@ -2,16 +2,13 @@
 
 #include "core/stdafx.h"
 #include <ctime>
+#include <SDL3/SDL_atomic.h> // SDL_CPUPauseInstruction
 #ifdef VPX_HAS_WIN32_SDK
 #include <mmsystem.h> // TIMECAPS, timeGetDevCaps, timeBeginPeriod
 #endif
 //#ifndef _MSC_VER
 //#include <unistd.h>
 //#endif
-
-#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
-#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
-#endif
 
 FrameProfiler* g_frameProfiler;
 
@@ -94,110 +91,23 @@ void restore_win_timer_resolution()
 
 //
 
-static unsigned int sTimerInit = 0;
-static LARGE_INTEGER TimerFreq = {};
-static LARGE_INTEGER sTimerStart = {};
-static LONGLONG OneMSTimerTicks = 0;
-static LONGLONG TwoMSTimerTicks = 0;
-static char highrestimer = 0;
-
-// call before 1st use of msec,usec or uSleep
-void wintimer_init()
-{
-   sTimerInit = 1;
-
-#ifdef _MSC_VER
-   QueryPerformanceFrequency(&TimerFreq);
-   QueryPerformanceCounter(&sTimerStart);
-
-   HANDLE timer = CreateWaitableTimerEx(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
-   highrestimer = !!timer;
-   if (timer)
-      CloseHandle(timer);
-#else
-   TimerFreq.QuadPart = SDL_GetPerformanceFrequency();
-   sTimerStart.QuadPart = SDL_GetPerformanceCounter();
-
-   highrestimer = 0; //!! ???
-#endif
-
-   OneMSTimerTicks = (1000 * TimerFreq.QuadPart) / 1000000ull;
-   TwoMSTimerTicks = (2000 * TimerFreq.QuadPart) / 1000000ull;
-}
-
-uint64_t usec()
-{
-   if (sTimerInit == 0) return 0;
-
-   LARGE_INTEGER TimerNow;
-#ifdef _MSC_VER
-   QueryPerformanceCounter(&TimerNow);
-#else
-   TimerNow.QuadPart = SDL_GetPerformanceCounter();
-#endif
-   const uint64_t cur_tick = (uint64_t)(TimerNow.QuadPart - sTimerStart.QuadPart);
-   return ((uint64_t)TimerFreq.QuadPart < 100000000ull) ? (cur_tick * 1000000ull / (uint64_t)TimerFreq.QuadPart)
-      : (cur_tick * 1000ull / ((uint64_t)TimerFreq.QuadPart / 1000ull));
-}
-
-uint32_t msec()
-{
-   if (sTimerInit == 0) return 0;
-
-   LARGE_INTEGER TimerNow;
-#ifdef _MSC_VER
-   QueryPerformanceCounter(&TimerNow);
-#else
-   TimerNow.QuadPart = SDL_GetPerformanceCounter();
-#endif
-   const LONGLONG cur_tick = TimerNow.QuadPart - sTimerStart.QuadPart;
-   return (uint32_t)((uint64_t)cur_tick * 1000ull / (uint64_t)TimerFreq.QuadPart);
-}
-
-// tries(!) to be as exact as possible at the cost of potentially causing trouble with other threads/cores due to OS madness
-// needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
-// but VP code does this already
+// Sleeps in short steps while far enough from the end, then spins. Not SDL_DelayPrecise: it does waits below ~1ms with a single
+// sleep that can overshoot by ~0.5ms, while the physics loop lengthening and the frame limiters need exactly these.
+// Without SDL's high resolution waitable timer (before Windows 10 1803), needs set_lowest_possible_win_timer_resolution().
 void uSleep(const uint64_t u)
 {
-//#ifdef _MSC_VER
-   if (sTimerInit == 0) return;
-
-   LARGE_INTEGER TimerNow;
-#ifdef _MSC_VER
-   QueryPerformanceCounter(&TimerNow);
-#else
-   TimerNow.QuadPart = SDL_GetPerformanceCounter();
-#endif
-   LARGE_INTEGER TimerEnd;
-   TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull);
-
-   while (TimerNow.QuadPart < TimerEnd.QuadPart)
+   const uint64_t end = SDL_GetTicksNS() + u * 1000ull;
+   for (uint64_t now = SDL_GetTicksNS(); now < end; now = SDL_GetTicksNS())
    {
-      if ((TimerEnd.QuadPart - TimerNow.QuadPart) > TwoMSTimerTicks)
-         Sleep(1); // really pause thread for 1-2ms (depending on OS)
-#ifdef _MSC_VER
-      else if (highrestimer && ((TimerEnd.QuadPart - TimerNow.QuadPart) > OneMSTimerTicks)) // pause thread for 0.5-1ms
-      {
-         HANDLE timer = CreateWaitableTimerEx(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
-         LARGE_INTEGER ft;
-         ft.QuadPart = -10 * 500; // 500 usec //!! we could go lower if some future OS (>win10) actually supports this
-         SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
-         WaitForSingleObject(timer, INFINITE);
-         CloseHandle(timer);
-      }
+      if (end - now > 2000000ull)
+         SDL_DelayNS(1000000ull); // Really pause the thread for 1-2ms (depending on the OS)
+#ifdef _WIN32
+      else if (end - now > 1000000ull)
+         SDL_DelayNS(500000ull); // 0.5-1ms with the high resolution waitable timer SDL uses (Windows 10 1803+), else no wait (spins)
 #endif
       else
-         YieldProcessor(); // was: "SwitchToThread() let other threads on same core run" //!! could also try Sleep(0) or directly use _mm_pause() instead of YieldProcessor() here
-
-#ifdef _MSC_VER
-      QueryPerformanceCounter(&TimerNow);
-#else
-      TimerNow.QuadPart = SDL_GetPerformanceCounter();
-#endif
+         SDL_CPUPauseInstruction();
    }
-//#else
-//   usleep(u); // could use udelay or nanosleep instead of usleep if usec < ~10 needed! //!! seems like in practice, usleep is also not very precise AND nanosleep too CPU heavy, all very OS/platform dependent
-//#endif
 }
 
 //

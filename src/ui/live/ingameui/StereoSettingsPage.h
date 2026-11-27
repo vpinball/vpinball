@@ -31,8 +31,8 @@ private:
    VPX::Properties::PropertyRegistry::PropId GetCalibratedProperty() const;
    int m_calibrationStep = -1;
    float m_backgroundOpacity = 1.f;
-   uint32_t m_lastUpdateMs = 0;
-   uint32_t m_pressStartMs = 0;
+   uint64_t m_lastUpdateNs = 0; // SDL_GetTicksNS() of the last held adjustment step
+   uint64_t m_pressStartMs = 0;
 
    void NotifyDirectSave();
    bool m_notificationDone = false;

@@ -45,7 +45,7 @@ private:
    PlotData m_nudgeXRawPlot2;
    PlotData m_nudgeYRawPlot2;
 
-   uint32_t m_resetTimestampMs = 0;
+   uint64_t m_resetTimestampMs = 0;
    int2 m_sensorAcqPeriod;
 
    bool m_removed = false;

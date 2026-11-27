@@ -240,7 +240,7 @@ private:
    {
       bool valid = false;
       bool left = false;
-      uint64_t eventUs = 0;       // When the input device reported the press (usec() time base)
+      uint64_t eventUs = 0;       // When the input device reported the press (us, SDL_GetTicksNS time base)
       uint64_t processedUs = 0;   // When VPX processed it (fired the KeyDown)
       int64_t gameUs = 0;         // Game time matching eventUs
       unsigned int pollGapUs = 0; // Gap between the input processing that saw the press and the previous one
@@ -354,7 +354,7 @@ private:
    class SDLInputHandler* m_sdlHandler = nullptr;
 
    void Autostart(const uint32_t initialDelayMs, const uint32_t retryDelayMs);
-   uint32_t m_autoStartTimestamp = 0;
+   uint64_t m_autoStartTimestamp = 0;
    bool m_gameStartedOnce = false;
    bool m_acceptStartupEvents = false;
    bool m_autoStartPressed = false;
@@ -369,14 +369,14 @@ private:
    {
       float low = 0.f;
       float high = 0.f;
-      uint32_t endMs = 0;
+      uint64_t endMs = 0;
    };
    static constexpr int RUMBLE_PULSE_SLOTS = 8;
    RumblePulse m_rumblePulses[RUMBLE_PULSE_SLOTS];
    std::mutex m_rumbleMutex;
    float m_rumbleSentLow = 0.f; // What the device is currently playing
    float m_rumbleSentHigh = 0.f;
-   uint32_t m_rumbleSentEndMs = 0;
+   uint64_t m_rumbleSentEndMs = 0;
    bool m_rumbleSentKickLow = false;
    bool m_rumbleSentKickHigh = false;
    // A new pulse at RUMBLE_KICK_MIN_LEVEL or above is flagged as a kick for RUMBLE_KICK_MS (see PlayRumble).
@@ -386,9 +386,9 @@ private:
    static constexpr float RUMBLE_KICK_MIN_LEVEL = (0.6f - 0.3f) / 0.7f; // level from which a pulse gets the kick; pulses meant as a light touch stay below it
    float m_rumbleMixLow = 0.f; // The mix before the kick, to tell a new hit from a kick ending
    float m_rumbleMixHigh = 0.f;
-   uint32_t m_rumbleKickLowEndMs = 0;
-   uint32_t m_rumbleKickHighEndMs = 0;
-   void UpdateRumbleOutput(const uint32_t now); // m_rumbleMutex must be held
+   uint64_t m_rumbleKickLowEndMs = 0;
+   uint64_t m_rumbleKickHighEndMs = 0;
+   void UpdateRumbleOutput(const uint64_t now); // m_rumbleMutex must be held
    void SendRumble(const float low, const float high, const int ms_duration, const bool kickLow, const bool kickHigh);
    float m_rumbleFlipperContact = 1.f; // Strength of the rumble played on flipper/ball contact, 0 disables it
    float m_rumbleBumper = 1.f; // Strength of the bumper rumble, 0 disables it

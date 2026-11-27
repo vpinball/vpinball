@@ -146,8 +146,6 @@ WinEditor::WinEditor(HINSTANCE appInstance)
            ShowError("Unable to load SciLexerVP.DLL or SciLexer.DLL");
        #endif
    }
-
-   wintimer_init();
 }
 
 //Releases Resources for Script editor

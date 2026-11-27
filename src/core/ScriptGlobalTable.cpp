@@ -777,7 +777,7 @@ STDMETHODIMP ScriptGlobalTable::get_PreciseGameTime(double *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_SystemTime(LONG *pVal)
 {
-   *pVal = msec();
+   *pVal = static_cast<LONG>(static_cast<uint32_t>(SDL_GetTicks()));
    return S_OK;
 }
 

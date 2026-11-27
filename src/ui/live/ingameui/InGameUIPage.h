@@ -120,7 +120,11 @@ public:
    }
    void BrowseForPath(const InGameUIItem& item);
 
+   // Seconds since the page creation, for plots (relative, to keep the float precision)
+   float GetPlotTime() const { return static_cast<float>(static_cast<double>(SDL_GetTicksNS() - m_creationTimeNs) / 1000000000.); }
+
 private:
+   const uint64_t m_creationTimeNs = SDL_GetTicksNS();
    bool HasSelectableItem() const; // Selection loops search for a selectable item, so they must not run without one
 
    const string m_title;
@@ -144,8 +148,8 @@ private:
    ImVec2 m_windowSize = ImVec2(0.f, 0.f);
    bool m_windowHovered = false;
    float m_adjustedValue = 0.f;
-   uint32_t m_lastUpdateMs = 0;
-   uint32_t m_pressStartMs = 0;
+   uint64_t m_lastUpdateNs = 0; // SDL_GetTicksNS() of the last held adjustment step
+   uint64_t m_pressStartMs = 0;
    string m_pressedItemLabel;
    float m_pressedItemScroll = 0.f;
    vector<std::unique_ptr<InGameUIItem>> m_items;

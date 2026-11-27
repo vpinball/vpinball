@@ -83,8 +83,8 @@ ScriptInterpreter::~ScriptInterpreter()
       if (state != SCRIPTSTATE_CLOSED && state != SCRIPTSTATE_UNINITIALIZED)
       {
          m_pScript->Close();
-         const uint32_t startWaitTick = msec();
-         while ((msec() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
+         const uint64_t startWaitTick = SDL_GetTicks();
+         while ((SDL_GetTicks() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
          {
             Sleep(16);
             m_pScript->GetScriptState(&state);
@@ -146,8 +146,8 @@ void ScriptInterpreter::Stop(PinTable *table)
    if (state != SCRIPTSTATE_CLOSED && state != SCRIPTSTATE_UNINITIALIZED)
    {
       m_pScript->Close();
-      const uint32_t startWaitTick = msec();
-      while ((msec() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
+      const uint64_t startWaitTick = SDL_GetTicks();
+      while ((SDL_GetTicks() - startWaitTick < 5000) && (state != SCRIPTSTATE_CLOSED))
       {
          Sleep(16);
          m_pScript->GetScriptState(&state);
@@ -207,7 +207,7 @@ void ScriptInterpreter::HangWatchLoop()
          hangReported = false;
          continue;
       }
-      if (usec() - m_scriptEnterUsec < s_hangWatchTimeoutUsec)
+      if (SDL_GetTicksNS() / 1000 - m_scriptEnterUsec < s_hangWatchTimeoutUsec)
       {
          hangReported = false;
          continue;
@@ -236,7 +236,7 @@ void ScriptInterpreter::ExitScriptModal()
    if (m_scriptModalCount > 0)
       m_scriptModalCount--;
    // a script call may go on after the modal state: restart the hang timeout (script thread, like OnEnterScript)
-   m_scriptEnterUsec = usec();
+   m_scriptEnterUsec = SDL_GetTicksNS() / 1000;
 }
 
 void ScriptInterpreter::AddItem(const wstring& name, IDispatch *dispatch, const bool global)
@@ -479,7 +479,7 @@ STDMETHODIMP ScriptInterpreter::OnEnterScript()
    // thread, so the enter timestamp is stored before the depth is raised, ensuring the watchdog never
    // sees a nonzero depth without a fresh timestamp.
    if (m_scriptCallDepth == 0)
-      m_scriptEnterUsec = usec();
+      m_scriptEnterUsec = SDL_GetTicksNS() / 1000;
    m_scriptCallDepth++;
    return S_OK;
 }

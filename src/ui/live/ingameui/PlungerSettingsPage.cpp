@@ -80,7 +80,7 @@ void PlungerSettingsPage::Close(bool isBackwardAnimation)
 
 void PlungerSettingsPage::AppendPlot()
 {
-   const float t = static_cast<float>((double)msec() / 1000.);
+   const float t = GetPlotTime();
    constexpr float visualRestPos = 0.1666666f;
    m_positionPlot.AddPoint(t, -m_player->m_pininput.m_plungerHandler->GetPosition(visualRestPos) + visualRestPos);
    m_velocityPlot.AddPoint(t, -m_player->m_pininput.m_plungerHandler->GetHitVelocity(visualRestPos));
@@ -120,7 +120,7 @@ void PlungerSettingsPage::RenderPlungerPlots(const ImVec4& rect)
    ImPlot::PushStyleColor(ImPlotCol_LegendBg, ImVec4(0.11f, 0.11f, 0.14f, 0.03f));
    ImGui::PushFont(nullptr, style.FontSizeBase * 0.5f); // Smaller font to keep graphics readable
 
-   const float now = static_cast<float>(static_cast<double>(msec()) / 1000.);
+   const float now = GetPlotTime();
    const float lastHitDelayMs = static_cast<float>(static_cast<double>(g_pplayer->m_time_msec - m_player->m_physics->GetLastPlungerHit()) / 1000.);
    const float tLastHit = (lastHitDelayMs < m_positionPlot.m_timeSpan) && (fmodf(now, m_positionPlot.m_timeSpan) >= fmodf(now - lastHitDelayMs, m_positionPlot.m_timeSpan))
       ? fmodf(now - lastHitDelayMs, m_positionPlot.m_timeSpan)

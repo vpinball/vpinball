@@ -320,10 +320,7 @@ void Renderer::ApplyTableSettings()
    // Cache DMD renderer properties
    for (int profile = 0; profile < (int)std::size(m_dmdUseLegacyRenderer); profile++)
    {
-      m_dmdUseLegacyRenderer[profile] = m_table->GetSettings().GetDMD_ProfileLegacy(profile);
-#if !defined(ENABLE_BGFX)
-      m_dmdUseLegacyRenderer[profile] = false; // Only available for BGFX
-#endif
+      m_dmdUseLegacyRenderer[profile] = m_table->GetSettings().GetDMD_ProfileLegacy(profile); // Only used with BGFX, see IsLegacyDMDRenderer
       m_dmdDotColor[profile] = convertColor(m_table->GetSettings().GetDMD_ProfileDotTint(profile), m_table->GetSettings().GetDMD_ProfileDotBrightness(profile));
       m_dmdDotProperties[profile].x = m_table->GetSettings().GetDMD_ProfileDotSize(profile);
       m_dmdDotProperties[profile].y = m_table->GetSettings().GetDMD_ProfileDotSharpness(profile);
@@ -2168,7 +2165,7 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
       RenderTarget* const backBuffer = wnd != nullptr ? wnd->GetBackBuffer() : nullptr;
       const double refreshRate = wnd != nullptr ? wnd->GetRefreshRate() : 0.;
       const int64_t frameInterval = refreshRate > 0. ? static_cast<int64_t>(1000000. / refreshRate) : 0; // Unknown display rate: no throttling
-      const int64_t now = static_cast<int64_t>(usec());
+      const int64_t now = static_cast<int64_t>(SDL_GetTicksNS() / 1000);
       int64_t& nextRenderTime = m_ancillaryWndNextRenderTime[window];
       if (!isAdjusted && !wasAdjusted && backBuffer != nullptr && backBuffer == m_ancillaryWndLastRT[window] && now + frameInterval / 2 < nextRenderTime)
          return;
@@ -2264,9 +2261,9 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
             if (!wnd->IsVisible())
             {
                wnd->Show();
-               m_ancillaryWndShowTime[window] = msec();
+               m_ancillaryWndShowTime[window] = SDL_GetTicks();
             }
-            else if (wnd->IsMinimized() && (msec() - m_ancillaryWndShowTime[window]) < demotionRepairDelay)
+            else if (wnd->IsMinimized() && (SDL_GetTicks() - m_ancillaryWndShowTime[window]) < demotionRepairDelay)
                wnd->Show();
          }
 
@@ -2275,7 +2272,7 @@ void Renderer::RenderAncillaryWindow(VPXWindowId window, const VPX::RenderOutput
             assert(false); // This is disabled for the time being
             static std::array<string, 3> tonemapPassNames = { "Backglass Tonemap"s, "ScoreView Tonemap"s, "Topper Tonemap"s };
             const string& tonemapPassName = tonemapPassNames[window - VPXWindowId::VPXWINDOW_Backglass];
-            const float jitter = (float)((msec() & 2047) / 1000.0);
+            const float jitter = (float)((SDL_GetTicks() & 2047) / 1000.0);
             rd->ResetRenderState();
             rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
             rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);

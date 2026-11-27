@@ -136,7 +136,7 @@ public:
    bool IsAxisReversed() const { return m_isAxisReversed; } // if true, the button is pressed when axis value is below threshold
 
    // Temporary fields used during capture of analog axis as button mapping
-   uint32_t m_buttonCaptureStartMs = 0;
+   uint64_t m_buttonCaptureStartMs = 0;
    int m_buttonCapturePos = 0;
 
 private:

@@ -392,8 +392,6 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
 
    //----------------------------------------------------------------------------------
 
-   // We need to initialize the perf counter before creating the UI which uses it
-   wintimer_init();
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
    // Route the texture manager memory pressure notifications to the in-game UI
    m_renderer->m_renderDevice->m_texMan.m_notify = [this](const string& message, int lengthMs, unsigned int reuseId) -> unsigned int {
@@ -539,7 +537,7 @@ void Player::UpdateStartupLoadingScreen(const string& phase)
    if (wasHeld)
       UnlockRenderThread();
    RenderDevice *const rd = m_renderer->m_renderDevice;
-   for (const uint64_t start = usec(); usec() - start < 100000;)
+   for (const uint64_t start = SDL_GetTicksNS() / 1000; SDL_GetTicksNS() / 1000 - start < 100000;)
    {
       ProcessOSMessages();
       if (rd->m_frameRequested && !rd->m_framePending && rd->m_frameMutex.try_lock())
@@ -550,7 +548,7 @@ void Player::UpdateStartupLoadingScreen(const string& phase)
          m_frameMutexHeld = false;
          break;
       }
-      uOverSleep(1000);
+      SDL_DelayNS(1000);
    }
    if (wasHeld)
       LockRenderThread();
@@ -1001,7 +999,7 @@ void Player::InitTableSession(const bool isInitial)
             else
 #endif
             {
-               uOverSleep(100000);
+               SDL_DelayNS(100000);
             }
          }
          else
@@ -1118,7 +1116,7 @@ void Player::InitTableSession(const bool isInitial)
    // Update the play statistics of the frontend info file along the table (see docs/FileLayout.md)
    m_trackTableSessionStats = !IsEditorMode() && (m_playMode != PlayMode::CaptureAttract);
    m_tableSessionPlayTime = 0;
-   m_tableSessionStartTime = (m_trackTableSessionStats && m_playing) ? usec() : 0;
+   m_tableSessionStartTime = (m_trackTableSessionStats && m_playing) ? SDL_GetTicksNS() / 1000 : 0;
    if (m_trackTableSessionStats)
       m_ptable->UpdateInfoFileOnGameStart();
 }
@@ -1206,7 +1204,7 @@ void Player::ShutdownTableSession()
    {
       if (m_tableSessionStartTime != 0)
       {
-         m_tableSessionPlayTime += usec() - m_tableSessionStartTime;
+         m_tableSessionPlayTime += SDL_GetTicksNS() / 1000 - m_tableSessionStartTime;
          m_tableSessionStartTime = 0;
       }
       m_trackTableSessionStats = false;
@@ -1760,7 +1758,7 @@ void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseM
       if (m_playing)
       {
          if (m_trackTableSessionStats)
-            m_tableSessionStartTime = usec();
+            m_tableSessionStartTime = SDL_GetTicksNS() / 1000;
          m_noTimeCorrect = true; // Disable physics engine time correction on next physic update
          UnpauseMusic();
          PLOGI << "Unpausing Game";
@@ -1771,7 +1769,7 @@ void Player::SetPlayState(const bool isPlaying, const uint32_t delayBeforePauseM
       {
          if (m_tableSessionStartTime != 0)
          {
-            m_tableSessionPlayTime += usec() - m_tableSessionStartTime;
+            m_tableSessionPlayTime += SDL_GetTicksNS() / 1000 - m_tableSessionStartTime;
             m_tableSessionStartTime = 0;
          }
          PauseMusic();
@@ -1946,8 +1944,8 @@ string Player::GetPerfInfo()
 {
    // Make it more or less readable by updating only once per second
    static string txt;
-   static uint32_t lastUpdate = 0;
-   const uint32_t now = msec();
+   static uint64_t lastUpdate = 0;
+   const uint64_t now = SDL_GetTicks();
    if (lastUpdate != 0 && now - lastUpdate < 1000)
       return txt;
 
@@ -2062,7 +2060,7 @@ void Player::ProcessOSMessages(const bool isInitialized)
    if (std::this_thread::get_id() != m_osThreadId)
       return;
 
-   const uint64_t startTick = usec();
+   const uint64_t startTick = SDL_GetTicksNS() / 1000;
    SDL_Event e;
    bool isPFWnd = true;
    static Vertex2D dragStart;
@@ -2192,7 +2190,7 @@ void Player::ProcessOSMessages(const bool isInitialized)
       m_pininput.HandleSDLEvent(e);
 
       // Limit to 1ms of OS message processing per call
-      if ((usec() - startTick) > 1000ull)
+      if ((SDL_GetTicksNS() / 1000 - startTick) > 1000ull)
          break;
    }
 
@@ -2248,14 +2246,14 @@ public:
          m_player->FireTimers(-2);
          m_player->m_physics->UpdatePhysics(m_captureTime);
          m_player->m_pluginManager.ProcessAsyncCallbacks();
-         m_captureStartupEndTime = usec();
+         m_captureStartupEndTime = SDL_GetTicksNS() / 1000;
          m_captureStartupEndPhysicsTime = m_player->m_physics->GetCurrentTime();
       }
 
       // Run 1s of normal emulation to stabilize
       if (m_player->m_physics->GetCurrentTime() < m_captureStartupEndPhysicsTime + 1000000)
       {
-         m_captureTime = m_captureStartupEndPhysicsTime + usec() - m_captureStartupEndTime;
+         m_captureTime = m_captureStartupEndPhysicsTime + SDL_GetTicksNS() / 1000 - m_captureStartupEndTime;
       }
 
       // Stepped emulation & rendering at the capture frequency
@@ -2421,9 +2419,9 @@ private:
    int m_captureFrameNumber = 1;
    bool m_captureRequested = false;
 
-   uint64_t m_captureTime = usec();
-   uint64_t m_captureStartupEndTime = usec();
-   uint64_t m_captureStartupEndPhysicsTime = usec();
+   uint64_t m_captureTime = SDL_GetTicksNS() / 1000;
+   uint64_t m_captureStartupEndTime = SDL_GetTicksNS() / 1000;
+   uint64_t m_captureStartupEndPhysicsTime = SDL_GetTicksNS() / 1000;
 
    int m_nLights;
    vector<vector<float>> m_lightStates;
@@ -2462,7 +2460,7 @@ void Player::UpdateGameLogic()
          // Catching it up would make PinMAME (time fenced on game time by core.vbs) race forward, and the audio produced meanwhile would add the stall
          // to the audio latency for the rest of the session. Shorter lags (slow frames, long script calls) are fully simulated
          constexpr uint64_t maxCatchUp = 100000; // [us]
-         const uint64_t now = usec();
+         const uint64_t now = SDL_GetTicksNS() / 1000;
          if (m_physics->IsStarted() && now > m_physics->GetCurrentTime() + maxCatchUp)
             m_physics->SkipTime(now - (m_physics->GetCurrentTime() + maxCatchUp));
          m_physics->UpdatePhysics(now); // Update physics (also triggering events, syncing with controller)
@@ -2555,7 +2553,7 @@ void Player::MultithreadedGameLoop()
 #else
          // Sadly waiting is very imprecise (at least on Windows) and we suffer a bit from it.
          // On Windows 10/11 experiments show a minimum delay around 300-500us (half a ms) leading to an overall latency around 2ms
-         uOverSleep(100000);
+         SDL_DelayNS(100000);
 #endif
          // The other option would be to use spin wait to achieve sub ms overall latency but this is too CPU intensive:
          // YieldProcessor();
@@ -2566,7 +2564,7 @@ void Player::MultithreadedGameLoop()
    // Flush any pending frame
    {
       while (m_renderer->m_renderDevice->m_framePending || !m_renderer->m_renderDevice->m_frameMutex.try_lock())
-         uOverSleep(100000);
+         SDL_DelayNS(100000);
       FinishFrame();
       m_renderer->m_renderDevice->m_frameMutex.unlock();
    }
@@ -2612,7 +2610,7 @@ void Player::GPUQueueStuffingGameLoop()
       // Adjust framerate if requested by user (i.e. not using a synchronization mode that will lead to blocking calls aligned to the display refresh rate)
       if (m_videoSyncMode == VideoSyncMode::VSM_NONE || m_maxFramerate < m_playfieldWnd->GetRefreshRate()) // The synchronization is not already performed by VSYNC
       {
-         const int timeForFrame = static_cast<int>(usec() - m_startFrameTick);
+         const int timeForFrame = static_cast<int>(SDL_GetTicksNS() / 1000 - m_startFrameTick);
          const int targetTime = static_cast<int>(1000000. / (double)m_maxFramerate);
          if (timeForFrame < targetTime)
          {
@@ -2679,12 +2677,12 @@ void Player::FramePacingGameLoop()
 
       UpdateGameLogic();
 
-      PLOGI_IF(debugLog) << "Frame Collect [Last frame length: " << ((double)m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME) / 1000.0) << "ms] at " << usec();
+      PLOGI_IF(debugLog) << "Frame Collect [Last frame length: " << ((double)m_renderProfiler->GetPrev(FrameProfiler::PROFILE_FRAME) / 1000.0) << "ms] at " << SDL_GetTicksNS() / 1000;
       PrepareFrame();
 
       UpdateGameLogic();
 
-      PLOGI_IF(debugLog) << "Frame Submit at " << usec();
+      PLOGI_IF(debugLog) << "Frame Submit at " << SDL_GetTicksNS() / 1000;
       SubmitFrame();
       m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
 
@@ -2699,7 +2697,7 @@ void Player::FramePacingGameLoop()
       // If the user asked to sync on a lower frame rate than the refresh rate, then wait for it
       if (m_maxFramerate != m_playfieldWnd->GetRefreshRate())
       {
-         const uint64_t now = usec();
+         const uint64_t now = SDL_GetTicksNS() / 1000;
          const unsigned int refreshLength = static_cast<unsigned int>(1000000. / (double)m_playfieldWnd->GetRefreshRate());
          const unsigned int minimumFrameLength = static_cast<unsigned int>(1000000. / (double)m_maxFramerate);
          const unsigned int maximumFrameLength = 5 * refreshLength;
@@ -2718,7 +2716,7 @@ void Player::FramePacingGameLoop()
       #endif
       m_lastFrameSyncOnVBlank = m_curFrameSyncOnVBlank;
       m_lastFrameSyncOnFPS = m_curFrameSyncOnFPS;
-      PLOGI_IF(debugLog) << "Frame Scheduled at " << usec() << ", Waited for VBlank: " << m_curFrameSyncOnVBlank << ", Waited for FPS: " << m_curFrameSyncOnFPS;
+      PLOGI_IF(debugLog) << "Frame Scheduled at " << SDL_GetTicksNS() / 1000 << ", Waited for VBlank: " << m_curFrameSyncOnVBlank << ", Waited for FPS: " << m_curFrameSyncOnFPS;
       m_renderer->m_renderDevice->m_vsyncCount = 0;
       m_renderProfiler->ExitProfileSection(); // Out of Sleep section
       m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
@@ -2748,7 +2746,7 @@ void Player::PrepareFrame()
    m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PREPARE_FRAME);
 
    m_overall_frames++; // This causes the next VPinMAME <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
-   m_startFrameTick = usec();
+   m_startFrameTick = SDL_GetTicksNS() / 1000;
 
    m_pluginAPI.BroadcastVPXMsg(m_onPrepareFrameMsgId, nullptr);
 

@@ -337,7 +337,7 @@ STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)
 
 STDMETHODIMP Flipper::RotateToEnd() // power stroke to hit ball, key/button down/pressed
 {
-   m_lastRotateTime = usec();
+   m_lastRotateTime = SDL_GetTicksNS() / 1000;
 
    if (m_phitflipper)
    {

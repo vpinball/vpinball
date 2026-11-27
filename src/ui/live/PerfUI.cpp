@@ -111,7 +111,7 @@ void PerfUI::RenderFPS()
       bool hasFlipperLatency = false;
       const uint64_t lastLeftFlipChange = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetLeftFlipperActionId()]->GetLastStateChange();
       const uint64_t lastRightFlipChange = m_player->m_pininput.GetInputActions()[m_player->m_pininput.GetRightFlipperActionId()]->GetLastStateChange();
-      if (const uint64_t now = usec(); now < lastLeftFlipChange + 1000000ULL && now > lastRightFlipChange + 1000000ULL)
+      if (const uint64_t now = SDL_GetTicksNS() / 1000; now < lastLeftFlipChange + 1000000ULL && now > lastRightFlipChange + 1000000ULL)
       {
          for (const auto part : m_player->m_ptable->GetParts())
          {

@@ -446,8 +446,8 @@ private:
    std::unique_ptr<RenderTarget> m_ancillaryWndHdrRT[VPXWindowId::VPXWINDOW_Topper + 1];
    bool m_ancillaryWndRendered[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Whether a renderer claimed the window on the last frame
    bool m_ancillaryWndAdjusted[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Whether the window's display settings page was open on the last frame
-   uint32_t m_ancillaryWndShowTime[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // msec() of the last lazy show (a demotion is only repaired shortly after it)
-   int64_t m_ancillaryWndNextRenderTime[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // usec() deadline of the next OM_WINDOW render pass (per display refresh rate throttling)
+   uint64_t m_ancillaryWndShowTime[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // SDL_GetTicks() of the last lazy show (a demotion is only repaired shortly after it)
+   int64_t m_ancillaryWndNextRenderTime[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Deadline (us, SDL_GetTicksNS time base) of the next OM_WINDOW render pass (per display refresh rate throttling)
    RenderTarget* m_ancillaryWndLastRT[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Backbuffer of the last OM_WINDOW render pass; a change (swapchain recreation) forces a render
    int m_ancillaryWndRotation[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // Live rotation of the window content, in clockwise degrees
    vec4 m_ancillaryContentBounds[VPXWindowId::VPXWINDOW_Topper + 1] = {}; // See GetAncillaryContentBounds

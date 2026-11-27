@@ -12,8 +12,8 @@ void LoadProgress::SetProgress(const string &text, const float value)
    if (m_progress != value)
    {
       // Rate limited, as this is called once per texture of the table while loading them
-      const auto now = std::chrono::steady_clock::now();
-      if (now - m_lastLogTick >= std::chrono::seconds(1) || text != m_lastLogText)
+      const uint64_t now = SDL_GetTicks();
+      if (now - m_lastLogTick >= 1000 || text != m_lastLogText)
       {
          PLOGI.printf("%s %d%%", text.c_str(), (int)value);
          m_lastLogTick = now;

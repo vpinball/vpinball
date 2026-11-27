@@ -162,11 +162,11 @@ void InGameUI::Close()
 
 void InGameUI::Update()
 {
-   const uint32_t now = msec();
-   float elapsed = static_cast<float>(now - m_lastRenderMs) / 1000.f;
+   const uint64_t now = SDL_GetTicksNS();
+   float elapsed = static_cast<float>(static_cast<double>(now - m_lastRenderNs) / 1000000000.);
    if (elapsed > 1.f)
       elapsed = 0.f;
-   m_lastRenderMs = now;
+   m_lastRenderNs = now;
    if (m_activePages.empty())
       return;
 
@@ -234,7 +234,7 @@ void InGameUI::OnUIUpAction()
 
    const bool wasFlipperNav = m_useFlipperNav;
    m_useFlipperNav = true;
-   m_flipperNavStart = msec();
+   m_flipperNavStart = SDL_GetTicks();
    m_flipperNavRepeatCount = 0;
    if (m_player->ShouldHideDesktopCursor())
       SDL_HideCursor();
@@ -252,7 +252,7 @@ void InGameUI::OnUIDownAction()
 
    const bool wasFlipperNav = m_useFlipperNav;
    m_useFlipperNav = true;
-   m_flipperNavStart = msec();
+   m_flipperNavStart = SDL_GetTicks();
    m_flipperNavRepeatCount = 0;
    if (m_player->ShouldHideDesktopCursor())
       SDL_HideCursor();
@@ -347,7 +347,7 @@ void InGameUI::HandlePageInput()
       m_useFlipperNav |= page->IsFlipperNavNeeded();
 
    // Handle continuous press navigation
-   const uint32_t now = msec();
+   const uint64_t now = SDL_GetTicks();
    const uint32_t flipperNavRepeat = m_flipperNavRepeatCount == 0 ? 500 : m_flipperNavRepeatCount == 1 ? 250 : 125;
    const bool prevPressed = input.IsPressed(input.GetUIUpActionId()) || input.IsPressed(input.GetLeftMagnaActionId());
    const bool nextPressed = input.IsPressed(input.GetUIDownActionId()) || input.IsPressed(input.GetRightMagnaActionId());

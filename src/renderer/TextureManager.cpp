@@ -337,7 +337,7 @@ std::shared_ptr<Sampler> TextureManager::CreateSampler(MapEntry& entry, const Sa
 void TextureManager::NotifyPressure()
 {
    PLOGW << "GPU memory budget reached: " << (m_gpuMemUsed >> 20) << " / " << (m_gpuMemBudget >> 20) << " MB used, " << (m_managedBytes >> 20) << " MB of managed textures";
-   const uint32_t now = msec();
+   const uint64_t now = SDL_GetTicks();
    if (now < m_pressureNotifCooldown || !m_notify)
       return;
    m_pressureNotifCooldown = now + 30 * 1000; // Rate limit the notifications

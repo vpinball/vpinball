@@ -577,9 +577,9 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
             if (hitTarget != m_hDropTarget)
             {
                m_hDropTarget = hitTarget;
-               m_dropTargetSince = GetTickCount64();
+               m_dropTargetSince = SDL_GetTicks();
             }
-            else if ((GetTickCount64() - m_dropTargetSince) >= DROP_DWELL_MS)
+            else if ((SDL_GetTicks() - m_dropTargetSince) >= DROP_DWELL_MS)
                Expand(hitTarget, TVE_EXPAND);
          }
          ImageList_DragShowNolock(TRUE);
@@ -620,7 +620,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
             }
             // Reparenting a layer by drag & drop is rare and easily triggered by accident, so it requires dwelling on the drop target
             const bool isLayerDrop = std::ranges::any_of(reparented, [](const IEditable* e) { return e->GetItemType() == eItemPartGroup; });
-            if (!reparented.empty() && (!isLayerDrop || ((GetTickCount64() - m_dropTargetSince) >= DROP_DWELL_MS)))
+            if (!reparented.empty() && (!isLayerDrop || ((SDL_GetTicks() - m_dropTargetSince) >= DROP_DWELL_MS)))
             {
                SelectItem(hSelectedDrop);
                m_activeTableEditor->BeginUndo();
@@ -681,7 +681,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
       ImageList_DragEnter(GetHwnd(), lpnmtv->ptDrag.x, lpnmtv->ptDrag.y);
       m_DragItems.push_back(lpnmtv->itemNew.hItem);
       m_hDropTarget = nullptr;
-      m_dropTargetSince = GetTickCount64();
+      m_dropTargetSince = SDL_GetTicks();
       SetCapture();
       m_dragging = true;
       return TRUE;

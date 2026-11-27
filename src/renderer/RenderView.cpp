@@ -1299,8 +1299,8 @@ void RenderView::SetupTonemapping(RenderTarget* renderedRT, RenderTarget* tonema
 {
    Renderer* const r = m_renderer;
    RenderDevice* const rd = r->m_renderDevice;
-   //const unsigned int jittertime = (unsigned int)((uint64_t)msec()*90/1000);
-   //const float jitter = (float)((msec() & 2047) / 1000.0);
+   //const unsigned int jittertime = (unsigned int)(SDL_GetTicks()*90/1000);
+   //const float jitter = (float)((SDL_GetTicks() & 2047) / 1000.0);
    const float jitter = (float)(radical_inverse(g_pplayer->m_overall_frames % 2048) / 1000.0); // Deterministic jitter to ensure stable render for regression tests
    const bool useAO = r->GetAOMode() == 2;
 

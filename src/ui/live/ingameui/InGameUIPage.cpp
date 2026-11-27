@@ -296,21 +296,22 @@ void InGameUIPage::AdjustItem(float direction, bool isInitialPress)
    if (m_selectedItem < 0 || m_selectedItem >= (int)m_items.size())
       return;
    const auto& item = m_items[m_selectedItem];
-   const uint32_t now = msec();
+   const uint64_t nowNs = SDL_GetTicksNS();
+   const uint64_t now = nowNs / 1000000;
    if (isInitialPress)
    {
       m_pressedItemLabel = item->m_label;
       m_pressStartMs = now;
-      m_lastUpdateMs = now;
+      m_lastUpdateNs = nowNs;
    }
    else if (m_pressedItemLabel != item->m_label)
    {
       // Different item, discard
       return;
    }
-   const float elapsed = static_cast<float>(now - m_lastUpdateMs) / 1000.f;
-   m_lastUpdateMs = now;
-   const uint32_t elapsedSincePress = now - m_pressStartMs;
+   const float elapsed = static_cast<float>(static_cast<double>(nowNs - m_lastUpdateNs) / 1000000000.);
+   m_lastUpdateNs = nowNs;
+   const uint64_t elapsedSincePress = now - m_pressStartMs;
    float speedFactor;
    if (elapsedSincePress < 250)
       speedFactor = 1.0f;

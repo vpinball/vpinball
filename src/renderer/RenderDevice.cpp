@@ -689,7 +689,7 @@ void RenderDevice::BGFXOpenXRRenderLoop(const bgfx::Init& init)
             ProcessVRScreenshot();
             const bgfx::Stats* stats = bgfx::getStats();
             const uint64_t bgfxSubmit = (stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq;
-            g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
+            g_pplayer->m_logicProfiler.OnPresented(SDL_GetTicksNS() / 1000 - bgfxSubmit);
             g_pplayer->m_renderProfiler->ExitProfileSection();
             g_pplayer->m_renderProfiler->AdjustBGFXSubmit(static_cast<uint32_t>(bgfxSubmit));
             END_SPAN(tagSpan)
@@ -983,7 +983,7 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
 
       // Submit from BGFX to GPU and schedule swapchain flip, eventually blocking until a VSYNC happens if enabled and the swapchain queue is filled
       {
-         const uint64_t now = usec();
+         const uint64_t now = SDL_GetTicksNS() / 1000;
          BEGIN_SPAN(tagSpan, "BGFX->GPU")
          lastSubmitTimestamp = now;
          g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
@@ -998,7 +998,7 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
          }
          // If we have waited for a VSYNC, we can adjust the estimated present time to be just before the end of the wait
          if (needsVSync)
-            m_presentTimestampReference = usec();
+            m_presentTimestampReference = SDL_GetTicksNS() / 1000;
          END_SPAN(tagSpan)
       }
 
@@ -1023,7 +1023,7 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
          bgfx::waitForSwapchain();
          g_pplayer->m_renderProfiler->ExitProfileSection();
          // Evaluate latency as the delay between when we submitted the frame data and when the swapchain has an empty slot (as this denotes that the Present operation has been performed)
-         const uint64_t now = usec();
+         const uint64_t now = SDL_GetTicksNS() / 1000;
          m_renderLatency = static_cast<float>((double)(now - lastSubmitTimestamp) / 1000000.0) // Time spent since pushing data to the GPU until consumed by swapchain
             + static_cast<float>(init.swapChain.maxFrameLatency - 1) / m_outputWnd[0]->GetRefreshRate(); // Time that will be spent in the GPU queue before display (if any)
          END_SPAN(tagSpan)
@@ -1060,7 +1060,7 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
       {
          BEGIN_SPAN(tagSpan, "WaitSync")
          g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
-         const uint64_t now = usec();
+         const uint64_t now = SDL_GetTicksNS() / 1000;
          if (const uint64_t targetTimeStamp = lastSyncTimestamp + targetFrameLength; now < targetTimeStamp)
          {
             // PLOGI << std::format("Soft sleep: {:5.3f}ms", (targetTimeStamp - now) / 1000.);
@@ -1069,7 +1069,7 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
          g_pplayer->m_renderProfiler->ExitProfileSection();
          END_SPAN(tagSpan)
       }
-      lastSyncTimestamp = usec();
+      lastSyncTimestamp = SDL_GetTicksNS() / 1000;
 
       {
          // Push present event (used to evaluate input latency) as we have either waited for VSync or performed software FPS throttling
@@ -2384,13 +2384,13 @@ unsigned int RenderDevice::GetTargetFrameLength() const
 
 float RenderDevice::GetPredictedDisplayDelay() const
 {
-   const uint64_t now = usec();
+   const uint64_t nowNs = SDL_GetTicksNS();
+   const uint64_t now = nowNs / 1000;
    if (g_pplayer->m_vrDevice)
    {
       // Use OpenXR display time prediction
-      const float nowS = (float)((double)now / 1000000.);
-      const float displayTimestamp = g_pplayer->m_vrDevice->GetPredictedDisplayTimestamp();
-      return nowS < displayTimestamp ? displayTimestamp - nowS : 0.f;
+      const int64_t delayNs = g_pplayer->m_vrDevice->GetPredictedDisplayTimestampNs() - static_cast<int64_t>(nowNs);
+      return delayNs > 0 ? static_cast<float>(static_cast<double>(delayNs) / 1000000000.) : 0.f;
    }
    else if (const uint64_t targetFrameLength = GetTargetFrameLength(); targetFrameLength == 0)
    {
@@ -2439,7 +2439,7 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
          m_pD3DDeviceEx->WaitForVBlank(0);
       #endif
 #endif
-      m_presentTimestampReference = usec();
+      m_presentTimestampReference = SDL_GetTicksNS() / 1000;
       m_vsyncCount++; // Last: signals the vertical blank (and its timestamp) to the logic thread
    };
    if (asynchronous)
@@ -2553,14 +2553,14 @@ void RenderDevice::Flip()
    #elif defined(ENABLE_OPENGL)
    SDL_GL_SwapWindow(m_outputWnd[0]->GetCore());
    if (!m_isVR)
-      g_pplayer->m_logicProfiler.OnPresented(usec());
+      g_pplayer->m_logicProfiler.OnPresented(SDL_GetTicksNS() / 1000);
    if (m_screenshotFrameDelay > 0)
       CaptureGLScreenshot();
 
    #elif defined(ENABLE_DX9)
    CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
    if (!m_isVR)
-      g_pplayer->m_logicProfiler.OnPresented(usec());
+      g_pplayer->m_logicProfiler.OnPresented(SDL_GetTicksNS() / 1000);
    if (m_screenshotFrameDelay > 0)
       CaptureDX9Screenshot();
 
@@ -2941,7 +2941,7 @@ void RenderDevice::SubmitRenderFrame()
    const bool rendered = m_renderFrame->Execute(m_logNextFrame);
    if (rendered)
       m_logNextFrame = false;
-   m_lastPresentFrameTick = usec();
+   m_lastPresentFrameTick = SDL_GetTicksNS() / 1000;
 }
 
 void RenderDevice::DiscardRenderFrame()

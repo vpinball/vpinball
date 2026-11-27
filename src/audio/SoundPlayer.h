@@ -6,7 +6,6 @@
 #include "ThreadPool.h"
 
 #include <atomic>
-#include <chrono>
 
 struct ma_decoder;
 struct ma_sound;
@@ -77,7 +76,7 @@ private:
    float m_dopplerFactor = 1.f;
    float m_lastDistance = 0.f;
    bool m_hasLastDistance = false;
-   std::chrono::steady_clock::time_point m_lastPosTime;
+   uint64_t m_lastPosTimeNs = 0;
 
    // Shared with the loop-restart task enqueued by OnSoundEnd on the audio thread, so a task
    // dispatched around destruction never calls ma_sound_start on an uninitialized/freed sound

@@ -13,12 +13,12 @@ unsigned int NotificationOverlay::PushNotification(const string &message, const 
    if (notif != m_notifications.end())
    {
       notif->message = message;
-      notif->disappearTick = msec() + lengthMs;
+      notif->disappearTick = SDL_GetTicks() + lengthMs;
       return reuseId;
    }
    else
    {
-      m_notifications.emplace_back(m_nextNotificationIs, message, msec() + lengthMs);
+      m_notifications.emplace_back(m_nextNotificationIs, message, SDL_GetTicks() + lengthMs);
       m_nextNotificationIs++;
       return m_nextNotificationIs - 1;
    }
@@ -27,7 +27,7 @@ unsigned int NotificationOverlay::PushNotification(const string &message, const 
 void NotificationOverlay::Update(bool showNotification, ImFont * font)
 {
    const std::lock_guard<std::mutex> lock(m_mutex);
-   const uint32_t tick = msec();
+   const uint64_t tick = SDL_GetTicks();
    const auto& io = ImGui::GetIO();
    float notifY = io.DisplaySize.y * 0.25f;
    ImGui::PushFont(font, font->LegacySize);

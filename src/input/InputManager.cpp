@@ -517,7 +517,7 @@ void InputManager::ProcessInput()
    if (IsUIPointerScrollingActive())
    {
       // ProcessInput runs at the logic loop rate (many times per rendered frame with the multithreaded loop): scroll by elapsed time
-      const uint64_t nowUs = usec();
+      const uint64_t nowUs = SDL_GetTicksNS() / 1000;
       const float elapsedS = m_lastUIScrollUs == 0 ? 0.f : std::min(0.1f, static_cast<float>(nowUs - m_lastUIScrollUs) * 1e-6f);
       m_lastUIScrollUs = nowUs;
       float wheelX = 0.f, wheelY = 0.f;
@@ -543,7 +543,7 @@ void InputManager::ProcessInput()
    if (m_player->m_ptable->m_tblAutoStartEnabled)
       Autostart(m_player->m_ptable->m_tblAutoStart, m_player->m_ptable->m_tblAutoStartRetry);
    if (m_autoStartTimestamp == 0) // Check if we've been initialized.
-      m_autoStartTimestamp = msec();
+      m_autoStartTimestamp = SDL_GetTicks();
 
    // Update continuous actions
    for (const auto action : m_onUpdateActions)
@@ -552,7 +552,7 @@ void InputManager::ProcessInput()
    // Process axis capture: if we have rested long enough, register the button release and stop capture
    if (m_buttonCaptureState == 1)
    {
-      const uint32_t ms = msec();
+      const uint64_t ms = SDL_GetTicks();
       for (ButtonMapping& bm : m_buttonCapture)
       {
          if (bm.m_buttonCapturePos != 0 && ms > bm.m_buttonCaptureStartMs + 200)
@@ -827,7 +827,7 @@ void InputManager::PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t ti
       if (!wasCaptured && (posId == 1 || posId == 3)) // We have a pressed position (either -1 or 1), but we need to keep it long enough to validate it
       {
          m_buttonCapture.emplace_back(nullptr, nullptr, deviceId, axisId);
-         m_buttonCapture.back().m_buttonCaptureStartMs = msec();
+         m_buttonCapture.back().m_buttonCaptureStartMs = SDL_GetTicks();
          m_buttonCapture.back().m_buttonCapturePos = -posId;
       }
       else if (wasCaptured)
@@ -844,7 +844,7 @@ void InputManager::PushAxisEvent(uint16_t deviceId, uint16_t axisId, uint64_t ti
          else if ((posId == 1 && !it->IsAxisReversed()) || (posId == 2) || (posId == 3 && it->IsAxisReversed()))
          {
             // We have reached a sensible rest position (either -1, 0 or 1), but we need to keep it long enough to validate it
-            it->m_buttonCaptureStartMs = msec();
+            it->m_buttonCaptureStartMs = SDL_GetTicks();
             it->m_buttonCapturePos = posId;
          }
          else
@@ -1045,7 +1045,12 @@ void InputManager::CreateInputActions()
          }))->GetActionId();
 
    m_perfOverlayActionId = AddAction(
+#ifdef __APPLE__
+      // macOS reserves F11 ('Show Desktop')
+      std::make_unique<InputAction>(this, "PerfOverlay"s, "Toggle Perf. Overlay"s, keyMapping(SDL_SCANCODE_F1),
+#else
       std::make_unique<InputAction>(this, "PerfOverlay"s, "Toggle Perf. Overlay"s, keyMapping(SDL_SCANCODE_F11),
+#endif
          [this](const InputAction&, bool, bool isPressed)
          {
             if (isPressed)
@@ -1465,17 +1470,17 @@ void InputManager::PlayRumble(const float lowFrequencySpeed, const float highFre
       high = 0.f;
    if (low <= 0.f && high <= 0.f)
       return;
-   const uint32_t now = msec();
+   const uint64_t now = SDL_GetTicks();
 
    std::lock_guard<std::mutex> lock(m_rumbleMutex);
    // Take a free slot. With all slots busy, a pulse that would not change the mix - no stronger on either motor
    // and not outlasting it - is not needed; anything else replaces the weakest.
-   const uint32_t endMs = now + static_cast<uint32_t>(max(ms_duration, 1));
+   const uint64_t endMs = now + static_cast<uint64_t>(max(ms_duration, 1));
    int slot = -1;
    float weakest = 2.f;
    float mixLow = 0.f;
    float mixHigh = 0.f;
-   uint32_t mixEndMs = 0;
+   uint64_t mixEndMs = 0;
    for (int i = 0; i < RUMBLE_PULSE_SLOTS; i++)
    {
       const RumblePulse& p = m_rumblePulses[i];
@@ -1523,20 +1528,20 @@ void InputManager::UpdateRumble()
       {
          for (RumblePulse& p : m_rumblePulses)
             p.endMs = 0;
-         UpdateRumbleOutput(msec());
+         UpdateRumbleOutput(SDL_GetTicks());
       }
       return;
    }
-   UpdateRumbleOutput(msec());
+   UpdateRumbleOutput(SDL_GetTicks());
 }
 
-void InputManager::UpdateRumbleOutput(const uint32_t now)
+void InputManager::UpdateRumbleOutput(const uint64_t now)
 {
    // Strongest active pulse per motor; the output lasts until the last active pulse ends and is re-evaluated
    // every frame, so it steps down to the next pulse once the strongest has run out.
    float low = 0.f;
    float high = 0.f;
-   uint32_t endMs = 0;
+   uint64_t endMs = 0;
    for (const RumblePulse& p : m_rumblePulses)
    {
       if (p.endMs <= now)
@@ -1695,14 +1700,14 @@ void InputManager::Autostart(const uint32_t initialDelayMs, const uint32_t retry
       return;
    }
 
-   const uint32_t now = msec();
+   const uint64_t now = SDL_GetTicks();
    if (m_autoStartTimestamp == 0)
    {
       m_autoStartTimestamp = now;
       return;
    }
 
-   const uint32_t elapsed = now - m_autoStartTimestamp;
+   const uint64_t elapsed = now - m_autoStartTimestamp;
    if (m_autoStartPressed // Start button is down.
       && (elapsed > 100)) // Start button has been down for at least 0.10 seconds.
    {
@@ -1818,7 +1823,7 @@ void InputManager::OnFlipperKeyPressed(const bool left)
 {
    if (!m_player->IsPlaying() || m_player->m_physics == nullptr)
       return;
-   const uint64_t now = usec();
+   const uint64_t now = SDL_GetTicksNS() / 1000;
    // Age of the input event (SDL event timestamps share the SDL_GetTicksNS time base)
    const uint64_t nowNs = SDL_GetTicksNS();
    const uint64_t ageUs = (m_lastButtonEventNs != 0 && m_lastButtonEventNs <= nowNs) ? min((nowNs - m_lastButtonEventNs) / 1000, (uint64_t)1000000) : 0;
@@ -1835,7 +1840,7 @@ void InputManager::OnFlipperRotateToEnd(const string& flipperName)
 {
    if (!m_flipPress.valid || m_player->m_physics == nullptr)
       return;
-   const uint64_t now = usec();
+   const uint64_t now = SDL_GetTicksNS() / 1000;
    if (now > m_flipPress.eventUs + 500000)
    {
       m_flipPress.valid = false; // Too old: not the press that turned this flipper on (e.g. a flip by the ROM alone)

@@ -316,7 +316,7 @@ void InputAction::OnInputChanged(ButtonMapping*)
 
    if (m_isPressed != wasPressed)
    {
-      m_lastOnChangeUs = usec();
+      m_lastOnChangeUs = SDL_GetTicksNS() / 1000;
       if (m_eventManager->OnInputActionStateChanged(this))
          m_onStateChange(*this, wasPressed, m_isPressed);
       if (m_isPressed && m_repeatPeriodUs >= 0)
@@ -330,7 +330,7 @@ void InputAction::OnUpdate()
 {
    if (m_isPressed)
    {
-      const uint64_t now = usec();
+      const uint64_t now = SDL_GetTicksNS() / 1000;
       if (now >= m_lastOnChangeUs + m_repeatPeriodUs)
       {
          m_lastOnChangeUs = now;
