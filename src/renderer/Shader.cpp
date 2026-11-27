@@ -535,16 +535,13 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
    m_state = new ShaderState(this, m_renderDevice->UseLowPrecision());
    m_state->Clear();
 
-   #if defined(ENABLE_BGFX)
+   #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
    for (int i = 0; i < static_cast<unsigned int>(ShaderTechnique::COUNT); i++)
+      #if defined(ENABLE_BGFX)
       if (bgfx::isValid(m_techniques[i]))
-         for (ShaderUniform uniform : m_uniforms[i])
-            if (ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniform)].type == ShaderUniformType::Sampler)
-               m_state->SetTexture(uniform, m_renderDevice->m_nullTexture);
-
-   #elif defined(ENABLE_OPENGL)
-   for (int i = 0; i < static_cast<unsigned int>(ShaderTechnique::COUNT); i++)
+      #else
       if (m_techniques[i])
+      #endif
       {
          m_boundState[i] = new ShaderState(this, m_renderDevice->UseLowPrecision());
          m_boundState[i]->Clear();
@@ -559,9 +556,6 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
       }
       else
          m_boundState[i] = nullptr;
-   #endif
-
-   #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
    // Set default values from Material.fxh for uniforms.
    if (m_stateOffsets[static_cast<unsigned int>(ShaderUniform::cBase_Alpha)] != -1)
       SetVector(ShaderUniform::cBase_Alpha, 0.5f, 0.5f, 0.5f, 1.0f);
@@ -590,6 +584,7 @@ Shader::~Shader()
    #if defined(ENABLE_BGFX)
       for (unsigned int j = 0; j < static_cast<unsigned int>(ShaderTechnique::COUNT); ++j)
       {
+         delete m_boundState[j];
          if (bgfx::isValid(m_techniques[j]))
             bgfx::destroy(m_techniques[j]);
          m_techniques[j] = BGFX_INVALID_HANDLE;
@@ -981,24 +976,7 @@ void Shader::ApplyUniform(const ShaderUniform uniformName)
    #endif
 
    const uint8_t* const src = m_state->m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)];
-   #if defined(ENABLE_BGFX)
-      // Skip uploading uniform values that did not change since their last upload. BGFX uniforms are frame
-      // global (not per program) and shared between shaders when created with the same name, so the cache is
-      // indexed by uniform handle in the render device. BGFX uniform memory being dropped at each bgfx::frame()
-      // call, cached values are tagged with the frame generation (see RenderDevice::m_uniformFrameGeneration).
-      if (bgfx::isValid(desc) && ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type != ShaderUniformType::Sampler)
-      {
-         const size_t stateSize = ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].stateSize;
-         if (desc.idx >= m_renderDevice->m_uniformCache.size())
-            m_renderDevice->m_uniformCache.resize(static_cast<size_t>(desc.idx) + 1);
-         RenderDevice::UniformCacheEntry& cacheEntry = m_renderDevice->m_uniformCache[desc.idx];
-         if (cacheEntry.generation == m_renderDevice->m_uniformFrameGeneration && cacheEntry.data.size() == stateSize && memcmp(cacheEntry.data.data(), src, stateSize) == 0)
-            return;
-         cacheEntry.data.assign(src, src + stateSize);
-         cacheEntry.generation = m_renderDevice->m_uniformFrameGeneration;
-      }
-
-   #else
+   #if !defined(ENABLE_BGFX)
    if ((ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type != ShaderUniformType::Sampler)
       && memcmp(dst, src, ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].stateSize) == 0)
    {
