@@ -614,6 +614,11 @@ void Player::InitTableSession(const bool isInitial)
    if (ViewSetup &viewSetup = m_ptable->GetViewSetup(); viewSetup.mMode == VLM_WINDOW)
       viewSetup.SetWindowModeFromSettings(m_ptable);
 
+   // Cabinet autofit, so that the loading screen already uses its view (window mode, which also decides the rotation).
+   // Applied again after the script start (see below)
+   SetCabinetAutoFitMode(m_ptable->GetSettings().GetPlayer_CabinetAutofitMode());
+   SetCabinetAutoFitPos(m_ptable->GetSettings().GetPlayer_CabinetAutofitPos());
+
    m_backglassVolume = dequantizeUnsignedPercent(m_ptable->GetSettings().GetPlayer_MusicVolume());
    m_playfieldVolume = dequantizeUnsignedPercent(m_ptable->GetSettings().GetPlayer_SoundVolume());
    m_hapticVolume = dequantizeUnsignedPercent(m_ptable->GetSettings().GetPlayer_HapticVolume());
@@ -1099,7 +1104,7 @@ void Player::InitTableSession(const bool isInitial)
    // Suspend play if started
    SetPlayState(false);
 
-   // Apply cabinet autofit (after script startup as the script may change what is visible and therefore taken in account, like a VR cabinet model)
+   // Cabinet autofit again, as the script may change what is visible and taken into account (e.g. a VR cabinet model)
    SetCabinetAutoFitMode(m_ptable->GetSettings().GetPlayer_CabinetAutofitMode());
    SetCabinetAutoFitPos(m_ptable->GetSettings().GetPlayer_CabinetAutofitPos());
    m_renderer->InvalidateLayout();
