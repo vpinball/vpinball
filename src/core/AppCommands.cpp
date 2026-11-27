@@ -266,9 +266,12 @@ void Win32EditCommand::Execute()
       }
       else if (g_settingsService.GetAppSettings().GetEditor_SelectTableOnStart())
       {
-         vpxEditor.m_table_played_via_SelectTableOnStart = vpxEditor.LoadFile(false);
-         if (vpxEditor.m_table_played_via_SelectTableOnStart)
+         if (vpxEditor.LoadFile(false))
+         {
+            // With SelectTableOnPlayerClose, closing the player proposes another table (see WinEditor's player close handling)
+            vpxEditor.m_table_played_via_SelectTableOnStart = g_settingsService.GetAppSettings().GetEditor_SelectTableOnPlayerClose();
             vpxEditor.DoPlay(0);
+         }
       }
       winApp.Run();
    }
@@ -531,7 +534,7 @@ static const CommandLineOption options[] = {
    { OPTION_PREFPATH, "PrefPath"s, "[path]  Use a custom preferences path instead of default"s },
    { OPTION_LESSCPUTHREADS, "LessCPUthreads"s, "Limit the amount of parallel execution"s },
 #ifndef ENABLE_BGFX
-   { OPTION_GLES, "GLES"s, "[value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925) [Deprecated, uses ini serttings instead]"s },
+   { OPTION_GLES, "GLES"s, "[value]  Overrides the global emission scale (day/night setting, value range: 0.115..0.925) [Deprecated, uses ini settings instead]"s },
 #endif
 };
 
