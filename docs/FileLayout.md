@@ -47,6 +47,8 @@ The settings system is based on 2 files:
 
 The table override file allows to tweak a few settings for playing a given table by overriding the settings defined in the global settings.
 
+If a profile name is set (`Global/ProfileName`), `<table name><profile>.ini` (then `<folder name><profile>.ini`) takes priority over the default override file.
+
 All the settings can be adjusted using the in-game UI, available when playing. When clicking the save button, the user is asked whether the modifications should be saved as global preferences, or as table overrides. Settings that have been overridden for the played table can be identified by a circle & dot icon in the in-game UI.
 
 For advanced uses, it is possible to specify the global and table override ini files on the command line.
@@ -81,8 +83,11 @@ Table Name (Manufacturer Year)/              <= We created a dedicated folder to
 ├── altsound/                                <= AltSound plugin will look here for altsound files
 │   └── xxx/
 │       └── ...
-├── cache/                                   <= VPX cache some informations for smoother play, they will be stored here
+├── autosave/                                <= Windows editor autosaves of the table
 │   └── ...
+├── cache/                                   <= VPX cache some informations for smoother play, in a subfolder per table file
+│   └── Table file v1.1/
+│       └── ...
 ├── medias/                                  <= This is a common folder to store frontend files (not directly linked to VPX, see below)
 │   ├── (Backglass) Table Name (Manufacturer Year).mp4
 │   ├── (Playfield) Table Name (Manufacturer Year).mp4
@@ -118,7 +123,7 @@ Table Name (Manufacturer Year)/              <= We created a dedicated folder to
 ├── Table Name.UltraDMD/                     <= Folder with FlexDMD or UltraDMD content (name is directly defined in the table script)
 │   └── ...
 ├── user/                                    <= VPX stores values saved from script in this folder
-│   └── VPReg.stg
+│   └── VPReg.ini                            <= a legacy VPReg.stg is still read if present
 └── vni/                                     <= VNI plugin will look here for colorization files
     └── xxx/
         ├── xxx.pal
@@ -162,7 +167,7 @@ The following is an example of the proposed information file format (fields coul
 	"VPX": {
 		"Version": "1.2",                  <= version of the table file that was last played
 		"LastRun": "2023-11-18T23:00:00Z", <= date of last game start
-		"StartCount": 58,                  <= number of game starts
+		"RunCount": 58,                    <= number of game starts
 		"RunTime": 11530                   <= cumulated duration of play (seconds)
 	}
 }

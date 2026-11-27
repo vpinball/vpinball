@@ -40,10 +40,10 @@ PropIntDyn(Player, PlayfieldWndX, "X Position"s, "Horizontal position of the win
 PropIntDyn(Player, PlayfieldWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
 PropIntDyn(Player, PlayfieldWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
 PropIntDyn(Player, PlayfieldHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
-PropIntDyn(Player, PlayfieldFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
-PropIntDyn(Player, PlayfieldFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
-PropFloatDyn(Player, PlayfieldRefreshRate, "Refresh Rate"s, "Fullscreen display mode refresh rate (0 = any)"s, 0.f, 1000.f, 0.f);
-PropIntDyn(Player, PlayfieldColorDepth, "Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
+PropIntDyn(Player, PlayfieldFSWidth, "Fullscreen Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
+PropIntDyn(Player, PlayfieldFSHeight, "Fullscreen Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
+PropFloatDyn(Player, PlayfieldRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate (0 = any)"s, 0.f, 1000.f, 0.f);
+PropIntDyn(Player, PlayfieldColorDepth, "Fullscreen Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
 // Backglass Window
 PropEnumDyn(Backglass, BackglassOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
    "Floating"s, "Embedded in playfield"s);
@@ -58,10 +58,10 @@ PropIntDyn(Backglass, BackglassWndX, "X Position"s, "Horizontal position of the 
 PropIntDyn(Backglass, BackglassWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
 PropIntDyn(Backglass, BackglassWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
 PropIntDyn(Backglass, BackglassHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
-PropIntDyn(Backglass, BackglassFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
-PropIntDyn(Backglass, BackglassFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
+PropIntDyn(Backglass, BackglassFSWidth, "Fullscreen Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
+PropIntDyn(Backglass, BackglassFSHeight, "Fullscreen Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
 PropFloatDyn(Backglass, BackglassRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate (0 = any)"s, 0.f, 1000.f, 0.f);
-PropIntDyn(Backglass, BackglassColorDepth, "Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
+PropIntDyn(Backglass, BackglassColorDepth, "Fullscreen Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
 PropEnumDyn(Backglass, BackglassRotation, "Rotation"s, "Rotate the rendered content clockwise inside the output, e.g. for screens that are physically mounted rotated without the OS being told about it. Outputs embedded in the playfield window also turn with the playfield"s, int, 0, "0"s, "90"s, "180"s, "270"s);
 // ScoreView Window
 PropEnumDyn(ScoreView, ScoreViewOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s,
@@ -77,10 +77,10 @@ PropIntDyn(ScoreView, ScoreViewWndX, "X Position"s, "Horizontal position of the 
 PropIntDyn(ScoreView, ScoreViewWndY, "Y Position"s, "Vertical position of the window on the selected display"s, 0, 16384, 0);
 PropIntDyn(ScoreView, ScoreViewWidth, "Width"s, "Width of the window"s, 0, 16384, 16384);
 PropIntDyn(ScoreView, ScoreViewHeight, "Height"s, "Height of the window"s, 0, 16384, 16384);
-PropIntDyn(ScoreView, ScoreViewFSWidth, "Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
-PropIntDyn(ScoreView, ScoreViewFSHeight, "Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
+PropIntDyn(ScoreView, ScoreViewFSWidth, "Fullscreen Width"s, "Fullscreen display mode width"s, 0, 16384, 16384);
+PropIntDyn(ScoreView, ScoreViewFSHeight, "Fullscreen Height"s, "Fullscreen display mode height"s, 0, 16384, 16384);
 PropFloatDyn(ScoreView, ScoreViewRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate (0 = any)"s, 0.f, 1000.f, 0.f);
-PropIntDyn(ScoreView, ScoreViewColorDepth, "Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
+PropIntDyn(ScoreView, ScoreViewColorDepth, "Fullscreen Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
 PropEnumDyn(ScoreView, ScoreViewRotation, "Rotation"s, "Rotate the rendered content clockwise inside the output, e.g. for screens that are physically mounted rotated without the OS being told about it. Outputs embedded in the playfield window also turn with the playfield"s, int, 0, "0"s, "90"s, "180"s, "270"s);
 // Topper Window
 PropEnumDyn(Topper, TopperOutput, "Output Mode"s, "Select between disabled, floating, or embedded in another window mode"s, int /* OutputMode */, 0 /* OM_DISABLED */, "Disabled"s, "Floating"s,
@@ -95,10 +95,10 @@ PropIntDyn(Topper, TopperWndX, "X Position"s, "Horizontal position of the Topper
 PropIntDyn(Topper, TopperWndY, "Y Position"s, "Vertical position of the Topper window on the selected display"s, 0, 16384, 0);
 PropIntDyn(Topper, TopperWidth, "Width"s, "Width of the Topper window"s, 0, 16384, 16384);
 PropIntDyn(Topper, TopperHeight, "Height"s, "Height of the Topper window"s, 0, 16384, 16384);
-PropIntDyn(Topper, TopperFSWidth, "Width"s, "Fullscreen display mode width for the Topper window"s, 0, 16384, 16384);
-PropIntDyn(Topper, TopperFSHeight, "Height"s, "Fullscreen display mode height for the Topper window"s, 0, 16384, 16384);
+PropIntDyn(Topper, TopperFSWidth, "Fullscreen Width"s, "Fullscreen display mode width for the Topper window"s, 0, 16384, 16384);
+PropIntDyn(Topper, TopperFSHeight, "Fullscreen Height"s, "Fullscreen display mode height for the Topper window"s, 0, 16384, 16384);
 PropFloatDyn(Topper, TopperRefreshRate, "Fullscreen Refresh Rate"s, "Fullscreen display mode refresh rate (0 = any)"s, 0.f, 1000.f, 0.f);
-PropIntDyn(Topper, TopperColorDepth, "Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
+PropIntDyn(Topper, TopperColorDepth, "Fullscreen Color Depth"s, "Fullscreen display mode color depth (0 = any)"s, 0, 64, 32);
 PropEnumDyn(Topper, TopperRotation, "Rotation"s, "Rotate the rendered content clockwise inside the output, e.g. for screens that are physically mounted rotated without the OS being told about it. Outputs embedded in the playfield window also turn with the playfield"s, int, 0, "0"s, "90"s, "180"s, "270"s);
 // Array access (using VPXWindowId)
 PropArray(Window, Mode, int, Enum, Int, m_propInvalid, m_propBackglass_BackglassOutput, m_propScoreView_ScoreViewOutput, m_propTopper_TopperOutput, m_propInvalid);

@@ -219,9 +219,9 @@ public:
    const Matrix3D& GetEyeView(unsigned int eye) const { return m_eyeView[eye]; }
    const Matrix3D& GetEyeProj(unsigned int eye) const { return m_eyeProj[eye]; }
 
-   float GetPredictedDisplayTimestamp() const { return m_predictedDisplayTimestamp; }
+   int64_t GetPredictedDisplayTimestampNs() const { return m_predictedDisplayTimestampNs; } // SDL_GetTicksNS() time base
 
-   // False when the OpenXR runtime ended the session (headset removed, runtime exit) — always true without XR support
+   // False when the OpenXR runtime ended the session (headset removed, runtime exit) - always true without XR support
 #ifdef ENABLE_XR
    bool IsApplicationRunning() const { return m_applicationRunning; }
 #else
@@ -257,7 +257,7 @@ private:
    Vertex3Ds m_tableOffset { 0.f, 0.f, 0.f }; // Per-table adjustment in cm (y: playfield to lockbar end distance, z: glass height)
    float m_slope = 0.0f;
 
-   float m_predictedDisplayTimestamp = 0.f;
+   int64_t m_predictedDisplayTimestampNs = 0;
 
    bool m_worldDirty = true;
    Matrix3D m_eyeView[2]; // Per-eye head pose in VPU (from the latest located views)
@@ -308,7 +308,7 @@ public:
    static constexpr float kUILayerExtraTiltDeg = 0.f; // Extra backward tilt beyond exactly facing the viewer
    // Controller pointer raycast against the UI quad: computed per frame on
    // the render thread, read on the logic thread (same write/read split as
-   // m_uiQuadScene — a frame of staleness is fine for a pointer)
+   // m_uiQuadScene - a frame of staleness is fine for a pointer)
    struct UIPointer
    {
       float origin[3] { 0.f, 0.f, 0.f }; // Ray origin in XR tracking reference space (meters)
