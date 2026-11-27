@@ -8,7 +8,7 @@ $input v_texcoord0
 
 #include "common.sh"
 
-#define NUM_BALLS 8
+#define NUM_BALLS 16 // Only the first 2 are used, but the size must match the ball shadows uniform of the same name // also adapt renderview and shader when changing
 uniform vec4 balls[NUM_BALLS];
 #ifdef STEREO
 	uniform mat4 matProj[2];

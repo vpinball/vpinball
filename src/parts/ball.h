@@ -273,5 +273,4 @@ private:
    ITexManCacheable *m_pinballEnv = nullptr;
    ITexManCacheable *m_pinballDecal = nullptr;
    std::shared_ptr<MeshBuffer> m_meshEdgeBuffer; // Editor wireframe, built on demand
-   bool m_antiStretch = false;
 };

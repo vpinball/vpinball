@@ -40,8 +40,6 @@ using namespace Concurrency::diagnostic;
 extern marker_series series;
 #endif
 
-#define MAX_BALL_SHADOW 8
-
 ////////////////////////////////////////////////////////////////////////////////
 
 Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D)
@@ -219,11 +217,8 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    envTex.reset();
    PLOGI << "Environment map mipmaps and irradiance computed"; // For profiling
 
-   const bool lowDetailBall = (m_table->GetDetailLevel() < 10);
-   std::shared_ptr<IndexBuffer> ballIndexBuffer
-      = std::make_shared<IndexBuffer>(m_renderDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
-   std::shared_ptr<VertexBuffer> ballVertexBuffer
-      = std::make_shared<VertexBuffer>(m_renderDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (const float*)(lowDetailBall ? basicBallLo : basicBallMid));
+   std::shared_ptr<IndexBuffer> ballIndexBuffer = std::make_shared<IndexBuffer>(m_renderDevice, basicBallLoNumFaces, basicBallLoIndices);
+   std::shared_ptr<VertexBuffer> ballVertexBuffer = std::make_shared<VertexBuffer>(m_renderDevice, basicBallLoNumVertices, (const float*)basicBallLo);
    m_ballMeshBuffer = std::make_shared<MeshBuffer>("Ball"s, ballVertexBuffer, ballIndexBuffer, true);
 #ifdef DEBUG_BALL_SPIN
    {

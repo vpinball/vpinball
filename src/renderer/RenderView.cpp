@@ -22,7 +22,7 @@
 #include "ui/live/LiveUI.h"
 #include "utils/color.h"
 
-#define MAX_BALL_SHADOW 8
+#define MAX_BALL_SHADOW 16 // also adapt the shader-host and shader-gpu files when changing
 
 RenderView::RenderView(Renderer* renderer, Kind kind)
    : m_renderer(renderer)

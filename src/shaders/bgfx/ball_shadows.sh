@@ -2,7 +2,7 @@
 
 // Shared shader file used by bulb lights and basic shaders for computing raytraced shadows
 
-#define NUM_BALLS 8
+#define NUM_BALLS 16 // also adapt renderview and shader when changing
 
 uniform vec4 balls[NUM_BALLS];
 

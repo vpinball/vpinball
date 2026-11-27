@@ -284,7 +284,6 @@ void Ball::Render(const unsigned int renderMask)
 
    if (isUIPass)
    {
-      const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
       const Matrix3D ballTrafo = Matrix3D::MatrixScale(m_hitBall.m_d.m_radius) * Matrix3D::MatrixTranslate(pos.x, pos.y, pos.z);
       RenderMeshDesc ball;
       ball.mesh = m_renderer->m_ballMeshBuffer;
@@ -292,8 +291,8 @@ void Ball::Render(const unsigned int renderMask)
       ball.transform = &ballTrafo;
       ball.uiEdgeMesh = &m_meshEdgeBuffer;
       ball.edgeMode = UIEdgeMode::TriWire;
-      ball.edgeTriIndices = lowDetailBall ? basicBallLoIndices : basicBallMidIndices;
-      ball.edgeTriCount = lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces;
+      ball.edgeTriIndices = basicBallLoIndices;
+      ball.edgeTriCount = basicBallLoNumFaces;
       ball.edgeTriIndices16 = true;
       m_renderer->RenderMesh(renderMask, ball, {});
       return;
@@ -418,8 +417,6 @@ void Ball::Render(const unsigned int renderMask)
          const float ry = (yMax - yMin) * (float)h;
          const float sx = fabsf(c * rx - s * ry);
          const float sy = fabsf(s * rx + c * ry);
-         // only shrink ball to avoid artifact of the ball being rendered over resting parts
-         /* if (sy > sx) antiStretch.y = sx / sy; else antiStretch.x = sy / sx; */
          // balance stretching/enlarging to avoid having too much size difference between ball at the top / ball at the bottom
          antiStretch.x = 0.5f * (1.0f + sy / sx);
          antiStretch.y = 0.5f * (1.0f + sx / sy);
@@ -453,9 +450,6 @@ void Ball::Render(const unsigned int renderMask)
                 m_hitBall.m_orientation.m_d[0][2], m_hitBall.m_orientation.m_d[1][2], m_hitBall.m_orientation.m_d[2][2], 0.0f,
                 0.f, 0.f, 0.f, 1.f);
    const Matrix3D scale = Matrix3D::MatrixScale(m_hitBall.m_d.m_radius * antiStretch.x, m_hitBall.m_d.m_radius * antiStretch.y, m_hitBall.m_d.m_radius * antiStretch.y);
-   //const Matrix3D trans = Matrix3D::MatrixTranslate(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight);
-   //const Matrix3D m3D_full = rot * scale * trans;
-   //m_renderer->m_renderDevice->m_ballShader->SetMatrix(ShaderUniform::orientation, &m3D_full);
 
    m_renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
    bool sphericalMapping;
