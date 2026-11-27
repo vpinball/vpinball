@@ -177,11 +177,11 @@ void RubberUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Rubber* rubber) { return rubber->m_d.m_overwritePhysics; }, //
          [](Rubber* rubber, bool v) { rubber->m_d.m_overwritePhysics = v; }, "Use the fields below instead of the physics material's values");
       props.InputFloat<Rubber>(
-         m_part, "Elasticy"s, //
+         m_part, "Elasticity"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_elasticity; }, //
          [](Rubber* rubber, float v) { rubber->m_d.m_elasticity = v; }, PropertyPane::Unit::None, 2);
       props.InputFloat<Rubber>(
-         m_part, "Elasticy Falloff"s, //
+         m_part, "Elasticity Falloff"s, //
          [](const Rubber* rubber) { return rubber->m_d.m_elasticityFalloff; }, //
          [](Rubber* rubber, float v) { rubber->m_d.m_elasticityFalloff = v; }, PropertyPane::Unit::None, 2, "Reduce elasticity for slower impacts (0 = constant elasticity)");
       props.InputFloat<Rubber>(

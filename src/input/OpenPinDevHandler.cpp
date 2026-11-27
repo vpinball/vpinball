@@ -356,6 +356,9 @@ OpenPinDevHandler::OpenPinDevHandler(InputManager &pininput)
                            const size_t reportSize = (sizeScanner.ReportSize(hidrp::ReportType::input, f.reportID) + 7) / 8 + 1;
 
                            // Register device to the input manager
+                           // TODO merge multiple OPD units: every unit registers under the same settings id, so a second unit trips
+                           // RegisterDevice's assert, and their inputs are not merged (last change wins, a release on one unit releases
+                           // the action held on another). Update() also builds a combined report that is never used.
                            const uint16_t deviceId = m_inputManager.RegisterDevice("OpenPinDev"s, InputManager::DeviceType::OpenPinDev, "OpenPinDev"s);
                            m_inputManager.RegisterElementName(deviceId, false, 0, "Start Game"s);
                            m_inputManager.RegisterElementName(deviceId, false, 1, "Quit Game"s);

@@ -121,7 +121,7 @@ void SpinnerUIPart::UpdatePropertyPane(PropertyPane& props)
    if (props.BeginSection("Physics"s))
    {
       props.InputFloat<Spinner>(
-         m_part, "Elasticy"s, //
+         m_part, "Elasticity"s, //
          [](const Spinner* spinner) { return spinner->m_d.m_elasticity; }, //
          [](Spinner* spinner, float v) { spinner->m_d.m_elasticity = v; }, PropertyPane::Unit::None, 2);
       props.InputFloat<Spinner>(

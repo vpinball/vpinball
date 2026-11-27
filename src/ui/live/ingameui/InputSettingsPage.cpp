@@ -39,8 +39,8 @@ void InputSettingsPage::BuildPage()
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Rumble Settings"s));
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_RumbleMode, //
-      [this]() { return m_player->m_pininput.IsRumbleFeedbackEnabled() ? 3 : 0; }, //
-      [this](int, int v) { m_player->m_pininput.EnableRumbleFeedback(v == 3); }));
+      [this]() { return m_player->m_pininput.GetRumbleMode(); }, //
+      [this](int, int v) { m_player->m_pininput.SetRumbleMode(v); }));
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_RumbleFlipperContact, 1.f, "%3.2f"s, //
       [this]() { return m_player->m_pininput.GetFlipperContactRumbleStrength(); }, //

@@ -184,9 +184,9 @@ void PlungerUIPart::UpdatePropertyPane(PropertyPane& props)
          [](const Plunger* plunger) { return plunger->m_d.m_autoPlunger; }, //
          [](Plunger* plunger, bool v) { plunger->m_d.m_autoPlunger = v; }, "Fire the plunger by a solenoid instead of a plunger spring");
       props.InputFloat<Plunger>(
-         m_part, "Auto Plunger Strength"s, //
+         m_part, "Mech Strength"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_mechStrength; }, //
-         [](Plunger* plunger, float v) { plunger->m_d.m_mechStrength = v; }, PropertyPane::Unit::None, 2, "Force of the solenoid when the auto plunger fires the ball");
+         [](Plunger* plunger, float v) { plunger->m_d.m_mechStrength = v; }, PropertyPane::Unit::None, 2, "Spring strength coupling the plunger to a mechanical (analog) plunger input");
       props.InputFloat<Plunger>(
          m_part, "Momentum Xfer"s, //
          [](const Plunger* plunger) { return plunger->m_d.m_momentumXfer; }, //

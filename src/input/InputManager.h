@@ -75,8 +75,8 @@ public:
    bool IsPressed(int actionId) const;
    int GetWindowVirtualKeyForAction(unsigned int actionId) const;
 
-   void EnableRumbleFeedback(bool enable) { m_rumbleMode = enable; }
-   bool IsRumbleFeedbackEnabled() const { return m_rumbleMode; }
+   void SetRumbleMode(int mode) { m_rumbleMode = mode; } // See m_rumbleMode
+   int GetRumbleMode() const { return m_rumbleMode; }
 
    ///// Input devices
    enum class DeviceType

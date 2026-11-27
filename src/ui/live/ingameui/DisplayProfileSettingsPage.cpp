@@ -21,7 +21,7 @@ DisplayProfileSettingsPage::DisplayProfileSettingsPage()
 void DisplayProfileSettingsPage::BuildPage()
 {
    AddItem(std::make_unique<InGameUIItem>(
-      VPX::Properties::EnumPropertyDef(""s, ""s, "Edited profile"s, "Select the DMD or alphanumeric segment display profile you cant ot adjust."s, false, 0, 0,
+      VPX::Properties::EnumPropertyDef(""s, ""s, "Edited profile"s, "Select the DMD or alphanumeric segment display profile you want to adjust."s, false, 0, 0,
          vector<string> { //
             "DMD: Legacy VPX"s, "DMD: Neon Plasma"s, "DMD: Red LED"s, "DMD: Green LED"s, "DMD: Yellow LED"s, "DMD: Generic Plasma"s, "DMD: Generic LED"s, //
             "Alpha: Neon Plasma"s, "Alpha: Blue VFD"s, "Alpha: Green VFD"s, "Alpha: Red LED"s, "Alpha: Green LED"s, "Alpha: Yellow LED"s, "Alpha: Generic Plasma"s, "Alpha: Generic LED"s }),
@@ -53,10 +53,12 @@ void DisplayProfileSettingsPage::BuildDMDPage()
 {
    const int profile = m_selectedProfile;
 
+#if defined(ENABLE_BGFX) // Other backends always use the legacy renderer (see Renderer::IsLegacyDMDRenderer)
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propDMD_ProfileLegacy[profile], //
       [this, profile]() { return m_player->m_renderer->m_dmdUseLegacyRenderer[profile]; }, //
       [this, profile](bool v) { m_player->m_renderer->m_dmdUseLegacyRenderer[profile] = v; }));
+#endif
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propDMD_ProfileDotBrightness[profile], 1.f, "%4.1f"s, //
@@ -75,8 +77,8 @@ void DisplayProfileSettingsPage::BuildDMDPage()
 
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propDMD_ProfileDiffuseGlow[profile], 1.f, "%4.1f"s, //
-      [this, profile]() { return m_player->m_renderer->m_dmdDotProperties[profile].z; }, //
-      [this, profile](float, float v) { m_player->m_renderer->m_dmdDotProperties[profile].z = v; }));
+      [this, profile]() { return m_player->m_renderer->m_dmdDotProperties[profile].w; }, //
+      [this, profile](float, float v) { m_player->m_renderer->m_dmdDotProperties[profile].w = v; }));
 
    // TODO it would be nice to implement a pincab friendly color picker
    m_srgbLit.r = static_cast<int>(sRGB(m_player->m_renderer->m_dmdDotColor[profile].x) * 255.f);
