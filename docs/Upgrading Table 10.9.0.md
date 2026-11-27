@@ -28,7 +28,7 @@ is placed at 80cm from the ground, while the simulated table has a cabinet with 
 cabinet lockbar width will perfectly match the one of the emulated pinball cabinet.
 
 VPX handles these differences by performing a few scaling and positioning which are applied depending on the category of each part. 
-This is done by placing parts in different layers, and selecting in the layer properties a space reference:
+This is done by placing parts in part groups, and selecting a space reference in the part group properties (Inherit, Playfield or Room; Inherit uses the parent group's space, the root defaulting to Playfield):
 - The **playfield** space corresponds to the playfield parts, including the cabinet which moves with it. It is placed at the playfield level, inclined according to the table inclination, and scaled to match user settings.
   The playfield level is defined as the user defined lockbar height (defined in the real world) minus the distance between the glass and the playfield (bottom glass height).
   The scale is defined by the relative difference between the user defined lockbar width and the emulated table lockbar width, computed from the playfield width.

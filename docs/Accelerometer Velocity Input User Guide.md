@@ -32,7 +32,7 @@ on RX/RY.
 axes as **nudge.vx** and **nudge.vy**.  Note that you can *also* configure
 a separate pair of axes as acceleration readings, **nudge.x** and **nudge.y**,
 if you're also using other pinball games that only accept the traditional
-acceleration input, but you won't need to use those in the VP setup.
+acceleration input.  VP can optionally use both (see below).
 
 This **only** works with devices that actually calculate and send
 velocity data.  **Don't** enable velocity inputs in VP with devices that
@@ -42,35 +42,33 @@ the data and will yield unrealistic results.
 
 ## VP setup
 
-Use the "Keys" dialog to set up the accelerometer.  The setup for
-velocity input is almost the same as for any other accelerometer.  The
-only differences are:
+The accelerometer is set up in the in-game menu (while playing):
+**Nudge & Tilt Settings** > **Add a new nudge sensor** (or select an existing sensor).
+Adding the sensor enables it; changes apply immediately.
 
-* Check **Analog Nudge Input is Velocity**
+* **Nudge Sensor Type**: **Intent Sensor**, or **Cabinet Sensor** for a
+high-frequency, low-latency, noise-free sensor in a real cabinet.  (Velocity
+axes are not available for the **Game Controller** type.)
 
-* **Un**check **Enable Nudge Filter** (this filter is designed for acceleration
-inputs only, so it should always be **disabled** for velocity-based nudge inputs)
-
-* Select the X and Y axis assignments where you've assigned the **velocity** 
-readings in your USB device configuration.  
+* **Side velocity sensor** / **Front velocity sensor**: select the axes that
+carry the **velocity** readings.
 
   * For Pinscape on KL25Z, these are **RX** and **RY**
   * For Pinscape Pico, these are the axes you've assigned to **nudge.vx** and **nudge.vy**
 
-Everything else is just the standard setup procedure for any type of nudge device:
+* **Sensor unit**: velocities must be in m/s.  For Pinscape, select
+**0.2048 m/s [Pinscape nudge velocity]**; otherwise set **Unit scale**
+(the default scale is 1).
 
-* Check the box **Enable Analog Nudge**
+* Optional: also map **Side/Front acceleration sensor** (unit: 1/2/4/8 Gravity
+or a custom scale to m/s^2).  With both mapped, VP calibrates the gain
+between the two channels and combines them.
 
-* Set the **X and Y Gain** percentages.  You'll have to experiment
-with these to find the right scale for your system, since it depends
-on the device, and also on how strong an effect you like.  The Nudge
-Test Table is an easy way to check the effect and adjust the settings
-interactively.
+* **Nudge Strength** (0-200%, default 100%) scales the effect of this sensor.
+**Cabinet Weight** (Cabinet Sensor only, default 113 kg) converts the
+measured acceleration to the force applied to the simulated cabinet.
 
-* **Board Mounted Face Up** and **Accelerometer Rotation** are used
-to translate the device's coordinate system into VP's model, so these
-depend on what kind of device you're using and how it's physically
-oriented in the cabinet.  You'll have to consult your device's
-documentation for advice (or just experiment with the Nudge Test
-Table until side-to-side and front-to-back nudges move things in
-the right directions).
+* Orientation: map the device axis that moves with side-to-side nudges to
+**Side**, and the front-to-back one to **Front**.  Enable **Reversed axis**
+if a direction is inverted.  The sensor page plots the readings live,
+which helps to check directions and scale.

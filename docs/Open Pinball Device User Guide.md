@@ -43,13 +43,19 @@ An Open Pinball Device can supply nudge, plunger, and button inputs to the PC.  
 you configure any combination of these as Open Pinball Device inputs.  You can freely mix
 inputs from OPD controllers with inputs from traditional joystick/game pad interfaces.
 
-For the "axis" inputs - plunger and nudge - you connect an axis to an Open Pinball Device
-by selecting **OpenPinDev** in the drop-down list for the axis.  For example, if you want
-VP to read nudge input from your Open Pinball Device, set the Nudge X and Y axis drop
-lists to **OpenPinDev**.  When you assign an axis to **OpenPinDev**, there's no need to
-select *which* axis to assign (the way that you have to select among X, Y, RX, RY, etc for
-a joystick), since the pinball device labels each of its inputs with the specific pin cab
-function it performs.
+When VP detects an Open Pinball Device, it offers to apply a default layout: the pinball
+buttons, plunger position and speed, and nudge speed X/Y.  The offer can be disabled with
+`Input/Device.OpenPinDev.NoAutoLayout`.
+
+To map inputs manually, use the in-game menu.  Each OPD input is listed by name:
+**Plunger Position**, **Plunger Speed**, **Nudge X/Y Acceleration** and **Nudge X/Y Speed**
+(device "OpenPinDev").  Select them in **Plunger Settings** (plunger sensor page) and
+**Nudge & Tilt Settings** (nudge sensor page).  Buttons are mapped in
+**Input Settings** > **Action mappings**.
+
+Open Pinball Device support is not available in the mobile and web builds.  On Linux and
+macOS, the device signature string cannot be read, so any HID Pinball Device with the
+matching report layout is accepted as struct version 1.0.
 
 The Open Pinball Device interface defines two kinds of buttons: "pinball" buttons and
 "generic" buttons.
@@ -58,17 +64,13 @@ The "pinball" buttons are a set of pre-assigned buttons that cover the specific 
 pinball functions that are common to most pinball simulators, such as "Start", "Left
 Flipper", and "Coin In".  Consult your I/O controller's documentation for a list of
 available buttons and instructions on how to assign physical buttons to the pinball
-functions.  For a physical button assigned to an OPD pinball button function, there's
-nothing to configure in VP, because VP knows exactly which VP function to invoke when you
-push that button.
+functions.  The default layout maps each OPD pinball button to the matching VP action.
 
 The "generic" buttons are an extra set of up to 32 buttons that are simply given numbers,
-#1 to #32, with no special pre-assigned meanings.  In VP, these work exactly like joystick
-buttons.  In the VP Keys dialog, you assign these using the same numbering assignments as
-joystick buttons.  Note that VP doesn't have a way to distinguish between "Joystick button
-#1" and "Open Pinball Device button #1", so if you're wiring your button inputs through
-multiple physical devices, you'll have to take care to assign a unique number to each
-button across your whole system.
+#1 to #32, with no special pre-assigned meanings.  In VP, they appear as **Button #1** to
+**Button #32** of the OpenPinDev device and are mapped like any other button in
+**Input Settings** > **Action mappings**.  They are distinct from joystick buttons with the
+same number.
 
 
 ## How to mix Open Pinball Devices and traditional joystick/game pad devices
@@ -78,41 +80,23 @@ Devices with other devices that implement the traditional joystick interface.
 
 For example, suppose that your plunger is connected to an Open Pinball Device unit, but
 your accelerometer is connected to a separate device that only has a joystick interface.
-In the VP Keys setup dialog, you'd assign the Plunger Position and Plunger Speed inputs
-to **OpenPinDev**, and assign the Nudge X/Y axes to **X** and **Y**, or whichever
-joystick axes that your other device uses for its accelerometer reports.
+In **Plunger Settings**, you'd map the plunger sensor's Position and Velocity sensors to
+**Plunger Position** and **Plunger Speed** (OpenPinDev), and in **Nudge & Tilt Settings**
+map the nudge sensor axes to whichever joystick axes your other device uses for its
+accelerometer reports.
 
 
-## How to handle multiple Open Pinball Device units
+## Multiple Open Pinball Device units
 
-If you have multiple Open Pinball Device controllers in your system, Visual Pinball
-automatically combines their inputs by making the simple assumption that there's only one
-instance of each physical sensor present in the system: one accelerometer, one plunger
-sensor.  With this assumption in mind, VP simply takes input for a given sensor from
-whichever controller reports non-zero input for that sensor.  This is done for each
-sensor individually, so you can have the accelerometer on one controller, and the
-plunger on a separate controller, and VP will correctly combine the inputs across
-the two controllers.
+Only one Open Pinball Device unit is currently supported.  With several units, their
+inputs are not merged:
 
-This assumption is based on the idea that you might need multiple controller boards in
-your system, but there's no reason you'd ever need two nudge accelerometers in the same
-pinball cabinet.  There's simply no good use case for multiple nudge inputs, since they'd
-all be picking up the exact same motion, making the second and additional units uselessly
-redundant.  If you're using two pinball control boards that both come with accelerometers
-as standard features, you should simply disable the accelerometer on the second
-controller, since it's not needed.  (This doesn't mean that you can't have additional
-accelerometers *for other purposes besides pinball nudge inputs*.  But those will
-presumably be attached to other kinds of controllers that don't act as Open Pinball
-Devices, so they won't create any confusion for VP.)
+* all units share one VP device id ("OpenPinDev");
+* for each axis (plunger, nudge), the last value that changed wins, whichever unit sent it;
+* buttons are forwarded as press/release events, so a release on one unit releases the
+  action even if the same button is still held on another unit.
 
-If this assumption turns out to be wrong, the effect it has is that VP arbitrarily chooses
-input from one of the sensors.  So it still works, but the results might be erratic.  If
-you really do have multiple accelerometers in your system, you should be sure that your
-controllers are configured so that only one of them is actually reporting accelerometer
-input on the Open Pinball Device interface.
+If you have several OPD controllers, enable the Open Pinball Device interface on one of
+them only, or make sure each sensor and button is reported by a single unit.
 
-Button inputs from multiple controllers are combined simply by treating a given button as
-ON if any controller reports that it's on.   That is, all of the buttons are logically
-"ORed" together.  So if, for some reason, you have two separate physical buttons that
-you assign as "Start" buttons on two separate controllers, pushing either button will
-activate the "Start" function.
+TODO: merge multiple OPD units (per-sensor selection, buttons ORed across units).

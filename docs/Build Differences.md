@@ -5,7 +5,7 @@ The main differences between these flavors are described here.
 
 Beside the graphic backend flavor, VPX is provided as:
 - a full featured editor and player for Windows system
-- a standalone player for other platforms, targeted at devices supporting Vulkan (desktop and single-board computer), Metal (Apple devices) or OpenGL ES 3.0 with GLSL 3.0 (mobile and single-board computer).
+- a standalone player for all platforms (including Windows), targeted at devices supporting Vulkan (desktop and single-board computer), Metal (Apple devices) or OpenGL ES 3.0 with GLSL 3.0 (mobile and single-board computer).
 
 
 ## BGFX
@@ -21,7 +21,7 @@ The following features are offered by the BGFX version:
 - Multithreaded engine that decouples rendering from gameplay allowing very low and stable input latency,
 - Additional output windows, for example for DMD or score displays.
 
-This flavor is available as a window player/editor application and as a standalone player that runs on a lot of platforms: Linux, Mac, iPhone, Android, RaspBerry,...
+This flavor is available as a window player/editor application and as a standalone player that runs on a lot of platforms: Windows, Linux, macOS, iOS, Android, Meta Quest, Raspberry Pi, web browsers (WebAssembly),...
 
 
 ## DirectX 9
@@ -39,13 +39,13 @@ Now that the BGFX flavor exists, there isn't that much uses of this flavor anymo
 It should be considered as deprecated and not used in any situation.
 
 The following features were introduced by the OpenGL version:
-- **Deprecated** Virtual Reality support via OpenVR. This feature is deprecated and planned for removal as VR has been updated to OpenXR in the BGFX variant,
+- Virtual Reality support via OpenVR (removed in 10.9.0, VR is now provided by OpenXR in the BGFX flavor),
 - Real stereo rendering for 3D-stereo TVs or anaglyph glasses,
 - Hardware Multisample Antialiasing (MSAA) with support for antialiasing of pre-rendered and dynamically rendered parts,
 - Hardware Adaptive sync (a way of synchronizing between CPU and GPU, which leads to slightly better synchronization when using the 'Adaptive Sync' settings in the video preferences),
 - Enhanced texture compression (gives more performance with lower quality impact).
 
-This flavor is only available for Windows, as a window player/editor application.
+This flavor is available for Windows as a window player/editor application, and as a standalone player for macOS and Linux.
 
 
 <sub><sup>[Information applicable to version 10.9.0 Beta]</sup></sub>

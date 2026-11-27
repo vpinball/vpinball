@@ -1,7 +1,7 @@
 VP10 has a completely overhauled physics engine; see details below for more information. Here are some very basic instructions for modifying a VP9 table to work with VP10 physics:
 
-1. Backdrop > Physics & Graphics:  Gravity 1, Playfield Friction 0.08-0.1
-2. Table properties > Slope & Dimensions: set the table slope (around 6 on modern DMD tables, lower for older SS and EM tables)
+1. Table properties > Physics:  Gravity Constant 1, Playfield Friction 0.08-0.1
+2. Table properties > Physics > Difficulty: set Slope for Min./Max. Difficulty (around 6 on modern DMD tables, lower for older SS and EM tables); the effective slope is interpolated by Game Difficulty
 3. Select all flippers and adjust the physics parameters: Mass 1, Strength around 1000-3000, Elasticity 0.8-0.9, Friction 0.8, Return Strength Ratio 0.10
 4. Due to the extra energy needed to get the ball rolling, plungers, slingshots, bumpers, etc., typically all need to have their force increased by 20-40%.
 5. Physics scripts like BMPR or light tap scripts should not be used with the new physics engine. Also, many VP9 tables have small helper routines which adjust the velocity of the ball on ramps etc, these often do not work well and should be removed.
@@ -19,13 +19,15 @@ The main new features are the following:
 
 ### Physics parameters
 
-These parameters are found under Backdrop > Physics & Graphics.
+These parameters are found under Table properties > Physics.
+
+The table's Physics Profile (10.8 or 10.9) selects the physics behavior: 10.8 reproduces VPX 10.8, 10.9 enables the corrected physics (see physconst.h and PhysicsConstants.md).
 
 ##### Gravity
 
 Gravitational acceleration. The parameters in VP10 are tuned in such a way that a value of 1 for this corresponds to the true Earth acceleration as long as the table respects the standard VP units of length, 1 VP unit = .53975 mm.
 
-There should never be a need to change this value to something other than 1 unless the table uses a different length scale.
+There should never be a need to change this value to something other than 1 unless the table uses a different length scale (note: new tables are created with 0.97).
 
 ##### Playfield Friction
 
@@ -38,6 +40,8 @@ Decent values seem to be 0.08-0.10.
 The time it takes the table to complete a swing plus back swing when digital (keyboard) nudging is applied by means of the `Nudge` script function. One unit here means 10 ms.
 
 The default value is 5 (corresponding to 50 ms).
+
+Only used when the player's Keyboard Nudge Mode is "VPX 10.8 (cabinet model)". The default mode "VPX 10.9 (improved cabinet)" uses fixed 25 ms impulses and the "VP9" mode a fixed 5+5 ms push/retract, both ignore Nudge Time.
 
 
 ### Flipper parameters
@@ -53,6 +57,8 @@ A good default value for this parameter is 1 - 1.25.
 This is the force (actually, torque) with which the solenoid accelerates the flipper. The higher this value, the faster the flipper will move. But be aware that this is directly linked to flipper mass: if the flipper is twice as heavy, it also needs twice the force to get it to move at the same speed.
 
 A reasonable range for this is 1000-3000, obviously depending a lot on the era of flippers being simulated and the desired speed of the game.
+
+Mass and Strength values here assume the 10.8 physics profile, which models the flipper inertia as a rod. With the 10.9 profile the inertia follows the flipper shape, so the same Strength gives a different swing speed; to keep the 10.8 swing, scale Strength by 3 * I_shape / r^2 (see PhysicsConstants.md).
 
 ##### Elasticity and Elasticity Falloff
 

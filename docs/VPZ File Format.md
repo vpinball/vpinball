@@ -15,9 +15,9 @@ All text files of a pack (JSON documents, VBS script) are **UTF-8** encoded.
 
 ## Naming
 
-Every named entity (scene node, collection, material, image, sound, font, mesh) is stored in a file named after its **unique name**. Names are therefore *not* stored inside the files, as they are already defined by the file names.
+Every named entity (scene node, collection, material, image, sound, font, mesh) is stored in a file named after its **unique name**. Names are therefore *not* stored inside the files, as they are already defined by the file names, unless the file name differs from the unique name (sanitized or made unique): the document then carries a `name` property holding the original name.
 
-For filesystem portability, names are sanitized when mapped to file names: characters invalid on common filesystems (`/ \ : * ? " < > |` and control characters) are replaced by `_`, trailing dots and spaces are stripped, and empty results become `_`. Collisions between sanitized names are resolved by a `_2`, `_3`, ... suffix. Names containing such characters may therefore not round-trip exactly; portable names are recommended.
+For filesystem portability, names are sanitized when mapped to file names: characters invalid on common filesystems (`/ \ : * ? " < > |` and control characters) are replaced by `_`, trailing dots and spaces are stripped, and empty results become `_`. Collisions between sanitized names are resolved by a `_2`, `_3`, ... suffix. The original name is then kept in the `name` property, so names round-trip; portable names are still recommended.
 
 
 ## Pack layout
@@ -26,7 +26,7 @@ For filesystem portability, names are sanitized when mapped to file names: chara
 manifest.json                  pack identification and properties
 table.json                     the table definition
 script.vbs                     the VBS game script
-parts/<name>.json              one file per scene node (part or layer)
+parts/<name>.json              one file per scene node (part or part group)
 collections/<name>.json        one file per collection
 materials/<name>.json          one file per material
 renderprobes/<name>.json       one file per render probe
@@ -73,6 +73,8 @@ Notable structure:
 ## parts/, collections/, materials/, renderprobes/
 
 One JSON file per scene node, collection, material and render probe, named after its unique name. Part files carry a `"$type"` naming the part type (`"bumper"`, `"flipper"`, `"primitive"`, `"surface"`, `"light"`, `"partgroup"`, ...), render probe files use `"renderprobe"`. References to other scene nodes or assets use their unique names (e.g. a primitive references its image by name and its mesh by a `mesh` property pointing to `meshes/<name>.glb`).
+
+Part groups store their space reference in `reference_space` (0 = inherit, 1 = playfield, 2 = room). The legacy `space_reference` field (older numbering) is only read for backward compatibility.
 
 A partial pack (assets and/or scene nodes without a `table.json`) is also a valid pack. This is what the editor's part export produces: the selected parts (with their part group ancestors and the members of the selected groups), the collections they belong to (filtered to the exported members), and only the assets the parts reference by name.
 

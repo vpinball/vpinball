@@ -6,8 +6,8 @@ Material Manager            F4
 Play Table                  F5
 Play Table (with exchanged
   DT/FS camera parameters)  Hold Shift/LeftFlipperButton during Table Start
-Start in Camera/Light
-  Tweaking Mode             F6
+Play Table, adjusting the
+  user settings (Camera,..) F6
 Live Table Editor           F7
 Collection Manager          F8
 Add unsmoothed/smoothed     F10/F11
@@ -46,8 +46,16 @@ Lock Element                Ctrl + Shift + L
 Pan Table View              Middle Mouse Button
 Toggle Table/Backdrop View  Ctrl + Space
 
-Function during Play        Key Combination
+Function during Play        Default Key (can be remapped in the In-Game Menu)
 ----------------------------------------------
-Toggle Stereo 3D            F10
-Toggle Engine Statistics    F11
-Immediate Exit to Windows   Hold 'ESC'
+Open/Close In-Game Menu     F12
+Exit Game                   ESC
+Pause Game                  P
+Toggle Performance Overlay  F11 (macOS: F1)
+Select Stereo Mode          F10 (in VR: cycle the desktop display mode)
+Volume Down / Up            - / =
+Align VR View               Keypad 5
+Open Debugger               D
+Debug Balls                 O
+Create Tournament File      Left Alt + 1
+Mirror Table                Hold both flipper buttons during Table Start

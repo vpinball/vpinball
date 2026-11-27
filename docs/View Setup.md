@@ -7,18 +7,19 @@ VPX offers 2 ways of rendering to the screen:
 
 
 ## Perspective camera
-The perspective camera is the usual way of defining a view in most video games. VPX uses this when the 'View Layout Mode' is set to 'Legacy' or 'Camera'.
+The perspective camera is the usual way of defining a view in most video games. VPX uses this when the 'View mode' is set to 'Legacy' or 'Camera'.
 
 ![Camera](img/ViewSetup-Camera.webp)
 
 'Legacy' is the old way of defining the camera, kept for backwards compatibility. The following information applies to 'Camera' mode only.
 
 The 'camera' view is setup by the following properties:
-- Player X/Y/Z is the view position from the bottom center of the playfield,
+- Camera X/Y/Z is the view position from the bottom center of the playfield,
 - Look At is the point the player is looking at, defined as a percentage of the playfield height (0% is at the lockbar, 100% at the back),
-- Field of View is the overall scale,
-- Horizontal/Vertical Offset adjusts the position of rendered parts in the projection,
-- Horizontal/Vertical Stretch scales the rendered view (after perspective projection).
+- Field Of View is the vertical field of view (25-90 degrees),
+- Horizontal/Vertical Offset adjusts the position of rendered parts in the projection (lens shift),
+- Table X/Y/Z Scale stretch the scene (50-150%, 'Lock XYZ Scale' keeps them equal),
+- Viewport Rotation rotates the rendered view (degrees).
 
 ![Camera](img/ViewSetup-CameraDef.svg)
 
@@ -33,13 +34,15 @@ The window projection mode is a new (as of VPX 10.8) mode which tries to simulat
 ![Window](img/ViewSetup-WindowDef.svg)
 <sub>The window projection (green) is displayed on the screen (blue). The projection is parallel to the screen.</sub>
 
-The 'window' mode needs to know about the physical setup of the screen. Since this setting does not change between tables, it is located in the video settings:
-- Screen width and height are the physical size of the display area (in centimeters). The width is always the longest edge of the screen,
-- Screen inclination is the angle between horizontal and the screen,
-- Player X, Y, Z are the player coordinates as shown on the figure.
+The 'window' mode needs to know about the physical setup of the screen. Since this setting does not change between tables, it is located in the in-game UI ([F12] > 'Cabinet Settings'):
+- Screen Width and Height are the physical size of the display area (in centimeters). The width is always the longest edge of the screen,
+- Screen Inclination is the angle between horizontal and the screen (degrees),
+- Player X, Y, Z are the player coordinates as shown on the figure (also shown in the 'Point Of View' page in Window mode).
 
-Once this information is defined, the view can be adjusted per table with the following properties:
-- Table X and YZ scales allow to stretch the table to the screen. When set to 100%, the table size matches the real world table size. Scaling on the Y and Z axis is fixed to be always the same.
+'Cabinet Autofit Mode' (`Player.CabinetAutofitMode`) selects 'Manual', 'Fit Table' (automatic fit without stretch) or 'Fit Screen' (automatic fit with table stretch). With automatic fitting, 'Cabinet Autofit Pos' sets the relative lower flipper position (0% bottom of screen).
+
+In 'Manual' mode, the view can be adjusted per table ([F12] > 'Point Of View') with the following properties:
+- Table X and Y scales allow to stretch the table to the screen. When set to 100%, the table size matches the real world table size. Scaling on the Y and Z axis is fixed to be always the same.
 - Horizontal/Vertical offset adjusts the position of rendered parts in the projection,
 - Window Top/Bottom Z offsets define the position of the screen relative to the playfield/glass of the table.
 

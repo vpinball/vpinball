@@ -1,5 +1,0 @@
-Renderer known issues:
-
-*) textboxes don't work properly, especially for high resolutions/scales
-*) text decals don't work?
-*) lost devices aren't handled properly (real fullscreen issue only)

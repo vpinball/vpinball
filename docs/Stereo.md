@@ -5,9 +5,9 @@ Visual Pinball X supports rendering to a stereo output which can be one of:
 - a 3D TV using passive/active glasses,
 - a traditional screen, using anaglyph glasses.
 
-Two rendering modes are available:
-- Fake Stereo: a single image is rendered from a single point of view, then a 'fake' view for each eye is built from the depth information. This mode needs a less powerful setup but has graphical glitches (like not properly handling transparency).
-- Real Stereo: one image per eye is rendered and presented to the user. This mode is not supported by the legacy DirectX9 flavor of VPX.
+One image per eye is rendered and presented to the user. Stereo is not supported by the legacy DirectX9 flavor of VPX.
+
+The mode is selected with 'Stereo rendering' (`Player.Stereo3D`) in the in-game UI ([F12] > 'Stereo Settings'). While playing, [F10] ('Select Stereo Mode' input action) toggles stereo rendering on/off (in VR, it cycles the desktop display mode).
 
 ## 3D TV
 
@@ -44,20 +44,21 @@ Still, for the application of playing virtual pinball, especially using a virtua
 
 ### Anaglyph composition filters
 
-To improve rendering and limit the aforementioned drawbacks, VPX uses filters which can be selected through the [Live UI](LiveUI.md) settings (allowing direct visual feedback). The proposed filters are the following:
+To improve rendering and limit the aforementioned drawbacks, VPX uses filters which can be selected in the in-game UI ([F12] > 'Stereo Settings' > 'Anaglyph Filter', default 'Luminance'), with direct visual feedback. The proposed filters are the following:
 - "None": no filtering, just apply the glasses colors in the most basic way (for example, full red to the left, full green+blue to the right). This filter does not use the calibration data except for identifying the glasses. This filter is kept for reference only and should not be used.
 - "Dubois": apply the [Dubois](https://www.site.uottawa.ca/~edubois/anaglyph/) method for composing the anaglyph. This method may work well if your glasses / display / eyes characteristics are similar to the one Dubois used when optimizing his filter. This filter does not use the calibration data except for identifying the glasses.
 - "Deghost": apply the [vectorform.com](http://iaian7.com/quartz/AnaglyphCompositing) method for anaglyph composition. Like the Dubois method, this mode uses prefitted filters and will only work well if your glasses / display / eyes have similar characteristics as the ones of the original author.  This filter does not use the calibration data except for identifying the glasses.
 - "Luminance": apply the [Anaglyph Stereo without Ghosting](https://www.visus.uni-stuttgart.de/en/research/computer-graphics/anaglyph-stereo/anaglyph-stereo-without-ghosting/) method for anaglyph composition. This filter first needs to be calibrated to measure your glasses / display / eyes characteristics. With this data, it will optimize the rendering to your own precise characteristics in order to avoid ghosting while trying to preserve the overall brightness.
-- "Dyn.Desat" a.k.a. "Luminance with Dynamic Desaturation": this filter is an improved version of the "Luminance" filter, adding dynamic desaturation to avoid retinal rivalry. Retinal rivalry happens when an eye perceives an object and the other doesn't, making the merging difficult/impossible for the brain. The solution applied here is to dynamically desaturate the parts of the image where this problem arises. For example, a pure red cube may not be seen through perfect red/cyan glasses without facing retinal rivalry since the right eye would filter it completely. In this situation, the filter will partly desaturate the red cube into a brown cube to solve the problem.
+
+'Anaglyph Dyn. Desat' (0-100%, default 100%) is a separate setting, not a filter. It adds dynamic desaturation to the "None", "Dubois" and "Luminance" filters (not used with "Deghost") to avoid retinal rivalry. Retinal rivalry happens when an eye perceives an object and the other doesn't, making the merging difficult/impossible for the brain. The solution applied here is to dynamically desaturate the parts of the image where this problem arises. For example, a pure red cube may not be seen through perfect red/cyan glasses without facing retinal rivalry since the right eye would filter it completely. In this situation, the filter will partly desaturate the red cube into a brown cube to solve the problem.
 
 | Filter    | Calibration | Ghosting | Retinal Rivalry | Brightness | Colors |
 | --------- | ----------- | -------- | --------------- | ---------- | ------ |
 | None      | No<sup>(1)</sup> | High | High | Low | Good |
 | Dubois    | No<sup>(1)</sup> | Low | Moderate | Medium | Bad |
 | Deghost   | No<sup>(1)</sup> | Low | Moderate | Medium | Medium |
-| Luminance | Yes  | Very Low | High | Good | Good |
-| Dyn.Desat | Yes  | Very Low | Very Low | Good | Medium |
+| Luminance, Dyn. Desat 0% | Yes  | Very Low | High | Good | Good |
+| Luminance, Dyn. Desat 100% | Yes  | Very Low | Very Low | Good | Medium |
 
 <sup>(1)</sup> Calibration is only used to identify the pair of filters of the glasses against a set of standard filters: red/cyan, green/magenta or amber/blue.
 
@@ -65,9 +66,9 @@ To improve rendering and limit the aforementioned drawbacks, VPX uses filters wh
 
 The calibration process consists of measuring the perceived luminance through the anaglyph glasses of each eye, for each color channel. This luminance depends on your display settings and characteristics, as well as your glasses and eyes. The process used is the one described in ["Face-based Luminance Matching for Perceptual Colormap Generation"](https://people.cs.uchicago.edu/~glk/pubs/pdf/Kindlmann-FaceBasedLuminanceMatching-VIS-2002.pdf).
 
-This calibration is needed to get good results when using the "Luminance" and "Dyn.Desat" filters.
+This calibration is needed to get good results when using the "Luminance" filter (with or without dynamic desaturation).
 
-The calibration is only available from the [Live UI](LiveUI.md) (in the Settings / Video Options menu). Once started, you will have to close one eye, and adjust the brightness of an image until the 2 presented faces are equally bright (which happens when your focus naturally switches from one to the other). The Left/Right Shift keys are used to adjust the brightness, and the Left/Right Control keys are used to move between calibration steps.
+The calibration is started with 'Calibrate' in the in-game UI ([F12] > 'Stereo Settings'). Once started, you will have to close one eye, and adjust the brightness of an image until the 2 presented faces are equally bright (which happens when your focus naturally switches from one to the other). The flipper buttons (default Left/Right Shift) or 'UI: Adjust Decrease/Increase' adjust the brightness; the magna save buttons (default Left/Right Ctrl) or 'UI: Navigate Previous/Next' move between the 6 calibration steps.
 
 Once the calibration is performed, VPX will compute a fit of its model against the measured values. While doing so, the screen color will change and flash until finding a suitable equilibrium.
 

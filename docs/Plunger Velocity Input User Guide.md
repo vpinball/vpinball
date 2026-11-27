@@ -31,20 +31,23 @@ of your choice as **plunger.z** (position), and a second axis as **plunger.speed
 
 ## VP setup
 
-Use the "Keys" dialog to set up the plunger.  The procedure is the
-same as the usual plunger setup, except that you select a Plunger
-Speed axis in addition to the normal Plunger Position axis.
+The plunger is set up in the in-game menu (while playing):
+**Plunger Settings** > **Add a new plunger sensor** (or select an existing sensor).
 
-* In the **Plunger** drop list, select the joystick axis assigned to
-the **plunger position** reading on your I/O controller.
+* **Position sensor**: select the axis that carries the **plunger position**.
 
-* In the **Speed** drop list immediately below that, select the joystick
-axis assigned to the **plunger speed** reading on your I/O controller.
+* **Velocity sensor**: select the axis that carries the **plunger speed**.
 
-* Check the **Reverse axis** box if necessary (if you discover that
-the on-screen plunger moves in the opposite direction you expect in
-response to inputs on the physical plunger).
+* **Sensor unit** (velocity sensor): the speed must be expressed in plunger
+travel lengths per second (p.u./s, 1 = full travel range).  For Pinscape, select
+**12.5 p.u/s [Pinscape plunger velocity]**.  For other devices, set **Unit scale**
+so that the value is in p.u./s (the default scale is 1).
 
-* Remember that you must **close all tables in the editor** after changing
-any of these settings before they'll go into effect in the player.
+* **Reversed axis**: enable it if the on-screen plunger moves in the opposite
+direction to the physical plunger.
+
+* Changes apply immediately and are saved as application-wide settings.
+
+* The table's plunger must have **Mech Plunger** enabled to follow the
+analog input.
 

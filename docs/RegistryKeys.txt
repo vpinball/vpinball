@@ -1,13 +1,9 @@
-This is a quick overview of all non-exposed registry keys VP parses.
-(some might not work correctly anymore, who knows)
+This is a quick overview of settings that VP reads from VPinballX.ini (or a table .ini),
+but that are not exposed in the user interface.
 
-"Player" / "PhysicsMaxLoops"  if the table sets max loops to -1, then this will override it
-"Player" / "Autostart"        presses start after loading a table automatically
-"Player" / "AutostartRetry"
-"Player" / "asenable"         enable autostart? (0 or 1)
-"Player" / "mirror"           mirror playfield (also mirrors keys accordingly) (0 or 1)
-"Player" / "Exitconfirm"      seconds that escape key has to be pressed to exit VP completely
-"Player" / "Volmod"           sets default sound mixer volume (0..1000)
-"Player" / "PlungerFilter"    overrides plunger filter table setting ("Filter Mechanical Plunger")
-"Player" / "PlungerNormalize" overrides plunger adjust table setting ("Mech-Plunger Adjust")
-"Player" / "MinPhysLoopTime"  artificially lengthen the execution of the physics loop by X usecs, to give more opportunities to read changes from input(s) (mainly useful if vsync is enabled, too) (try values in the multiple 100s up to maximum 1000 range, in general: the more, the faster the CPU is, recommended tuning factor is 900 (90%))
+[Player] PhysicsMaxLoops  default maximum number of physics iterations per frame, for tables that do not define their own value (hacky, should not be used anymore)
+[Player] Autostart        delay after loading a table before start is pressed automatically, in 1/100 seconds (needs asenable)
+[Player] AutostartRetry   delay between two automatic start presses while the game did not start, in 1/100 seconds
+[Player] asenable         enable autostart (0 or 1)
+[Player] Mirror           mirror the table left <-> right, the nudge inputs follow (0 or 1, not in VR; also enabled by holding both flipper buttons during table start)
+[Player] MinPhysLoopTime  artificially lengthen the execution of the physics loop by X usecs, to give more opportunities to read changes from input(s) (mainly useful if vsync is enabled, too) (try values in the multiple 100s up to maximum 1000 range, in general: the more, the faster the CPU is, recommended tuning factor is 900 (90%)). DirectX 9/OpenGL builds only

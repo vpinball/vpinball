@@ -19,8 +19,8 @@ connect the headset before starting a table.
 
 Use the runtime that comes with your headset: Meta Quest Link, Virtual Desktop or SteamVR. Make sure
 it is set as the active OpenXR runtime (for Quest Link: Meta Horizon Link app > Settings > General >
-OpenXR Runtime). Then, in VPX, set **VR > Enable VR** to *Enabled* (`PlayerVR.AskToTurnOn = 0`) and
-start a table.
+OpenXR Runtime). Then, in VPX, set the **VR** combo of the editor toolbar to *Enabled*
+(`PlayerVR.AskToTurnOn = 0`, default *Disabled*) and start a table.
 
 ### Linux
 
@@ -31,7 +31,7 @@ Use [WiVRn](https://github.com/WiVRn/WiVRn) to stream to a Meta Quest (or Pico) 
 2. Install the WiVRn app on the headset from the Meta Store. It must be the same version as the server.
 3. In the headset, open WiVRn and connect to your computer. While a headset is connected, WiVRn is
    the active OpenXR runtime, so VPX finds it automatically.
-4. In VPX, set **VR > Enable VR** to *Enabled* (`PlayerVR.AskToTurnOn = 0`) and start a table.
+4. In VPinballX.ini, set `AskToTurnOn = 0` in the `[PlayerVR]` section and start a table.
 
 WiVRn streams over WiFi. For a wired connection over USB, see the WiVRn documentation.
 
@@ -47,7 +47,7 @@ need macOS 14 or later and a USB-C cable.
    `adb install`), plug the headset into the Mac and accept **Allow USB debugging**.
 4. In OXRSys Home, select **USB** as the transport (see below).
 5. In the headset, launch OXRSys from **Library > Unknown Sources**.
-6. In VPX, set **VR > Enable VR** to *Enabled* (`PlayerVR.AskToTurnOn = 0`) and start a table.
+6. In VPinballX.ini, set `AskToTurnOn = 0` in the `[PlayerVR]` section and start a table.
 
 #### Making sure OXRSys uses USB
 
@@ -60,6 +60,11 @@ uses the cable:
 
 For the smoothest result, also set the refresh rate to 90 Hz and turn adaptive bitrate off with a
 20 Mbps bitrate in OXRSys Home.
+
+### User interface in VR
+
+The in-game UI ([F12]) is a panel fixed in space, operated by pointing a controller at it and clicking.
+Non-interactive overlays (performance, notifications, plumb) are rendered on the table glass.
 
 
 ## Space references
@@ -172,8 +177,11 @@ it, you need a VR streamer that supports colorkeyed passthrough (for example Vir
 To enable augmented reality:
 - enable colorkeyed passthrough mode in your VR streamer application,
 - define the keyed color to be full black (all channels at 0) with the lowest tolerance possible,
-- in VPX's ingame user interface, enable the augmented reality mode,
+- in VPX's in-game UI ('VR Settings'), enable 'Color Keyed Passthrough' (`PlayerVR.UsePassthroughColor`),
 - play with a table that does not cover the entire environment with a virtual room.
+
+On headsets with native passthrough (Meta Quest, `XR_FB_passthrough`), the same setting uses the native
+passthrough instead; no streamer color key is needed.
 
 
 <sub><sup>[Information applicable to version 10.9.0 Beta]</sup></sub>

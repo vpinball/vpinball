@@ -51,7 +51,7 @@ simulator are just the readings taken from the accelerometer, which
 physically represent a series of discrete-time digitized acceleration
 samples.
 
-Internally, VP applies these instantaneous accelerations to the
+VP up to 10.8: internally, VP applied these instantaneous accelerations to the
 simulation by accelerating each moving object by the amount read from
 the accelerometer, for one time step in the simulation.  The
 expression of this concept in the C++ code is equally straightforward:
@@ -70,6 +70,13 @@ time step factor.  If you've ever wondered why you needed to reduce
 the gain by a factor of 10 between VP9 and VP10, it's because VP10's
 time step is 1/10 of VP9's, thus the portion of the gain setting that
 represents the time step had to be reduced by 10x.
+
+Since VP 10.9: the readings are converted to m/s^2 by the mapping's
+**Sensor unit**/**Unit scale**, filtered by a per-axis Kalman estimator
+(timestamped samples, rest detection with bias recalibration), scaled by
+the sensor's **Nudge Strength** and by **Cabinet Weight** / simulated
+cabinet mass, and applied to all moving objects as a cabinet (frame)
+acceleration.  There is no Gain setting anymore.
 
 
 ## The new alternative simulator input model: Integrated velocities
@@ -104,7 +111,7 @@ playfield is a matter of adding the opposite velocity to all of the
 moving objects, so that the playfield remains at rest relative to the
 coordinate system.  
 
-To express all of this in C++ code, we add a new pair of variables
+VP up to 10.8: to express all of this in C++ code, we add a new pair of variables
 representing the current X/Y "nudge velocity".  What these really
 represent physically is the velocity of the playfield relative to the
 inertial rest frame.  On each time step, we calculate the new velocity
@@ -120,16 +127,17 @@ with the simple accounting trick - so nothing else in the simulation
 is affected.  In particular, hit testing and collision processing
 are completely unchanged.
 
-Note that VPX already uses exactly this model for its internal *simulated*
-nudging system, which applies a nudge from scripting or by keyboard
-activation by modeling an imaginary cabinet as a damped oscillator.  VPX
-calculates the motion of this imaginary damped oscillator, and applies
-the differential velocity to the ball speeds on each physics time step.
-The new accelerometer input handling applies the externally supplied
-velocity input the same way.  It's doing exactly the same thing, the
-only difference being that the velocity source in one case is VP's
-simulation of the motion of an imaginary cabinet, and in the other
-case it's the real-time sensor measurements from a physical cabinet.
+Since VP 10.9: velocity readings (**Side/Front velocity sensor**, in m/s)
+are fed to the same per-axis Kalman estimator as accelerations.  Its
+acceleration estimate is smoothed and applied as the cabinet (frame)
+acceleration.  Missed or repeated USB samples only update the estimate;
+the velocity is never re-integrated from accelerations.
+
+VP's simulated nudge (keyboard and script `Nudge`) drives a cabinet model
+and applies its acceleration the same way.  **Keyboard Nudge Mode**
+selects the model: *VP9* (push/retract), *VPX 10.8* (damped oscillator,
+uses the table's Nudge Time) or *VPX 10.9* (default; 25 ms impulses into
+the cabinet model).
 
 
 ## Compatibility with games *not* using the new model
@@ -146,6 +154,8 @@ accepts.  This allows the microcontroller to work with multiple
 pinball simulators without any need for "mode switching" when changing
 games.  The device simply reports both kinds of data, and the
 simulator reads the type it's interested in and ignores the rest.
+VP can also read both: with acceleration and velocity axes mapped on the
+same nudge sensor, it calibrates the gain between them and combines them.
 
 
 
@@ -158,8 +168,7 @@ that hurt its realism.
 The fundamental, unfixable problem with the traditional model is that
 a PC-based simulator doesn't have synchronous access to the
 accelerometer.  The access is mediated through the USB HID mechanism
-(and, in the case of VP, further mediated by the DirectInput layer in
-Windows).  USB HID doesn't provide reliable message delivery or a
+(and further mediated by the operating system's HID/input layer).  USB HID doesn't provide reliable message delivery or a
 consistent time base.  This means that the simulator and the
 accelerometer can't synchronize their discrete time steps.  Both work
 in terms of discrete time, but with different discrete-time sampling
@@ -232,8 +241,8 @@ happen to all add up to zero over time, the sum stays finite.  But if
 there's even a slight bias in the readings, it will accumulate and
 steadily grow over time until the velocities overflow the "floats"
 they're stored in.  And this is indeed exactly what happens in
-practice.  It's the whole reason that we had to add the "Nudge
-Filter" a long time ago to suppress the divergent accumulated
+practice.  It's the whole reason that VP had the "Nudge
+Filter" (removed in VP 10.9) to suppress the divergent accumulated
 accelerations.  That filter suppresses the infinities, but it adds
 artifacts of its own, since it only has the flawed USB data stream
 to work with.
@@ -288,10 +297,10 @@ accelerometers we use in pin cabs are very noisy.  The device is in a
 much better position to do this than the simulator, though, since it
 has a more accurate view of the raw data stream.
 
-To be clear, VP doesn't need or use any of the filtering we're about
-to discuss.  VP simply uses the velocities reported, and leaves any
-desired filtering to the device, so that filtering can be customized
-to the characteristics of the accelerometer being used.  The notes
+VP's own processing is limited to the mapping's dead zone and limit,
+timing reconstruction (Kalman estimator), rest-bias recalibration and
+light smoothing.  Noise filtering is left to the device, so that it can be
+customized to the characteristics of the accelerometer being used.  The notes
 below are only meant as an aid to device implementers who wish to add
 velocity-based nudging to their devices.
 
@@ -376,7 +385,7 @@ still be some unbalanced bias that accumulates over time.
 A simple technique to eliminate this is what I call a "friction"
 filter.  This filter applies a slight attenuation to the integrated
 velocity on every time step (i.e., every new acceleration sample).
-This is actually the same basic idea as the "Nudge filter" in VP, but
+This is actually the same basic idea as the former "Nudge filter" in VP, but
 that filter has a lot of added complexity that was necessary because
 of VP's more limited view of the underlying data and faster error
 accumulation.  The device-side equivalent doesn't need the same

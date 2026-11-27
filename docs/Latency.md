@@ -49,8 +49,8 @@ To optimize this value, one will likely want to run the BGFX variant, using a wi
 In addition, one should research which configuration and resolution of the used TV/monitor setup will result in its lowest latency.
 E.g. some TVs feature a specialized 'Game Mode', some monitors need to run at a certain Hz/resolution config, or certain postprocessing has to be disabled, in order to minimize its latency.
 
-VPX offers to compensate the visual latency of balls by rendering them at their predicted position (where they will be when the image will be displayed instead of where they are when the frame is prepared).
-To enable this feature, set the latency correction in the rendering options to either -1 (apply an default correction based on your display refresh rate) or your personal setup latency, measured in milliseconds.
+VPX compensates the visual latency of balls by rendering them at their predicted position (where they will be when the image will be displayed instead of where they are when the frame is prepared).
+This is automatic (no setting), based on the predicted display time.
 
 
 ## Overall scheme
@@ -82,7 +82,7 @@ The input latency has 2 causes:
 The delay between when a game state is evaluated and when it is displayed on the screen depends on:
 - the display framerate, higher framerate giving more frames per second, and consequently lower latency,
 - the delay caused by the operating system window compositor, usually leading to 1 frame of latency (see below for Windows optimization),
-- VPX settings with values that will favor either lower latency (using `Frame Pacing` with a maximum of `1` frame of latency) or more stable framerate (using `Frame Pacing`/`Software VSync`/`VSync` with a maximum of `3` frames of latency)
+- VPX settings ('Synchronization' and 'Max. Prerendered Frames', 1-3, default 1, not supported by OpenGL) with values that will favor either lower latency (using `Frame Pacing` with `1` prerendered frame) or more stable framerate (using `Frame Pacing`/`Vertical Sync`/`Adaptive Sync` with up to `3` prerendered frames). BGFX uses `Vertical Sync` instead of `Adaptive Sync`; neither setting is used in VR.
 
 Under Windows, to optimize desktop composition latency, user may perform the following steps:
 - Run DXDiag, wait for the information collection, click 'Save All', open saved file, search for 'MPO Caps', validate that the flags corresponding to your display setting are presents, if not adjust your display settings accordingly:

@@ -16,11 +16,12 @@ Their opacity will then be modulated by the light intensity ratio.
 ## Fading
 When a light is switched on or off, it fades up and down. VPX is able to simulate 3 behaviors:
 - Incandescent bulb, for which a complete physical model is used, simulating the bulb's filament temperature (which can also be accessed from script) and tinting the light's color accordingly (no tint at full power, turning slightly red when cooling down),
-- LED bulb, which switches instantaneously to the requested state (no fading),
+- 'None' (shown as 'LED (None)' in the Windows editor), which switches instantaneously to the requested state (no fading),
 - Linear, which performs a simple linear interpolation using the selected speed.
 
 ## Shadows
 VPX only supports dynamic shadows between balls and lightmaps (from light objects or flasher/primitives used as the lightmap).
+Shadows are enabled per light with 'Raytraced Ball Shadows'. For pre-10.8 tables, the 'Ball Shadows heuristic for pre-10.8 tables' setting (`Player.LegacyTableBallShadows`, default off) enables them on selected lights.
 These shadows are computed using raytracing between the ball and the light source, as defined in the editor (using the defined surface offsetted by the given z property).
 
 ![Light position](img/Lights-Position.webp)

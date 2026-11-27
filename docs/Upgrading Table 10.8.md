@@ -64,7 +64,7 @@ Reflections used to be limited to the playfield, with no VR nor camera mode supp
 
 Now, reflections are implemented using 'reflection probes', using 2 'rendering passes': the first one evaluates the reflected incoming light, the second one actually draws the object using this precomputed incoming light.
 This offers the following benefits:
-- VR support (and also camera mode & LiveUI),
+- VR support (and also LiveUI / free camera views),
 - process the playfield like any [other parts](#playfield-transparency),
 - use reflections on any part,
 - reflections are rendered with the object they are applied to, therefore taking into account its geometry: e.g. no more reflections in the playfield hole,

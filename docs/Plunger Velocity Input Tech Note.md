@@ -78,8 +78,8 @@ which can run as fast as a few microseconds per reading.
 
 I/O controllers traditionally send plunger position reports to the PC
 via a joystick axis.  This is most commonly the main joystick Z axis,
-but it's configurable in VP to any of 8 axes (X, Y, Z, RX, RY, RZ,
-or either of two "slider" controls).
+but VP can use any axis reported by the device (joystick/gamepad axes
+via SDL, or the named inputs of an Open Pinball Device).
 
 The speed reading can be passed to the PC in the same manner,
 alongside the position report, by placing it on any other joystick
@@ -92,86 +92,54 @@ Note that the speed reading is **not** a replacement for the position
 report.  The simulator still needs the position reports; the speed is
 only a supplement.
 
-
-## How VP consumes the new speed readings
-
-VP has a new control in the "Keys" setup dialog that lets you select
-a joystick axis to assign as the Plunger Speed input.
-
-VP continues to use the USB position reports to update the on-screen
-plunger animation and the "hit plunger" physics object, exactly as in
-previous versions before speed reports were added.  In fact, VP still
-uses *only* the USB position reports to track the position *and speed*
-of the "hit plunger" object, so that code is essentially unchanged.
-
-The reason **not** to use the speed reading to update the position is
-that we already know the **actual** instantaneous position, from the
-USB reports.  Calculating the position from the velocity would
-effectively integrate the velocity readings over time, which would
-magnify any measurement error component by adding the error into the
-running total (the position) on every time step.  In contrast, the
-position reading is always an instantaneous "state of the world"
-reading, so any measurement error it contains is a one-off that's
-discarded on the next time step.
-
-The place where the external speed reading is applied is in the
-collision processing, to calculate the impulse imparted to the ball.
-Here, it's the external speed that's the instantaneous "state"
-reading, so we use this in preference to the internal speed
-calculation, which is imperfectly calculated from the first
-derivative of position readings over time.
+VP expects the speed in plunger travel lengths per second (p.u./s,
+1 = full travel range, positive when retracting).  The device value is
+converted with the mapping's **Unit scale** (Pinscape preset: 12.5 p.u./s).
 
 
-### Firing events are suppressed when speed readings are available
+## How VP consumes the speed readings
 
-"Firing events" are the heuristic that VP uses to improve its speed
-calculations for fast-moving plunger events.  VP declares a firing
-event when it detects two sequential readings that indicate that the
-plunger has moved forward at a high enough speed that it's likely
-being driven forward by the main spring.  A typical mechanical
-plunger takes about 30ms to travel all the way forward after being
-pulled back and released, so VP has good odds of seeing at
-least two USB reports over a firing motion, allowing it to detect
-most of these events.
+The speed input is mapped in the in-game menu: **Plunger Settings** >
+plunger sensor > **Velocity sensor**.
 
-Two reports isn't enough to accurately calculate speed, for the reasons
-discussed above - the aliasing problem at the bounce-back point, and
-the absence of precise delta-time information.  But two readings *are* enough to 
-tell that some kind of high-speed action occurred, even if we can't determine the speed
-with any precision.  That's why this is a heuristic.  VP assumes from the
-apparent rapid motion that the user did in fact pull back the plunger
-and release it.  So it tries to guess at the actual speed the plunger
-reached *over the course of the forward travel* by looking back over
-recent reports to see how far back the plunger was at its maximum
-excursion.  It's likely that the *retraction* phase, where the user
-was manually operating the plunger, was slow enough that VP has fairly
-detailed readings on the position, so it can figure the apex position
-(or something close) by looking at recent readings and taking the peak
-value.  VP then assumes that the plunger actually was released from
-this position, so it calculates the speed that would occur in an ideal
-system under these conditions.  It then uses that speed to figure the
-ball collision impulse.
+Position: VP rebuilds a continuous 1 ms position estimate from the
+timestamped position reports (Kalman estimator), and moves the on-screen
+plunger toward it through the table's **Mech Strength** spring.  The
+position is never integrated from the speed readings, since that would
+accumulate the measurement error.
 
-The whole point of this heuristic is to get a better estimate of the
-speed for times when VP knows it can't properly calculate the speed
-by taking the first derivative of the position readings.  This is why
-the new system disables the heuristic when external speed readings are
-available.  The external speed readings are presumed to reflect the
-reality of the mechanical system more accurately than the heuristic
-can, so the external speed is used in preference to the heuristically
-synthesized speed.
+Hit speed: the speed applied to the ball is taken, in order of preference,
+from:
 
-In addition, it's desirable to disable the firing-event heuristic when
-it's not needed because the heuristic can be fooled pretty easily by
-actions that aren't actually release motions, but which the heuristic
-interprets as such anyway.  If you move the plunger rapidly forward by
-hand and then pull it back, for example, you'll trigger a firing event
-even though you didn't actually release the plunger.  That'll make the
-on-screen plunger go through the full firing travel distance even
-though the actual plunger has already been pulled back, so the
-on-screen motion will diverge from the real motion.  Disabling the
-heuristic when it's not needed keeps it from producing weird results
-when the user accidentally fools it.
+* the external speed reading, when a Velocity sensor is mapped;
+* otherwise, an estimate from the position history (see below).
+
+The hit speed (p.u./s) is rescaled to the range between the rest position
+and full retraction (x (1 - rest position)), converted to table units with
+the plunger travel length, and scaled by the table's **Release Speed**/100
+and the plunger mass.  It is used for the ball impulse in the collision,
+and also drives the on-screen tip while a release is under way, so that
+the tip reaches the ball in time and bounces back like a released plunger.
+Script/keyboard firing (`Fire`) keeps using its own internal speed.
+
+
+### Release estimate without a speed input
+
+Without a speed input, VP looks at the positions of the last 100 ms for
+the furthest pull-back (apex).  If the plunger is now more than 10% of its
+travel forward of that apex, VP assumes a free release from the apex and
+uses the keyboard-plunger launch model:
+speed = -(apex - rest) x 100/13 (positions as fractions of the travel,
+same scale as the keyboard plunger launch).
+Otherwise the hit speed is zero and the impulse comes from the simulated
+tip speed.  A mapped speed input replaces this estimate entirely.
+
+VP up to 10.8: VP instead detected "firing events" from two fast forward
+readings and then ran the on-screen plunger through a full scripted
+firing stroke.  This could be fooled by fast manual movements, leaving the
+on-screen plunger out of sync with the real one; the speed input
+suppressed these events.  This mode no longer exists for mechanical
+plungers.
 
 ## References
 

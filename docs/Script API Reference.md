@@ -759,7 +759,7 @@ The following methods only applies to mesh primitives with an animation sequence
 | DefaultBulbIntensityScale | float | scale/dampen the contribution of the bulbs lights on the ball. This is a default setting for all balls created on the the table. If you need ball specific intensity scaling you can change the intensity by using the BulbIntensityScale value on the ball
 | *BallTrail | | enable ball trail/motion blur on table. depending on the global video setting 'Ball Trail/Motion Blur' this is on or off. Or it is defined specific for this table.
 | *TrailStrength | int | defines the strength of the ball trail (0-100)
-| *DetailLevel | int | defines the ramp accuracy for this table and overrides the global setting from the video options (range 0-10).
+| *DetailLevel | int | defines the ramp accuracy for this table and overrides the global 'Detail Level' graphics setting (range 0-10).
 | | | |
 | *Accelerometer | bool |  
 | *AccelNormalMount | bool | 

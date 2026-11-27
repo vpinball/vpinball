@@ -37,7 +37,7 @@ The app comes with an example table so you can try it right away.
 
 ## Getting the app
 
-**iPhone and iPad:** install *Visual Pinball* from the [App Store](https://apps.apple.com/us/app/visual-pinball/id6547859926). Needs iOS 26 or later.
+**iPhone and iPad:** install *Visual Pinball* from the [App Store](https://apps.apple.com/us/app/visual-pinball/id6547859926). Needs iOS 26.6 or later.
 
 **Android:** install *Visual Pinball* from [Google Play](https://play.google.com/store/apps/details?id=org.vpinball.vpinball_bgfx), or install an APK. Needs a 64-bit device running Android 13 or later. Google Play may warn you when installing an APK from another source.
 
