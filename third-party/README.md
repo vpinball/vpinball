@@ -7,7 +7,7 @@ The version used for these libraries is defined by the SHA of the head commit in
 ### BX/BGFX/BIMG
 
 - Upstream: https://github.com/bkaradzic/bgfx https://github.com/bkaradzic/bimg https://github.com/bkaradzic/bx
-- Version: bgfx.cmake 1.172.9657-621 (https://github.com/bkaradzic/bgfx.cmake) + VPX patches from https://github.com/vbousquet/bgfx (head at 0900e8e67fe0ab63ffdb21925c4ed794d9391fc2)
+- Version: bgfx.cmake 1.172.9657-621 (https://github.com/bkaradzic/bgfx.cmake) + VPX patches from https://github.com/vpinball/bgfx (head at 0900e8e67fe0ab63ffdb21925c4ed794d9391fc2)
 - License: BSD-2-Clause license
 
 ### FFmpeg
