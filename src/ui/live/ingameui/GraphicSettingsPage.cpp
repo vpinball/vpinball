@@ -450,6 +450,16 @@ void GraphicSettingsPage::BuildPage()
       [this]() { return m_player->m_renderer->IsBallLightingDisabled(); }, //
       [this](bool v) { m_player->m_renderer->DisableBallLighting(v); }));
 
+   // Applied when a table is loaded (PinTable::ApplyLoadedVersionFixups), so saved for the next start
+   AddItem(std::make_unique<InGameUIItem>( //
+      Settings::m_propPlayer_LegacyTableBallShadows, //
+      []() { return g_settingsService.GetActiveSettings().GetPlayer_LegacyTableBallShadows(); }, //
+      [this](bool v)
+      {
+         g_settingsService.GetActiveSettings().SetPlayer_LegacyTableBallShadows(v, false);
+         NotifySavedForNextStart();
+      }));
+
    AddItem(std::make_unique<InGameUIItem>( //
       Settings::m_propPlayer_BallTrail, //
       [this]() { return m_player->m_renderer->m_trailForBalls; }, //

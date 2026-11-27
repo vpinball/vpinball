@@ -184,6 +184,9 @@ PropEnum(Player, Sharpen, "Post processed sharpening"s, "Select between differen
 // Ball rendering
 PropBool(Player, BallAntiStretch, "Unstretch Ball"s, "Compensate ball stretching"s, false);
 PropBool(Player, DisableLightingForBalls, "Disable Ball Lighting"s, "Disable lighting and reflection effects on balls, e.g. to help the visually handicapped"s, false);
+PropBool(Player, LegacyTableBallShadows, "Ball Shadows heuristic for pre-10.8 tables"s,
+   "Heuristic to enable Ball Shadows for certain lights only (can lead to rendering quirks though).\n"
+   "Note that an older table loaded with the setting enabled will save the shadow-enable flag for these selected lights, too"s, false);
 PropBool(Player, BallTrail, "Ball Trail"s, "Legacy Ball Trails.\nWill/should be replaced by ForceMotionBlurOff with the next release"s, false);
 PropFloat(Player, BallTrailStrength, "Ball Trail Strength"s, "Strength of the legacy Ball Trail"s, 0.f, 5.f, 0.5f);
 PropBool(Player, OverwriteBallImage, "Overwrite ball image"s, "Allow to define images that will be used instead of the table's provided one"s, false);

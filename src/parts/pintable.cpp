@@ -2220,6 +2220,14 @@ void PinTable::ApplyLoadedVersionFixups(const int loadfileversion)
       // Glass was horizontal before 10.8
       m_glassBottomHeight = m_glassTopHeight;
 
+      // Detect lights with scripted ball shadows implementation attached (i.e. VPW dynamic ball shadow template: 'DynamicSources' collection), see the ball shadows snippet below
+      const bool legacyBallShadows = m_settings.GetPlayer_LegacyTableBallShadows();
+      ankerl::unordered_dense::set<const IEditable *> scriptedShadowSources;
+      if (legacyBallShadows)
+         for (const Collection *const collection : m_vcollection)
+            if (StrCompareNoCase(collection->m_name, "DynamicSources"))
+               scriptedShadowSources.insert(collection->GetParts().begin(), collection->GetParts().end());
+
       for (size_t i = 0; i < m_vedit.size(); ++i)
       {
          if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemPrimitive && (((Primitive *)m_vedit[i])->m_d.m_disableLightingBelow != 1.0f))
@@ -2262,6 +2270,11 @@ void PinTable::ApplyLoadedVersionFixups(const int loadfileversion)
             // Before 10.8, bulb mesh visibility was combined with lightmap visibility (i.e. a hidden light could be reflecting but not have a bulb mesh). Note that light visible property was only accessible through script
             if (!light->m_d.m_visible)
                light->m_d.m_showBulbMesh = false;
+            // Optional (LegacyTableBallShadows): ray traced ball shadows from bulb lights as in 10.7.X, before 10.8 made them a per-light option.
+            // Not from large lights (falloff 500+, about half the table: e.g. GI hacks), backdrop lights (backdrop space, not table space like the balls)
+            // or lights with scripted ball shadows
+            if (legacyBallShadows && light->m_d.m_BulbLight && light->m_d.m_falloff < 500.f && !light->m_desktopBackdrop && !scriptedShadowSources.contains(light))
+               light->m_d.m_shadows = ShadowMode::RAYTRACED_BALL_SHADOWS;
          }
       }
    }
