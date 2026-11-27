@@ -660,11 +660,14 @@ void LiveUI::NewOverlayFrame()
    io.DeltaTime = mainIO.DeltaTime;
    io.DisplaySize = mainIO.DisplaySize;
    io.DisplayFramebufferScale = mainIO.DisplayFramebufferScale;
+   // No input of its own: the main context's mouse position (same UI space) drives the hover tooltips (PerfUI)
+   ImVec2 mousePos = mainIO.MousePos;
 #ifdef ENABLE_XR
    // In VR, outside of loading, the overlay is laid out on its own portrait surface matching the
    // aspect ratio of the inset glass footprint it is rendered onto (so text is not stretched)
    if (m_player->m_vrDevice != nullptr && m_renderer->m_stereo3D == STEREO_VR && !m_player->m_isLoading && m_player->m_ptable != nullptr)
    {
+      mousePos = ImVec2(-FLT_MAX, -FLT_MAX); // Not pointable on the glass
       float x0, y0, x1, y1, zBack, zFront;
       GetGlassOverlayRect(m_player->m_ptable, x0, y0, x1, y1, zBack, zFront);
       const float widthInches = VPUTOMM(x1 - x0) / 25.4f;
@@ -673,6 +676,7 @@ void LiveUI::NewOverlayFrame()
       io.DisplayFramebufferScale = ImVec2(1.f, 1.f);
    }
 #endif
+   io.AddMousePosEvent(mousePos.x, mousePos.y);
    ImGui::NewFrame();
    ImGui::SetCurrentContext(prevContext);
 }
@@ -1301,6 +1305,11 @@ void LiveUI::UpdateTouchUI()
    const float screenWidth = io.DisplaySize.x;
    const float screenHeight = io.DisplaySize.y;
    const auto alpha = [opacity](int a) { return static_cast<int>(static_cast<float>(a) * opacity); };
+   // A HDR10 backbuffer blends the UI in PQ (see fs_imgui.sc), much steeper toward black than sRGB: a translucent black darkens about
+   // twice as much as on SDR. 1 - sqrt(1 - alpha) matches SDR within ~10% over 5% to 100% of the SDR white. Translucent white is close enough
+   const bool pqBlend = m_player->m_playfieldWnd->IsWCGBackBuffer();
+   const auto darkAlpha = [&alpha, pqBlend](int a)
+   { return pqBlend ? static_cast<int>(255.f * (1.f - sqrtf(1.f - static_cast<float>(alpha(a)) / 255.f)) + 0.5f) : alpha(a); };
    ImDrawList *drawList = ImGui::GetBackgroundDrawList();
    ImFont *const font = m_overlayBoldFont ? m_overlayBoldFont : ImGui::GetFont();
    // Boxes drawn inset in their regions (the touch area itself is the whole region)
@@ -1321,7 +1330,7 @@ void LiveUI::UpdateTouchUI()
 
       const bool pressed = m_pininput->IsTouchRegionPressed(region);
       // Light tint only, so the playfield stays visible below (the outline and the label shadow keep the regions readable)
-      drawList->AddRectFilled(topLeft, bottomRight, pressed ? IM_COL32(255, 255, 255, alpha(8)) : IM_COL32(0, 0, 0, alpha(52)), rounding);
+      drawList->AddRectFilled(topLeft, bottomRight, pressed ? IM_COL32(255, 255, 255, alpha(8)) : IM_COL32(0, 0, 0, darkAlpha(52)), rounding);
       drawList->AddRect(topLeft, bottomRight, IM_COL32(255, 255, 255, alpha(pressed ? 105 : 80)), rounding, ImDrawFlags_None, lineWidth);
 
       // Label centered in the region, scaled down to fit its width
