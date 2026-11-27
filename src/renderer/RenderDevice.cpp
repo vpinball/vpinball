@@ -960,7 +960,6 @@ void RenderDevice::BGFXDesktopRenderLoop(const bgfx::Init& init)
                   RemoveWindow(wnd);
                   delete backbuffer;
                   bgfx::frame(BGFX_FRAME_FLUSH); // We must destroy the swapchain before attaching a new swapchain
-                  m_uniformFrameGeneration++;
                   AddWindow(wnd);
                }
                break;
@@ -2466,7 +2465,6 @@ void RenderDevice::NextView()
       // Flush the views encoded so far, then keep on recording the remaining passes with fresh view ids.
       // Do not re-enter SubmitRenderFrame/RenderFrame::Execute here as we may be called from inside it.
       bgfx::frame(BGFX_FRAME_FLUSH);
-      m_uniformFrameGeneration++;
       ResetActiveView();
    }
    m_activeViewId++;
@@ -2511,7 +2509,6 @@ void RenderDevice::SubmitAndFlipFrame(bool present)
       m_pendingTextureUploads.insert(m_pendingTextureUploads.end(), pendingUploads.begin(), pendingUploads.end());
    }
    const uint32_t frameIdx = bgfx::frame(present ? BGFX_FRAME_NONE : BGFX_FRAME_FLUSH);
-   m_uniformFrameGeneration++;
    m_texMan.OnFrameStats(bgfx::getStats());
    if (present)
       m_lastPresentFrameIdx = frameIdx;
