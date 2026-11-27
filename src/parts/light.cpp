@@ -84,7 +84,8 @@ void Light::SetDefaults(const bool fromMouseClick)
    LinkProp(m_d.m_fadeSpeedUp, FadeSpeedUp);
    LinkProp(m_d.m_fadeSpeedDown, FadeSpeedDown);
    LinkProp(m_d.m_intensity, Intensity);
-   LinkProp(m_d.m_transmissionScale, TransmissionScale);
+   // Lights placed in the editor default to some transmission, while loaded lights that do not define it have none
+   m_d.m_transmissionScale = fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsLight_TransmissionScale() : 0.f;
    LinkProp(m_d.m_BulbLight, Bulb);
    LinkProp(m_d.m_imageMode, ImageMode);
    LinkProp(m_d.m_showBulbMesh, ShowBulbMesh);

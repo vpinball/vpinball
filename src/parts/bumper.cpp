@@ -48,6 +48,8 @@ void Bumper::SetDefaults(const bool fromMouseClick)
    LinkProp(m_d.m_threshold, Threshold);
    LinkProp(m_d.m_capVisible, CapVisible);
    LinkProp(m_d.m_baseVisible, BaseVisible);
+   LinkProp(m_d.m_ringVisible, RingVisible);
+   LinkProp(m_d.m_skirtVisible, SkirtVisible);
    LinkProp(m_d.m_hitEvent, HasHitEvent);
    LinkProp(m_d.m_collidable, Collidable);
    LinkProp(m_d.m_szSurface, Surface);
@@ -76,6 +78,8 @@ void Bumper::WriteRegDefaults()
    LinkProp(m_d.m_threshold, Threshold);
    LinkProp(m_d.m_capVisible, CapVisible);
    LinkProp(m_d.m_baseVisible, BaseVisible);
+   LinkProp(m_d.m_ringVisible, RingVisible);
+   LinkProp(m_d.m_skirtVisible, SkirtVisible);
    LinkProp(m_d.m_hitEvent, HasHitEvent);
    LinkProp(m_d.m_collidable, Collidable);
    LinkProp(m_d.m_szSurface, Surface);

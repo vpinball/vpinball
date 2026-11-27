@@ -145,6 +145,10 @@ void HitTarget::SetDefaults(const bool fromMouseClick)
    LinkProp(m_d.m_reflectionEnabled, ReflectionEnabled);
    LinkProp(m_timerEnabled, TimerEnabled);
    LinkProp(m_timerInterval, TimerInterval);
+   // A negative drop speed (the setting's default) selects the default of the target type
+   LinkProp(m_d.m_dropSpeed, DropSpeed);
+   if (m_d.m_dropSpeed < 0.f)
+      m_d.m_dropSpeed = (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple) ? 0.5f : 0.2f;
    SetDefaultPhysics(fromMouseClick);
 }
 
@@ -176,6 +180,7 @@ void HitTarget::WriteRegDefaults()
    LinkProp(m_d.m_disableLightingTop, DisableLighting);
    LinkProp(m_d.m_disableLightingBelow, DisableLightingBelow);
    LinkProp(m_d.m_raiseDelay, RaiseDelay);
+   LinkProp(m_d.m_dropSpeed, DropSpeed);
    LinkProp(m_d.m_elasticity, Elasticity);
    LinkProp(m_d.m_elasticityFalloff, ElasticityFalloff);
    LinkProp(m_d.m_friction, Friction);

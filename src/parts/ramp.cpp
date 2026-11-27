@@ -58,6 +58,8 @@ void Ramp::SetDefaults(const bool fromMouseClick)
    LinkProp(m_d.m_imageWalls, ImageWalls);
    LinkProp(m_d.m_leftwallheight, LeftWallHeight);
    LinkProp(m_d.m_rightwallheight, RightWallHeight);
+   LinkProp(m_d.m_leftwallheightvisible, LeftWallHeightVisible);
+   LinkProp(m_d.m_rightwallheightvisible, RightWallHeightVisible);
    LinkProp(m_d.m_hitEvent, HitEvent);
    LinkProp(m_d.m_threshold, HitThreshold);
    LinkProp(m_d.m_collidable, Collidable);
@@ -92,6 +94,8 @@ void Ramp::WriteRegDefaults()
    LinkProp(m_d.m_imageWalls, ImageWalls);
    LinkProp(m_d.m_leftwallheight, LeftWallHeight);
    LinkProp(m_d.m_rightwallheight, RightWallHeight);
+   LinkProp(m_d.m_leftwallheightvisible, LeftWallHeightVisible);
+   LinkProp(m_d.m_rightwallheightvisible, RightWallHeightVisible);
    LinkProp(m_d.m_hitEvent, HitEvent);
    LinkProp(m_d.m_threshold, HitThreshold);
    LinkProp(m_d.m_collidable, Collidable);

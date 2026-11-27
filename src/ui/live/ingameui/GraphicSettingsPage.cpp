@@ -63,13 +63,16 @@ void GraphicSettingsPage::BuildPage()
    {
       AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "View mode"s));
 
+      // The setting is not a ViewSetupID: 0 = Desktop (FSS if the table supports it), 1 = Cabinet, 2 = Desktop without FSS (see PinTable::UpdateCurrentBGSet)
+      const auto toBGSet = [this](ViewSetupID mode) { return mode == BG_FULLSCREEN ? 1 : (mode == BG_DESKTOP && m_player->m_ptable->IsFSSEnabled()) ? 2 : 0; };
+      const auto fromBGSet = [this](int v) { return v == 1 ? BG_FULLSCREEN : (v == 0 && m_player->m_ptable->IsFSSEnabled()) ? BG_FSS : BG_DESKTOP; };
       AddItem(std::make_unique<InGameUIItem>( //
-         VPX::Properties::EnumPropertyDef(*Settings::GetPlayer_BGSet_Property(), m_player->m_ptable->GetViewMode()), //
-         [this]() { return (int)m_player->m_ptable->GetViewMode(); }, // Live
+         VPX::Properties::EnumPropertyDef(*Settings::GetPlayer_BGSet_Property(), toBGSet(m_player->m_ptable->GetViewMode())), //
+         [this, toBGSet]() { return toBGSet(m_player->m_ptable->GetViewMode()); }, // Live
          [this](const Settings& settings) { return (int)settings.GetPlayer_BGSet(); }, // Stored
-         [this](int, int v)
+         [this, fromBGSet](int, int v)
          {
-            m_player->m_ptable->SetViewSetupOverride((ViewSetupID)v);
+            m_player->m_ptable->SetViewSetupOverride(fromBGSet(v));
             m_player->SetCabinetAutoFitMode(g_settingsService.GetActiveSettings().GetPlayer_CabinetAutofitMode());
             m_player->SetCabinetAutoFitPos(g_settingsService.GetActiveSettings().GetPlayer_CabinetAutofitPos());
             OnStaticRenderDirty();

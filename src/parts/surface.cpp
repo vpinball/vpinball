@@ -25,17 +25,13 @@ Surface::~Surface()
 Surface *Surface::CopyForPlay() const
 {
    STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Surface, m_curve)
-   dst->m_isWall = m_isWall;
    dst->m_isDropped = m_isDropped;
    return dst;
 }
 
-#define LinkProp(field, prop)                                                                                                                                                                \
-   field = m_isWall ? (fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsWall_##prop() : Settings::GetDefaultPropsWall_##prop##_Default()) \
-                    : (fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsTarget_##prop() : Settings::GetDefaultPropsTarget_##prop##_Default())
+#define LinkProp(field, prop) field = fromMouseClick ? g_settingsService.GetAppSettings().GetDefaultPropsWall_##prop() : Settings::GetDefaultPropsWall_##prop##_Default()
 HRESULT Surface::Init(const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
-   m_isWall = true;
    SetDefaults(fromMouseClick);
 
    float width, length;
@@ -50,54 +46,6 @@ HRESULT Surface::Init(const float x, const float y, const bool fromMouseClick, c
    return S_OK;
 }
 
-#if 0
-HRESULT Surface::InitTarget(const float x, const float y, const bool fromMouseClick)
-{
-   m_isWall = false;
-
-   float width, length;
-   LinkProp(width, Width);
-   LinkProp(length, Length);
-
-   m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x - width, y - length, 0.f, false));
-   auto pdp = std::make_unique<DragPoint>(&m_curve, x - width, y + length, 0.f, false);
-   pdp->SetAutoTextureCoordinate(false);
-   m_curve.PushPoint(std::move(pdp));
-   pdp = std::make_unique<DragPoint>(&m_curve, x + width, y + length, 0.f, false);
-   pdp->SetAutoTextureCoordinate(false);
-   pdp->SetTextureCoordinateU(1.0f);
-   m_curve.PushPoint(std::move(pdp));
-   m_curve.PushPoint(std::make_unique<DragPoint>(&m_curve, x + 30.0f, y - 6.0f, 0.f, false));
-
-   //SetDefaults();
-   //Set separate defaults for targets (SetDefaults sets the Wall defaults)
-   LinkProp(m_timerEnabled, TimerEnabled);
-   LinkProp(m_timerInterval, TimerInterval);
-   LinkProp(m_d.m_hitEvent, HitEvent);
-   LinkProp(m_d.m_threshold, HitThreshold);
-   LinkProp(m_d.m_slingshot_threshold, SlingshotThreshold);
-   m_d.m_inner = true; //!! Deprecated, do not use anymore
-   LinkProp(m_d.m_szImage, TopImage);
-   LinkProp(m_d.m_szSideImage, SideImage);
-   LinkProp(m_d.m_droppable, Droppable);
-   LinkProp(m_d.m_flipbook, Flipbook);
-   LinkProp(m_d.m_isBottomSolid, IsBottomSolid);
-   LinkProp(m_d.m_heightbottom, HeightBottom);
-   LinkProp(m_d.m_heighttop, HeightTop);
-   LinkProp(m_d.m_displayTexture, DisplayTexture);
-   LinkProp(m_d.m_slingshotforce, SlingshotForce);
-   LinkProp(m_d.m_slingshotAnimation, SlingshotAnimation);
-   LinkProp(m_d.m_elasticity, Elasticity);
-   LinkProp(m_d.m_elasticityFalloff, ElasticityFallOff);
-   LinkProp(m_d.m_friction, Friction);
-   LinkProp(m_d.m_scatter, Scatter);
-   LinkProp(m_d.m_topBottomVisible, Visible);
-   LinkProp(m_d.m_sideVisible, SideVisible);
-   LinkProp(m_d.m_collidable, Collidable);
-   return S_OK;
-}
-#endif
-
 void Surface::SetDefaults(const bool fromMouseClick)
 {
    LinkProp(m_d.m_hitEvent, HitEvent);
@@ -107,7 +55,8 @@ void Surface::SetDefaults(const bool fromMouseClick)
    LinkProp(m_d.m_szSideImage, SideImage);
    LinkProp(m_d.m_droppable, Droppable);
    LinkProp(m_d.m_flipbook, Flipbook);
-   LinkProp(m_d.m_isBottomSolid, IsBottomSolid);
+   // Walls placed in the editor default to a solid bottom, while loaded walls that do not define it are not solid
+   m_d.m_isBottomSolid = fromMouseClick && g_settingsService.GetAppSettings().GetDefaultPropsWall_IsBottomSolid();
    LinkProp(m_d.m_heightbottom, HeightBottom);
    LinkProp(m_d.m_heighttop, HeightTop);
    LinkProp(m_d.m_displayTexture, DisplayTexture);
@@ -135,7 +84,7 @@ void Surface::SetDefaultPhysics(const bool fromMouseClick)
 
 void Surface::WriteRegDefaults()
 {
-#define LinkProp(field, prop) { if (m_isWall) g_settingsService.GetAppSettings().SetDefaultPropsWall_##prop(field, false); else g_settingsService.GetAppSettings().SetDefaultPropsTarget_##prop(field, false); }
+#define LinkProp(field, prop) g_settingsService.GetAppSettings().SetDefaultPropsWall_##prop(field, false)
    LinkProp(m_d.m_hitEvent, HitEvent);
    LinkProp(m_d.m_threshold, HitThreshold);
    LinkProp(m_d.m_slingshot_threshold, SlingshotThreshold);
@@ -149,6 +98,10 @@ void Surface::WriteRegDefaults()
    LinkProp(m_d.m_displayTexture, DisplayTexture);
    LinkProp(m_d.m_slingshotforce, SlingshotForce);
    LinkProp(m_d.m_slingshotAnimation, SlingshotAnimation);
+   LinkProp(m_d.m_elasticity, Elasticity);
+   LinkProp(m_d.m_elasticityFalloff, ElasticityFallOff);
+   LinkProp(m_d.m_friction, Friction);
+   LinkProp(m_d.m_scatter, Scatter);
    LinkProp(m_d.m_topBottomVisible, Visible);
    LinkProp(m_d.m_sideVisible, SideVisible);
    LinkProp(m_d.m_collidable, Collidable);

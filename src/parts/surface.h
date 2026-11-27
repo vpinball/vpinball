@@ -72,8 +72,6 @@ public:
    }
    virtual ~Surface();
 
-   //HRESULT InitTarget(PinTable * const ptable, const float x, const float y, const bool fromMouseClick);
-
    STANDARD_EDITABLE_DECLARES(Surface, eItemSurface, WALL)
 
    void InitPostLoad() final;
@@ -178,7 +176,6 @@ private:
    std::shared_ptr<MeshBuffer> m_meshEdgeBuffer;
    vector<WORD> m_sideIndices; // Side wall triangle indices (pairs of triangles per polygon quad), used for UI edge rendering
 
-   bool m_isWall = true;
    bool m_isDynamic = false;
    bool m_isDropped = false;
 

@@ -125,6 +125,7 @@ void Gate::WriteRegDefaults()
    LinkProp(m_d.m_szSurface, Surface);
    LinkProp(m_d.m_twoWay, TwoWay);
    LinkProp(m_d.m_type, GateType);
+   LinkProp(m_d.m_elasticity, Elasticity);
    LinkProp(m_d.m_friction, Friction);
    LinkProp(m_d.m_damping, AntiFriction);
    LinkProp(m_d.m_scatter, Scatter);
