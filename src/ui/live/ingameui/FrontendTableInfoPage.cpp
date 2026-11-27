@@ -37,6 +37,7 @@ static vector<string> SplitList(const string &csv)
 static string PageTitle()
 {
    // The page is built on each navigation: pick up the entry the wheel is on
+   g_pplayer->m_liveUI->m_frontendUI.EnsureSelectedDetails();
    const TableCatalog::Entry *const selected = g_pplayer->m_liveUI->m_frontendUI.GetSelected();
    return selected != nullptr ? selected->title : "Table Info"s;
 }
@@ -49,9 +50,15 @@ FrontendTableInfoPage::FrontendTableInfoPage()
 void FrontendTableInfoPage::BuildPage()
 {
    VPX::Frontend::FrontendUI &frontend = m_player->m_liveUI->m_frontendUI;
+   frontend.EnsureSelectedDetails();
    const TableCatalog::Entry *const selected = frontend.GetSelected();
    if (selected == nullptr)
       return;
+   if (!TableCatalog::TableExists(*selected))
+   {
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "This catalog entry is stale: the table file no longer exists. The catalog will refresh after the next scan."s));
+      return;
+   }
 
    // Snapshot the entry on the first build only: a later rebuild must not revert pending edits
    if (m_tablePath != selected->tablePath)
@@ -102,10 +109,24 @@ void FrontendTableInfoPage::BuildPage()
 void FrontendTableInfoPage::SaveGlobally()
 {
    VPX::Frontend::FrontendUI &frontend = m_player->m_liveUI->m_frontendUI;
-   const TableCatalog::Entry *const selected = frontend.GetSelected();
-   if (selected == nullptr)
+   const TableCatalog::Entry *const selected = frontend.FindEntry(m_tablePath);
+   if (selected == nullptr || !TableCatalog::TableExists(*selected))
       return;
    TableCatalog::Entry edited = *selected;
+   // The catalog may be a stale cache snapshot: reread the companion file at save time so
+   // externally updated non-edited fields and statistics are preserved, then apply the page edits.
+   std::error_code ec;
+   edited.hasInfoFile = std::filesystem::is_regular_file(edited.infoPath, ec);
+   if (edited.hasInfoFile)
+   {
+      TableCatalog::Entry current;
+      current.infoPath = edited.infoPath;
+      current.hasInfoFile = true;
+      TableCatalog::ReadInfoFile(current);
+      edited.info = current.info;
+      edited.user = current.user;
+      edited.vpx = current.vpx;
+   }
    edited.info.title = m_edited.title;
    edited.info.description = m_edited.description;
    edited.info.manufacturer = m_edited.manufacturer;

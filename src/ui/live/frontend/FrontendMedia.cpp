@@ -167,7 +167,7 @@ void FrontendMedia::DecodeVideo(VideoSession *const session)
 
       // Present each frame when its pts is due on the session clock; frames late by more than a
       // few frame periods are dropped to catch the pace back
-      const double now = static_cast<double>(usec()) / 1e6;
+      const double now = static_cast<double>(SDL_GetTicksNS() / 1000) / 1e6;
       if (clockBase < 0.)
          clockBase = now - output.pts;
       const double late = now - (clockBase + output.pts);
@@ -420,7 +420,7 @@ void FrontendMedia::Pump()
       else
       {
          item.sampler = sampler;
-         item.readyTime = msec();
+         item.readyTime = static_cast<uint32_t>(SDL_GetTicks());
       }
    }
    if (!deferred.empty())
@@ -476,7 +476,7 @@ void FrontendMedia::Pump()
       if (item.blurred)
          item.needsBlur = true;
       if (item.readyTime == 0)
-         item.readyTime = msec();
+         item.readyTime = static_cast<uint32_t>(SDL_GetTicks());
    }
 
    // Compute pending blurs through the GPU gaussian blur shaders (bounded per frame)
@@ -550,7 +550,7 @@ void FrontendMedia::Blur(Item &item)
    if (item.video == nullptr)
       item.rawSampler.reset(); // Still images blur once; video items keep their live source
    if (item.readyTime == 0)
-      item.readyTime = msec();
+      item.readyTime = static_cast<uint32_t>(SDL_GetTicks());
 }
 
 void FrontendMedia::Evict()

@@ -15,6 +15,7 @@ namespace VPX::InGameUI
 static string PageTitle()
 {
    // The page is built on each navigation: pick up the entry the wheel is on
+   g_pplayer->m_liveUI->m_frontendUI.EnsureSelectedDetails();
    const TableCatalog::Entry *const selected = g_pplayer->m_liveUI->m_frontendUI.GetSelected();
    return selected != nullptr ? selected->title : "Media Manager"s;
 }
@@ -27,9 +28,17 @@ FrontendMediaManagerPage::FrontendMediaManagerPage()
 void FrontendMediaManagerPage::BuildPage()
 {
    VPX::Frontend::FrontendUI &frontend = m_player->m_liveUI->m_frontendUI;
+   frontend.EnsureSelectedDetails();
    const TableCatalog::Entry *const selected = frontend.GetSelected();
    if (selected == nullptr)
       return;
+   if (!TableCatalog::TableExists(*selected))
+   {
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Info, "This catalog entry is stale: the table file no longer exists."s));
+      return;
+   }
+
+   const std::filesystem::path tablePath = selected->tablePath;
 
    for (int type = 0; type < static_cast<int>(TableCatalog::MediaType::Count); type++)
    {
@@ -40,9 +49,9 @@ void FrontendMediaManagerPage::BuildPage()
          // Re-resolve the selection inside the action: deleting a file rescans the catalog,
          // which rebuilds the entries (and this page through the rebuild request)
          AddItem(std::make_unique<InGameUIItem>(std::format("Delete {}", typeName), PathToUTF8(selected->GetMedia(mediaType).filename()),
-            [this, &frontend, mediaType]()
+            [this, &frontend, mediaType, tablePath]()
             {
-               const TableCatalog::Entry *const sel = frontend.GetSelected();
+               const TableCatalog::Entry *const sel = frontend.FindEntry(tablePath);
                if (sel == nullptr || !sel->HasMedia(mediaType))
                   return;
                const std::filesystem::path file = sel->GetMedia(mediaType);

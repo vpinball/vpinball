@@ -110,39 +110,107 @@ static bool SniffApng(const std::filesystem::path& path)
    return false;
 }
 
-// Animated image detection is memoized per media path (sniffing opens the file); rescans clear it
+struct AnimatedImageCacheKey
+{
+   std::filesystem::path path;
+   int64_t writeTime = 0;
+   int64_t size = 0;
+   bool operator==(const AnimatedImageCacheKey&) const = default;
+};
+
+struct AnimatedImageCacheKeyHash
+{
+   size_t operator()(const AnimatedImageCacheKey& key) const
+   {
+      size_t h = std::hash<std::filesystem::path>()(key.path);
+      h = h * 31 + std::hash<int64_t>()(key.writeTime);
+      return h * 31 + std::hash<int64_t>()(key.size);
+   }
+};
+
+// Sniffing opens the file and is also needed while rendering (to choose still/video decoding), so
+// memoize it. The stamp participates in the key: replacing a file at the same path invalidates it.
 static std::mutex s_animatedImageMutex;
-static std::unordered_map<std::filesystem::path, bool> s_animatedImageFiles;
+static std::unordered_map<AnimatedImageCacheKey, bool, AnimatedImageCacheKeyHash> s_animatedImageFiles;
 
 bool TableCatalog::IsAnimatedImageFile(const std::filesystem::path& path)
 {
+   AnimatedImageCacheKey key { path };
+   std::error_code ec;
+   const auto writeTime = std::filesystem::last_write_time(path, ec);
+   if (!ec)
+      key.writeTime = writeTime.time_since_epoch().count();
+   if (std::filesystem::is_regular_file(path, ec))
+   {
+      const auto fileSize = std::filesystem::file_size(path, ec);
+      if (!ec)
+         key.size = static_cast<int64_t>(fileSize);
+   }
+   {
+      std::lock_guard lock(s_animatedImageMutex);
+      if (const auto it = s_animatedImageFiles.find(key); it != s_animatedImageFiles.end())
+         return it->second;
+   }
+   const bool animated = SniffApng(path); // Keep file IO outside the mutex: scans must not stall rendering
    std::lock_guard lock(s_animatedImageMutex);
-   const auto it = s_animatedImageFiles.find(path);
-   if (it != s_animatedImageFiles.end())
-      return it->second;
-   return s_animatedImageFiles.emplace(path, SniffApng(path)).first->second;
+   return s_animatedImageFiles.emplace(key, animated).first->second;
 }
 
 bool TableCatalog::IsAnimatedMediaFile(const std::filesystem::path& path) { return IsVideoFile(path) || IsAnimatedImageFile(path); }
 
 
-void TableCatalog::Scan(const vector<std::filesystem::path>& roots)
+void TableCatalog::ScanPaths(const vector<std::filesystem::path>& roots, const std::function<void(size_t)>& progress)
 {
-   {
-      std::lock_guard lock(s_animatedImageMutex);
-      s_animatedImageFiles.clear();
-   }
    m_entries.clear();
+   m_mediaSets.clear();
    for (const std::filesystem::path& root : roots)
    {
       std::error_code ec;
       if (std::filesystem::is_directory(root, ec))
-         ScanFolder(root, m_entries);
+         ScanFolder(root, m_entries, progress);
    }
+   if (progress)
+      progress(m_entries.size());
+   SortEntries();
+}
+
+void TableCatalog::Scan(const vector<std::filesystem::path>& roots)
+{
+   ScanPaths(roots);
+   LoadAllDetails();
+}
+
+void TableCatalog::EnsureEntryDetails(const size_t index)
+{
+   if (index >= m_entries.size())
+      return;
+   Entry& entry = m_entries[index];
+   if (entry.detailsLoaded)
+      return;
+   if (entry.hasInfoFile)
+      ReadInfoFile(entry);
+   const MediaSet& medias = GetMediaSet(entry.mediaFolder);
+   for (size_t i = 0; i < medias.size(); ++i)
+      entry.medias[i] = medias[i];
+   entry.detailsLoaded = true;
+   entry.sortTitle = entry.title;
+}
+
+void TableCatalog::LoadAllDetails()
+{
+   for (size_t i = 0; i < m_entries.size(); ++i)
+      EnsureEntryDetails(i);
+   for (Entry& entry : m_entries)
+      entry.sortTitle = entry.title;
+   SortEntries();
+}
+
+void TableCatalog::SortEntries()
+{
    std::sort(m_entries.begin(), m_entries.end(),
       [](const Entry& a, const Entry& b)
       {
-         const int cmp = lowerCase(a.title).compare(lowerCase(b.title));
+         const int cmp = lowerCase(a.sortTitle).compare(lowerCase(b.sortTitle));
          return cmp != 0 ? cmp < 0 : a.tablePath < b.tablePath;
       });
 }
@@ -167,7 +235,7 @@ static vector<std::filesystem::path> ListRegularFiles(const std::filesystem::pat
 }
 
 
-void TableCatalog::ScanFolder(const std::filesystem::path& folder, vector<Entry>& entries)
+void TableCatalog::ScanFolder(const std::filesystem::path& folder, vector<Entry>& entries, const std::function<void(size_t)>& progress)
 {
    // Companion/asset subfolders which never hold tables (see docs/FileLayout.md)
    static const ankerl::unordered_dense::set<string> assetFolders
@@ -227,16 +295,13 @@ void TableCatalog::ScanFolder(const std::filesystem::path& folder, vector<Entry>
          }
       }
 
-      // The 'medias' folder is shared by a directory's loose tables: listed once here,
-      // folder packs list their own inside the pack
-      vector<std::filesystem::path> sharedMedias;
-      if (!mediaDir.empty())
-         sharedMedias = ListRegularFiles(mediaDir);
+      // The 'medias' folder is shared by a directory's loose tables. Only its path is kept here:
+      // its content is indexed on demand, once, the first time an entry's details are needed.
       for (const std::filesystem::path& table : tables)
       {
          try
          {
-            entries.push_back(BuildEntry(table, lowerCase(PathToUTF8(table.extension())) == ".vpz"s, files, &sharedMedias));
+            entries.push_back(BuildEntry(table, lowerCase(PathToUTF8(table.extension())) == ".vpz"s, files, mediaDir));
          }
          catch (const std::exception& e)
          {
@@ -247,34 +312,135 @@ void TableCatalog::ScanFolder(const std::filesystem::path& folder, vector<Entry>
       {
          try
          {
-            entries.push_back(BuildEntry(pack, true, files, nullptr));
+            entries.push_back(BuildEntry(pack, true, files, std::filesystem::path()));
          }
          catch (const std::exception& e)
          {
             PLOGW << "Frontend table scan skipped '" << pack << "': " << e.what();
          }
       }
+      if (progress)
+         progress(entries.size());
    }
 }
 
 
-TableCatalog::Entry TableCatalog::BuildEntry(
-   const std::filesystem::path& tablePath, bool isPack, const FolderFileIndex& folderFiles, const vector<std::filesystem::path>* sharedMedias)
+static void FillFileStamp(const std::filesystem::path& path, int64_t& writeTime, int64_t* size = nullptr)
+{
+   writeTime = 0;
+   if (size != nullptr)
+      *size = 0;
+   std::error_code ec;
+   const auto time = std::filesystem::last_write_time(path, ec);
+   if (!ec)
+      writeTime = time.time_since_epoch().count();
+   if (size != nullptr && std::filesystem::is_regular_file(path, ec))
+   {
+      const auto fileSize = std::filesystem::file_size(path, ec);
+      if (!ec)
+         *size = static_cast<int64_t>(fileSize);
+   }
+}
+
+static bool CanReuseDetails(const TableCatalog::Entry& cached, const TableCatalog::Entry& scanned)
+{
+   return cached.detailsLoaded && cached.tableWriteTime == scanned.tableWriteTime && cached.tableSize == scanned.tableSize && cached.infoWriteTime == scanned.infoWriteTime
+      && cached.infoSize == scanned.infoSize && cached.mediaFolderWriteTime == scanned.mediaFolderWriteTime;
+}
+
+static TableCatalog::Entry MergeScannedEntry(const TableCatalog::Entry& cached, const TableCatalog::Entry& scanned)
+{
+   if (!CanReuseDetails(cached, scanned))
+      return scanned;
+   TableCatalog::Entry merged = scanned;
+   merged.title = cached.title;
+   merged.sortTitle = cached.sortTitle;
+   merged.detailsLoaded = true;
+   merged.info = cached.info;
+   merged.user = cached.user;
+   merged.vpx = cached.vpx;
+   for (int type = 0; type < static_cast<int>(TableCatalog::MediaType::Count); ++type)
+      merged.medias[type] = cached.medias[type];
+   return merged;
+}
+
+void TableCatalog::UpsertEntries(const vector<Entry>& entries)
+{
+   if (entries.empty())
+      return;
+   std::unordered_map<std::filesystem::path, size_t> positions;
+   for (size_t i = 0; i < m_entries.size(); ++i)
+      positions[m_entries[i].tablePath] = i;
+   for (const Entry& scanned : entries)
+   {
+      if (scanned.tablePath.empty())
+         continue;
+      if (const auto it = positions.find(scanned.tablePath); it != positions.end())
+      {
+         Entry& existing = m_entries[it->second];
+         if (!CanReuseDetails(existing, scanned))
+            m_mediaSets.erase(scanned.mediaFolder);
+         existing = MergeScannedEntry(existing, scanned);
+      }
+      else
+      {
+         positions[scanned.tablePath] = m_entries.size();
+         m_entries.push_back(scanned);
+      }
+   }
+   SortEntries();
+}
+
+void TableCatalog::ReconcileEntries(const vector<Entry>& scannedEntries)
+{
+   std::unordered_map<std::filesystem::path, Entry> previous;
+   for (const Entry& entry : m_entries)
+      previous[entry.tablePath] = entry;
+   vector<Entry> reconciled;
+   reconciled.reserve(scannedEntries.size());
+   for (const Entry& scanned : scannedEntries)
+   {
+      if (scanned.tablePath.empty())
+         continue;
+      if (const auto it = previous.find(scanned.tablePath); it != previous.end())
+      {
+         if (!CanReuseDetails(it->second, scanned))
+            m_mediaSets.erase(scanned.mediaFolder);
+         reconciled.push_back(MergeScannedEntry(it->second, scanned));
+      }
+      else
+         reconciled.push_back(scanned);
+   }
+   m_entries = std::move(reconciled);
+   SortEntries();
+}
+
+bool TableCatalog::TableExists(const Entry& entry)
+{
+   std::error_code ec;
+   if (!entry.isPack)
+      return std::filesystem::is_regular_file(entry.tablePath, ec);
+   if (std::filesystem::is_directory(entry.tablePath, ec))
+      return std::filesystem::is_regular_file(entry.tablePath / "manifest.json"s, ec);
+   return std::filesystem::is_regular_file(entry.tablePath, ec);
+}
+
+TableCatalog::Entry TableCatalog::BuildEntry(const std::filesystem::path& tablePath, bool isPack, const FolderFileIndex& folderFiles, const std::filesystem::path& sharedMediaFolder)
 {
    Entry entry;
    entry.tablePath = tablePath;
    entry.isPack = isPack;
-   entry.title = PathToUTF8(tablePath.stem());
-   const std::filesystem::path infoFile = FindInfoFile(tablePath, isPack, folderFiles);
-   if (infoFile.empty())
-      entry.infoPath = GetDefaultInfoPath(tablePath);
-   else
-   {
-      entry.infoPath = infoFile;
-      entry.hasInfoFile = true;
-      ReadInfoFile(entry);
-   }
-   ScanMedias(entry, sharedMedias);
+   entry.title = entry.sortTitle = PathToUTF8(tablePath.stem());
+   std::error_code ec;
+   const bool isFolderPack = std::filesystem::is_directory(tablePath, ec);
+   entry.mediaFolder = isFolderPack ? tablePath / "medias"s : sharedMediaFolder;
+   const std::filesystem::path infoFile = FindInfoFile(tablePath, isFolderPack, folderFiles);
+   entry.infoPath = infoFile.empty() ? GetDefaultInfoPath(tablePath) : infoFile;
+   entry.hasInfoFile = !infoFile.empty();
+   FillFileStamp(entry.tablePath, entry.tableWriteTime, &entry.tableSize);
+   if (entry.hasInfoFile)
+      FillFileStamp(entry.infoPath, entry.infoWriteTime, &entry.infoSize);
+   FillFileStamp(entry.mediaFolder, entry.mediaFolderWriteTime);
    return entry;
 }
 
@@ -307,14 +473,9 @@ bool TableCatalog::IsVideoFile(const std::filesystem::path& path)
 }
 
 
-void TableCatalog::ScanMedias(Entry& entry, const vector<std::filesystem::path>* sharedMedias)
+TableCatalog::MediaSet TableCatalog::BuildMediaSet(const vector<std::filesystem::path>& files)
 {
-   // A directory's loose tables share its 'medias' folder, already listed by ScanFolder;
-   // a folder pack lists its own, next to its manifest
-   vector<std::filesystem::path> packMedias;
-   if (sharedMedias == nullptr)
-      packMedias = ListRegularFiles(entry.tablePath / "medias"s);
-   const vector<std::filesystem::path>& files = sharedMedias != nullptr ? *sharedMedias : packMedias;
+   MediaSet medias;
    for (const std::filesystem::path& path : files)
    {
       if (!IsSupportedMediaFile(path))
@@ -332,12 +493,309 @@ void TableCatalog::ScanMedias(Entry& entry, const vector<std::filesystem::path>*
             // Animated medias (videos, animated images) are favored over stills: the
             // animation check opens the file, so it only runs when several candidates
             // compete for a same media type
-            if (entry.medias[type].empty())
-               entry.medias[type] = path;
-            else if (IsAnimatedMediaFile(path) && !IsAnimatedMediaFile(entry.medias[type]))
-               entry.medias[type] = path;
+            if (medias[type].empty())
+               medias[type] = path;
+            else if (IsAnimatedMediaFile(path) && !IsAnimatedMediaFile(medias[type]))
+               medias[type] = path;
          }
    }
+   return medias;
+}
+
+const TableCatalog::MediaSet& TableCatalog::GetMediaSet(const std::filesystem::path& folder)
+{
+   static const MediaSet empty;
+   if (folder.empty())
+      return empty;
+   const auto [it, inserted] = m_mediaSets.try_emplace(folder);
+   if (inserted)
+      it->second = BuildMediaSet(ListRegularFiles(folder));
+   return it->second;
+}
+
+
+// Binary scan cache. This is intentionally a private, versioned format: it is not user data,
+// only a fast snapshot of the last scan, and may be invalidated freely when the layout changes.
+static constexpr char kCatalogCacheMagic[8] = { 'V', 'P', 'X', 'T', 'C', 'A', 'T', '1' };
+static constexpr uint32_t kCatalogCacheVersion = 1;
+
+static vector<string> CatalogCacheRootKeys(const vector<std::filesystem::path>& roots)
+{
+   vector<string> keys;
+   keys.reserve(roots.size());
+   for (const std::filesystem::path& root : roots)
+      keys.push_back(PathToUTF8(root));
+   std::ranges::sort(keys);
+   return keys;
+}
+
+static void WriteU32(std::ostream& out, const uint32_t v)
+{
+   for (int shift = 0; shift < 32; shift += 8)
+      out.put(static_cast<char>((v >> shift) & 0xff));
+}
+
+static void WriteU64(std::ostream& out, const uint64_t v)
+{
+   for (int shift = 0; shift < 64; shift += 8)
+      out.put(static_cast<char>((v >> shift) & 0xff));
+}
+
+static void WriteI64(std::ostream& out, const int64_t v) { WriteU64(out, static_cast<uint64_t>(v)); }
+static void WriteBool(std::ostream& out, const bool v) { out.put(v ? 1 : 0); }
+
+static void WriteString(std::ostream& out, const string& v)
+{
+   WriteU32(out, static_cast<uint32_t>(v.size()));
+   out.write(v.data(), static_cast<std::streamsize>(v.size()));
+}
+
+static void WritePath(std::ostream& out, const std::filesystem::path& v) { WriteString(out, PathToUTF8(v)); }
+
+static void WriteStringList(std::ostream& out, const vector<string>& values)
+{
+   WriteU32(out, static_cast<uint32_t>(values.size()));
+   for (const string& value : values)
+      WriteString(out, value);
+}
+
+class CatalogCacheReader
+{
+public:
+   explicit CatalogCacheReader(const std::filesystem::path& path)
+   {
+      std::ifstream file(path, std::ios::binary | std::ios::ate);
+      if (!file.is_open())
+         return;
+      const std::streamsize size = file.tellg();
+      if (size <= 0)
+         return;
+      m_data.resize(static_cast<size_t>(size));
+      file.seekg(0);
+      if (!file.read(reinterpret_cast<char*>(m_data.data()), size))
+         m_data.clear();
+   }
+
+   bool IsOpen() const { return !m_data.empty(); }
+   bool AtEnd() const { return m_pos == m_data.size(); }
+
+   bool ReadU32(uint32_t& v)
+   {
+      uint64_t value = 0;
+      if (!ReadBits(value, 32))
+         return false;
+      v = static_cast<uint32_t>(value);
+      return true;
+   }
+
+   bool ReadU64(uint64_t& v) { return ReadBits(v, 64); }
+
+   bool ReadI64(int64_t& v)
+   {
+      uint64_t value = 0;
+      if (!ReadU64(value))
+         return false;
+      v = static_cast<int64_t>(value);
+      return true;
+   }
+
+   bool ReadBool(bool& v)
+   {
+      uint8_t value = 0;
+      if (!ReadBytes(&value, 1))
+         return false;
+      v = value != 0;
+      return true;
+   }
+
+   bool ReadString(string& v)
+   {
+      uint32_t length = 0;
+      if (!ReadU32(length) || length > 16 * 1024 * 1024 || length > m_data.size() - m_pos)
+         return false;
+      v.assign(reinterpret_cast<const char*>(m_data.data() + m_pos), length);
+      m_pos += length;
+      return true;
+   }
+
+   bool ReadPath(std::filesystem::path& v)
+   {
+      string utf8;
+      if (!ReadString(utf8))
+         return false;
+      v = PathFromUTF8(utf8);
+      return true;
+   }
+
+   bool ReadStringList(vector<string>& values)
+   {
+      uint32_t count = 0;
+      if (!ReadU32(count) || count > 100000)
+         return false;
+      values.clear();
+      values.reserve(count);
+      for (uint32_t i = 0; i < count; ++i)
+      {
+         string value;
+         if (!ReadString(value))
+            return false;
+         values.push_back(std::move(value));
+      }
+      return true;
+   }
+
+   bool ReadBytes(void* dst, const size_t count)
+   {
+      if (count > m_data.size() - m_pos)
+         return false;
+      memcpy(dst, m_data.data() + m_pos, count);
+      m_pos += count;
+      return true;
+   }
+
+private:
+   bool ReadBits(uint64_t& v, const int bits)
+   {
+      if (m_data.size() - m_pos < static_cast<size_t>(bits / 8))
+         return false;
+      v = 0;
+      for (int shift = 0; shift < bits; shift += 8)
+         v |= static_cast<uint64_t>(m_data[m_pos++]) << shift;
+      return true;
+   }
+
+   vector<uint8_t> m_data;
+   size_t m_pos = 0;
+};
+
+static void WriteCacheEntry(std::ostream& out, const TableCatalog::Entry& entry)
+{
+   WritePath(out, entry.tablePath);
+   WritePath(out, entry.infoPath);
+   WriteBool(out, entry.hasInfoFile);
+   WriteBool(out, entry.isPack);
+   WriteString(out, entry.title);
+   WriteString(out, entry.sortTitle);
+   WritePath(out, entry.mediaFolder);
+   WriteBool(out, entry.detailsLoaded);
+   WriteI64(out, entry.tableWriteTime);
+   WriteI64(out, entry.tableSize);
+   WriteI64(out, entry.infoWriteTime);
+   WriteI64(out, entry.infoSize);
+   WriteI64(out, entry.mediaFolderWriteTime);
+   WriteString(out, entry.info.title);
+   WriteString(out, entry.info.description);
+   WriteStringList(out, entry.info.authors);
+   WriteString(out, entry.info.manufacturer);
+   WriteI64(out, entry.info.year);
+   WriteString(out, entry.info.vpsId);
+   WriteString(out, entry.info.ipdbId);
+   WriteI64(out, entry.user.rating);
+   WriteBool(out, entry.user.favorite);
+   WriteString(out, entry.user.lastRun);
+   WriteI64(out, entry.user.startCount);
+   WriteI64(out, entry.user.runTime);
+   WriteStringList(out, entry.user.tags);
+   WriteString(out, entry.vpx.version);
+   WriteString(out, entry.vpx.lastRun);
+   WriteI64(out, entry.vpx.startCount);
+   WriteI64(out, entry.vpx.runTime);
+   for (const std::filesystem::path& media : entry.medias)
+      WritePath(out, media);
+}
+
+static bool ReadCacheEntry(CatalogCacheReader& reader, TableCatalog::Entry& entry)
+{
+   int64_t year = 0, rating = 0, userStartCount = 0, userRunTime = 0, vpxStartCount = 0, vpxRunTime = 0;
+   if (!reader.ReadPath(entry.tablePath) || !reader.ReadPath(entry.infoPath) || !reader.ReadBool(entry.hasInfoFile) || !reader.ReadBool(entry.isPack) || !reader.ReadString(entry.title)
+      || !reader.ReadString(entry.sortTitle) || !reader.ReadPath(entry.mediaFolder) || !reader.ReadBool(entry.detailsLoaded) || !reader.ReadI64(entry.tableWriteTime)
+      || !reader.ReadI64(entry.tableSize) || !reader.ReadI64(entry.infoWriteTime) || !reader.ReadI64(entry.infoSize) || !reader.ReadI64(entry.mediaFolderWriteTime)
+      || !reader.ReadString(entry.info.title) || !reader.ReadString(entry.info.description) || !reader.ReadStringList(entry.info.authors) || !reader.ReadString(entry.info.manufacturer)
+      || !reader.ReadI64(year) || !reader.ReadString(entry.info.vpsId) || !reader.ReadString(entry.info.ipdbId) || !reader.ReadI64(rating) || !reader.ReadBool(entry.user.favorite)
+      || !reader.ReadString(entry.user.lastRun) || !reader.ReadI64(userStartCount) || !reader.ReadI64(userRunTime) || !reader.ReadStringList(entry.user.tags)
+      || !reader.ReadString(entry.vpx.version) || !reader.ReadString(entry.vpx.lastRun) || !reader.ReadI64(vpxStartCount) || !reader.ReadI64(vpxRunTime))
+      return false;
+   entry.info.year = static_cast<int>(year);
+   entry.user.rating = static_cast<int>(rating);
+   entry.user.startCount = static_cast<int>(userStartCount);
+   entry.user.runTime = userRunTime;
+   entry.vpx.startCount = static_cast<int>(vpxStartCount);
+   entry.vpx.runTime = vpxRunTime;
+   for (std::filesystem::path& media : entry.medias)
+      if (!reader.ReadPath(media))
+         return false;
+   return !entry.tablePath.empty();
+}
+
+bool TableCatalog::SaveCacheFile(const std::filesystem::path& path, const vector<std::filesystem::path>& roots) const
+{
+   std::error_code ec;
+   if (!path.parent_path().empty())
+      std::filesystem::create_directories(path.parent_path(), ec);
+   std::filesystem::path tempPath = path;
+   tempPath += ".tmp";
+   {
+      std::ofstream out(tempPath, std::ios::binary | std::ios::trunc);
+      if (!out.is_open())
+         return false;
+      out.write(kCatalogCacheMagic, sizeof(kCatalogCacheMagic));
+      WriteU32(out, kCatalogCacheVersion);
+      const vector<string> rootKeys = CatalogCacheRootKeys(roots);
+      WriteU32(out, static_cast<uint32_t>(rootKeys.size()));
+      for (const string& root : rootKeys)
+         WriteString(out, root);
+      WriteU32(out, static_cast<uint32_t>(m_entries.size()));
+      for (const Entry& entry : m_entries)
+         WriteCacheEntry(out, entry);
+      if (!out.good())
+         return false;
+   }
+   std::filesystem::rename(tempPath, path, ec);
+   if (ec)
+   {
+      ec.clear();
+      std::filesystem::remove(path, ec);
+      ec.clear();
+      std::filesystem::rename(tempPath, path, ec);
+   }
+   return !ec;
+}
+
+bool TableCatalog::LoadCacheFile(const std::filesystem::path& path, const vector<std::filesystem::path>& roots)
+{
+   CatalogCacheReader reader(path);
+   if (!reader.IsOpen())
+      return false;
+   char magic[sizeof(kCatalogCacheMagic)];
+   uint32_t version = 0, rootCount = 0, entryCount = 0;
+   if (!reader.ReadBytes(magic, sizeof(magic)) || memcmp(magic, kCatalogCacheMagic, sizeof(magic)) != 0 || !reader.ReadU32(version) || version != kCatalogCacheVersion
+      || !reader.ReadU32(rootCount) || rootCount > 10000)
+      return false;
+   vector<string> cachedRoots;
+   for (uint32_t i = 0; i < rootCount; ++i)
+   {
+      string root;
+      if (!reader.ReadString(root))
+         return false;
+      cachedRoots.push_back(root);
+   }
+   if (cachedRoots != CatalogCacheRootKeys(roots) || !reader.ReadU32(entryCount) || entryCount > 1000000)
+      return false;
+   vector<Entry> entries;
+   entries.reserve(entryCount);
+   for (uint32_t i = 0; i < entryCount; ++i)
+   {
+      Entry entry;
+      if (!ReadCacheEntry(reader, entry))
+         return false;
+      entries.push_back(std::move(entry));
+   }
+   if (!reader.AtEnd())
+      return false;
+   m_entries = std::move(entries);
+   m_mediaSets.clear();
+   SortEntries();
+   return true;
 }
 
 

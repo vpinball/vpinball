@@ -4,6 +4,9 @@
 
 #include "unordered_dense.h"
 
+#include <array>
+#include <unordered_map>
+
 // Discovers the tables of a set of root folders, along their frontend companion
 // datas ('.info' file, 'medias' folder), following the conventions defined in
 // docs/FileLayout.md. This is a pure file/metadata layer used by the mini
@@ -35,6 +38,8 @@ public:
    // 'Info' section of the companion file (static, frontend maintained datas)
    struct Info
    {
+      bool operator==(const Info&) const = default;
+
       string title;
       string description;
       vector<string> authors;
@@ -47,6 +52,8 @@ public:
    // 'User' section of the companion file (user/frontend maintained stats)
    struct UserStats
    {
+      bool operator==(const UserStats&) const = default;
+
       int rating = 0; // 0..10
       bool favorite = false;
       string lastRun; // ISO date of last game start
@@ -58,6 +65,8 @@ public:
    // 'VPX' section of the companion file (stats maintained by the engine)
    struct VpxStats
    {
+      bool operator==(const VpxStats&) const = default;
+
       string version; // Table file version of the last run
       string lastRun; // ISO date of last game start
       int startCount = 0;
@@ -66,12 +75,25 @@ public:
 
    struct Entry
    {
+      bool operator==(const Entry&) const = default;
+
       std::filesystem::path tablePath; // .vpx file, or VPZ pack (a '.vpz' archive or a folder holding a 'manifest.json')
       std::filesystem::path infoPath; // Located '.info' companion file when found, else the default name to create it
       bool hasInfoFile = false;
       bool isPack = false;
 
       string title; // Display title: Info.Title when provided, else the table file name
+      string sortTitle; // Stable ordering key while details are still deferred (updated when all details load)
+      std::filesystem::path mediaFolder; // Folder scanned on demand for this table's media
+      bool detailsLoaded = false;
+
+      // Filesystem stamps used to decide whether cached details may be reused. They are
+      // implementation-defined filesystem clock values, only meaningful inside one cache version.
+      int64_t tableWriteTime = 0;
+      int64_t tableSize = 0;
+      int64_t infoWriteTime = 0;
+      int64_t infoSize = 0;
+      int64_t mediaFolderWriteTime = 0;
 
       Info info;
       UserStats user;
@@ -84,9 +106,36 @@ public:
 
    const vector<Entry>& GetEntries() const { return m_entries; }
 
-   // Rebuilds the catalog by recursively scanning each root folder for tables.
-   // Missing/unreadable roots are skipped.
+   // Rebuilds the catalog by recursively scanning each root folder for tables, then loading
+   // all companion information and media paths. Missing/unreadable roots are skipped.
    void Scan(const vector<std::filesystem::path>& roots);
+
+   // Rebuilds only the table path catalog: no companion file is read and no media folder is
+   // listed. This is the fast pass used to populate the frontend before details arrive. The
+   // optional progress callback receives the number of entries discovered so far after each folder.
+   void ScanPaths(const vector<std::filesystem::path>& roots, const std::function<void(size_t)>& progress = {});
+
+   // Loads a discovered entry's companion information and media paths on demand.
+   void EnsureEntryDetails(size_t index);
+
+   // Loads every entry's deferred details then restores ordering by display title.
+   void LoadAllDetails();
+
+   // Inserts or updates scanned entries, preserving already loaded details when the table,
+   // companion file and media folder stamps are unchanged. Entries missing from the scan are kept.
+   void UpsertEntries(const vector<Entry>& entries);
+
+   // Reconciles the catalog with a complete path scan: missing entries are removed, new entries
+   // are added, and valid cached details are preserved for entries whose stamps are unchanged.
+   void ReconcileEntries(const vector<Entry>& scannedEntries);
+
+   // Binary scan cache. The cache intentionally does not validate entry existence when loading:
+   // callers must treat it as a possibly stale snapshot until a scan reconciles it.
+   bool SaveCacheFile(const std::filesystem::path& path, const vector<std::filesystem::path>& roots) const;
+   bool LoadCacheFile(const std::filesystem::path& path, const vector<std::filesystem::path>& roots);
+
+   // Whether the entry's table file/pack still exists (the catalog itself may be a stale snapshot).
+   static bool TableExists(const Entry& entry);
 
    // A table file is either a '.vpx' file or a VPZ pack ('.vpz' archive file, or
    // a folder holding a 'manifest.json' file), detected by name only.
@@ -122,8 +171,7 @@ public:
    static bool IsVideoFile(const std::filesystem::path& path);
 
    // Whether an image media file is animated (APNG). Animated images keep the still image naming
-   // convention but are decoded like videos through the shared media service. The result is
-   // memoized per path and refreshed on the next catalog Scan.
+   // convention but are decoded like videos through the shared media service.
    static bool IsAnimatedImageFile(const std::filesystem::path& path);
 
    // Whether a media file plays as an animation: a video, or an image carrying animation (APNG).
@@ -131,10 +179,14 @@ public:
    static bool IsAnimatedMediaFile(const std::filesystem::path& path);
 
 private:
-   static void ScanFolder(const std::filesystem::path& folder, vector<Entry>& entries);
-   static Entry BuildEntry(
-      const std::filesystem::path& tablePath, bool isPack, const FolderFileIndex& folderFiles, const vector<std::filesystem::path>* sharedMedias);
-   static void ScanMedias(Entry& entry, const vector<std::filesystem::path>* sharedMedias);
+   using MediaSet = std::array<std::filesystem::path, static_cast<size_t>(MediaType::Count)>;
+
+   static void ScanFolder(const std::filesystem::path& folder, vector<Entry>& entries, const std::function<void(size_t)>& progress);
+   static Entry BuildEntry(const std::filesystem::path& tablePath, bool isPack, const FolderFileIndex& folderFiles, const std::filesystem::path& sharedMediaFolder);
+   static MediaSet BuildMediaSet(const vector<std::filesystem::path>& files);
+   const MediaSet& GetMediaSet(const std::filesystem::path& folder);
+   void SortEntries();
 
    vector<Entry> m_entries;
+   std::unordered_map<std::filesystem::path, MediaSet> m_mediaSets;
 };

@@ -99,6 +99,34 @@ TEST_CASE("TableCatalog")
       CHECK(PathToUTF8(entries[4].tablePath.stem()) == "The Addams Family"s);
    }
 
+   SUBCASE("path scan defers info and media details")
+   {
+      TableCatalog pathCatalog;
+      pathCatalog.ScanPaths({ root });
+      const auto& pathEntries = pathCatalog.GetEntries();
+      REQUIRE(pathEntries.size() == 5);
+      const TableCatalog::Entry* entry = nullptr;
+      size_t index = 0;
+      for (size_t i = 0; i < pathEntries.size(); ++i)
+         if (PathToUTF8(pathEntries[i].tablePath.stem()) == "Attack From Mars v1.0"s)
+         {
+            entry = &pathEntries[i];
+            index = i;
+         }
+      REQUIRE(entry != nullptr);
+      CHECK(entry->hasInfoFile);
+      CHECK(!entry->detailsLoaded);
+      CHECK(entry->title == "Attack From Mars v1.0"s);
+      CHECK(entry->info.manufacturer.empty());
+      CHECK(!entry->HasMedia(TableCatalog::MediaType::Playfield));
+
+      pathCatalog.EnsureEntryDetails(index);
+      CHECK(entry->detailsLoaded);
+      CHECK(entry->title == "Attack From Mars"s);
+      CHECK(entry->info.manufacturer == "Bally"s);
+      CHECK(entry->HasMedia(TableCatalog::MediaType::Playfield));
+   }
+
    SUBCASE("info file named after the folder is found and parsed")
    {
       const TableCatalog::Entry* entry = findByStem("Attack From Mars v1.0"s);
@@ -224,5 +252,99 @@ TEST_CASE("TableCatalog")
       reloaded.infoPath = entry->infoPath;
       TableCatalog::ReadInfoFile(reloaded);
       CHECK(reloaded.info.title == "Congo (Williams 1995)"s);
+   }
+
+   SUBCASE("path scanning reports incremental entry counts")
+   {
+      TableCatalog pathCatalog;
+      size_t callbacks = 0;
+      size_t lastCount = 0;
+      pathCatalog.ScanPaths({ root },
+         [&](const size_t count)
+         {
+            ++callbacks;
+            CHECK(count >= lastCount);
+            lastCount = count;
+         });
+      CHECK(callbacks > 0);
+      CHECK(lastCount == pathCatalog.GetEntries().size());
+   }
+
+   SUBCASE("catalog cache round-trips scan details and rejects different roots")
+   {
+      TableCatalog fullCatalog;
+      fullCatalog.Scan({ root });
+      const std::filesystem::path cachePath = root / "cache"sv / "tables.cache"s;
+      const vector<std::filesystem::path> roots { root };
+      REQUIRE(fullCatalog.SaveCacheFile(cachePath, roots));
+
+      TableCatalog cached;
+      REQUIRE(cached.LoadCacheFile(cachePath, roots));
+      REQUIRE(cached.GetEntries().size() == fullCatalog.GetEntries().size());
+      for (size_t i = 0; i < cached.GetEntries().size(); ++i)
+      {
+         const TableCatalog::Entry& actual = cached.GetEntries()[i];
+         const TableCatalog::Entry& expected = fullCatalog.GetEntries()[i];
+         CHECK(actual.tablePath == expected.tablePath);
+         CHECK(actual.detailsLoaded);
+         CHECK(actual.title == expected.title);
+         CHECK(actual.tableWriteTime == expected.tableWriteTime);
+         CHECK(actual.medias[static_cast<size_t>(TableCatalog::MediaType::Wheel)] == expected.medias[static_cast<size_t>(TableCatalog::MediaType::Wheel)]);
+      }
+
+      TableCatalog wrongRoots;
+      CHECK(!wrongRoots.LoadCacheFile(cachePath, { root / "elsewhere"sv }));
+      CHECK(wrongRoots.GetEntries().empty());
+   }
+
+   SUBCASE("upsert reuses unchanged details and invalidates modified companions")
+   {
+      TableCatalog liveCatalog;
+      liveCatalog.Scan({ root });
+      const TableCatalog::Entry* before = findByStem("Medieval Madness"s);
+      REQUIRE(before != nullptr);
+
+      const std::filesystem::path infoPath = root / "Medieval Madness.info"s;
+      writeFile(infoPath, R"({ "Info": { "Title": "Medieval Madness", "Manufacturer": "Williams", "Year": 1997 } })");
+      std::error_code ec;
+      std::filesystem::last_write_time(infoPath, std::filesystem::last_write_time(infoPath, ec) + std::chrono::seconds(2), ec);
+
+      TableCatalog scanned;
+      scanned.ScanPaths({ root });
+      liveCatalog.UpsertEntries(scanned.GetEntries());
+      REQUIRE(liveCatalog.GetEntries().size() == scanned.GetEntries().size());
+
+      const auto findLive = [&liveCatalog](const string& stem) -> const TableCatalog::Entry*
+      {
+         for (const auto& entry : liveCatalog.GetEntries())
+            if (PathToUTF8(entry.tablePath.stem()) == stem)
+               return &entry;
+         return nullptr;
+      };
+      const TableCatalog::Entry* unchanged = findLive("Attack From Mars v1.0"s);
+      const TableCatalog::Entry* modified = findLive("Medieval Madness"s);
+      REQUIRE(unchanged != nullptr);
+      REQUIRE(modified != nullptr);
+      CHECK(unchanged->detailsLoaded);
+      CHECK(unchanged->title == "Attack From Mars"s);
+      CHECK(!modified->detailsLoaded);
+      CHECK(modified->title == "Medieval Madness"s);
+      CHECK(modified->info.manufacturer.empty());
+
+      vector<TableCatalog::Entry> withoutCongo = scanned.GetEntries();
+      std::erase_if(withoutCongo, [](const TableCatalog::Entry& entry) { return PathToUTF8(entry.tablePath.stem()) == "Congo"s; });
+      liveCatalog.ReconcileEntries(withoutCongo);
+      CHECK(findLive("Congo"s) == nullptr);
+      CHECK(findLive("Medieval Madness"s) != nullptr);
+   }
+
+   SUBCASE("table existence is validated instead of trusting catalog entries")
+   {
+      const TableCatalog::Entry* entry = findByStem("Medieval Madness"s);
+      REQUIRE(entry != nullptr);
+      CHECK(TableCatalog::TableExists(*entry));
+      TableCatalog::Entry stale = *entry;
+      stale.tablePath = root / "missing.vpx"s;
+      CHECK(!TableCatalog::TableExists(stale));
    }
 }

@@ -27,6 +27,9 @@
 namespace VPX::Frontend
 {
 
+static uint32_t FrontendTimeMs() { return static_cast<uint32_t>(SDL_GetTicks()); }
+
+
 FrontendUI::FrontendUI(LiveUI &liveUI)
    : m_liveUI(liveUI)
 {
@@ -39,6 +42,8 @@ FrontendUI::~FrontendUI()
    if (m_tableLoad)
       if (PinTable *const table = (m_tableLoad->abandoned.store(true), m_tableLoad->table.exchange(nullptr)))
          table->Release();
+   if (m_catalogScan)
+      m_catalogScan->abandoned.store(true, std::memory_order_release);
    if (m_auxSubscribed)
    {
       m_msgApi->UnsubscribeMsg(m_auxRendererMsgId, OnGetAuxRenderer, this);
@@ -84,10 +89,10 @@ void FrontendUI::OnGetAuxRenderer(const unsigned int msgId, void *userData, void
 int MSGPIAPI FrontendUI::RenderAncillary(VPXRenderContext2D *ctx, void *context)
 {
    auto *me = static_cast<FrontendUI *>(context);
-   const auto &entries = me->m_catalog.GetEntries();
-   if (entries.empty() || me->m_selected < 0 || me->m_selected >= static_cast<int>(entries.size()))
+   const TableCatalog::Entry *const selected = me->GetSelected();
+   if (selected == nullptr)
       return 0;
-   const TableCatalog::Entry &entry = entries[me->m_selected];
+   const TableCatalog::Entry &entry = *selected;
    VPXTexture texture = nullptr;
    switch (ctx->window)
    {
@@ -159,6 +164,123 @@ VPXTexture FrontendUI::GetAuxTexture(const std::filesystem::path &path)
 // session has its own FrontendUI instance) puts the wheel back on it when it rescans
 static std::filesystem::path s_resumeTablePath;
 
+// Recursive folder watcher used to keep the catalog synchronized while the frontend runs. Windows
+// uses the OS change notifications; other platforms fall back to a low-frequency scan trigger.
+class CatalogFolderWatcher
+{
+public:
+   ~CatalogFolderWatcher() { Stop(); }
+
+   void Start(const vector<std::filesystem::path> &roots)
+   {
+      vector<string> key;
+      for (const std::filesystem::path &root : roots)
+         key.push_back(PathToUTF8(root));
+      std::ranges::sort(key);
+      if (m_key == key)
+         return;
+      Stop();
+      m_key = std::move(key);
+      m_lastEventMs.store(0, std::memory_order_release);
+      if (roots.empty())
+         return;
+
+#ifdef _WIN32
+      m_usePolling = false;
+      for (const std::filesystem::path &root : roots)
+      {
+         std::error_code ec;
+         if (!std::filesystem::is_directory(root, ec))
+            continue;
+         HANDLE handle
+            = FindFirstChangeNotificationW(root.c_str(), TRUE, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SIZE);
+         if (handle != INVALID_HANDLE_VALUE)
+            m_handles.push_back(handle);
+      }
+      if (m_handles.size() > MAXIMUM_WAIT_OBJECTS - 1)
+      {
+         PLOGW << "Too many frontend table roots to watch them all; using polling";
+         for (HANDLE handle : m_handles)
+            FindCloseChangeNotification(handle);
+         m_handles.clear();
+         m_usePolling = true;
+      }
+      if (m_handles.empty())
+         m_usePolling = true;
+#else
+      m_usePolling = true;
+#endif
+
+      m_stop.store(false, std::memory_order_release);
+      m_thread = std::thread(
+         [this]()
+         {
+#ifdef _WIN32
+            if (!m_usePolling)
+            {
+               while (!m_stop.load(std::memory_order_acquire))
+               {
+                  const DWORD result = WaitForMultipleObjects(static_cast<DWORD>(m_handles.size()), m_handles.data(), FALSE, 500);
+                  if (result >= WAIT_OBJECT_0 && result < WAIT_OBJECT_0 + m_handles.size())
+                  {
+                     m_lastEventMs.store(FrontendTimeMs(), std::memory_order_release);
+                     FindNextChangeNotification(m_handles[result - WAIT_OBJECT_0]);
+                  }
+                  else if (result == WAIT_FAILED)
+                  {
+                     PLOGW << "Frontend table folder watcher stopped after a Windows wait failure";
+                     break;
+                  }
+               }
+               for (HANDLE handle : m_handles)
+                  FindCloseChangeNotification(handle);
+               return;
+            }
+#endif
+            // Portable fallback: periodically request a scan. Scanning is incremental and reuses
+            // validated cached details, but folder enumeration can still be expensive on very large
+            // libraries, so this low-frequency safety net must not scan continuously.
+            while (!m_stop.load(std::memory_order_acquire))
+            {
+               for (int i = 0; i < 3000 && !m_stop.load(std::memory_order_acquire); ++i)
+                  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+               if (!m_stop.load(std::memory_order_acquire))
+                  m_lastEventMs.store(FrontendTimeMs(), std::memory_order_release);
+            }
+         });
+   }
+
+   uint32_t LastEventMs() const { return m_lastEventMs.load(std::memory_order_acquire); }
+
+private:
+   void Stop()
+   {
+      m_stop.store(true, std::memory_order_release);
+      if (m_thread.joinable())
+         m_thread.join();
+#ifdef _WIN32
+      // Handles are closed by the worker after its wait loop exits.
+      m_handles.clear();
+#endif
+      m_usePolling = false;
+   }
+
+   vector<string> m_key;
+   std::thread m_thread;
+   std::atomic<bool> m_stop { true };
+   std::atomic<uint32_t> m_lastEventMs { 0 };
+   bool m_usePolling = false;
+#ifdef _WIN32
+   vector<HANDLE> m_handles;
+#endif
+};
+
+static std::filesystem::path GetCatalogCachePath() { return g_app->m_fileLocator.GetAppPath(FileLocator::AppSubFolder::Preferences) / "table-catalog.cache"s; }
+
+struct CatalogScanAborted
+{
+};
+
 void FrontendUI::Rescan()
 {
    vector<std::filesystem::path> roots;
@@ -174,30 +296,246 @@ void FrontendUI::Rescan()
          break;
       start = end + 1;
    }
-   m_catalog.Scan(roots);
-   m_selected = std::clamp(m_selected, 0, std::max(0, static_cast<int>(m_catalog.GetEntries().size()) - 1));
-   // Back from a played/edited table: put the wheel back on it (the path is the stable
-   // identity across the rescan, and the stored slot is consumed, not kept)
-   if (!s_resumeTablePath.empty())
+
+   UpdateCatalogWatcher(roots);
+
+   // The cache is only a startup snapshot: it is shown immediately, then reconciled by this scan.
+   if (!m_catalogCacheLoadAttempted)
    {
-      const auto &entries = m_catalog.GetEntries();
-      for (int i = 0; i < static_cast<int>(entries.size()); ++i)
-         if (entries[i].tablePath == s_resumeTablePath)
-         {
-            m_selected = i;
-            m_wheelPos = static_cast<float>(i);
-            break;
-         }
-      s_resumeTablePath.clear();
+      m_catalogCacheLoadAttempted = true;
+      TableCatalog cached;
+      if (cached.LoadCacheFile(GetCatalogCachePath(), roots))
+         AdoptCatalog(std::move(cached), true);
    }
+
+   if (m_catalogScan)
+      m_catalogScan->abandoned.store(true, std::memory_order_release);
+   m_catalogScanStartedAt = FrontendTimeMs();
+   const std::shared_ptr<PendingCatalogScan> scan = std::make_shared<PendingCatalogScan>();
+   scan->initial = m_catalog;
+   m_catalogScan = scan;
    m_scanned = true;
+   const std::filesystem::path cachePath = GetCatalogCachePath();
+   std::thread(
+      [scan, roots = std::move(roots), cachePath]() mutable
+      {
+         const auto pushUpdate = [scan](CatalogScanUpdate::Type type, vector<TableCatalog::Entry> entries)
+         {
+            if (entries.empty() && type == CatalogScanUpdate::Type::Upsert)
+               return;
+            std::lock_guard lock(scan->updateMutex);
+            scan->updates.push_back({ type, std::move(entries) });
+         };
+         try
+         {
+            TableCatalog scanned;
+            vector<TableCatalog::Entry> batch;
+            size_t published = 0;
+            auto lastPublish = std::chrono::steady_clock::now();
+            const auto flushBatch = [&](const bool force)
+            {
+               const auto now = std::chrono::steady_clock::now();
+               if (!batch.empty() && (force || batch.size() >= 50 || now - lastPublish >= std::chrono::milliseconds(200)))
+               {
+                  pushUpdate(CatalogScanUpdate::Type::Upsert, batch);
+                  batch.clear();
+                  lastPublish = now;
+               }
+            };
+            scanned.ScanPaths(roots,
+               [&](const size_t count)
+               {
+                  if (scan->abandoned.load(std::memory_order_acquire))
+                     throw CatalogScanAborted {};
+                  if (count > published)
+                  {
+                     const auto &entries = scanned.GetEntries();
+                     batch.insert(batch.end(), entries.begin() + static_cast<ptrdiff_t>(published), entries.begin() + static_cast<ptrdiff_t>(count));
+                     published = count;
+                  }
+                  flushBatch(false);
+               });
+            flushBatch(true);
+
+            // The complete path pass is the only point where entries missing from the filesystem
+            // are removed. Upserts before it are additive, keeping the cached catalog usable.
+            pushUpdate(CatalogScanUpdate::Type::Reconcile, scanned.GetEntries());
+
+            TableCatalog working = scan->initial;
+            working.ReconcileEntries(scanned.GetEntries());
+            vector<TableCatalog::Entry> detailsBatch;
+            lastPublish = std::chrono::steady_clock::now();
+            const auto flushDetails = [&](const bool force)
+            {
+               const auto now = std::chrono::steady_clock::now();
+               if (!detailsBatch.empty() && (force || detailsBatch.size() >= 25 || now - lastPublish >= std::chrono::milliseconds(200)))
+               {
+                  pushUpdate(CatalogScanUpdate::Type::Upsert, detailsBatch);
+                  detailsBatch.clear();
+                  lastPublish = now;
+               }
+            };
+            for (size_t i = 0; i < working.GetEntries().size(); ++i)
+            {
+               if (scan->abandoned.load(std::memory_order_acquire))
+                  throw CatalogScanAborted {};
+               if (!working.GetEntries()[i].detailsLoaded)
+               {
+                  working.EnsureEntryDetails(i);
+                  detailsBatch.push_back(working.GetEntries()[i]);
+                  flushDetails(false);
+               }
+            }
+            flushDetails(true);
+            working.LoadAllDetails(); // Entries are already loaded: this only restores title ordering
+            // Do not rewrite an unchanged cache: besides being wasted IO for large libraries, a
+            // broadly configured watch root could otherwise keep triggering scans recursively.
+            std::error_code cacheEc;
+            const bool cacheExists = std::filesystem::is_regular_file(cachePath, cacheEc);
+            if ((working.GetEntries() != scan->initial.GetEntries() || !cacheExists) && !working.SaveCacheFile(cachePath, roots))
+               PLOGW << "Failed to write the frontend table catalog cache";
+         }
+         catch (const CatalogScanAborted &)
+         {
+         }
+         catch (const std::exception &e)
+         {
+            PLOGE << "Frontend table scan failed: " << e.what();
+         }
+         scan->detailsReady.store(true, std::memory_order_release);
+      })
+      .detach();
 }
 
-void FrontendUI::LaunchSession(const Player::PlayMode playMode)
+void FrontendUI::UpdateCatalogWatcher(const vector<std::filesystem::path> &roots)
 {
-   const TableCatalog::Entry *const entry = GetSelected();
+   if (m_catalogWatcher == nullptr)
+      m_catalogWatcher = std::make_unique<CatalogFolderWatcher>();
+   m_catalogWatcher->Start(roots);
+}
+
+void FrontendUI::PollCatalogWatcher()
+{
+   if (m_catalogWatcher == nullptr)
+      return;
+   const uint32_t eventAt = m_catalogWatcher->LastEventMs();
+   if (eventAt != 0 && eventAt != m_catalogWatchEventSeen)
+   {
+      m_catalogWatchEventSeen = eventAt;
+      // Events already preceding the scan start are covered by it; events occurring while it
+      // runs may affect a folder it has already enumerated and are debounced for another pass.
+      const bool coveredByCurrentScan = m_catalogScanStartedAt != 0 && static_cast<int32_t>(m_catalogScanStartedAt - eventAt) >= 0;
+      if (!coveredByCurrentScan)
+         m_catalogWatchDirtySince = FrontendTimeMs();
+   }
+   if (m_catalogWatchDirtySince != 0 && FrontendTimeMs() - m_catalogWatchDirtySince > 1500 && m_catalogScan == nullptr)
+   {
+      m_catalogWatchDirtySince = 0;
+      Rescan();
+   }
+}
+
+void FrontendUI::PollCatalogScan()
+{
+   if (!m_catalogScan)
+      return;
+   const std::shared_ptr<PendingCatalogScan> scan = m_catalogScan;
+   std::deque<CatalogScanUpdate> updates;
+   bool complete = false;
+   {
+      std::lock_guard lock(scan->updateMutex);
+      updates.swap(scan->updates);
+      // Once detailsReady is set the worker does not publish anymore, but it may have published
+      // after the previous frame drained the queue: only retire the scan with an empty queue.
+      complete = scan->detailsReady.load(std::memory_order_acquire) && scan->updates.empty();
+   }
+   // Coalesce adjacent additive batches: applying every small worker batch would sort the whole
+   // catalog repeatedly on the UI thread, while only the merged result affects the ordering.
+   std::deque<CatalogScanUpdate> coalesced;
+   for (CatalogScanUpdate &update : updates)
+   {
+      if (update.type == CatalogScanUpdate::Type::Upsert && !coalesced.empty() && coalesced.back().type == CatalogScanUpdate::Type::Upsert)
+         coalesced.back().entries.insert(coalesced.back().entries.end(), std::make_move_iterator(update.entries.begin()), std::make_move_iterator(update.entries.end()));
+      else
+         coalesced.push_back(std::move(update));
+   }
+   for (const CatalogScanUpdate &update : coalesced)
+      ApplyCatalogScanUpdate(update);
+   if (complete)
+      m_catalogScan.reset();
+}
+
+void FrontendUI::AdoptCatalog(TableCatalog &&catalog, const bool restoreResumeSelection)
+{
+   std::filesystem::path wanted;
+   if (restoreResumeSelection && !s_resumeTablePath.empty())
+      wanted = s_resumeTablePath;
+   else if (HasSelection())
+      wanted = m_catalog.GetEntries()[m_selected].tablePath;
+   m_catalog = std::move(catalog);
+
+   const auto &entries = m_catalog.GetEntries();
+   m_selected = 0;
+   bool found = false;
+   if (!wanted.empty())
+      for (int i = 0; i < static_cast<int>(entries.size()); ++i)
+         if (entries[i].tablePath == wanted)
+         {
+            m_selected = i;
+            found = true;
+            break;
+         }
+   m_selected = std::clamp(m_selected, 0, std::max(0, static_cast<int>(entries.size()) - 1));
+   m_wheelPos = static_cast<float>(m_selected);
+   // A startup cache is only a snapshot: when it does not contain the resume target yet, keep the
+   // path so the incremental scan can still select the table if it appears in a later batch.
+   if (restoreResumeSelection && found)
+      s_resumeTablePath.clear();
+}
+
+void FrontendUI::ApplyCatalogScanUpdate(const CatalogScanUpdate &update)
+{
+   std::filesystem::path wanted;
+   const bool restoringResumeSelection = !s_resumeTablePath.empty();
+   if (restoringResumeSelection)
+      wanted = s_resumeTablePath;
+   else if (HasSelection())
+      wanted = m_catalog.GetEntries()[m_selected].tablePath;
+   if (update.type == CatalogScanUpdate::Type::Reconcile)
+      m_catalog.ReconcileEntries(update.entries);
+   else
+      m_catalog.UpsertEntries(update.entries);
+
+   const auto &entries = m_catalog.GetEntries();
+   int selected = 0;
+   bool found = false;
+   if (!wanted.empty())
+      for (int i = 0; i < static_cast<int>(entries.size()); ++i)
+         if (entries[i].tablePath == wanted)
+         {
+            selected = i;
+            found = true;
+            break;
+         }
+   m_selected = entries.empty() ? 0 : std::clamp(selected, 0, static_cast<int>(entries.size()) - 1);
+   m_wheelPos = static_cast<float>(m_selected);
+   // The resumed table may appear in any incremental batch. Keep looking until it is found, or
+   // until the complete path reconciliation proves that it is not in the catalog anymore.
+   if (restoringResumeSelection && (found || update.type == CatalogScanUpdate::Type::Reconcile))
+      s_resumeTablePath.clear();
+}
+
+void FrontendUI::LaunchSession(const Player::PlayMode playMode, const std::filesystem::path &tablePath)
+{
+   const TableCatalog::Entry *const entry = tablePath.empty() ? GetSelected() : FindEntry(tablePath);
    if (entry == nullptr || m_tableLoad)
       return;
+   if (!TableCatalog::TableExists(*entry))
+   {
+      m_liveUI.PushNotification("The selected table no longer exists; rescanning the table folders"s, 3500);
+      Rescan();
+      return;
+   }
 
    // Keep the VR state when playing from an XR frontend; edit sessions stay on the desktop as the
    // live editor is not available inside the headset
@@ -258,7 +596,7 @@ bool FrontendUI::OnNavigateBack()
 
 bool FrontendUI::NavTriggered(const bool pressed, uint32_t &heldSince, uint32_t &lastTrigger)
 {
-   const uint32_t now = msec();
+   const uint32_t now = FrontendTimeMs();
    if (!pressed)
    {
       heldSince = 0;
@@ -313,7 +651,7 @@ void FrontendUI::HandleInput()
    if (navDir != m_wheelNavDir)
    {
       m_wheelNavDir = navDir;
-      m_wheelNavSince = navDir != 0 ? msec() : 0;
+      m_wheelNavSince = navDir != 0 ? FrontendTimeMs() : 0;
       if (count > 0 && navDir != 0)
          m_selected = ((m_selected + navDir) % count + count) % count;
    }
@@ -348,7 +686,7 @@ void FrontendUI::JumpLetter(const int dir)
       return;
    const auto letterOf = [&entries](const int index)
    {
-      const string &title = entries[index].title;
+      const string &title = entries[index].sortTitle;
       return title.empty() ? ' ' : lowerCase(title)[0];
    };
    const char current = letterOf(m_selected);
@@ -369,13 +707,33 @@ void FrontendUI::OpenActionsView()
 {
    // The in-game UI opens on the frontend's navigation root (the chrome's table of
    // contents), then navigates straight to the selected table's actions page
+   EnsureSelectedDetails();
    m_liveUI.OpenInGameUI();
    m_liveUI.m_inGameUI.NavigateTo("frontend/table"s);
 }
 
 bool FrontendUI::HasSelection() const { return m_selected >= 0 && m_selected < static_cast<int>(m_catalog.GetEntries().size()); }
 
-const TableCatalog::Entry *FrontendUI::GetSelected() const { return HasSelection() ? &m_catalog.GetEntries()[m_selected] : nullptr; }
+const TableCatalog::Entry *FrontendUI::GetSelected()
+{
+   if (!HasSelection())
+      return nullptr;
+   return &m_catalog.GetEntries()[m_selected];
+}
+
+void FrontendUI::EnsureSelectedDetails()
+{
+   if (HasSelection())
+      m_catalog.EnsureEntryDetails(static_cast<size_t>(m_selected));
+}
+
+const TableCatalog::Entry *FrontendUI::FindEntry(const std::filesystem::path &tablePath)
+{
+   for (const TableCatalog::Entry &entry : m_catalog.GetEntries())
+      if (entry.tablePath == tablePath)
+         return &entry;
+   return nullptr;
+}
 
 void FrontendUI::RestartFrontendSession(const Player::VROverride vr)
 {
@@ -441,7 +799,7 @@ void FrontendUI::DrawBackground(const TableCatalog::Entry *const selected) const
    }
    if (image != nullptr)
    {
-      const float fadeIn = std::clamp(static_cast<float>(msec() - m_media->GetReadyTime(key)) / 300.f, 0.f, 1.f);
+      const float fadeIn = std::clamp(static_cast<float>(FrontendTimeMs() - m_media->GetReadyTime(key)) / 300.f, 0.f, 1.f);
       DrawImageCover(image, ImVec2(0.f, 0.f), ImGui::GetIO().DisplaySize, fadeIn, rotate);
    }
 }
@@ -468,10 +826,10 @@ void FrontendUI::DrawPreviewImage(PreviewPane &pane, const std::filesystem::path
          pane.previous = pane.current;
          pane.current = image;
          pane.mediaPath = want;
-         pane.fadeStart = msec();
+         pane.fadeStart = FrontendTimeMs();
       }
    }
-   const float t = std::clamp(static_cast<float>(msec() - pane.fadeStart) / 250.f, 0.f, 1.f);
+   const float t = std::clamp(static_cast<float>(FrontendTimeMs() - pane.fadeStart) / 250.f, 0.f, 1.f);
    if (pane.previous != nullptr && t < 1.f)
       DrawImage(pane.previous, pos, size, 1.f - t, autoRotate);
    if (pane.current != nullptr)
@@ -506,7 +864,9 @@ void FrontendUI::Update()
    if (m_media == nullptr)
       m_media = std::make_unique<FrontendMedia>(m_player->m_renderer->m_renderDevice);
    SetupAuxRenderer();
-   if (!m_scanned)
+   PollCatalogWatcher();
+   PollCatalogScan();
+   if (!m_scanned && !m_catalogScan)
       Rescan();
    m_media->BeginFrame();
 
@@ -517,9 +877,9 @@ void FrontendUI::Update()
    // present (instance created in VRDevice ctor) then a system for the HMD form factor. It is
    // retried every few seconds while unavailable so a headset connected or a runtime started
    // after the frontend is shown still enables the VR switch.
-   if (!m_vrAvailable && !m_player->IsVR() && msec() >= m_vrProbeAt)
+   if (!m_vrAvailable && !m_player->IsVR() && FrontendTimeMs() >= m_vrProbeAt)
    {
-      m_vrProbeAt = msec() + 3000;
+      m_vrProbeAt = FrontendTimeMs() + 3000;
       VRDevice probe(m_player->m_ptable->GetSettings());
       if (probe.IsOpenXRReady())
       {
@@ -541,7 +901,7 @@ void FrontendUI::Update()
    ImGui::Begin(
       "##Frontend", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-   const TableCatalog::Entry *const selected = count > 0 ? &entries[m_selected] : nullptr;
+   const TableCatalog::Entry *const selected = GetSelected();
 
    DrawThemedLayout(selected);
 
@@ -738,7 +1098,7 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
          m_themeWheelEmpty = sampler;
    if (m_themeUnderlay != nullptr)
    {
-      const float fade = std::clamp(static_cast<float>(msec() - m_media->GetReadyTime(m_themeUnderlayPath)) / 300.f, 0.f, 1.f);
+      const float fade = std::clamp(static_cast<float>(FrontendTimeMs() - m_media->GetReadyTime(m_themeUnderlayPath)) / 300.f, 0.f, 1.f);
       drawList->AddImage(m_themeUnderlay, ImVec2(offsetX, offsetY), ImVec2(offsetX + imgW, offsetY + imgH), ImVec2(0.f, 0.f), ImVec2(1.f, 1.f),
          IM_COL32(255, 255, 255, static_cast<int>(fade * 255.f)));
    }
@@ -778,7 +1138,7 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
    // The theme overlay sits between the media elements and the interactive ones (wheel, tabs, help)
    if (m_themeOverlay != nullptr)
    {
-      const float overlayFade = std::clamp(static_cast<float>(msec() - m_media->GetReadyTime(m_themeOverlayPath)) / 300.f, 0.f, 1.f);
+      const float overlayFade = std::clamp(static_cast<float>(FrontendTimeMs() - m_media->GetReadyTime(m_themeOverlayPath)) / 300.f, 0.f, 1.f);
       drawList->AddImage(m_themeOverlay, ImVec2(offsetX, offsetY), ImVec2(offsetX + imgW, offsetY + imgH), ImVec2(0.f, 0.f), ImVec2(1.f, 1.f),
          IM_COL32(255, 255, 255, static_cast<int>(overlayFade * 255.f)));
    }
@@ -795,7 +1155,7 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
       // duration, the selection following the position so the centered entry stays in sync.
       // Otherwise the position eases toward the selection, taking the shortest wrap around path
       m_wheelPos = fmodf(fmodf(m_wheelPos, static_cast<float>(count)) + static_cast<float>(count), static_cast<float>(count));
-      const uint32_t navHeldFor = m_wheelNavDir != 0 ? msec() - m_wheelNavSince : 0;
+      const uint32_t navHeldFor = m_wheelNavDir != 0 ? FrontendTimeMs() - m_wheelNavSince : 0;
       if (m_wheelDragging)
       {
          // The position was dragged by the pointer; the selection tracks the centered entry
@@ -891,7 +1251,7 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
             const std::shared_ptr<Sampler> image = mediaPath.empty() ? nullptr : m_media->Get(mediaPath);
             // The wheel art fades in once decoded; the shared wheel-empty placeholder carries the
             // table name for media-less entries and stands in until the art is fully faded in
-            const float artAlpha = image != nullptr ? std::clamp(static_cast<float>(msec() - m_media->GetReadyTime(mediaPath)) / 300.f, 0.f, 1.f) : 0.f;
+            const float artAlpha = image != nullptr ? std::clamp(static_cast<float>(FrontendTimeMs() - m_media->GetReadyTime(mediaPath)) / 300.f, 0.f, 1.f) : 0.f;
             ImVec2 cellSize(h, h);
             if (m_themeWheelEmpty != nullptr && (image == nullptr || artAlpha < 1.f))
             {
@@ -904,6 +1264,8 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
                // measuring text at an arbitrary, constantly changing font size while the wheel slides
                // continuously bakes new font variants, which stutters the navigation
                WheelTitle &wt = m_wheelTitles[entry.tablePath];
+               if (wt.title != entry.title)
+                  wt = WheelTitle { entry.title };
                if (wt.size0 == 0.f && !entry.title.empty())
                {
                   string title = entry.title;
@@ -985,7 +1347,8 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
       {
          if (k >= kMin && k <= kMax)
             continue; // already requested by the draw loop
-         const TableCatalog::Entry &e = entries[((m_selected + k) % count + count) % count];
+         const int index = ((m_selected + k) % count + count) % count;
+         const TableCatalog::Entry &e = entries[index];
          if (e.HasMedia(TableCatalog::MediaType::Wheel) && !TableCatalog::IsAnimatedMediaFile(e.GetMedia(TableCatalog::MediaType::Wheel)))
             m_media->Get(e.GetMedia(TableCatalog::MediaType::Wheel)); // Stills only: animated medias open when the cell actually shows
       }
