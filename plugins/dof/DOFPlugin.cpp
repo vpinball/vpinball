@@ -263,13 +263,16 @@ private:
             lock.lock();
          }
       }
-      try
+      if (initialized) // Nothing to finish after a failed Init
       {
-         pDOF->Finish();
-      }
-      catch (const std::exception& e)
-      {
-         LOGE("DOF finish failed: "s + e.what());
+         try
+         {
+            pDOF->Finish();
+         }
+         catch (const std::exception& e)
+         {
+            LOGE("DOF finish failed: "s + e.what());
+         }
       }
    }
 
