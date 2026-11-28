@@ -1358,7 +1358,11 @@ void LiveUI::UpdateTouchUI()
 void LiveUI::OpenInGameUI(const string& page)
 {
    HideUI();
-   m_inGameUI.Open(page.empty() ? (m_player->m_playMode == Player::PlayMode::Frontend ? "frontend/home"s : "homepage"s) : page);
+   const bool frontendHome = page.empty() && m_player->m_playMode == Player::PlayMode::Frontend;
+   m_inGameUI.Open(page.empty() ? (frontendHome ? "frontend/home"s : "homepage"s) : page);
+   // The frontend's table actions are its table pane, like the table section of a play session
+   if (frontendHome)
+      m_inGameUI.NavigateTo("frontend/table"s);
 }
 
 void LiveUI::HideUI()

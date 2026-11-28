@@ -53,12 +53,11 @@ devices — holding a navigation direction scrolls continuously, the speed rampi
 selected wheel position is stored in `Frontend.LastTable`, so quitting and restarting the frontend
 or the application returns to the same table when it is still present in the scanned folders. The
 in-game UI desktop chrome opens on top of it — with the same top tab bar, category rail and bottom
-hint bar as the pause menu of a play session — through the in-game UI toggle action; selecting
-**Games** closes it back to the wheel. Escape (the exit button) first steps back out of the
-frontend's own modals, then quits the application like the chrome's **Quit** tab. Confirm (Start
-button, Enter/Space) on the wheel opens the chrome straight on the **Table** view, the page
-proposing the actions on the selected table; the launch ball button plays the selected table
-directly.
+hint bar as the pause menu of a play session — through the in-game UI toggle action or Confirm
+(Start button, Enter/Space) on the wheel. It lands on the **Table** view, the page proposing the
+actions on the selected table; selecting **Games** closes it back to the wheel. Escape (the exit
+button) first steps back out of the frontend's own modals, then quits the application like the
+chrome's **Quit** tab. The launch ball button plays the selected table directly.
 
 The chrome's top bar offers:
 

@@ -59,11 +59,11 @@ string FrontendDesktopRenderer::NavGroup(const string &path) const
    return path == "frontend/table"s ? "table"s : InGameUIDesktopRenderer::NavGroup(path);
 }
 
-string FrontendDesktopRenderer::NavRootGroup(const string &rootPath) const
+string FrontendDesktopRenderer::NavRootGroup(const string &) const
 {
-   // The frontend's navigation root is its own category: there is no table the
-   // way a play session has one, and GAMES is a base view action, not a category
-   return NavGroup(rootPath);
+   // The frontend's navigation root belongs to the table category, matching the
+   // table section selected when opening the in-game UI during a play session
+   return "table"s;
 }
 
 const char *FrontendDesktopRenderer::NavRootRailLabel(const string &group) const
