@@ -113,7 +113,7 @@ public:
    // Rebuilds only the table path catalog: no companion file is read and no media folder is
    // listed. This is the fast pass used to populate the frontend before details arrive. The
    // optional progress callback receives the number of entries discovered so far after each folder.
-   void ScanPaths(const vector<std::filesystem::path>& roots, const std::function<void(size_t)>& progress = {});
+   void ScanPaths(const vector<std::filesystem::path>& roots, const std::function<void(size_t)>& progress = {}, vector<std::filesystem::path>* cacheFolders = nullptr);
 
    // Loads a discovered entry's companion information and media paths on demand.
    void EnsureEntryDetails(size_t index);
@@ -146,7 +146,8 @@ public:
 
    // Maintains the per-table cache folders below the scanned roots. maxRecentTables is negative
    // for unlimited, or the number of most recently used tables whose cache folders are kept.
-   static TextureCacheCleanupResult CleanupTextureCaches(const vector<std::filesystem::path>& roots, const vector<Entry>& entries, bool discardStale, int maxRecentTables);
+   static TextureCacheCleanupResult CleanupTextureCaches(
+      const vector<std::filesystem::path>& roots, const vector<Entry>& entries, bool discardStale, int maxRecentTables, const vector<std::filesystem::path>* scannedCacheFolders = nullptr);
 
    // A table file is either a '.vpx' file or a VPZ pack ('.vpz' archive file, or
    // a folder holding a 'manifest.json' file), detected by name only.
@@ -192,7 +193,7 @@ public:
 private:
    using MediaSet = std::array<std::filesystem::path, static_cast<size_t>(MediaType::Count)>;
 
-   static void ScanFolder(const std::filesystem::path& folder, vector<Entry>& entries, const std::function<void(size_t)>& progress);
+   static void ScanFolder(const std::filesystem::path& folder, vector<Entry>& entries, const std::function<void(size_t)>& progress, vector<std::filesystem::path>* cacheFolders);
    static Entry BuildEntry(const std::filesystem::path& tablePath, bool isPack, const FolderFileIndex& folderFiles, const std::filesystem::path& sharedMediaFolder);
    static MediaSet BuildMediaSet(const vector<std::filesystem::path>& files);
    const MediaSet& GetMediaSet(const std::filesystem::path& folder);

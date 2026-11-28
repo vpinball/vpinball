@@ -50,24 +50,11 @@ bool RemoveTextureCacheFolder(const std::filesystem::path& path)
    return !ec && !std::filesystem::exists(path, ec);
 }
 
-}
-
-TableCatalog::TextureCacheCleanupResult TableCatalog::CleanupTextureCaches(
-   const vector<std::filesystem::path>& roots, const vector<Entry>& entries, const bool discardStale, const int maxRecentTables)
+vector<std::filesystem::path> FindTextureCacheContainers(const vector<std::filesystem::path>& roots)
 {
-   TextureCacheCleanupResult result;
-   ankerl::unordered_dense::set<string> validCacheFolders;
-   for (const Entry& entry : entries)
-      validCacheFolders.insert(TextureCachePathKey(entry.tablePath.parent_path() / "cache"sv / entry.tablePath.stem()));
-
-   struct CacheItem
-   {
-      std::filesystem::path path;
-      std::filesystem::file_time_type lastUsed;
-   };
-   vector<CacheItem> validItems;
-   ankerl::unordered_dense::set<string> processed;
-
+   vector<std::filesystem::path> containers;
+   static const ankerl::unordered_dense::set<string> assetFolders
+      = { "medias"s, "cache"s, "user"s, "music"s, "altsound"s, "altcolor"s, "pinmame"s, "pupvideos"s, "serum"s, "vni"s, "scripts"s, "dmd"s };
    for (const std::filesystem::path& root : roots)
    {
       std::error_code ec;
@@ -80,37 +67,65 @@ TableCatalog::TextureCacheCleanupResult TableCatalog::CleanupTextureCaches(
          if (!it->is_directory(typeEc) || typeEc)
             continue;
          const string folderName = lowerCase(PathToUTF8(it->path().filename()));
-         static const ankerl::unordered_dense::set<string> assetFolders
-            = { "medias"s, "cache"s, "user"s, "music"s, "altsound"s, "altcolor"s, "pinmame"s, "pupvideos"s, "serum"s, "vni"s, "scripts"s, "dmd"s };
          if (!assetFolders.contains(folderName))
             continue;
          it.disable_recursion_pending();
-         if (folderName != "cache"s)
-            continue;
+         if (folderName == "cache"s)
+            containers.push_back(it->path());
+      }
+   }
+   return containers;
+}
+}
 
-         std::error_code childEc;
-         for (std::filesystem::directory_iterator child(it->path(), childEc), childEnd; !childEc && child != childEnd; child.increment(childEc))
+TableCatalog::TextureCacheCleanupResult TableCatalog::CleanupTextureCaches(
+   const vector<std::filesystem::path>& roots, const vector<Entry>& entries, const bool discardStale, const int maxRecentTables, const vector<std::filesystem::path>* scannedCacheFolders)
+{
+   TextureCacheCleanupResult result;
+   ankerl::unordered_dense::set<string> validCacheFolders;
+   for (const Entry& entry : entries)
+      validCacheFolders.insert(TextureCachePathKey(entry.tablePath.parent_path() / "cache"sv / entry.tablePath.stem()));
+
+   vector<std::filesystem::path> discoveredContainers;
+   const vector<std::filesystem::path>* containers = scannedCacheFolders;
+   if (containers == nullptr)
+   {
+      discoveredContainers = FindTextureCacheContainers(roots);
+      containers = &discoveredContainers;
+   }
+
+   struct CacheItem
+   {
+      std::filesystem::path path;
+      std::filesystem::file_time_type lastUsed;
+   };
+   vector<CacheItem> validItems;
+   ankerl::unordered_dense::set<string> processed;
+
+   for (const std::filesystem::path& container : *containers)
+   {
+      std::error_code childEc;
+      for (std::filesystem::directory_iterator child(container, childEc), childEnd; !childEc && child != childEnd; child.increment(childEc))
+      {
+         std::error_code childTypeEc;
+         if (!child->is_directory(childTypeEc) || childTypeEc)
+            continue;
+         const std::filesystem::path cacheFolder = child->path();
+         const string key = TextureCachePathKey(cacheFolder);
+         if (!processed.insert(key).second)
+            continue;
+         if (!validCacheFolders.contains(key))
          {
-            std::error_code childTypeEc;
-            if (!child->is_directory(childTypeEc) || childTypeEc)
-               continue;
-            const std::filesystem::path cacheFolder = child->path();
-            const string key = TextureCachePathKey(cacheFolder);
-            if (!processed.insert(key).second)
-               continue;
-            if (!validCacheFolders.contains(key))
+            if (discardStale)
             {
-               if (discardStale)
-               {
-                  if (RemoveTextureCacheFolder(cacheFolder))
-                     result.staleRemoved++;
-                  else
-                     result.failedRemovals++;
-               }
-               continue;
+               if (RemoveTextureCacheFolder(cacheFolder))
+                  result.staleRemoved++;
+               else
+                  result.failedRemovals++;
             }
-            validItems.push_back({ cacheFolder, TextureCacheTime(cacheFolder) });
+            continue;
          }
+         validItems.push_back({ cacheFolder, TextureCacheTime(cacheFolder) });
       }
    }
 
@@ -272,15 +287,17 @@ bool TableCatalog::IsAnimatedImageFile(const std::filesystem::path& path)
 bool TableCatalog::IsAnimatedMediaFile(const std::filesystem::path& path) { return IsVideoFile(path) || IsAnimatedImageFile(path); }
 
 
-void TableCatalog::ScanPaths(const vector<std::filesystem::path>& roots, const std::function<void(size_t)>& progress)
+void TableCatalog::ScanPaths(const vector<std::filesystem::path>& roots, const std::function<void(size_t)>& progress, vector<std::filesystem::path>* cacheFolders)
 {
    m_entries.clear();
    m_mediaSets.clear();
+   if (cacheFolders != nullptr)
+      cacheFolders->clear();
    for (const std::filesystem::path& root : roots)
    {
       std::error_code ec;
       if (std::filesystem::is_directory(root, ec))
-         ScanFolder(root, m_entries, progress);
+         ScanFolder(root, m_entries, progress, cacheFolders);
    }
    if (progress)
       progress(m_entries.size());
@@ -348,7 +365,7 @@ static vector<std::filesystem::path> ListRegularFiles(const std::filesystem::pat
 }
 
 
-void TableCatalog::ScanFolder(const std::filesystem::path& folder, vector<Entry>& entries, const std::function<void(size_t)>& progress)
+void TableCatalog::ScanFolder(const std::filesystem::path& folder, vector<Entry>& entries, const std::function<void(size_t)>& progress, vector<std::filesystem::path>* cacheFolders)
 {
    // Companion/asset subfolders which never hold tables (see docs/FileLayout.md)
    static const ankerl::unordered_dense::set<string> assetFolders
@@ -385,6 +402,8 @@ void TableCatalog::ScanFolder(const std::filesystem::path& folder, vector<Entry>
                const string lname = lowerCase(name);
                if (name.starts_with('.') || assetFolders.contains(lname))
                {
+                  if (lname == "cache"s && cacheFolders != nullptr)
+                     cacheFolders->push_back(path);
                   if (lname == "medias"s && mediaDir.empty())
                      mediaDir = path;
                }
