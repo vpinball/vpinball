@@ -124,8 +124,6 @@ WinEditor::WinEditor(HINSTANCE appInstance)
 
    m_ToolCur = IDC_SELECT;
 
-   m_hbmInPlayMode = nullptr;
-
 #ifdef _WIN64
    m_scintillaDll = LoadLibrary("SciLexerVP64.DLL");
 #else
@@ -828,10 +826,7 @@ void WinEditor::DoPlay(const int playMode)
    PinTableWnd *const tableEditor = GetActiveTableEditor();
    CComObject<PinTable> *const table = GetActiveTable(); //!! no const here because of CopyForPlay call below that changes some data implicitly inside
    if (tableEditor == nullptr || table == nullptr)
-   {
-      m_table_played_via_SelectTableOnStart = false;
       return;
-   }
 
    if (playMode == 0 && g_settingsService.GetAppSettings().GetGlobal_ResetLogOnPlay())
       Logger::Truncate();
@@ -841,10 +836,7 @@ void WinEditor::DoPlay(const int playMode)
    // Create the player on a (shallow) copy of the table, that will be animated by the script, animations, ...
    PinTable *live_table = table->CopyForPlay();
    if (live_table == nullptr)
-   {
-      m_table_played_via_SelectTableOnStart = false;
       return;
-   }
 
    Player::PlayMode sessionMode;
    switch (playMode)
@@ -879,7 +871,6 @@ void WinEditor::DoPlay(const int playMode)
    if (g_pplayer == nullptr)
    {
       sessionTable->Release();
-      m_table_played_via_SelectTableOnStart = false;
       return;
    }
 
@@ -955,15 +946,6 @@ void WinEditor::DoPlay(const int playMode)
    tableEditor->EnableWindow();
    tableEditor->SetFocus();
    tableEditor->SetActiveWindow();
-
-   // If the table was played via the "Select Table on Start" option, then close the table and propose to load another one
-   if (m_table_played_via_SelectTableOnStart)
-   {
-      CloseTable(tableEditor);
-      m_table_played_via_SelectTableOnStart = LoadFile(false);
-      if (m_table_played_via_SelectTableOnStart)
-         DoPlay(0);
-   }
 }
 
 bool WinEditor::LoadFile(const bool updateEditor)
@@ -1525,9 +1507,6 @@ void WinEditor::OnInitialUpdate()
    }
 
    ShowWindow(SW_SHOW);
-
-   // Load 'in playing mode' image for UI
-   m_hbmInPlayMode = (HBITMAP)LoadImage(m_instance, MAKEINTRESOURCE(IDB_INPLAYMODE), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
 
    UpdateRecentFileList(string()); // update the recent loaded file list
 

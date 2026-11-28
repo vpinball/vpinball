@@ -587,23 +587,6 @@ void PinTableWnd::RenderTable(Sur *const psur)
    FRect frect;
    GetViewRect(&frect);
 
-   if (m_vpxEditor->m_table_played_via_SelectTableOnStart)
-   {
-      BITMAP bm;
-      GetObject(m_vpxEditor->m_hbmInPlayMode, (int)sizeof bm, &bm);
-      CDC dc;
-      dc.CreateCompatibleDC(nullptr);
-      const CBitmap hbmOld = dc.SelectObject(m_vpxEditor->m_hbmInPlayMode);
-      const float scale = min((frect.right - frect.left) / bm.bmWidth, (frect.bottom - frect.top) / bm.bmHeight);
-      const float w = bm.bmWidth * scale;
-      const float h = bm.bmHeight * scale;
-      const float x = frect.left + (frect.right - frect.left - w) * 0.5f;
-      const float y = frect.top + (frect.bottom - frect.top - h) * 0.5f;
-      psur->Image(x, y, x + w, y + h, dc.GetHDC(), bm.bmWidth, bm.bmHeight);
-      dc.SelectObject(hbmOld);
-      return;
-   }
-
    if (GetDisplayBackdrop())
    {
       Texture *const ppi = m_table->GetImage((!m_vpxEditor->m_desktopBackdropView) ? m_table->m_image : m_table->m_BG_image[m_table->GetViewMode()]);

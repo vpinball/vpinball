@@ -267,11 +267,7 @@ void Win32EditCommand::Execute()
       else if (g_settingsService.GetAppSettings().GetEditor_SelectTableOnStart())
       {
          if (vpxEditor.LoadFile(false))
-         {
-            // With SelectTableOnPlayerClose, closing the player proposes another table (see WinEditor's player close handling)
-            vpxEditor.m_table_played_via_SelectTableOnStart = g_settingsService.GetAppSettings().GetEditor_SelectTableOnPlayerClose();
             vpxEditor.DoPlay(0);
-         }
       }
       winApp.Run();
    }

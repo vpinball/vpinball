@@ -527,11 +527,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,45,116,10
     CONTROL         "Start VP with File dialog open (to directly play a table)",IDC_START_VP_FILE_DIALOG,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,58,176,10
-    CONTROL         "When exiting the table player, show File dialog again",IDC_START_VP_FILE_DIALOG2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,71,168,10
     GROUPBOX        "Logging",IDC_STATIC,5,137,185,40
     GROUPBOX        "Editor Theme",IDC_STATIC,199,8,153,169
-    GROUPBOX        "Misc",IDC_STATIC,5,8,185,78
+    GROUPBOX        "Misc",IDC_STATIC,5,8,185,66
     GROUPBOX        "Ball debugging",IDC_STATIC,5,92,185,41
     CONTROL         "Throw always on",IDC_THROW_BALLS_ALWAYS_ON_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,104,71,10
     CONTROL         "Ball control always on",IDC_BALL_CONTROL_ALWAYS_ON_CHECK,
@@ -2893,7 +2891,6 @@ IDB_LAYER_ICONS32       BITMAP                  "res\\layerIcons32.bmp"
 
 IDB_TRISTATE_ICONS16    BITMAP                  "res\\tristateIcons16.bmp"
 
-IDB_INPLAYMODE          BITMAP                  "res\\PlayWarning.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////

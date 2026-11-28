@@ -177,7 +177,6 @@ public:
    vector<PinTableWnd*> m_vtable;
    CComObject<PinTable> *m_ptableActive = nullptr;
 
-   bool m_table_played_via_SelectTableOnStart = false;
 
 //    HWND m_hwndToolbarMain;
    HWND m_hwndStatusBar;
@@ -203,7 +202,6 @@ public:
    COLORREF m_fillColor;
    Vertex2D m_mouseCursorPosition;
 
-   HBITMAP m_hbmInPlayMode;
 
    bool m_open_minimized = false;
    bool m_disable_pause_menu = false;
