@@ -88,8 +88,8 @@ public:
    // Editor of the given table, nullptr if the table is not open in an editor
    class PinTableWnd* GetTableEditor(const PinTable* table) const;
    CComObject<PinTable>* GetActiveTable();
-   bool LoadFile(const bool updateEditor);
-   void LoadFileName(const std::filesystem::path& filename, const bool updateEditor);
+   bool LoadFile();
+   void LoadFileName(const std::filesystem::path& filename);
 
    void DoPlay(const int playMode);
 

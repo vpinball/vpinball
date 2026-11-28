@@ -668,9 +668,7 @@ bool WinEditor::ParseCommand(const size_t code, const bool notify)
       OpenRecentFile(code);
       return true;
 
-   case IDM_OPEN:
-      LoadFile(true);
-      return true;
+   case IDM_OPEN: LoadFile(); return true;
 
    case IDM_CLOSE:
    case SC_CLOSE:
@@ -948,25 +946,24 @@ void WinEditor::DoPlay(const int playMode)
    tableEditor->SetActiveWindow();
 }
 
-bool WinEditor::LoadFile(const bool updateEditor)
+bool WinEditor::LoadFile()
 {
    const string& szInitialDir = g_settingsService.GetAppSettings().GetRecentDir_LoadDir();
 
    vector<string> filename;
-   if (!OpenFileDialog(szInitialDir, filename, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0,
-          !updateEditor ? "Select a Table to Play or press Cancel to enter Editor-Mode"s : string()))
+   if (!OpenFileDialog(szInitialDir, filename, "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0", "vpx", 0, string()))
       return false;
 
    const size_t index = filename[0].find_last_of(PATH_SEPARATOR_CHAR);
    if (index != string::npos)
       g_settingsService.GetAppSettings().SetRecentDir_LoadDir(filename[0].substr(0, index), false);
 
-   LoadFileName(PathFromString(filename[0]), updateEditor); // Native narrow path from the dialog
+   LoadFileName(PathFromString(filename[0])); // Native narrow path from the dialog
 
    return true;
 }
 
-void WinEditor::LoadFileName(const std::filesystem::path& filename, const bool updateEditor)
+void WinEditor::LoadFileName(const std::filesystem::path &filename)
 {
    if (m_vtable.size() == MAX_OPEN_TABLES)
    {
@@ -1015,21 +1012,18 @@ void WinEditor::LoadFileName(const std::filesystem::path& filename, const bool u
       UpdateRecentFileList(filename);
 
       ppt->AddMultiSel(ppt->GetUIPart(ppt->m_table), false, true, false);
-      if (updateEditor)
+      GetLayersListDialog()->ResetView();
+      ToggleToolbar();
+      if (m_dockNotes != nullptr)
+         m_dockNotes->Enable();
+
+      SetFocus();
+
+      const string &audit = ppt->m_table->AuditTable(true);
+      if (audit.find(". Error:"s) != std::string::npos)
       {
-         GetLayersListDialog()->ResetView();
-         ToggleToolbar();
-         if (m_dockNotes != nullptr)
-            m_dockNotes->Enable();
-
-         SetFocus();
-
-         const string &audit = ppt->m_table->AuditTable(true);
-         if (audit.find(". Error:"s) != std::string::npos)
-         {
-            InfoDialog info("This table contains error(s) that need to be fixed to ensure correct play.\r\n\r\n" + audit);
-            info.DoModal(GetHwnd());
-         }
+         InfoDialog info("This table contains error(s) that need to be fixed to ensure correct play.\r\n\r\n" + audit);
+         info.DoModal(GetHwnd());
       }
 
       PLOGI << "UI Post Load End";
@@ -2293,7 +2287,7 @@ void WinEditor::OpenRecentFile(const size_t menuId)
    if (Index >= m_recentTableList.size())
       return;
    const std::filesystem::path filename = m_recentTableList[Index]; // A copy, as loading updates the list
-   LoadFileName(filename, true);
+   LoadFileName(filename);
 }
 
 void WinEditor::CopyPasteElement(const CopyPasteModes mode)

@@ -1422,7 +1422,6 @@ PropIntUnbounded(Editor, WhereUsedWidth, "WhereUsedWidth"s, "Where-used window w
 PropIntUnbounded(Editor, WhereUsedHeight, "WhereUsedHeight"s, "Where-used window height"s, 800);
 PropIntUnbounded(Editor, CollectionMngPosX, "CollectionMngPosX"s, "Collection Manager window X position"s, 0);
 PropIntUnbounded(Editor, CollectionMngPosY, "CollectionMngPosY"s, "Collection Manager window Y position"s, 0);
-PropBool(Editor, SelectTableOnStart, "Select Table on Start"s, "Open a file/table select dialog on editor startup"s, true);
 PropBool(Editor, ShowDragPoints, "ShowDragPoints"s, "Show Drag points in viewport/editor"s, false);
 PropBool(Editor, DrawLightCenters, "DrawLightCenters"s, "Show Light centers in viewport/editor"s, false);
 PropBool(Editor, AutoSaveOn, "AutoSaveOn"s, "Enable Autosave for table(s)"s, true);
