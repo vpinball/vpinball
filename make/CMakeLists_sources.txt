@@ -501,6 +501,10 @@ set(VPX_SOURCES
    src/ui/live/ingameui/PointOfViewSettingsPage.cpp
    src/ui/live/ingameui/SensorSetupPage.h
    src/ui/live/ingameui/SensorSetupPage.cpp
+   src/ui/live/ingameui/StartupWizardModel.h
+   src/ui/live/ingameui/StartupWizardModel.cpp
+   src/ui/live/ingameui/StartupWizardPage.h
+   src/ui/live/ingameui/StartupWizardPage.cpp
    src/ui/live/ingameui/StereoSettingsPage.h
    src/ui/live/ingameui/StereoSettingsPage.cpp
    src/ui/live/ingameui/TableMiscPage.h

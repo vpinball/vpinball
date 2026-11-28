@@ -1046,6 +1046,8 @@
 
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/SensorSetupPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/StartupWizardModel.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/StartupWizardPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/StereoSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableMiscPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.cpp" />
@@ -2055,6 +2057,8 @@
 
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/PointOfViewSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/SensorSetupPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/StartupWizardModel.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/StartupWizardPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/StereoSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableMiscPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.h" />

@@ -113,6 +113,9 @@ void HomePage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>("Logging Settings"s, ""s, "settings/logging"s));
 
+   if (m_player->m_liveUI->m_inGameUI.UsesDesktopRenderer() && !m_player->IsVR())
+      AddItem(std::make_unique<InGameUIItem>("Startup Wizard"s, "Configure this machine for Visual Pinball"s, "settings/startup_wizard"s));
+
    AddItem(std::make_unique<InGameUIItem>("System Info"s, ""s, "misc/systeminfo"s));
 }
 

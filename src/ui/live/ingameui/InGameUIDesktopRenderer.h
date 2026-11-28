@@ -91,6 +91,7 @@ private:
    void RenderFooterActions(InGameUIPage& page);
    void RenderItems(InGameUIPage& page, const vector<InGameUIPane>& panes, bool isNavSource);
    bool NavRow(const char* icon, const char* label, bool selected, const char* id, const std::shared_ptr<Sampler>& iconImage, bool focused);
+   bool WizardNavRow(int step, int activeStep, int stepCount, const char* label, bool focused);
 
    vector<NavEntry> m_navEntries; // Cached root page navigation items
    vector<NavEntry> m_pluginEntries; // Cached plugins homepage items (one per plugin)
@@ -140,6 +141,7 @@ private:
       bool isBack;
       string label;
       string path;
+      std::function<void()> activate;
    };
    vector<RailNav> m_navRailRows; // Rail rows top to bottom (back row first), rebuilt each frame
 };

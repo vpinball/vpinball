@@ -36,6 +36,7 @@
 #include "renderer/VRDevice.h"
 #include "ui/live/LiveUI.h"
 #include "ui/live/ingameui/HomePage.h"
+#include "ui/live/ingameui/StartupWizardModel.h"
 #include "ThreadPool.h"
 #include "tinyxml2/tinyxml2.h"
 #include "unordered_dense.h"
@@ -423,6 +424,11 @@ Player::Player(PinTable *const table, const PlayMode playMode, LoadProgress &loa
    // Initialize the table session: physics, script, per part rendering and timers
    InitTableSession(true);
    EndStartupLoadingScreen();
+
+   // First-run machine setup: after the loading screen, before any session-specific UI
+   if ((playMode == PlayMode::Play || playMode == PlayMode::Frontend) && VPX::InGameUI::StartupWizardModel::ShouldAutoOpen(g_settingsService.GetAppSettings())
+      && m_liveUI->m_inGameUI.UsesDesktopRenderer() && !IsVR())
+      m_liveUI->OpenInGameUI("settings/startup_wizard"s);
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == PlayMode::EditPOV)

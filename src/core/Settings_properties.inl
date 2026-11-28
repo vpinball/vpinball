@@ -160,6 +160,7 @@ PropEnum(Player, PFReflection, "Reflection Quality"s,
 PropInt(Player, MaxTexDimension, "Maximum texture dimension"s, "Images sized above this limit will be automatically scaled down on load"s, 512, 16384, g_isMobile ? 3072 : 16384);
 PropInt(Player, AlphaRampAccuracy, "Detail Level"s, "Level of detail of the ramp and rubber meshes"s, 1, 10, 10);
 PropEnum(Player, BGSet, "View Mode"s, "Select the view setup of the table used for playing: 'Desktop / Full Single Screen' uses the Full Single Screen view for tables that enable it, the desktop view otherwise. 'Cabinet' uses the cabinet view. 'Desktop (no FSS)' always uses the desktop view"s, int, 0, "Desktop / Full Single Screen"s, "Cabinet"s, "Desktop (no FSS)"s);
+PropInt(Player, StartupWizardVersion, "Startup Wizard Version"s, "Version of the startup wizard last completed on this system"s, 0, INT_MAX, 0);
 PropEnum(Player, CabinetAutofitMode, "Cabinet Autofit Mode"s, "Select between manual setup, automatic fitting without visual stretch or automatic fitting with table stretching"s, int, 0,
    "Manual"s, "Fit Table"s, "Fit Screen"s);
 PropFloat(Player, CabinetAutofitPos, "Cabinet Autofit Pos"s, "Relative lower flipper bat position when using automatic view fitting (0% for bottom of screen, 100% for top)"s, 0.f, 0.2f, 0.05f);

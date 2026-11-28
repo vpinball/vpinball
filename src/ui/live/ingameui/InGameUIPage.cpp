@@ -493,17 +493,20 @@ void InGameUIPage::Update(float elapsedS)
          using enum InGameUIItem::Type;
          return item->m_type == SaveChanges || item->m_type == ResetToDefaults || item->m_type == ResetToStoredValues || item->m_type == Back;
       });
-   if (IsAdjustable())
+   if (UsesStandardActionItems())
    {
-      if (!IsDefaults())
-         m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::ResetToDefaults));
-      if (IsModified())
-         m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::ResetToStoredValues));
-      if (m_saveMode != SaveMode::None && IsModified())
-         m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::SaveChanges));
+      if (IsAdjustable())
+      {
+         if (!IsDefaults())
+            m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::ResetToDefaults));
+         if (IsModified())
+            m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::ResetToStoredValues));
+         if (m_saveMode != SaveMode::None && IsModified())
+            m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::SaveChanges));
+      }
+      if (!m_player->m_isLoading || IsBackAllowedWhileLoading())
+         m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::Back));
    }
-   if (!m_player->m_isLoading || IsBackAllowedWhileLoading())
-      m_items.push_back(std::make_unique<InGameUIItem>(InGameUIItem::Type::Back));
 
    // As we may have changed the number of selectable items, ensure m_selectedItem is still valid and pointing to a selectable item
    if (!HasSelectableItem())
