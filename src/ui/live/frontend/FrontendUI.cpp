@@ -403,14 +403,18 @@ void FrontendUI::Rescan()
             working.LoadAllDetails(); // Entries are already loaded: this only restores title ordering
             const TableCatalog::TextureCacheCleanupResult cleanup = TableCatalog::CleanupTextureCaches(roots, working.GetEntries(), discardStaleCache, textureCacheLimit, &cacheFolders);
             if (cleanup.staleRemoved != 0 || cleanup.overflowRemoved != 0 || cleanup.failedRemovals != 0)
+	    {
                PLOGI << "Frontend texture cache cleanup removed " << cleanup.staleRemoved << " stale and " << cleanup.overflowRemoved << " overflowing table caches ("
                      << cleanup.failedRemovals << " failures)";
+	    }
             // Do not rewrite an unchanged cache: besides being wasted IO for large libraries, a
             // broadly configured watch root could otherwise keep triggering scans recursively.
             std::error_code cacheEc;
             const bool cacheExists = std::filesystem::is_regular_file(cachePath, cacheEc);
             if ((working.GetEntries() != scan->initial.GetEntries() || !cacheExists) && !working.SaveCacheFile(cachePath, roots))
+	    {
                PLOGW << "Failed to write the frontend table catalog cache";
+	    }
          }
          catch (const CatalogScanAborted &)
          {
