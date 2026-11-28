@@ -254,20 +254,26 @@ TEST_CASE("TableCatalog")
       CHECK(reloaded.info.title == "Congo (Williams 1995)"s);
    }
 
-   SUBCASE("path scanning reports incremental entry counts")
+   SUBCASE("path scanning reports incremental entry counts and cache folders")
    {
+      writeFile(root / "nested"sv / "cache"sv / "Congo"sv / "used_textures.xml"s, "<textures/>"s);
       TableCatalog pathCatalog;
+      vector<std::filesystem::path> cacheFolders;
       size_t callbacks = 0;
       size_t lastCount = 0;
-      pathCatalog.ScanPaths({ root },
+      pathCatalog.ScanPaths(
+         { root },
          [&](const size_t count)
          {
             ++callbacks;
             CHECK(count >= lastCount);
             lastCount = count;
-         });
+         },
+         &cacheFolders);
       CHECK(callbacks > 0);
       CHECK(lastCount == pathCatalog.GetEntries().size());
+      REQUIRE(cacheFolders.size() == 1);
+      CHECK(cacheFolders[0] == root / "nested"sv / "cache"sv);
    }
 
    SUBCASE("catalog cache round-trips scan details and rejects different roots")

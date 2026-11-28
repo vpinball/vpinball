@@ -339,6 +339,7 @@ void FrontendUI::Rescan()
          try
          {
             TableCatalog scanned;
+            vector<std::filesystem::path> cacheFolders;
             vector<TableCatalog::Entry> batch;
             size_t published = 0;
             auto lastPublish = std::chrono::steady_clock::now();
@@ -352,7 +353,8 @@ void FrontendUI::Rescan()
                   lastPublish = now;
                }
             };
-            scanned.ScanPaths(roots,
+            scanned.ScanPaths(
+               roots,
                [&](const size_t count)
                {
                   if (scan->abandoned.load(std::memory_order_acquire))
@@ -364,7 +366,8 @@ void FrontendUI::Rescan()
                      published = count;
                   }
                   flushBatch(false);
-               });
+               },
+               &cacheFolders);
             flushBatch(true);
 
             // The complete path pass is the only point where entries missing from the filesystem
@@ -398,7 +401,7 @@ void FrontendUI::Rescan()
             }
             flushDetails(true);
             working.LoadAllDetails(); // Entries are already loaded: this only restores title ordering
-            const TableCatalog::TextureCacheCleanupResult cleanup = TableCatalog::CleanupTextureCaches(roots, working.GetEntries(), discardStaleCache, textureCacheLimit);
+            const TableCatalog::TextureCacheCleanupResult cleanup = TableCatalog::CleanupTextureCaches(roots, working.GetEntries(), discardStaleCache, textureCacheLimit, &cacheFolders);
             if (cleanup.staleRemoved != 0 || cleanup.overflowRemoved != 0 || cleanup.failedRemovals != 0)
                PLOGI << "Frontend texture cache cleanup removed " << cleanup.staleRemoved << " stale and " << cleanup.overflowRemoved << " overflowing table caches ("
                      << cleanup.failedRemovals << " failures)";
