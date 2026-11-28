@@ -107,6 +107,7 @@ private:
    std::function<bool()> m_hangWatchGate; // Assigned before the watchdog thread starts, cleared after it joins
    std::thread m_hangWatchThread;
    std::atomic<bool> m_hangWatchStop { false };
+   std::atomic<bool> m_hangInterrupted { false }; // The watchdog interrupted the script: the engine is to be resumed before the next script call
    std::atomic<int> m_scriptCallDepth { 0 };
    std::atomic<uint64_t> m_scriptEnterUsec { 0 };
    std::atomic<int> m_scriptModalCount { 0 };
