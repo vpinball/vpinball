@@ -33,6 +33,7 @@
 #define ICON_LC_FILTER "\xee\x83\x9c" // U+E0DC
 #define ICON_LC_FOLDER "\xee\x83\x97" // U+E0D7
 #define ICON_LC_FOLDER_OPEN "\xee\x89\x87" // U+E247
+#define ICON_LC_GALLERY_HORIZONTAL_END "\xee\x93\x8f" // U+E4CF
 #define ICON_LC_GAMEPAD_2 "\xee\x83\x9f" // U+E0DF
 #define ICON_LC_GLOBE "\xee\x83\xa8" // U+E0E8
 #define ICON_LC_HEART "\xee\x83\xb2" // U+E0F2

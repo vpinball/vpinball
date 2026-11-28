@@ -1162,7 +1162,18 @@ void Player::LoadUsedTextures()
 
 void Player::SaveUsedTextures()
 {
-   if ((m_ptable->GetSettings().GetPlayer_CacheMode() <= 0) || !m_ptable->IsOnDisk())
+   if (!m_ptable->IsOnDisk())
+      return;
+
+   const bool usesTextureCache = m_ptable->GetSettings().GetPlayer_CacheMode() > 0 || m_renderer->m_renderDevice->m_compressTextures;
+   const std::filesystem::path cacheDir = usesTextureCache ? g_app->m_fileLocator.GetTablePath(m_ptable, FileLocator::TableSubFolder::Cache, true) : std::filesystem::path();
+   if (!cacheDir.empty())
+   {
+      const auto now = std::chrono::system_clock::now().time_since_epoch();
+      std::ofstream(cacheDir / "last_played"sv) << std::chrono::duration_cast<std::chrono::seconds>(now).count();
+   }
+
+   if (m_ptable->GetSettings().GetPlayer_CacheMode() <= 0)
       return;
 
    // Age all entries, renew the ones drawn by the player, and drop the ones not drawn for 100 saves

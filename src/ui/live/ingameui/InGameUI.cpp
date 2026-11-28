@@ -11,9 +11,9 @@
 #include "DisplaySettingsPage.h"
 #include "FrontendHomePage.h"
 #include "FrontendMediaManagerPage.h"
+#include "FrontendSettingsPage.h"
 #include "FrontendTableInfoPage.h"
 #include "FrontendTablePage.h"
-#include "FrontendThemesPage.h"
 #include "GraphicSettingsPage.h"
 #include "HomePage.h"
 #include "InGameUIDesktopRenderer.h"
@@ -47,7 +47,7 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("frontend/table"s, []() { return std::make_unique<FrontendTablePage>(); });
    AddPage("table/info"s, []() { return std::make_unique<FrontendTableInfoPage>(); });
    AddPage("table/media"s, []() { return std::make_unique<FrontendMediaManagerPage>(); });
-   AddPage("settings/themes"s, []() { return std::make_unique<FrontendThemesPage>(); });
+   AddPage("settings/frontend"s, []() { return std::make_unique<FrontendSettingsPage>(); });
    AddPage("homepage"s, []() { return std::make_unique<HomePage>(); });
    AddPage("progress/loading"s, []() { return std::make_unique<LoadingPage>("LOADING"s); });
    AddPage("progress/preparing"s, []() { return std::make_unique<LoadingPage>("PREPARING"s); });

@@ -137,6 +137,17 @@ public:
    // Whether the entry's table file/pack still exists (the catalog itself may be a stale snapshot).
    static bool TableExists(const Entry& entry);
 
+   struct TextureCacheCleanupResult
+   {
+      size_t staleRemoved = 0;
+      size_t overflowRemoved = 0;
+      size_t failedRemovals = 0;
+   };
+
+   // Maintains the per-table cache folders below the scanned roots. maxRecentTables is negative
+   // for unlimited, or the number of most recently used tables whose cache folders are kept.
+   static TextureCacheCleanupResult CleanupTextureCaches(const vector<std::filesystem::path>& roots, const vector<Entry>& entries, bool discardStale, int maxRecentTables);
+
    // A table file is either a '.vpx' file or a VPZ pack ('.vpz' archive file, or
    // a folder holding a 'manifest.json' file), detected by name only.
    static bool IsTablePath(const std::filesystem::path& path, bool* isPack = nullptr);

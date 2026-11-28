@@ -51,7 +51,7 @@ void FrontendHomePage::BuildPage()
 
    AddItem(std::make_unique<InGameUIItem>("Logging Settings"s, ""s, "settings/logging"s));
 
-   AddItem(std::make_unique<InGameUIItem>("Frontend Themes"s, ""s, "settings/themes"s));
+   AddItem(std::make_unique<InGameUIItem>("Frontend Settings"s, ""s, "settings/frontend"s));
 
    if (m_player->m_liveUI->m_inGameUI.UsesDesktopRenderer() && !m_player->IsVR())
       AddItem(std::make_unique<InGameUIItem>("Startup Wizard"s, "Configure this machine for Visual Pinball"s, "settings/startup_wizard"s));

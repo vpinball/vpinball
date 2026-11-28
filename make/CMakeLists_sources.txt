@@ -453,12 +453,12 @@ set(VPX_SOURCES
    src/ui/live/ingameui/FrontendHomePage.cpp
    src/ui/live/ingameui/FrontendMediaManagerPage.h
    src/ui/live/ingameui/FrontendMediaManagerPage.cpp
+   src/ui/live/ingameui/FrontendSettingsPage.h
+   src/ui/live/ingameui/FrontendSettingsPage.cpp
    src/ui/live/ingameui/FrontendTableInfoPage.h
    src/ui/live/ingameui/FrontendTableInfoPage.cpp
    src/ui/live/ingameui/FrontendTablePage.h
    src/ui/live/ingameui/FrontendTablePage.cpp
-   src/ui/live/ingameui/FrontendThemesPage.h
-   src/ui/live/ingameui/FrontendThemesPage.cpp
    src/ui/live/ingameui/GraphicSettingsPage.h
    src/ui/live/ingameui/GraphicSettingsPage.cpp
    src/ui/live/ingameui/HomePage.h

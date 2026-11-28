@@ -347,4 +347,49 @@ TEST_CASE("TableCatalog")
       stale.tablePath = root / "missing.vpx"s;
       CHECK(!TableCatalog::TableExists(stale));
    }
+
+   SUBCASE("stale texture cache folders are removed only when enabled")
+   {
+      const std::filesystem::path valid = folderA / "cache"sv / "Attack From Mars v1.0"sv;
+      const std::filesystem::path stale = folderA / "cache"sv / "Renamed Table"sv;
+      writeFile(valid / "textures"sv / "texture.bin"s, "valid"s);
+      writeFile(stale / "textures"sv / "texture.bin"s, "stale"s);
+
+      TableCatalog::TextureCacheCleanupResult kept = TableCatalog::CleanupTextureCaches({ root }, entries, false, -1);
+      CHECK(kept.staleRemoved == 0);
+      CHECK(std::filesystem::exists(stale));
+
+      const TableCatalog::TextureCacheCleanupResult cleaned = TableCatalog::CleanupTextureCaches({ root }, entries, true, -1);
+      CHECK(cleaned.staleRemoved == 1);
+      CHECK(cleaned.failedRemovals == 0);
+      CHECK(std::filesystem::exists(valid));
+      CHECK(!std::filesystem::exists(stale));
+   }
+
+   SUBCASE("texture cache limit keeps the most recently used tables")
+   {
+      const std::filesystem::path afm = folderA / "cache"sv / "Attack From Mars v1.0"sv;
+      const std::filesystem::path mm = root / "cache"sv / "Medieval Madness"sv;
+      const std::filesystem::path taf = root / "cache"sv / "The Addams Family"sv;
+      writeFile(afm / "last_played"s, "1"s);
+      writeFile(mm / "last_played"s, "2"s);
+      writeFile(taf / "last_played"s, "3"s);
+      const auto base = std::filesystem::file_time_type::clock::now();
+      std::error_code ec;
+      std::filesystem::last_write_time(afm / "last_played"s, base + std::chrono::seconds(1), ec);
+      std::filesystem::last_write_time(mm / "last_played"s, base + std::chrono::seconds(2), ec);
+      std::filesystem::last_write_time(taf / "last_played"s, base + std::chrono::seconds(3), ec);
+
+      const TableCatalog::TextureCacheCleanupResult result = TableCatalog::CleanupTextureCaches({ root }, entries, true, 2);
+      CHECK(result.overflowRemoved == 1);
+      CHECK(result.failedRemovals == 0);
+      CHECK(!std::filesystem::exists(afm));
+      CHECK(std::filesystem::exists(mm));
+      CHECK(std::filesystem::exists(taf));
+
+      const TableCatalog::TextureCacheCleanupResult none = TableCatalog::CleanupTextureCaches({ root }, entries, true, 0);
+      CHECK(none.overflowRemoved == 2);
+      CHECK(!std::filesystem::exists(mm));
+      CHECK(!std::filesystem::exists(taf));
+   }
 }
