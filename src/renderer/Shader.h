@@ -490,6 +490,10 @@ private:
    bool m_hasError = false; // True if loading the shader failed
    unsigned int m_stateSize = 0; // Overall size of a shader state data block
    int m_stateOffsets[static_cast<unsigned int>(ShaderUniform::COUNT)]; // Position of each uniform inside the state data block
+#if defined(ENABLE_BGFX)
+   int m_uniformRevisionSlots[static_cast<unsigned int>(ShaderUniform::COUNT)]; // Compact revision slot of each cacheable uniform (-1 when unused/not cacheable)
+   unsigned int m_uniformRevisionCount = 0;
+#endif
 
    void Load();
    void ApplyUniform(const ShaderUniform uniformName);
@@ -512,7 +516,7 @@ private:
    class ShaderState* m_boundState[static_cast<unsigned int>(ShaderTechnique::COUNT)]; // The state currently applied to the backend (per program, so per technique)
    bgfx::ProgramHandle m_techniques[static_cast<unsigned int>(ShaderTechnique::COUNT)];
    bgfx::ProgramHandle m_clipPlaneTechniques[static_cast<unsigned int>(ShaderTechnique::COUNT)];
-   bgfx::UniformHandle m_uniformHandles[static_cast<unsigned int>(ShaderTechnique::COUNT)];
+   bgfx::UniformHandle m_uniformHandles[static_cast<unsigned int>(ShaderUniform::COUNT)];
 
    void loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTechnique tech, const char* vsName, const char* fsName, const bool isClipVariant = false);
 
@@ -583,30 +587,12 @@ public:
    ShaderState(Shader* shader, bool isLowPrecision)
       : m_state(shader->m_stateSize)
       , m_shader(shader)
-      , m_ownStateOffset(false)
       , m_stateOffsets(shader->m_stateOffsets)
       , m_useLowPrecision(isLowPrecision)
+#if defined(ENABLE_BGFX)
+      , m_uniformRevisions(shader->m_uniformRevisionCount, 0)
+#endif
    {
-   }
-
-   // Constructor for a state holding all shader uniform state
-   ShaderState(bool isLowPrecision)
-      : m_shader(nullptr)
-      , m_ownStateOffset(true)
-      , m_useLowPrecision(isLowPrecision)
-   {
-      m_stateOffsets = new int[static_cast<unsigned int>(ShaderUniform::COUNT)];
-      m_stateOffsets[0] = 0;
-      for (int i = 0; i < static_cast<unsigned int>(ShaderUniform::COUNT) - 1; ++i)
-         m_stateOffsets[i + 1] = m_stateOffsets[i] + ShaderUniformDef::coreUniforms[i].stateSize;
-      int size = m_stateOffsets[static_cast<unsigned int>(ShaderUniform::COUNT) - 1] + ShaderUniformDef::coreUniforms[static_cast<unsigned int>(ShaderUniform::COUNT) - 1].stateSize;
-      m_state.resize(size);
-   }
-
-   ~ShaderState()
-   {
-      if (m_ownStateOffset)
-         delete[] m_stateOffsets;
    }
 
    void SetShader(Shader* shader)
@@ -615,18 +601,18 @@ public:
       m_state.resize(shader->m_stateSize);
       m_stateOffsets = shader->m_stateOffsets;
       m_samplers.clear();
+#if defined(ENABLE_BGFX)
+      m_uniformRevisions.assign(shader->m_uniformRevisionCount, 0);
+#endif
    }
 
    void Clear()
    {
       memset(m_state.data(), 0, m_state.size());
       m_samplers.clear();
-   }
-
-   uint8_t* GetUniformStatePtr(const ShaderUniform uniformName)
-   {
-      assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
-      return m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)];
+#if defined(ENABLE_BGFX)
+      std::fill(m_uniformRevisions.begin(), m_uniformRevisions.end(), 0);
+#endif
    }
 
    void CopyTo(const bool copyTo, ShaderState* const other)
@@ -637,14 +623,28 @@ public:
          other->m_state = m_state;
          other->m_samplers = m_samplers;
          other->m_technique = m_technique;
+#if defined(ENABLE_BGFX)
+         other->m_uniformRevisions = m_uniformRevisions;
+#endif
       }
       else
       {
          m_state = other->m_state;
          m_samplers = other->m_samplers;
          m_technique = other->m_technique;
+#if defined(ENABLE_BGFX)
+         m_uniformRevisions = other->m_uniformRevisions;
+#endif
       }
    }
+
+#if defined(ENABLE_BGFX)
+   uint64_t GetUniformRevision(const ShaderUniform uniformName) const
+   {
+      const int slot = m_shader->m_uniformRevisionSlots[static_cast<unsigned int>(uniformName)];
+      return slot < 0 ? 0 : m_uniformRevisions[slot];
+   }
+#endif
 
    void SetBool(const ShaderUniform uniformName, const bool b)
    {
@@ -653,7 +653,16 @@ public:
       assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
       assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Bool);
       assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].count == 1);
-      *(bool*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) = b;
+      bool* const dst = (bool*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]);
+#if defined(ENABLE_BGFX)
+      if (*dst != b)
+      {
+         *dst = b;
+         TouchUniformRevision(uniformName);
+      }
+#else
+      *dst = b;
+#endif
    }
 
    void SetInt(const ShaderUniform uniformName, const int i)
@@ -665,7 +674,16 @@ public:
       assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
       assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Int);
       assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].count == 1);
-      *(int*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) = i;
+      int* const dst = (int*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]);
+#if defined(ENABLE_BGFX)
+      if (*dst != i)
+      {
+         *dst = i;
+         TouchUniformRevision(uniformName);
+      }
+#else
+      *dst = i;
+#endif
    }
 
    void SetFloat(const ShaderUniform uniformName, const float f)
@@ -675,10 +693,17 @@ public:
       assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
       assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float);
       assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].count == 1);
-      if (m_useLowPrecision)
-         *(float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) = (f > 0 && f < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (f < 0 && f > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : f;
-      else
-         *(float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) = f;
+      const float v = m_useLowPrecision ? ClampLowPrecision(f) : f;
+      float* const dst = (float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]);
+#if defined(ENABLE_BGFX)
+      if (*dst != v)
+      {
+         *dst = v;
+         TouchUniformRevision(uniformName);
+      }
+#else
+      *dst = v;
+#endif
    }
 
    float GetFloat(const ShaderUniform uniformName) const
@@ -703,47 +728,50 @@ public:
       const int n = ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float2 ? 2
          : ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float3          ? 3
                                                                                                            : 4;
+      float* const dst = (float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]);
       if (m_useLowPrecision)
       {
+         bool changed = false;
          for (unsigned int i = 0; i < count; i++)
          {
             const vec4* const p = pData + i;
-            vec4* const s = (vec4*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) + i;
-            if (p->x > 0 && p->x < FLT_MIN_VALUE)
-               s->x = FLT_MIN_VALUE;
-            else if (p->x < 0 && p->x > -FLT_MIN_VALUE)
-               s->x = -FLT_MIN_VALUE;
-            else
-               s->x = p->x;
-            if (p->y > 0 && p->y < FLT_MIN_VALUE)
-               s->y = FLT_MIN_VALUE;
-            else if (p->y < 0 && p->y > -FLT_MIN_VALUE)
-               s->y = -FLT_MIN_VALUE;
-            else
-               s->y = p->y;
+            float* const s = dst + i * n;
+            const float x = ClampLowPrecision(p->x);
+            const float y = ClampLowPrecision(p->y);
+            changed |= s[0] != x;
+            changed |= s[1] != y;
+            s[0] = x;
+            s[1] = y;
             if (n > 2)
             {
-               if (p->z > 0 && p->z < FLT_MIN_VALUE)
-                  s->z = FLT_MIN_VALUE;
-               else if (p->z < 0 && p->z > -FLT_MIN_VALUE)
-                  s->z = -FLT_MIN_VALUE;
-               else
-                  s->z = p->z;
+               const float z = ClampLowPrecision(p->z);
+               changed |= s[2] != z;
+               s[2] = z;
             }
             if (n > 3)
             {
-               if (p->w > 0 && p->w < FLT_MIN_VALUE)
-                  s->w = FLT_MIN_VALUE;
-               else if (p->w < 0 && p->w > -FLT_MIN_VALUE)
-                  s->w = -FLT_MIN_VALUE;
-               else
-                  s->w = p->w;
+               const float w = ClampLowPrecision(p->w);
+               changed |= s[3] != w;
+               s[3] = w;
             }
          }
+#if defined(ENABLE_BGFX)
+         if (changed)
+            TouchUniformRevision(uniformName);
+#endif
       }
       else
       {
-         memcpy(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)], pData, count * n * sizeof(float));
+#if defined(ENABLE_BGFX)
+         const size_t byteCount = count * n * sizeof(float);
+         if (memcmp(dst, pData, byteCount) != 0)
+         {
+            memcpy(dst, pData, byteCount);
+            TouchUniformRevision(uniformName);
+         }
+#else
+         memcpy(dst, pData, count * n * sizeof(float));
+#endif
       }
    }
 
@@ -774,23 +802,33 @@ public:
          || ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float4x3
          || ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::Float4x4);
       assert(count == ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].count);
+      float* const dst = (float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]);
       if (m_useLowPrecision)
       {
+         bool changed = false;
          for (unsigned int i = 0; i < count * 16; i++)
          {
-            const float* const p = pMatrix + i;
-            float* const s = (float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) + i;
-            if (*p > 0 && *p < FLT_MIN_VALUE)
-               *s = FLT_MIN_VALUE;
-            else if (*p < 0 && *p > -FLT_MIN_VALUE)
-               *s = -FLT_MIN_VALUE;
-            else
-               *s = *p;
+            const float v = ClampLowPrecision(pMatrix[i]);
+            changed |= dst[i] != v;
+            dst[i] = v;
          }
+#if defined(ENABLE_BGFX)
+         if (changed)
+            TouchUniformRevision(uniformName);
+#endif
       }
       else
       {
-         memcpy(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)], pMatrix, count * 16 * sizeof(float));
+#if defined(ENABLE_BGFX)
+         const size_t byteCount = count * 16 * sizeof(float);
+         if (memcmp(dst, pMatrix, byteCount) != 0)
+         {
+            memcpy(dst, pMatrix, byteCount);
+            TouchUniformRevision(uniformName);
+         }
+#else
+         memcpy(dst, pMatrix, count * 16 * sizeof(float));
+#endif
       }
    }
 
@@ -811,23 +849,33 @@ public:
       assert(static_cast<unsigned int>(uniformName) < static_cast<unsigned int>(ShaderUniform::COUNT));
       assert(m_stateOffsets[static_cast<unsigned int>(uniformName)] != -1);
       assert(ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::DataBlock);
+      const unsigned int stateSize = ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].stateSize;
+      float* const dst = (float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]);
       if (m_useLowPrecision)
       {
-         for (unsigned int i = 0; i < ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].stateSize / sizeof(float); i++)
+         bool changed = false;
+         for (unsigned int i = 0; i < stateSize / sizeof(float); i++)
          {
-            const float* const p = pMatrix + i;
-            float* const s = (float*)(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)]) + i;
-            if (*p > 0 && *p < FLT_MIN_VALUE)
-               *s = FLT_MIN_VALUE;
-            else if (*p < 0 && *p > -FLT_MIN_VALUE)
-               *s = -FLT_MIN_VALUE;
-            else
-               *s = *p;
+            const float v = ClampLowPrecision(pMatrix[i]);
+            changed |= dst[i] != v;
+            dst[i] = v;
          }
+#if defined(ENABLE_BGFX)
+         if (changed)
+            TouchUniformRevision(uniformName);
+#endif
       }
       else
       {
-         memcpy(m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)], pMatrix, ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].stateSize);
+#if defined(ENABLE_BGFX)
+         if (memcmp(dst, pMatrix, stateSize) != 0)
+         {
+            memcpy(dst, pMatrix, stateSize);
+            TouchUniformRevision(uniformName);
+         }
+#else
+         memcpy(dst, pMatrix, stateSize);
+#endif
       }
    }
 
@@ -947,7 +995,20 @@ public:
 
 private:
    Shader* m_shader;
-   const bool m_ownStateOffset;
-   int* m_stateOffsets; // Position of each uniform inside the state data block
+   const int* m_stateOffsets; // Position of each uniform inside the state data block
    const bool m_useLowPrecision;
+#if defined(ENABLE_BGFX)
+   vector<uint64_t> m_uniformRevisions;
+
+   static uint64_t NextUniformRevision();
+   static float ClampLowPrecision(const float v) { return (v > 0 && v < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (v < 0 && v > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : v; }
+   void TouchUniformRevision(const ShaderUniform uniformName)
+   {
+      const int slot = m_shader->m_uniformRevisionSlots[static_cast<unsigned int>(uniformName)];
+      if (slot >= 0)
+         m_uniformRevisions[slot] = NextUniformRevision();
+   }
+#else
+   static float ClampLowPrecision(const float v) { return (v > 0 && v < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (v < 0 && v > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : v; }
+#endif
 };

@@ -13,6 +13,8 @@
 #include <plog/Log.h>
 #include <plog/Initializers/RollingFileInitializer.h>
 
+#include <atomic>
+
 #if defined(ENABLE_BGFX)
 #if defined(__STANDALONE__) && !defined(_MSC_VER) // wine's headers (non MSVC standalone builds) define _WIN64 on any 64 bit target
 #pragma push_macro("_WIN64")
@@ -445,6 +447,14 @@ ShaderAttribute Shader::getAttributeByName(const string& name) const
 
 bool ShaderState::m_disableMipmaps = false;
 
+#if defined(ENABLE_BGFX)
+uint64_t ShaderState::NextUniformRevision()
+{
+   static std::atomic<uint64_t> counter { 1 };
+   return counter.fetch_add(1, std::memory_order_relaxed);
+}
+#endif
+
 Shader* Shader::current_shader = nullptr;
 Shader* Shader::GetCurrentShader() { return current_shader;  }
 
@@ -507,62 +517,73 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
          }
          m_uniformHandles[i] = bgfx::createUniform(u.name.c_str(), type, n);
       }
+      m_renderDevice->InvalidateUniformCache();
 
-   #elif defined(ENABLE_OPENGL)
-      memset(m_techniques, 0, sizeof(ShaderTechnique*) * static_cast<unsigned int>(ShaderTechnique::COUNT));
+#elif defined(ENABLE_OPENGL)
+   memset(m_techniques, 0, sizeof(ShaderTechnique*) * static_cast<unsigned int>(ShaderTechnique::COUNT));
 
-   #elif defined(ENABLE_DX9)
-      memset(m_boundTexture, 0, sizeof(IDirect3DTexture9*) * TEXTURESET_STATE_CACHE_SIZE);
-   
-   #endif
+#elif defined(ENABLE_DX9)
+   memset(m_boundTexture, 0, sizeof(IDirect3DTexture9*) * TEXTURESET_STATE_CACHE_SIZE);
 
-   Load();
-   #ifdef __STANDALONE__
-   if (HasError())
-      exit(-1);
-   #endif
+#endif
 
-   // Evaluate state size for this shader, 16 byte slots first, then 4 byte ones, then bools, so each slot is naturally aligned
-   memset(m_stateOffsets, -1, sizeof(m_stateOffsets));
-   for (const unsigned int alignment : { 16u, 4u, 1u })
-      for (int i = 0; i < static_cast<unsigned int>(ShaderTechnique::COUNT); i++)
-         for (ShaderUniform uniform : m_uniforms[i])
-            if (m_stateOffsets[static_cast<unsigned int>(uniform)] == -1 && (ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniform)].stateSize % alignment) == 0)
-            {
-               m_stateOffsets[static_cast<unsigned int>(uniform)] = m_stateSize;
-               m_stateSize += ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniform)].stateSize;
-            }
-   m_state = new ShaderState(this, m_renderDevice->UseLowPrecision());
-   m_state->Clear();
+      Load();
+#ifdef __STANDALONE__
+      if (HasError())
+         exit(-1);
+#endif
 
-   #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
-   for (int i = 0; i < static_cast<unsigned int>(ShaderTechnique::COUNT); i++)
-      #if defined(ENABLE_BGFX)
-      if (bgfx::isValid(m_techniques[i]))
-      #else
-      if (m_techniques[i])
-      #endif
+      // Evaluate state size for this shader, 16 byte slots first, then 4 byte ones, then bools, so each slot is naturally aligned
+      memset(m_stateOffsets, -1, sizeof(m_stateOffsets));
+      for (const unsigned int alignment : { 16u, 4u, 1u })
+         for (int i = 0; i < static_cast<unsigned int>(ShaderTechnique::COUNT); i++)
+            for (ShaderUniform uniform : m_uniforms[i])
+               if (m_stateOffsets[static_cast<unsigned int>(uniform)] == -1 && (ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniform)].stateSize % alignment) == 0)
+               {
+                  m_stateOffsets[static_cast<unsigned int>(uniform)] = m_stateSize;
+                  m_stateSize += ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniform)].stateSize;
+               }
+#if defined(ENABLE_BGFX)
+      std::fill(std::begin(m_uniformRevisionSlots), std::end(m_uniformRevisionSlots), -1);
+      for (int i = 0; i < static_cast<unsigned int>(ShaderUniform::COUNT); i++)
       {
-         m_boundState[i] = new ShaderState(this, m_renderDevice->UseLowPrecision());
-         m_boundState[i]->Clear();
-         for (ShaderUniform uniform : m_uniforms[i])
+         const ShaderUniformType type = ShaderUniformDef::coreUniforms[i].type;
+         if (m_stateOffsets[i] != -1 && type != ShaderUniformType::Sampler && type != ShaderUniformType::DataBlock)
+            m_uniformRevisionSlots[i] = static_cast<int>(m_uniformRevisionCount++);
+      }
+#endif
+
+      m_state = new ShaderState(this, m_renderDevice->UseLowPrecision());
+      m_state->Clear();
+
+#if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
+      for (int i = 0; i < static_cast<unsigned int>(ShaderTechnique::COUNT); i++)
+#if defined(ENABLE_BGFX)
+         if (bgfx::isValid(m_techniques[i]))
+#else
+         if (m_techniques[i])
+#endif
          {
-            if (ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniform)].type == ShaderUniformType::Sampler)
+            m_boundState[i] = new ShaderState(this, m_renderDevice->UseLowPrecision());
+            m_boundState[i]->Clear();
+            for (ShaderUniform uniform : m_uniforms[i])
             {
-               m_boundState[i]->SetTexture(uniform, m_renderDevice->m_nullTexture);
-               m_state->SetTexture(uniform, m_renderDevice->m_nullTexture);
+               if (ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniform)].type == ShaderUniformType::Sampler)
+               {
+                  m_boundState[i]->SetTexture(uniform, m_renderDevice->m_nullTexture);
+                  m_state->SetTexture(uniform, m_renderDevice->m_nullTexture);
+               }
             }
          }
-      }
-      else
-         m_boundState[i] = nullptr;
-   // Set default values from Material.fxh for uniforms.
-   if (m_stateOffsets[static_cast<unsigned int>(ShaderUniform::cBase_Alpha)] != -1)
-      SetVector(ShaderUniform::cBase_Alpha, 0.5f, 0.5f, 0.5f, 1.0f);
-   if (m_stateOffsets[static_cast<unsigned int>(ShaderUniform::Roughness_WrapL_Edge_Thickness)] != -1)
-      SetVector(ShaderUniform::Roughness_WrapL_Edge_Thickness, 4.0f, 0.5f, 1.0f, 0.05f);
+         else
+            m_boundState[i] = nullptr;
+      // Set default values from Material.fxh for uniforms.
+      if (m_stateOffsets[static_cast<unsigned int>(ShaderUniform::cBase_Alpha)] != -1)
+         SetVector(ShaderUniform::cBase_Alpha, 0.5f, 0.5f, 0.5f, 1.0f);
+      if (m_stateOffsets[static_cast<unsigned int>(ShaderUniform::Roughness_WrapL_Edge_Thickness)] != -1)
+         SetVector(ShaderUniform::Roughness_WrapL_Edge_Thickness, 4.0f, 0.5f, 1.0f, 0.05f);
 
-   #elif defined(ENABLE_DX9)
+#elif defined(ENABLE_DX9)
    m_boundState = new ShaderState(this, m_renderDevice->UseLowPrecision());
    m_boundState->Clear();
    for (ShaderUniform uniform : m_uniforms[0])
@@ -574,7 +595,7 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
       }
    }
 
-   #endif
+#endif
 }
 
 Shader::~Shader()
@@ -597,23 +618,24 @@ Shader::~Shader()
          if (bgfx::isValid(m_uniformHandles[i]))
             bgfx::destroy(m_uniformHandles[i]);
       }
+      m_renderDevice->InvalidateUniformCache();
 
-   #elif defined(ENABLE_OPENGL)
-      for (int j = 0; j < static_cast<unsigned int>(ShaderTechnique::COUNT); ++j)
+#elif defined(ENABLE_OPENGL)
+   for (int j = 0; j < static_cast<unsigned int>(ShaderTechnique::COUNT); ++j)
+   {
+      if (m_techniques[j] != nullptr)
       {
-         if (m_techniques[j] != nullptr)
-         {
-            glDeleteProgram(m_techniques[j]->program);
-            delete m_techniques[j];
-            delete m_boundState[j];
-         }
+         glDeleteProgram(m_techniques[j]->program);
+         delete m_techniques[j];
+         delete m_boundState[j];
       }
+   }
 
-   #elif defined(ENABLE_DX9)
-      delete m_boundState;
-      SAFE_RELEASE(m_shader);
+#elif defined(ENABLE_DX9)
+   delete m_boundState;
+   SAFE_RELEASE(m_shader);
 
-   #endif
+#endif
 }
 
 void Shader::Begin()
@@ -976,22 +998,34 @@ void Shader::ApplyUniform(const ShaderUniform uniformName)
    #endif
 
    const uint8_t* const src = m_state->m_state.data() + m_stateOffsets[static_cast<unsigned int>(uniformName)];
-   #if !defined(ENABLE_BGFX)
+#if defined(ENABLE_BGFX)
+   const ShaderUniformType uniformType = ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type;
+   const bool cacheableUniform = uniformType != ShaderUniformType::Sampler && uniformType != ShaderUniformType::DataBlock;
+   const size_t uniformStateSize = ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].stateSize;
+   uint64_t uniformRevision = 0;
+   if (cacheableUniform)
+   {
+      uniformRevision = m_state->GetUniformRevision(uniformName);
+      if (m_renderDevice->TrySkipUniformUpload(desc, uniformRevision, src, uniformStateSize))
+         return;
+   }
+#endif
+#if !defined(ENABLE_BGFX)
    if ((ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type != ShaderUniformType::Sampler)
       && memcmp(dst, src, ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].stateSize) == 0)
    {
-      #if defined(ENABLE_OPENGL)
+#if defined(ENABLE_OPENGL)
       if (ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type == ShaderUniformType::DataBlock)
       {
          glUniformBlockBinding(m_techniques[static_cast<unsigned int>(m_state->m_technique)]->program, desc.location, 0);
          glBindBufferRange(GL_UNIFORM_BUFFER, 0, desc.blockBuffer, 0, ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].stateSize);
          return;
       }
-      #elif defined(ENABLE_DX9)
+#elif defined(ENABLE_DX9)
       return;
-      #endif
+#endif
    }
-   #endif
+#endif
    m_renderDevice->m_curParameterChanges++;
 
    switch (ShaderUniformDef::coreUniforms[static_cast<unsigned int>(uniformName)].type)
@@ -1268,6 +1302,11 @@ void Shader::ApplyUniform(const ShaderUniform uniformName)
       break;
    default: assert(false);
    }
+
+#if defined(ENABLE_BGFX)
+   if (cacheableUniform)
+      m_renderDevice->CommitUniformUpload(desc, uniformRevision, src, uniformStateSize);
+#endif
 }
 
 #if defined(ENABLE_BGFX)

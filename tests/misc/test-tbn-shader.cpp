@@ -67,6 +67,21 @@ void CheckCallSites(const std::string& name, const std::string& src, const char*
       ++pos;
    }
 }
+
+bool ContainsIdentifier(const std::string& src, const std::string& identifier)
+{
+   size_t pos = 0;
+   while ((pos = src.find(identifier, pos)) != std::string::npos)
+   {
+      const bool left = pos == 0 || !(isalnum(static_cast<unsigned char>(src[pos - 1])) || src[pos - 1] == '_');
+      const size_t end = pos + identifier.size();
+      const bool right = end == src.size() || !(isalnum(static_cast<unsigned char>(src[end])) || src[end] == '_');
+      if (left && right)
+         return true;
+      pos = end;
+   }
+   return false;
+}
 }
 
 TEST_CASE("TBN shader contract")
@@ -146,5 +161,23 @@ TEST_CASE("TBN shader contract")
    {
       for (const auto& [name, src] : sources)
          CheckCallSites(name, src, "TBN_trafo(N,");
+   }
+
+   SUBCASE("BGFX shaders do not consume predefined uniforms")
+   {
+      // The draw uniform cache relies on renderer-global user uniform memory. BGFX predefined uniforms are managed
+      // per program/view/model instead, so using them as regular uniforms would bypass that invariant.
+      static constexpr const char* predefined[] = { "u_viewRect", "u_viewTexel", "u_view", "u_invView", "u_proj", "u_invProj", "u_viewProj", "u_invViewProj", "u_model", "u_modelView",
+         "u_invModelView", "u_modelViewProj", "u_alphaRef4", "u_alphaRef" };
+      for (const auto& [name, src] : sources)
+      {
+         if (name.size() < 3 || name.compare(name.size() - 3, 3, ".sc") != 0)
+            continue;
+         for (const char* uniform : predefined)
+         {
+            INFO(name, " must not use ", uniform);
+            CHECK(!ContainsIdentifier(src, uniform));
+         }
+      }
    }
 }

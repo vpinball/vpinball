@@ -1985,6 +1985,10 @@ string Player::GetPerfInfo()
    info << "State changes: " << m_renderer->m_renderDevice->Perf_GetNumStateChanges() << '\n';
    info << "Texture changes: " << m_renderer->m_renderDevice->Perf_GetNumTextureChanges() << " (" << m_renderer->m_renderDevice->Perf_GetNumTextureUploads() << " Uploads)\n";
    info << "Shader/Parameter changes: " << m_renderer->m_renderDevice->Perf_GetNumTechniqueChanges() << " / " << m_renderer->m_renderDevice->Perf_GetNumParameterChanges() << '\n';
+#if defined(ENABLE_BGFX)
+   info << "Uniform cache hits/uploads: " << m_renderer->m_renderDevice->Perf_GetUniformCacheFastHits() << '+' << m_renderer->m_renderDevice->Perf_GetUniformCacheShadowHits() << " / "
+        << m_renderer->m_renderDevice->Perf_GetUniformCacheUploads() << " (" << (m_renderer->m_renderDevice->Perf_GetUniformCacheSkippedBytes() + 1023) / 1024 << "kB skipped)\n";
+#endif
    info << "Objects: " << static_cast<unsigned int>(m_ptable->GetParts().size()) << '\n';
    info << '\n';
 

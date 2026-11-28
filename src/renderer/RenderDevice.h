@@ -313,6 +313,24 @@ public:
    void NextView();
    void ResetActiveView();
 
+   enum class BGFXUniformCacheMode
+   {
+      Disabled,
+      PerFrameConservative,
+      MetalAlwaysCommit,
+   };
+
+   bool IsUniformCacheEnabled() const { return m_uniformCacheMode != BGFXUniformCacheMode::Disabled; }
+   bool TrySkipUniformUpload(bgfx::UniformHandle handle, uint64_t revision, const uint8_t* data, size_t size);
+   void CommitUniformUpload(bgfx::UniformHandle handle, uint64_t revision, const uint8_t* data, size_t size);
+   void InvalidateUniformCache();
+   void ConfigureUniformCacheBackend();
+
+   unsigned int Perf_GetUniformCacheFastHits() const { return m_frameUniformCacheFastHits; }
+   unsigned int Perf_GetUniformCacheShadowHits() const { return m_frameUniformCacheShadowHits; }
+   unsigned int Perf_GetUniformCacheUploads() const { return m_frameUniformCacheUploads; }
+   unsigned int Perf_GetUniformCacheSkippedBytes() const { return m_frameUniformCacheSkippedBytes; }
+
    bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE; // Bound program for next draw submission
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
@@ -342,6 +360,21 @@ public:
 
 private:
    void SubmitAndFlipFrame(bool present);
+
+   struct UniformCacheEntry
+   {
+      uint64_t revision = 0;
+      uint32_t generation = 0;
+      vector<uint8_t> bytes;
+   };
+   vector<UniformCacheEntry> m_uniformCache;
+   uint32_t m_uniformCacheGeneration = 1;
+   BGFXUniformCacheMode m_uniformCacheMode = BGFXUniformCacheMode::Disabled;
+   unsigned int m_curUniformCacheFastHits = 0, m_frameUniformCacheFastHits = 0;
+   unsigned int m_curUniformCacheShadowHits = 0, m_frameUniformCacheShadowHits = 0;
+   unsigned int m_curUniformCacheUploads = 0, m_frameUniformCacheUploads = 0;
+   unsigned int m_curUniformCacheSkippedBytes = 0, m_frameUniformCacheSkippedBytes = 0;
+
    bgfx::TextureFormat::Enum SelectBackBufferFormat(const VPX::Window* wnd, bgfx::TextureFormat::Enum defaultFormat, bool isWCG) const;
    static colorFormat BGFXtoVPXTextureFormat(bgfx::TextureFormat::Enum format);
    static void RenderThread(RenderDevice* rd, bgfx::Init init);
