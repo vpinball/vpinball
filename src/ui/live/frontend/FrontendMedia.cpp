@@ -58,10 +58,16 @@ FrontendMedia::FrontendMedia(RenderDevice *renderDevice)
                job = m_jobs.front();
                m_jobs.pop_front();
             }
-            std::shared_ptr<BaseTexture> bitmap = BaseTexture::CreateFromFile(job.file);
+            CompletedJob completed;
+            completed.key = job.key;
+            completed.file = job.file;
+            // APNG sniffing opens the media file: do it here, never on the render thread. A
+            // decodable first frame is still used as a poster while the animated session starts.
+            completed.animated = TableCatalog::IsAnimatedImageFile(job.file);
+            completed.bitmap = BaseTexture::CreateFromFile(job.file, job.maxDimension);
             {
                std::lock_guard lock(m_mutex);
-               m_completed.emplace_back(std::move(job.key), std::move(bitmap));
+               m_completed.push_back(std::move(completed));
             }
          }
       });
@@ -256,7 +262,15 @@ std::shared_ptr<Sampler> FrontendMedia::GetBlurred(const TableCatalog::Entry &en
    if (!entry.HasMedia(type))
       return nullptr;
    const std::filesystem::path &file = entry.GetMedia(type);
-   return Load(file.wstring() + L".blur", file, true);
+   return Load(file.wstring() + L".blur", file, true, 256, 256);
+}
+
+bool FrontendMedia::IsVideoBacked(const std::filesystem::path &path) const
+{
+   if (TableCatalog::IsVideoFile(path))
+      return true;
+   const auto it = m_items.find(path);
+   return it != m_items.end() && it->second.video != nullptr;
 }
 
 uint32_t FrontendMedia::GetReadyTime(const std::filesystem::path &key) const
@@ -265,18 +279,37 @@ uint32_t FrontendMedia::GetReadyTime(const std::filesystem::path &key) const
    return (it != m_items.end() && !it->second.failed) ? it->second.readyTime : 0;
 }
 
+static unsigned int ImageDecodeBound(const unsigned int decodeW, const unsigned int decodeH)
+{
+   const unsigned int requested = std::max(decodeW, decodeH);
+   return requested != 0 ? requested : 1024; // Bounded preview quality when the caller has no on screen size
+}
+
 std::shared_ptr<Sampler> FrontendMedia::Load(const std::filesystem::path &key, const std::filesystem::path &file, const bool blurred, const unsigned int decodeW, const unsigned int decodeH)
 {
-   const bool video = TableCatalog::IsAnimatedMediaFile(file);
+   // Only the extension is tested here. Sniffing image files for animation is filesystem IO and
+   // is deferred to the image worker: media classification must never stall rendering.
+   const bool video = TableCatalog::IsVideoFile(file);
    auto it = m_items.find(key);
    if (it != m_items.end())
    {
       it->second.lastUsed = m_tick;
-      if (video)
+      if (video || it->second.video != nullptr)
       {
          it->second.decodeW = std::max(it->second.decodeW, decodeW);
          it->second.decodeH = std::max(it->second.decodeH, decodeH);
          TouchVideo(it->second, file);
+      }
+      else if (!it->second.failed)
+      {
+         const unsigned int bound = ImageDecodeBound(decodeW, decodeH);
+         if (bound > it->second.imageMaxDimension)
+         {
+            it->second.imageMaxDimension = bound;
+            std::lock_guard lock(m_mutex);
+            m_jobs.push_back({ key, file, bound });
+            m_cv.notify_one();
+         }
       }
       return it->second.failed ? nullptr : it->second.sampler;
    }
@@ -286,6 +319,7 @@ std::shared_ptr<Sampler> FrontendMedia::Load(const std::filesystem::path &key, c
    item.lastUsed = m_tick;
    item.decodeW = decodeW;
    item.decodeH = decodeH;
+   item.imageMaxDimension = ImageDecodeBound(decodeW, decodeH);
    it = m_items.emplace(key, std::move(item)).first;
    if (video)
    {
@@ -324,9 +358,7 @@ void FrontendMedia::TouchVideo(Item &item, const std::filesystem::path &file)
 
 std::shared_ptr<const BaseTexture> FrontendMedia::GetVideoFrame(const std::filesystem::path &file, uint64_t *const seq)
 {
-   if (!TableCatalog::IsVideoFile(file))
-      return nullptr;
-   Load(file, file, false); // Ensures the item and its session exist and are kept alive
+   Load(file, file, false); // Ensures the item exists; animated images become video backed after worker classification
    const auto it = m_items.find(file);
    if (it == m_items.end())
       return nullptr;
@@ -378,28 +410,35 @@ void FrontendMedia::Pump()
 {
    // Upload the images decoded by the worker thread (must run on the render thread), bounding the
    // per frame GPU upload cost so a burst of decodes does not stall navigation
-   vector<std::pair<std::filesystem::path, std::shared_ptr<BaseTexture>>> completed;
+   vector<CompletedJob> completed;
    {
       std::lock_guard lock(m_mutex);
       completed.swap(m_completed);
    }
    int uploadBudget = 4;
-   vector<std::pair<std::filesystem::path, std::shared_ptr<BaseTexture>>> deferred;
-   for (auto &[key, bitmap] : completed)
+   vector<CompletedJob> deferred;
+   for (CompletedJob &completedJob : completed)
    {
+      const std::filesystem::path &key = completedJob.key;
+      const std::shared_ptr<BaseTexture> &bitmap = completedJob.bitmap;
       auto it = m_items.find(key);
       if (it == m_items.end())
          continue; // evicted while decoding
       if (uploadBudget-- <= 0)
       {
-         deferred.emplace_back(std::move(key), std::move(bitmap));
+         deferred.push_back(std::move(completedJob));
          continue;
       }
       Item &item = it->second;
+      if (completedJob.animated && item.video == nullptr)
+         TouchVideo(item, completedJob.file);
       if (bitmap == nullptr)
       {
-         PLOGW << "FrontendMedia: failed to decode '" << key << "'";
-         item.failed = true;
+         if (!completedJob.animated)
+         {
+            PLOGW << "FrontendMedia: failed to decode '" << key << "'";
+            item.failed = true;
+         }
          continue;
       }
       const std::shared_ptr<Sampler> sampler = m_rd->m_texMan.LoadTexture(bitmap.get(), false);
@@ -409,6 +448,9 @@ void FrontendMedia::Pump()
          item.failed = true;
          continue;
       }
+      if (item.bitmap != nullptr && item.bitmap != bitmap)
+         m_rd->m_texMan.UnloadTexture(item.bitmap.get());
+      m_bytes -= item.bytes;
       item.bitmap = bitmap;
       item.bytes = static_cast<size_t>(sampler->GetWidth()) * sampler->GetHeight() * 4;
       m_bytes += item.bytes;
@@ -420,13 +462,14 @@ void FrontendMedia::Pump()
       else
       {
          item.sampler = sampler;
-         item.readyTime = static_cast<uint32_t>(SDL_GetTicks());
+         if (item.readyTime == 0)
+            item.readyTime = static_cast<uint32_t>(SDL_GetTicks());
       }
    }
    if (!deferred.empty())
    {
       std::lock_guard lock(m_mutex);
-      m_completed.insert(m_completed.end(), deferred.begin(), deferred.end());
+      m_completed.insert(m_completed.end(), std::make_move_iterator(deferred.begin()), std::make_move_iterator(deferred.end()));
    }
 
    // Upload the frames materialized by the video decode sessions to each referencing item's

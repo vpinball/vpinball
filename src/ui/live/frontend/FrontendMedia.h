@@ -46,6 +46,10 @@ public:
    // first frame; seq is bumped on each new frame so callers can skip unchanged updates
    std::shared_ptr<const BaseTexture> GetVideoFrame(const std::filesystem::path &path, uint64_t *seq);
 
+   // Whether this media is backed by an animation decode session. Video extensions are known
+   // immediately; animated images are classified by the decode worker, off the render thread.
+   bool IsVideoBacked(const std::filesystem::path &path) const;
+
    // The time at which the sampler of an image became ready (for fade ins), 0 if not ready yet
    uint32_t GetReadyTime(const std::filesystem::path &key) const;
 
@@ -72,6 +76,7 @@ private:
       std::shared_ptr<const BaseTexture> videoBitmap; // Video medias only: last uploaded frame
       uint64_t videoSeq = 0; // Video medias only: sequence of videoBitmap
       unsigned int decodeW = 0, decodeH = 0; // Video medias only: requested decode bound (0 = cell sized)
+      unsigned int imageMaxDimension = 0; // Still images only: largest requested decode bound
    };
 
    std::shared_ptr<Sampler> Load(const std::filesystem::path &key, const std::filesystem::path &file, bool blurred, unsigned int decodeW = 0, unsigned int decodeH = 0);
@@ -95,12 +100,20 @@ private:
    {
       std::filesystem::path key;
       std::filesystem::path file;
+      unsigned int maxDimension = 0;
    };
    std::thread m_worker;
    std::mutex m_mutex;
    std::condition_variable m_cv;
    std::deque<Job> m_jobs;
-   vector<std::pair<std::filesystem::path, std::shared_ptr<BaseTexture>>> m_completed;
+   struct CompletedJob
+   {
+      std::filesystem::path key;
+      std::filesystem::path file;
+      std::shared_ptr<BaseTexture> bitmap;
+      bool animated = false;
+   };
+   vector<CompletedJob> m_completed;
    bool m_quit = false;
 
    // Shared render targets of the GPU blur (the destination target is per item)

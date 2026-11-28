@@ -197,6 +197,7 @@ private:
    int m_selected = 0;
    bool m_navigationDirty = false;
    uint32_t m_navigationSaveAt = 0;
+   uint32_t m_lastWheelNavigationAt = 0;
 
    // XR: one time OpenXR headset probe (lazily on first frame) gating the Enter VR action
    uint32_t m_vrProbeAt = 0; // Next time a VR availability probe may be performed (retried until a runtime and HMD are found)

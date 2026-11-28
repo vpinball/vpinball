@@ -310,20 +310,33 @@ void TableCatalog::Scan(const vector<std::filesystem::path>& roots)
    LoadAllDetails();
 }
 
-void TableCatalog::EnsureEntryDetails(const size_t index)
+void TableCatalog::EnsureEntryDetails(const size_t index, const bool reposition)
 {
    if (index >= m_entries.size())
       return;
    Entry& entry = m_entries[index];
    if (entry.detailsLoaded)
       return;
+   const string previousSortTitle = entry.sortTitle;
    if (entry.hasInfoFile)
       ReadInfoFile(entry);
    const MediaSet& medias = GetMediaSet(entry.mediaFolder);
    for (size_t i = 0; i < medias.size(); ++i)
       entry.medias[i] = medias[i];
    entry.detailsLoaded = true;
-   entry.sortTitle = entry.title;
+   entry.sortTitle = lowerCase(entry.title);
+
+   // Background scans load thousands of entries and order them as a batch. A foreground on demand
+   // load instead keeps the sorted catalog valid immediately by moving only this entry.
+   if (reposition && entry.sortTitle != previousSortTitle)
+   {
+      Entry moved = std::move(m_entries[index]);
+      m_entries.erase(m_entries.begin() + static_cast<ptrdiff_t>(index));
+      const auto insertAt = std::lower_bound(
+         m_entries.begin(), m_entries.end(), moved, [](const Entry& a, const Entry& b) { return a.sortTitle != b.sortTitle ? a.sortTitle < b.sortTitle : a.tablePath < b.tablePath; });
+      m_entries.insert(insertAt, std::move(moved));
+      RebuildPositions();
+   }
 }
 
 void TableCatalog::LoadAllDetails()
@@ -331,18 +344,24 @@ void TableCatalog::LoadAllDetails()
    for (size_t i = 0; i < m_entries.size(); ++i)
       EnsureEntryDetails(i);
    for (Entry& entry : m_entries)
-      entry.sortTitle = entry.title;
+      entry.sortTitle = lowerCase(entry.title);
    SortEntries();
 }
 
+static bool EntrySortLess(const TableCatalog::Entry& a, const TableCatalog::Entry& b) { return a.sortTitle != b.sortTitle ? a.sortTitle < b.sortTitle : a.tablePath < b.tablePath; }
+
 void TableCatalog::SortEntries()
 {
-   std::sort(m_entries.begin(), m_entries.end(),
-      [](const Entry& a, const Entry& b)
-      {
-         const int cmp = lowerCase(a.sortTitle).compare(lowerCase(b.sortTitle));
-         return cmp != 0 ? cmp < 0 : a.tablePath < b.tablePath;
-      });
+   std::sort(m_entries.begin(), m_entries.end(), EntrySortLess);
+   RebuildPositions();
+}
+
+void TableCatalog::RebuildPositions()
+{
+   m_positions.clear();
+   m_positions.reserve(m_entries.size());
+   for (size_t i = 0; i < m_entries.size(); ++i)
+      m_positions[m_entries[i].tablePath] = i;
 }
 
 
@@ -486,7 +505,7 @@ static TableCatalog::Entry MergeScannedEntry(const TableCatalog::Entry& cached, 
       return scanned;
    TableCatalog::Entry merged = scanned;
    merged.title = cached.title;
-   merged.sortTitle = cached.sortTitle;
+   merged.sortTitle = lowerCase(cached.sortTitle);
    merged.detailsLoaded = true;
    merged.info = cached.info;
    merged.user = cached.user;
@@ -500,45 +519,66 @@ void TableCatalog::UpsertEntries(const vector<Entry>& entries)
 {
    if (entries.empty())
       return;
-   std::unordered_map<std::filesystem::path, size_t> positions;
-   for (size_t i = 0; i < m_entries.size(); ++i)
-      positions[m_entries[i].tablePath] = i;
+
+   // The catalog is kept sorted for the wheel. Applying every asynchronous batch with a full
+   // sort is quadratic over a scan and stalls navigation on large libraries, so only entries
+   // whose ordering key changed (plus genuinely new entries) are merged back into the sorted vector.
+   std::unordered_map<std::filesystem::path, Entry> uniqueUpdates;
    for (const Entry& scanned : entries)
+      if (!scanned.tablePath.empty())
+         uniqueUpdates[scanned.tablePath] = scanned;
+
+   vector<Entry> additions;
+   additions.reserve(uniqueUpdates.size());
+   ankerl::unordered_dense::set<std::filesystem::path> movedPaths;
+   for (auto& [path, scanned] : uniqueUpdates)
    {
-      if (scanned.tablePath.empty())
-         continue;
-      if (const auto it = positions.find(scanned.tablePath); it != positions.end())
+      const auto position = m_positions.find(path);
+      if (position == m_positions.end())
       {
-         Entry& existing = m_entries[it->second];
-         if (!CanReuseDetails(existing, scanned))
-            m_mediaSets.erase(scanned.mediaFolder);
-         existing = MergeScannedEntry(existing, scanned);
+         additions.push_back(std::move(scanned));
+         continue;
       }
+
+      Entry& existing = m_entries[position->second];
+      if (!CanReuseDetails(existing, scanned))
+         m_mediaSets.erase(scanned.mediaFolder);
+      Entry merged = MergeScannedEntry(existing, scanned);
+      if (existing.sortTitle == merged.sortTitle)
+         existing = std::move(merged); // Same ordering key: no reordering work needed
       else
       {
-         positions[scanned.tablePath] = m_entries.size();
-         m_entries.push_back(scanned);
+         movedPaths.insert(path);
+         additions.push_back(std::move(merged));
       }
    }
-   SortEntries();
+   if (additions.empty())
+      return;
+
+   if (!movedPaths.empty())
+      m_entries.erase(std::remove_if(m_entries.begin(), m_entries.end(), [&movedPaths](const Entry& entry) { return movedPaths.contains(entry.tablePath); }), m_entries.end());
+   std::sort(additions.begin(), additions.end(), EntrySortLess);
+   vector<Entry> mergedEntries;
+   mergedEntries.reserve(m_entries.size() + additions.size());
+   std::merge(m_entries.begin(), m_entries.end(), additions.begin(), additions.end(), std::back_inserter(mergedEntries), EntrySortLess);
+   m_entries = std::move(mergedEntries);
+   RebuildPositions();
 }
 
 void TableCatalog::ReconcileEntries(const vector<Entry>& scannedEntries)
 {
-   std::unordered_map<std::filesystem::path, Entry> previous;
-   for (const Entry& entry : m_entries)
-      previous[entry.tablePath] = entry;
    vector<Entry> reconciled;
    reconciled.reserve(scannedEntries.size());
    for (const Entry& scanned : scannedEntries)
    {
       if (scanned.tablePath.empty())
          continue;
-      if (const auto it = previous.find(scanned.tablePath); it != previous.end())
+      if (const auto it = m_positions.find(scanned.tablePath); it != m_positions.end())
       {
-         if (!CanReuseDetails(it->second, scanned))
+         const Entry& cached = m_entries[it->second];
+         if (!CanReuseDetails(cached, scanned))
             m_mediaSets.erase(scanned.mediaFolder);
-         reconciled.push_back(MergeScannedEntry(it->second, scanned));
+         reconciled.push_back(MergeScannedEntry(cached, scanned));
       }
       else
          reconciled.push_back(scanned);
@@ -562,7 +602,8 @@ TableCatalog::Entry TableCatalog::BuildEntry(const std::filesystem::path& tableP
    Entry entry;
    entry.tablePath = tablePath;
    entry.isPack = isPack;
-   entry.title = entry.sortTitle = PathToUTF8(tablePath.stem());
+   entry.title = PathToUTF8(tablePath.stem());
+   entry.sortTitle = lowerCase(entry.title);
    std::error_code ec;
    const bool isFolderPack = std::filesystem::is_directory(tablePath, ec);
    entry.mediaFolder = isFolderPack ? tablePath / "medias"s : sharedMediaFolder;
@@ -920,6 +961,7 @@ bool TableCatalog::LoadCacheFile(const std::filesystem::path& path, const vector
       Entry entry;
       if (!ReadCacheEntry(reader, entry))
          return false;
+      entry.sortTitle = lowerCase(entry.sortTitle);
       entries.push_back(std::move(entry));
    }
    if (!reader.AtEnd())

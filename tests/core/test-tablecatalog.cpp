@@ -127,6 +127,41 @@ TEST_CASE("TableCatalog")
       CHECK(entry->HasMedia(TableCatalog::MediaType::Playfield));
    }
 
+   SUBCASE("incremental upserts insert and reorder entries by normalized title")
+   {
+      TableCatalog liveCatalog;
+      TableCatalog scanned;
+      scanned.ScanPaths({ root });
+      const vector<TableCatalog::Entry>& scannedEntries = scanned.GetEntries();
+      liveCatalog.UpsertEntries({ scannedEntries.begin(), scannedEntries.begin() + 2 });
+      liveCatalog.UpsertEntries({ scannedEntries.begin() + 2, scannedEntries.end() });
+      REQUIRE(liveCatalog.GetEntries().size() == scannedEntries.size());
+      CHECK(std::is_sorted(liveCatalog.GetEntries().begin(), liveCatalog.GetEntries().end(),
+         [](const TableCatalog::Entry& a, const TableCatalog::Entry& b) { return a.sortTitle != b.sortTitle ? a.sortTitle < b.sortTitle : a.tablePath < b.tablePath; }));
+
+      vector<TableCatalog::Entry> details;
+      for (TableCatalog::Entry entry : scannedEntries)
+      {
+         entry.detailsLoaded = true;
+         if (PathToUTF8(entry.tablePath.stem()) == "Congo"s)
+            entry.title = "Zebra"s;
+         else if (PathToUTF8(entry.tablePath.stem()) == "Attack From Mars v1.0"s)
+            entry.title = "Aardvark"s;
+         entry.sortTitle = lowerCase(entry.title);
+         details.push_back(std::move(entry));
+      }
+      liveCatalog.UpsertEntries(details);
+      REQUIRE(liveCatalog.GetEntries().size() == scannedEntries.size());
+      CHECK(std::is_sorted(liveCatalog.GetEntries().begin(), liveCatalog.GetEntries().end(),
+         [](const TableCatalog::Entry& a, const TableCatalog::Entry& b) { return a.sortTitle != b.sortTitle ? a.sortTitle < b.sortTitle : a.tablePath < b.tablePath; }));
+      CHECK(PathToUTF8(liveCatalog.GetEntries().front().tablePath.stem()) == "Attack From Mars v1.0"s);
+      CHECK(PathToUTF8(liveCatalog.GetEntries().back().tablePath.stem()) == "Congo"s);
+
+      // Reapplying the same details must remain a cheap in-place update, without duplicates.
+      liveCatalog.UpsertEntries(details);
+      CHECK(liveCatalog.GetEntries().size() == scannedEntries.size());
+   }
+
    SUBCASE("info file named after the folder is found and parsed")
    {
       const TableCatalog::Entry* entry = findByStem("Attack From Mars v1.0"s);
