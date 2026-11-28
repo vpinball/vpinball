@@ -171,7 +171,7 @@ void NudgeSettingsPage::RenderNudgePlots(const ImVec4& rect)
    ImGui::SetNextWindowSize(winSize);
    ImGui::Begin("NudgeOverlay", nullptr, window_flags);
    ImPlot::PushStyleColor(ImPlotCol_LegendBg, ImVec4(0.11f, 0.11f, 0.14f, 0.03f));
-   ImGui::PushFont(nullptr, style.FontSizeBase * 0.5f); // Smaller font to keep graphics readable
+   ImGui::PushFont(nullptr, style.FontSizeBase); // Base font size for legible axis and legend text
 
    if (ImPlot::BeginPlot("##NudgeX", ImVec2(plotWidth, plotHeight), ImPlotFlags_None))
    {

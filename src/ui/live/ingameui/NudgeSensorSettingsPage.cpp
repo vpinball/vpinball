@@ -277,7 +277,7 @@ void NudgeSensorSettingsPage::RenderSensorPlots(const ImVec4& rect)
 
    const auto& sensor = GetSensor();
 
-   ImGui::PushFont(nullptr, style.FontSizeBase * 0.5f); // Smaller font to keep graphics readable
+   ImGui::PushFont(nullptr, style.FontSizeBase); // Base font size for legible axis and legend text
    if (ImPlot::BeginPlot("##NudgeX", ImVec2(plotWidth, plotHeight), ImPlotFlags_None))
    {
       ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
@@ -378,7 +378,7 @@ void NudgeSensorSettingsPage::RenderSensorPlots(const ImVec4& rect)
       ImGui::PopStyleVar();
    }
 
-   ImGui::PushFont(nullptr, style.FontSizeBase * 0.5f); // Smaller font to keep graphics readable
+   ImGui::PushFont(nullptr, style.FontSizeBase); // Base font size for legible axis and legend text
    if (ImPlot::BeginPlot("##NudgeY", ImVec2(plotWidth, plotHeight), ImPlotFlags_None))
    {
       ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoTickLabels);
