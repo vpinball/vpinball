@@ -842,7 +842,7 @@ void FrontendUI::RestartFrontendSession(const Player::VROverride vr)
 
 void FrontendUI::DrawImage(const std::shared_ptr<Sampler> &image, const ImVec2 &boxPos, const ImVec2 &boxSize, const float alpha, const bool autoRotate) const
 {
-   // Landscape media is shown rotated by 270 degrees clockwise, portrait media as is
+   // Landscape media is shown rotated by 90 degrees clockwise, portrait media as is
    const bool rotate = autoRotate && image->GetWidth() > image->GetHeight();
    const float imgAspect = rotate ? static_cast<float>(image->GetHeight()) / static_cast<float>(image->GetWidth())
                                   : static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight());
@@ -851,15 +851,15 @@ void FrontendUI::DrawImage(const std::shared_ptr<Sampler> &image, const ImVec2 &
    const ImVec2 pos(boxPos.x + (boxSize.x - size.x) * 0.5f, boxPos.y + (boxSize.y - size.y) * 0.5f);
    const ImU32 col = IM_COL32(255, 255, 255, static_cast<int>(alpha * 255.f));
    if (rotate)
-      ImGui::GetWindowDrawList()->AddImageQuad(image, pos, ImVec2(pos.x + size.x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), ImVec2(pos.x, pos.y + size.y),
-         ImVec2(1.f, 0.f), ImVec2(1.f, 1.f), ImVec2(0.f, 1.f), ImVec2(0.f, 0.f), col);
+      ImGui::GetWindowDrawList()->AddImageQuad(image, pos, ImVec2(pos.x + size.x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), ImVec2(pos.x, pos.y + size.y), ImVec2(0.f, 1.f),
+         ImVec2(0.f, 0.f), ImVec2(1.f, 0.f), ImVec2(1.f, 1.f), col);
    else
       ImGui::GetWindowDrawList()->AddImage(image, pos, ImVec2(pos.x + size.x, pos.y + size.y), ImVec2(0.f, 0.f), ImVec2(1.f, 1.f), col);
 }
 
 void FrontendUI::DrawImageCover(const std::shared_ptr<Sampler> &image, const ImVec2 &boxPos, const ImVec2 &boxSize, const float alpha, const bool autoRotate) const
 {
-   // Same rotation rule as DrawImage: landscape media is turned by 270 degrees clockwise
+   // Same rotation rule as DrawImage: landscape media is turned by 90 degrees clockwise
    const bool rotate = autoRotate && image->GetWidth() > image->GetHeight();
    const float imgAspect = rotate ? static_cast<float>(image->GetHeight()) / static_cast<float>(image->GetWidth())
                                   : static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight());
@@ -870,8 +870,8 @@ void FrontendUI::DrawImageCover(const std::shared_ptr<Sampler> &image, const ImV
    ImDrawList *const drawList = ImGui::GetWindowDrawList();
    drawList->PushClipRect(boxPos, ImVec2(boxPos.x + boxSize.x, boxPos.y + boxSize.y), true);
    if (rotate)
-      drawList->AddImageQuad(image, pos, ImVec2(pos.x + size.x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), ImVec2(pos.x, pos.y + size.y),
-         ImVec2(1.f, 0.f), ImVec2(1.f, 1.f), ImVec2(0.f, 1.f), ImVec2(0.f, 0.f), col);
+      drawList->AddImageQuad(image, pos, ImVec2(pos.x + size.x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), ImVec2(pos.x, pos.y + size.y), ImVec2(0.f, 1.f), ImVec2(0.f, 0.f),
+         ImVec2(1.f, 0.f), ImVec2(1.f, 1.f), col);
    else
       drawList->AddImage(image, pos, ImVec2(pos.x + size.x, pos.y + size.y), ImVec2(0.f, 0.f), ImVec2(1.f, 1.f), col);
    drawList->PopClipRect();

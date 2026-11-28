@@ -124,11 +124,11 @@ private:
    std::unordered_map<std::filesystem::path, WheelTitle> m_wheelTitles;
 
    // Draws a still media image inside a box, keeping its aspect ratio (letterboxed, centered)
-   // autoRotate turns landscape playfield media 270 degrees (clockwise); portrait media is left
+   // autoRotate turns landscape playfield media 90 degrees clockwise; portrait media is left
    // untouched
    void DrawImage(const std::shared_ptr<Sampler> &image, const ImVec2 &boxPos, const ImVec2 &boxSize, float alpha = 1.f, bool autoRotate = false) const;
    // Cover fit: scales the image to fill the box, cropping the overflow (used for backgrounds).
-   // autoRotate applies the playfield rotation rule (landscape media is turned 270 degrees)
+   // autoRotate applies the playfield rotation rule (landscape media is turned 90 degrees clockwise)
    void DrawImageCover(const std::shared_ptr<Sampler> &image, const ImVec2 &boxPos, const ImVec2 &boxSize, float alpha = 1.f, bool autoRotate = false) const;
    // The blurred cover fitted background: the backglass, falling back to the playfield image
    void DrawBackground(const TableCatalog::Entry *selected) const;
