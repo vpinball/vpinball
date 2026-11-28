@@ -219,6 +219,7 @@ PropBool(Frontend, SetupDone, "Setup Done"s, "Set when the guided setup has been
 PropString(Frontend, DisplaySignature, "Display Signature"s, "Display setup under which the guided setup was last run, used to detect a new display setup"s, ""s);
 PropString(Frontend, ThemeFolders, "Theme Folders"s, "Semicolon separated list of root folders which are scanned for frontend themes"s, ""s);
 PropString(Frontend, Theme, "Theme"s, "Selected frontend theme (theme folder name), empty to use the first one found"s, ""s);
+PropString(Frontend, LastTable, ""s, "Last selected frontend table, used to restore the wheel position across sessions"s, ""s);
 
 // UI & input settings
 PropString(Input, Devices, "Devices"s, "List of known devices"s, ""s);

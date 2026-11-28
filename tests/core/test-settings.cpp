@@ -82,6 +82,7 @@ TEST_CASE("Settings")
          CHECK(settings.GetIniPath() == iniPath);
          settings.SetPlayer_PlayfieldWidth(1234, false);
          settings.SetPlayer_BallImage("custom-ball.png"s, false);
+         settings.SetFrontend_LastTable("D:/Tables/Example Table.vpx"s, false);
          settings.Save();
       }
       REQUIRE(FileExists(iniPath));
@@ -91,6 +92,7 @@ TEST_CASE("Settings")
       CHECK(loaded.Load(false));
       CHECK(loaded.GetPlayer_PlayfieldWidth() == 1234);
       CHECK(loaded.GetPlayer_BallImage() == "custom-ball.png");
+      CHECK(loaded.GetFrontend_LastTable() == "D:/Tables/Example Table.vpx");
    }
 
    SUBCASE("load fails on missing ini file")

@@ -299,6 +299,13 @@ void FrontendUI::Rescan()
 
    UpdateCatalogWatcher(roots);
 
+   if (s_resumeTablePath.empty())
+   {
+      const string &lastTable = g_settingsService.GetAppSettings().GetFrontend_LastTable();
+      if (!lastTable.empty())
+         s_resumeTablePath = PathFromUTF8(lastTable);
+   }
+
    // The cache is only a startup snapshot: it is shown immediately, then reconciled by this scan.
    if (!m_catalogCacheLoadAttempted)
    {
@@ -521,6 +528,8 @@ void FrontendUI::ApplyCatalogScanUpdate(const CatalogScanUpdate &update)
    m_wheelPos = static_cast<float>(m_selected);
    // The resumed table may appear in any incremental batch. Keep looking until it is found, or
    // until the complete path reconciliation proves that it is not in the catalog anymore.
+   if (!wanted.empty() && !found && update.type == CatalogScanUpdate::Type::Reconcile)
+      RememberTablePath(entries.empty() ? std::filesystem::path() : entries[m_selected].tablePath, false);
    if (restoringResumeSelection && (found || update.type == CatalogScanUpdate::Type::Reconcile))
       s_resumeTablePath.clear();
 }
@@ -551,7 +560,9 @@ void FrontendUI::BeginTableLoad(const TableCatalog::Entry &entry, const Player::
    load->title = entry.title;
    const std::filesystem::path tablePath = entry.tablePath;
    m_tableLoad = load;
-   s_resumeTablePath = tablePath; // The next frontend session puts the wheel back on it
+   RememberTablePath(tablePath, true); // The next frontend session puts the wheel back on it
+   g_settingsService.GetAppSettings().Save();
+   m_navigationSaveAt = 0;
 
    // The table file is parsed on a worker thread: the load may take seconds on a full
    // featured table, and the loading screen keeps giving the user feedback meanwhile
@@ -653,7 +664,7 @@ void FrontendUI::HandleInput()
       m_wheelNavDir = navDir;
       m_wheelNavSince = navDir != 0 ? FrontendTimeMs() : 0;
       if (count > 0 && navDir != 0)
-         m_selected = ((m_selected + navDir) % count + count) % count;
+         SetSelectedIndex(((m_selected + navDir) % count + count) % count, true);
    }
 
    // Start (or Enter/Space) opens the table actions view, the launch ball button
@@ -699,7 +710,7 @@ void FrontendUI::JumpLetter(const int dir)
    // A backward jump lands on the last entry of the previous group: walk to its first
    while (letterOf((target + dir + count) % count) == letterOf(target))
       target = (target + dir + count) % count;
-   m_selected = target;
+   SetSelectedIndex(target, true);
    m_wheelPos = static_cast<float>(target);
 }
 
@@ -725,6 +736,37 @@ void FrontendUI::EnsureSelectedDetails()
 {
    if (HasSelection())
       m_catalog.EnsureEntryDetails(static_cast<size_t>(m_selected));
+}
+
+void FrontendUI::SetSelectedIndex(const int index, const bool userInitiated)
+{
+   if (index == m_selected)
+      return;
+   m_selected = index;
+   if (userInitiated)
+      m_navigationDirty = true;
+}
+
+void FrontendUI::RememberTablePath(const std::filesystem::path &tablePath, const bool updateResumePath)
+{
+   if (updateResumePath)
+      s_resumeTablePath = tablePath;
+   const string utf8 = tablePath.empty() ? string() : PathToUTF8(tablePath);
+   Settings &appSettings = g_settingsService.GetAppSettings();
+   if (appSettings.GetFrontend_LastTable() != utf8)
+   {
+      appSettings.SetFrontend_LastTable(utf8, false);
+      m_navigationSaveAt = FrontendTimeMs() + 1000;
+   }
+}
+
+void FrontendUI::PersistNavigationPosition()
+{
+   if (!m_navigationDirty)
+      return;
+   m_navigationDirty = false;
+   if (HasSelection())
+      RememberTablePath(m_catalog.GetEntries()[m_selected].tablePath, true);
 }
 
 const TableCatalog::Entry *FrontendUI::FindEntry(const std::filesystem::path &tablePath)
@@ -904,6 +946,12 @@ void FrontendUI::Update()
    const TableCatalog::Entry *const selected = GetSelected();
 
    DrawThemedLayout(selected);
+   PersistNavigationPosition();
+   if (m_navigationSaveAt != 0 && FrontendTimeMs() >= m_navigationSaveAt)
+   {
+      m_navigationSaveAt = 0;
+      g_settingsService.GetAppSettings().Save();
+   }
 
 #ifdef ENABLE_XR
    // Direct switch to VR, the same action as the stereo toggle: a clickable button at the top
@@ -1159,7 +1207,7 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
       if (m_wheelDragging)
       {
          // The position was dragged by the pointer; the selection tracks the centered entry
-         m_selected = ((static_cast<int>(roundf(m_wheelPos)) % count) + count) % count;
+         SetSelectedIndex(((static_cast<int>(roundf(m_wheelPos)) % count) + count) % count, true);
       }
       else if (fabsf(m_wheelVel) > 0.f)
       {
@@ -1168,13 +1216,13 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
          m_wheelVel *= std::exp(-6.f * io.DeltaTime);
          if (fabsf(m_wheelVel) < 0.4f)
             m_wheelVel = 0.f;
-         m_selected = ((static_cast<int>(roundf(m_wheelPos)) % count) + count) % count;
+         SetSelectedIndex(((static_cast<int>(roundf(m_wheelPos)) % count) + count) % count, true);
       }
       else if (navHeldFor > 400)
       {
          const float ramp = std::min(1.f, (navHeldFor - 400) / 1600.f);
          m_wheelPos += m_wheelNavDir * (2.5f + 9.5f * ramp * ramp) * io.DeltaTime;
-         m_selected = ((static_cast<int>(roundf(m_wheelPos)) % count) + count) % count;
+         SetSelectedIndex(((static_cast<int>(roundf(m_wheelPos)) % count) + count) % count, true);
       }
       else
       {
@@ -1210,12 +1258,12 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
             m_wheelWheelAccum += io.MouseWheel;
             while (m_wheelWheelAccum >= 1.f)
             {
-               m_selected = (m_selected - 1 + count) % count;
+               SetSelectedIndex((m_selected - 1 + count) % count, true);
                m_wheelWheelAccum -= 1.f;
             }
             while (m_wheelWheelAccum <= -1.f)
             {
-               m_selected = (m_selected + 1) % count;
+               SetSelectedIndex((m_selected + 1) % count, true);
                m_wheelWheelAccum += 1.f;
             }
          }
@@ -1335,7 +1383,7 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
                   if (index == m_selected)
                      OpenActionsView();
                   else
-                     m_selected = index;
+                     SetSelectedIndex(index, true);
                }
             }
             ImGui::PopID();
