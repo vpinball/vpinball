@@ -9,8 +9,10 @@
 namespace VPX::InGameUI
 {
 
-void CabinetRender::Render(const ImVec4& rect, PinTable* table, const vec3& playerPos)
+void CabinetRender::Render(const ImVec4& rect, PinTable* table, const vec3& playerPos, const Settings* settingsOverride)
 {
+   const Settings& settings = settingsOverride != nullptr ? *settingsOverride : table->GetSettings();
+
    float posx = rect.x;
    float posy = rect.y;
    float width = rect.z;
@@ -25,8 +27,8 @@ void CabinetRender::Render(const ImVec4& rect, PinTable* table, const vec3& play
 
    const float realToVirtualScale = table->GetViewSetup().GetRealToVirtualScale(table);
 
-   const float windowLength = table->GetSettings().GetPlayer_ScreenWidth() * realToVirtualScale / table->GetViewSetup().mSceneScaleY;
-   const float windowAngle = ANGTORAD(table->GetSettings().GetPlayer_ScreenInclination());
+   const float windowLength = settings.GetPlayer_ScreenWidth() * realToVirtualScale / table->GetViewSetup().mSceneScaleY;
+   const float windowAngle = ANGTORAD(settings.GetPlayer_ScreenInclination());
 
    const float playfieldLength = VPUTOCM(table->m_bottom - table->m_top);
 
@@ -46,7 +48,7 @@ void CabinetRender::Render(const ImVec4& rect, PinTable* table, const vec3& play
    // Cabinet
    if ((table->GetViewMode() == ViewSetupID::BG_FULLSCREEN) && (table->GetViewSetup().mMode == VLM_WINDOW))
    {
-      ImVec2 lockbar = ImVec2(cabX, posy - table->GetSettings().GetPlayer_LockbarHeight() * scale);
+      ImVec2 lockbar = ImVec2(cabX, posy - settings.GetPlayer_LockbarHeight() * scale);
       ImVec2 cabFrontBottom = lockbar + ImVec2(0.f, 39.f * scale);
       ImVec2 legFrontBottom(cabFrontBottom.x - 3.5f * scale, posy);
 

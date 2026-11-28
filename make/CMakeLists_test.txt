@@ -23,6 +23,7 @@ set(VPX_TEST_SOURCES
    tests/core/test-propertydef.cpp
    tests/core/test-propertyregistry.cpp
    tests/core/test-settings.cpp
+   tests/core/test-startupwizard.cpp
    tests/core/test-tablecatalog.cpp
    tests/core/test-tabledb.cpp
    tests/input/test-buttonmapping.cpp

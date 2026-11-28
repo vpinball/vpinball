@@ -12,7 +12,7 @@ class CabinetRender final
 public:
    CabinetRender() = default;
 
-   void Render(const ImVec4& rect, PinTable* table, const vec3& playerPos);
+   void Render(const ImVec4& rect, PinTable* table, const vec3& playerPos, const Settings* settingsOverride = nullptr);
 };
 
 }

@@ -59,6 +59,7 @@
     <ClCompile Include="../../tests/core/test-propertydef.cpp" />
     <ClCompile Include="../../tests/core/test-propertyregistry.cpp" />
     <ClCompile Include="../../tests/core/test-settings.cpp" />
+    <ClCompile Include="../../tests/core/test-startupwizard.cpp" />
     <ClCompile Include="../../tests/core/test-tablecatalog.cpp" />
     <ClCompile Include="../../tests/core/test-tabledb.cpp" />
     <ClCompile Include="../../tests/input/test-buttonmapping.cpp" />

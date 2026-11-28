@@ -60,6 +60,8 @@ public:
    InGameUIItem* GetItem(const string& label) const;
 
    virtual bool IsPlayerPauseAllowed() const { return true; }
+   // Whether Update appends the standard Back/reset/undo/save action items
+   virtual bool UsesStandardActionItems() const { return true; }
    // Whether the page may be left through Back while the player is loading a table (the loading screen is the navigation root and cannot be closed)
    virtual bool IsBackAllowedWhileLoading() const { return false; }
 
@@ -90,7 +92,7 @@ public:
    // API used by InGameUIRenderer implementations
 
    const string& GetTitle() const { return m_title; }
-   const string& GetInfo() const { return m_info; }
+   virtual const string& GetInfo() const { return m_info; }
    SaveMode GetSaveMode() const { return m_saveMode; }
    const vector<std::unique_ptr<InGameUIItem>>& GetItems() const { return m_items; }
    int GetSelectedItemIndex() const { return m_selectedItem; }

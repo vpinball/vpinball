@@ -6,6 +6,7 @@
 #include "InGameUI.h"
 #include "InGameUIPage.h"
 #include "InGameUIWidgets.h"
+#include "StartupWizardPage.h"
 
 #include "core/player.h"
 #include "core/VPApp.h"
@@ -230,6 +231,7 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
    const string activePath = history.empty() ? ""s : history.back();
    const string rootPath = history.empty() ? ""s : history.front();
    InGameUIPage* const contentPage = pages.back();
+   StartupWizardPage* const wizardPage = dynamic_cast<StartupWizardPage*>(contentPage);
 
    // Flipper nav state: the focus level restarts on the page items when the
    // location changes or when navigation was disengaged (mouse took over)
@@ -285,7 +287,7 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
 
    // The rail relies on the cached navigation entries so it stays available while
    // the homepage is closed under a leaf page
-   const bool showNav = !m_navEntries.empty();
+   const bool showNav = wizardPage != nullptr || !m_navEntries.empty();
    if (!showNav)
    {
       // No navigation chrome (UI opened on a page without table of contents: rules card, POV edit, popups): the page
@@ -302,7 +304,15 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
    // navigation: they capture the target paths by value since they outlive this frame
    vector<DesktopTopTab> tabs;
    if (showNav)
-      BuildTopTabs(tabs, rootPath, firstPathOf);
+   {
+      if (wizardPage != nullptr)
+      {
+         tabs.push_back({ "STARTUP WIZARD", "wizard-title", false, 0, 1.f, nullptr });
+         tabs.push_back({ wizardPage->GetModel().IsFinished() ? "CLOSE" : "CANCEL", "wizard", true, 1, 0.85f, [wizardPage]() { wizardPage->Cancel(); } });
+      }
+      else
+         BuildTopTabs(tabs, rootPath, firstPathOf);
+   }
    // Portrait frames always fold the bar to two lines; on landscape it folds
    // when the tab labels don't fit. First line: the left-justified categories;
    // second line: Game (left) and About/Quit (right), in the secondary style
@@ -466,7 +476,12 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
       const bool showRows = !subPage && selectedGroup != nullptr && (selectedGroup->entries.size() > 1 || NavRootRailLabel(m_selectedGroup) != nullptr);
       // Build the rail's rows (also the flipper-nav order for this level)
       m_navRailRows.clear();
-      if (subPage)
+      if (wizardPage != nullptr)
+      {
+         for (int step = 0; step < wizardPage->GetStepCount(); ++step)
+            m_navRailRows.push_back({ false, wizardPage->GetStepTitle(step), std::format("wizard/step/{}", step), [wizardPage, step]() { wizardPage->GoToStep(step); } });
+      }
+      else if (subPage)
          m_navRailRows.push_back({ true, "Back"s, ""s });
       else
       {
@@ -486,8 +501,8 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
       // The rail focus syncs to the selected entry when entering the level
       if (m_navRailIndex < 0)
       {
-         m_navRailIndex = 0;
-         for (int i = 0; i < (int)m_navRailRows.size(); ++i)
+         m_navRailIndex = wizardPage != nullptr ? wizardPage->GetStepIndex() : 0;
+         for (int i = 0; wizardPage == nullptr && i < (int)m_navRailRows.size(); ++i)
             if (!m_navRailRows[i].isBack && m_navRailRows[i].path == selectedNavPath)
             {
                m_navRailIndex = i;
@@ -508,13 +523,23 @@ void InGameUIDesktopRenderer::RenderPages(const vector<InGameUIPage*>& pages, fl
       {
          const RailNav& row = m_navRailRows[i];
          const bool focused = labels && m_inGameUI.IsFlipperNav() && m_navLevel == NavLevel::SideRail && i == m_navRailIndex;
+         string wizardNumber;
          const char* icon = row.isBack ? ICON_LC_CIRCLE_ARROW_LEFT : row.path == rootPath ? ICON_LC_INFO : m_selectedGroup == "plugins" ? ICON_LC_BOX : PathIcon(row.path);
+         if (wizardPage != nullptr)
+         {
+            wizardNumber = std::to_string(i + 1);
+            icon = wizardNumber.c_str();
+         }
          const auto iconImage = row.path == "settings/plunger" ? m_plungerIcon : nullptr;
-         const bool selected = !row.isBack && row.path == selectedNavPath;
-         if (NavRow(icon, labels ? row.label.c_str() : nullptr, selected, row.isBack ? "back" : row.path.c_str(), iconImage, focused))
+         const bool selected = wizardPage != nullptr ? i == wizardPage->GetStepIndex() : !row.isBack && row.path == selectedNavPath;
+         const bool rowPressed = wizardPage != nullptr ? WizardNavRow(i, wizardPage->GetStepIndex(), (int)m_navRailRows.size(), labels ? row.label.c_str() : nullptr, focused)
+                                                       : NavRow(icon, labels ? row.label.c_str() : nullptr, selected, row.isBack ? "back" : row.path.c_str(), iconImage, focused);
+         if (rowPressed)
          {
             if (row.isBack)
                m_inGameUI.NavigateBack();
+            else if (row.activate)
+               row.activate();
             else
                m_inGameUI.NavigateTo(row.path);
          }
@@ -820,7 +845,8 @@ bool InGameUIDesktopRenderer::OnUIAdjust(InGameUIPage* page, float direction, bo
          if (m_navTabIndex >= 0 && m_navTabIndex < (int)m_navTabs.size())
          {
             const TabNav& tab = m_navTabs[m_navTabIndex];
-            tab.activate();
+            if (tab.activate)
+               tab.activate();
             // Descend on the first item of the activated category's rail; the
             // tracked path follows the navigation so the frame render does not
             // reset the level we just descended to
@@ -842,6 +868,8 @@ bool InGameUIDesktopRenderer::OnUIAdjust(InGameUIPage* page, float direction, bo
             const RailNav row = m_navRailRows[m_navRailIndex];
             if (row.isBack)
                m_inGameUI.NavigateBack();
+            else if (row.activate)
+               row.activate();
             else
                m_inGameUI.NavigateTo(row.path);
             const auto& history = m_inGameUI.GetNavigationHistory();
@@ -881,6 +909,11 @@ bool InGameUIDesktopRenderer::OnUIReleaseAdjust(InGameUIPage* page)
 // the page history (or closes the UI on the root page)
 bool InGameUIDesktopRenderer::OnUINavigateBack(InGameUIPage* page)
 {
+   if (StartupWizardPage* const wizard = dynamic_cast<StartupWizardPage*>(page))
+   {
+      wizard->BackOrCancel();
+      return true;
+   }
    if (m_modalActive || !m_navWasActive)
       return false; // A modal pane owns its input; mouse mode navigates the history directly
    if (m_navEntries.empty())
@@ -910,6 +943,64 @@ bool InGameUIDesktopRenderer::OnUINavigateBack(InGameUIPage* page)
 
 // A sub-category row: icon + large label, accent side bar and slight background
 // highlight when selected, fill highlight when hovered or keyboard-focused
+bool InGameUIDesktopRenderer::WizardNavRow(int step, int activeStep, int stepCount, const char* label, bool focused)
+{
+   const ImGuiStyle& style = ImGui::GetStyle();
+   const float dpi = m_player->m_liveUI->GetDPI();
+   ImFont* const font = ImGui::GetFont();
+   const float labelSize = ImGui::GetFontSize() * 1.45f;
+   const float rowH = labelSize + 14.f * dpi;
+   const ImVec2 pos = ImGui::GetCursorScreenPos();
+   const float w = ImGui::GetContentRegionAvail().x;
+   const bool pressed = ImGui::InvisibleButton(std::format("##wizardstep{}", step).c_str(), ImVec2(w, rowH));
+   if (ImGui::IsItemActive())
+      m_dragPassThroughId = ImGui::GetItemID();
+   const bool hovered = ImGui::IsItemHovered() || focused;
+   if (focused)
+   {
+      const float rowStartY = ImGui::GetCursorPosY() - rowH;
+      if (rowStartY - ImGui::GetScrollY() < 0.f)
+         ImGui::SetScrollY(rowStartY);
+      else if (rowStartY + rowH - ImGui::GetScrollY() > ImGui::GetWindowHeight())
+         ImGui::SetScrollY(std::min(rowStartY + rowH - ImGui::GetWindowHeight(), rowStartY));
+   }
+   ImDrawList* const dl = ImGui::GetWindowDrawList();
+   const float rowX = pos.x - style.WindowPadding.x;
+   const float rowW = w + 2.f * style.WindowPadding.x;
+   const bool processed = step <= activeStep;
+   if (step == activeStep || hovered)
+      dl->AddRectFilled(ImVec2(rowX, pos.y), ImVec2(rowX + rowW, pos.y + rowH), ImGui::GetColorU32(step == activeStep ? IM_COL32(255, 255, 255, 24) : IM_COL32(255, 255, 255, 12)));
+   if (step == activeStep)
+      dl->AddRectFilled(ImVec2(rowX, pos.y), ImVec2(rowX + 3.f * dpi, pos.y + rowH), ImGui::GetColorU32(kAccentColor));
+   if (focused)
+      dl->AddRect(ImVec2(rowX, pos.y), ImVec2(rowX + rowW, pos.y + rowH), ImGui::GetColorU32(kFocusColor), 4.f * dpi, 0, 2.5f * dpi);
+
+   const float slot = labelSize + 8.f * dpi;
+   const float cx = pos.x + slot * 0.5f;
+   const float cy = pos.y + rowH * 0.5f;
+   const float radius = labelSize * 0.50f;
+   if (step + 1 < stepCount)
+   {
+      const bool processedLink = step + 1 <= activeStep;
+      dl->AddLine(ImVec2(cx, cy + radius), ImVec2(cx, pos.y + rowH + rowH * 0.5f - radius), ImGui::GetColorU32(processedLink ? ImGuiCol_Text : ImGuiCol_TextDisabled),
+         (processedLink ? 3.f : 1.f) * dpi);
+   }
+   const ImU32 circleCol = ImGui::GetColorU32(processed ? ImGuiCol_Text : ImGuiCol_TextDisabled);
+   if (processed)
+      dl->AddCircleFilled(ImVec2(cx, cy), radius, circleCol, 24);
+   else
+      dl->AddCircle(ImVec2(cx, cy), radius, circleCol, 24, 1.5f * dpi);
+   const string number = std::to_string(step + 1);
+   const ImVec2 textSize = font->CalcTextSizeA(labelSize * 0.72f, FLT_MAX, 0.f, number.c_str());
+   dl->AddText(font, labelSize * 0.72f, ImVec2(cx - textSize.x * 0.5f, cy - textSize.y * 0.5f), processed ? IM_COL32(0, 0, 0, 255) : circleCol, number.c_str());
+   if (label != nullptr)
+   {
+      const ImU32 textCol = ImGui::GetColorU32(step == activeStep || hovered ? ImGuiCol_Text : ImGuiCol_TextDisabled);
+      dl->AddText(font, labelSize, ImVec2(pos.x + slot + 12.f * dpi, pos.y + (rowH - labelSize) * 0.5f), textCol, label);
+   }
+   return pressed;
+}
+
 bool InGameUIDesktopRenderer::NavRow(const char* icon, const char* label, bool selected, const char* id, const std::shared_ptr<Sampler>& iconImage, bool focused)
 {
    const ImGuiStyle& style = ImGui::GetStyle();
@@ -1057,11 +1148,14 @@ void InGameUIDesktopRenderer::RenderContentPage(InGameUIPage& page, const vector
    // The navigation source page is shown as its NavRootGroup's root sub-category:
    // use that label instead of its own ("Options & Settings") title when defined
    const char* const rootTitle = NavRootPageTitle();
-   const char* title = isNavSource && rootTitle != nullptr ? rootTitle : page.GetTitle().c_str();
+   string wizardTitle;
+   if (StartupWizardPage* const wizard = dynamic_cast<StartupWizardPage*>(&page))
+      wizardTitle = wizard->GetStepTitle(wizard->GetStepIndex());
+   const char* title = !wizardTitle.empty() ? wizardTitle.c_str() : isNavSource && rootTitle != nullptr ? rootTitle : page.GetTitle().c_str();
    dl->AddText(font, titleSize, titlePos, ImGui::GetColorU32(ImGuiCol_Text), title);
    const float titleW = font->CalcTextSizeA(titleSize, FLT_MAX, 0.f, title).x;
    ImGui::SetCursorScreenPos(titlePos + ImVec2(0.f, (titleSize - ImGui::GetFrameHeight()) * 0.5f));
-   if (m_navEntries.empty() && !m_inGameUI.GetNavigationHistory().empty()) // History is empty while the UI animates out
+   if (dynamic_cast<StartupWizardPage*>(&page) == nullptr && m_navEntries.empty() && !m_inGameUI.GetNavigationHistory().empty()) // History is empty while the UI animates out
    {
       // Without navigation chrome there is no rail back row: offer one at the end of the title line
       const float backW = IconButtonInkSize(ICON_LC_CIRCLE_ARROW_LEFT).x;
@@ -1134,7 +1228,7 @@ void InGameUIDesktopRenderer::RenderContentPage(InGameUIPage& page, const vector
 
    // Item list (scrollable), each row: label + info subtext / right aligned
    // control / thin separator; the action bar sits at the bottom of the pane
-   const float footerH = page.IsAdjustable() ? ImGui::GetFrameHeight() + 18.f * dpi : 0.f;
+   const float footerH = dynamic_cast<StartupWizardPage*>(&page) != nullptr || page.IsAdjustable() ? ImGui::GetFrameHeight() + 18.f * dpi : 0.f;
    ImGui::BeginChild("PageItems", ImVec2(0.f, -footerH), ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground);
    UpdateDragScroll();
 
@@ -1207,17 +1301,18 @@ void InGameUIDesktopRenderer::RenderFooterActions(InGameUIPage& page)
          else if (btnStartY + buttonH - ImGui::GetScrollY() > ImGui::GetWindowHeight())
             ImGui::SetScrollY(std::min(btnStartY + buttonH - ImGui::GetWindowHeight(), btnStartY));
       }
-      const bool highlighted = navFocused || ImGui::IsMouseHoveringRect(btnPos, btnPos + ImVec2(buttonW, buttonH));
-      const bool pressed = ImGui::InvisibleButton(std::format("##{}", label).c_str(), ImVec2(buttonW, buttonH));
+      const float actualButtonW = dynamic_cast<StartupWizardPage*>(&page) != nullptr ? (availW - 1.f * style.ItemSpacing.x) * 0.5f : buttonW;
+      const bool highlighted = navFocused || ImGui::IsMouseHoveringRect(btnPos, btnPos + ImVec2(actualButtonW, buttonH));
+      const bool pressed = ImGui::InvisibleButton(std::format("##{}", label).c_str(), ImVec2(actualButtonW, buttonH));
       const ImU32 bg = disabled ? ImGui::GetColorU32(ImGuiCol_FrameBg) : highlighted ? ImGui::GetColorU32(ImGuiCol_ButtonHovered) : ImGui::GetColorU32(ImGuiCol_Button);
-      dl->AddRectFilled(btnPos, btnPos + ImVec2(buttonW, buttonH), bg, style.FrameRounding);
+      dl->AddRectFilled(btnPos, btnPos + ImVec2(actualButtonW, buttonH), bg, style.FrameRounding);
       if (navFocused)
-         dl->AddRect(btnPos, btnPos + ImVec2(buttonW, buttonH), ImGui::GetColorU32(kFocusColor), style.FrameRounding, 0, 2.5f * dpi);
+         dl->AddRect(btnPos, btnPos + ImVec2(actualButtonW, buttonH), ImGui::GetColorU32(kFocusColor), style.FrameRounding, 0, 2.5f * dpi);
       const ImVec4 iconInk = TextInkBounds(icon);
       const float labelW = ImGui::CalcTextSize(label).x;
       const float gap = 10.f * dpi;
       const float contentW = (iconInk.z - iconInk.x) + gap + labelW;
-      const float startX = btnPos.x + (buttonW - contentW) * 0.5f;
+      const float startX = btnPos.x + (actualButtonW - contentW) * 0.5f;
       const ImU32 col = ImGui::GetColorU32(ImGuiCol_Text);
       dl->AddText(ImVec2(startX - iconInk.x, btnPos.y + (buttonH - (iconInk.w - iconInk.y)) * 0.5f - iconInk.y), col, icon);
       dl->AddText(ImVec2(startX + (iconInk.z - iconInk.x) + gap, btnPos.y + (buttonH - textH) * 0.5f), col, label);
@@ -1229,6 +1324,20 @@ void InGameUIDesktopRenderer::RenderFooterActions(InGameUIPage& page)
       ImGui::EndDisabled();
       ImGui::SameLine(0.f, style.ItemSpacing.x);
    };
+
+   if (StartupWizardPage* const wizard = dynamic_cast<StartupWizardPage*>(&page))
+   {
+      vector<int> footerIndexes;
+      for (int i = 0; i < (int)items.size(); ++i)
+         if (wizard->IsFooterAction(i))
+            footerIndexes.push_back(i);
+      if (!footerIndexes.empty())
+      {
+         for (const int index : footerIndexes)
+            actionButton(index == footerIndexes.back() ? ICON_LC_SAVE : ICON_LC_UNDO_2, items[index]->m_label.c_str(), index, false);
+      }
+      return;
+   }
 
    actionButton(ICON_LC_HEART, "Reset to defaults", resetDefaultsIndex, resetDefaultsIndex < 0);
    actionButton(ICON_LC_UNDO_2, "Undo changes", resetStoredIndex, resetStoredIndex < 0);
@@ -1267,6 +1376,8 @@ void InGameUIDesktopRenderer::RenderItems(InGameUIPage& page, const vector<InGam
          continue;
       // The navigation source page does not re-render its table of contents in the content column
       if (isNavSource && (item->m_type == Navigation || (item->m_type == Label && item->m_labelType == InGameUIItem::LabelType::Header)))
+         continue;
+      if (StartupWizardPage* const wizard = dynamic_cast<StartupWizardPage*>(&page); wizard != nullptr && wizard->IsFooterAction(i))
          continue;
 
       // Section headers get extra breathing room above them

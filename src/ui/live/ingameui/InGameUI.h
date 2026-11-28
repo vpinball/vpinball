@@ -43,6 +43,7 @@ public:
    InGameUIPage* GetActivePage() const { return m_activePages.empty() ? nullptr : m_activePages.back().get(); }
 
    bool IsFlipperNav() const { return m_useFlipperNav; }
+   bool UsesDesktopRenderer() const;
    void OnUIUpAction();
    void OnUIDownAction();
    void OnUILeftAction();

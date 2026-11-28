@@ -16,6 +16,7 @@
 #include "FrontendThemesPage.h"
 #include "GraphicSettingsPage.h"
 #include "HomePage.h"
+#include "InGameUIDesktopRenderer.h"
 #include "InputProfilePage.h"
 #include "InputSettingsPage.h"
 #include "LoadingPage.h"
@@ -25,6 +26,7 @@
 #include "PluginSettingsPage.h"
 #include "PlungerSettingsPage.h"
 #include "PointOfViewSettingsPage.h"
+#include "StartupWizardPage.h"
 #include "StereoSettingsPage.h"
 #include "TableMiscPage.h"
 #include "TableOptionsPage.h"
@@ -61,6 +63,7 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("settings/plunger"s, []() { return std::make_unique<PlungerSettingsPage>(); });
    AddPage("settings/pov"s, []() { return std::make_unique<PointOfViewSettingsPage>(); });
    AddPage("settings/stereo"s, []() { return std::make_unique<StereoSettingsPage>(); });
+   AddPage("settings/startup_wizard"s, []() { return std::make_unique<StartupWizardPage>(); });
    AddPage("settings/vr"s, []() { return std::make_unique<VRSettingsPage>(); });
    AddPage("table/general"s, []() { return std::make_unique<TableMiscPage>(); });
    AddPage("table/options"s, []() { return std::make_unique<TableOptionsPage>(); });
@@ -68,6 +71,8 @@ InGameUI::InGameUI(LiveUI &liveUI)
    AddPage("plugins/homepage"s, []() { return std::make_unique<PluginHomePage>(); });
    AddPage("misc/systeminfo"s, []() { return std::make_unique<SystemInfoPage>(); });
 }
+
+bool InGameUI::UsesDesktopRenderer() const { return dynamic_cast<InGameUIDesktopRenderer *>(m_renderer.get()) != nullptr; }
 
 void InGameUI::AddPage(const string &path, const std::function<std::unique_ptr<InGameUIPage>()>& pageFactory)
 {
