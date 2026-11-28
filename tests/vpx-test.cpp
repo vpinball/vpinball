@@ -14,6 +14,7 @@
 #include "core/vpversion.h"
 #include "renderer/Renderer.h"
 #include "renderer/Texture.h"
+#include "ui/live/ingameui/StartupWizardModel.h"
 
 #include "parts/pintable.h"
 #include "utils/BiffReader.h"
@@ -165,6 +166,8 @@ void ResetVPX()
    settings.SetPlayer_PlayfieldHeight(1080, false);
    settings.SetPlayer_NumberOfTimesToShowTouchMessage(0, false);
    settings.SetPlayer_DisableAO(true, false);
+   // Mark the startup wizard as completed to keep it from opening over play sessions
+   settings.SetPlayer_StartupWizardVersion(VPX::InGameUI::StartupWizardModel::kStartupWizardVersion, false);
 }
 
 PinTable* CreateTestTable()
