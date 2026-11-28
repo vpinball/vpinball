@@ -46,6 +46,8 @@ paused when it scrolls out of view; sessions that stay unused are closed.
 The table catalog (media panes and wheel) is the frontend's base view: the wheel is navigated with
 the flipper buttons, the UI navigation actions, the arrow keys or by dragging/tapping on touch
 devices — holding a navigation direction scrolls continuously, the speed ramping up over time. The
+selected wheel position is stored in `Frontend.LastTable`, so quitting and restarting the frontend
+or the application returns to the same table when it is still present in the scanned folders. The
 in-game UI desktop chrome opens on top of it — with the same top tab bar, category rail and bottom
 hint bar as the pause menu of a play session — through the in-game UI toggle action; selecting
 **Games** closes it back to the wheel. Escape (the exit button) first steps back out of the
