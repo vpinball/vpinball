@@ -284,6 +284,9 @@
     <ClCompile Include="../../tests/ui/test-bevel.cpp">
       <Filter>ui</Filter>
     </ClCompile>
+    <ClCompile Include="../../tests/ui/test-frontendmedia.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
     <ClCompile Include="../../tests/ui/test-frontendtheme.cpp">
       <Filter>ui</Filter>
     </ClCompile>

@@ -13,6 +13,8 @@
 #include "renderer/Texture.h"
 #include "renderer/TextureManager.h"
 
+#include <system_error>
+
 
 namespace VPX::Frontend
 {
@@ -39,6 +41,18 @@ struct FrontendMedia::VideoSession
    uint64_t lastUsed = 0; // Render thread only: m_tick of the last request on this file
    std::atomic<unsigned int> decodeW { 0 }; // Largest decode bound requested by referencing items
    std::atomic<unsigned int> decodeH { 0 }; // (0 = default media cell bound)
+
+   ~VideoSession()
+   {
+      {
+         std::lock_guard lock(mutex);
+         quit = true;
+         suspend = false;
+      }
+      cv.notify_all();
+      if (thread.joinable())
+         thread.join();
+   }
 };
 
 FrontendMedia::FrontendMedia(RenderDevice *renderDevice)
@@ -218,15 +232,25 @@ void FrontendMedia::DecodeVideo(VideoSession *const session)
 std::shared_ptr<FrontendMedia::VideoSession> FrontendMedia::GetVideoSession(const std::filesystem::path &file)
 {
    const auto it = m_videos.find(file);
-   if (it != m_videos.end() && !it->second->finished && !it->second->quit)
+   if (it != m_videos.end() && !it->second->quit)
       return it->second;
    std::shared_ptr<VideoSession> session = std::make_shared<VideoSession>();
    session->file = file;
-   session->thread = std::thread(&FrontendMedia::DecodeVideo, session.get());
+   try
+   {
+      session->thread = std::thread(&FrontendMedia::DecodeVideo, session.get());
+   }
+   catch (const std::system_error &e)
+   {
+      PLOGE << "FrontendMedia: failed to start video decoder for '" << file << "': " << e.what();
+      session->failed = true;
+      session->finished = true;
+   }
    if (it == m_videos.end())
       return m_videos.emplace(file, std::move(session)).first->second;
    // The previous session was stopped but is still being joined in the stopping list: it keeps
    // owning its lifetime there while the map hands out the fresh session
+   StopVideoSession(it->second);
    it->second = session;
    return session;
 }
@@ -340,7 +364,7 @@ std::shared_ptr<Sampler> FrontendMedia::Load(const std::filesystem::path &key, c
 // has been stopped (a media and its blurred variant share the same session)
 void FrontendMedia::TouchVideo(Item &item, const std::filesystem::path &file)
 {
-   if (item.video == nullptr || item.video->finished || item.video->quit)
+   if (item.video == nullptr || item.video->quit)
       item.video = GetVideoSession(file);
    item.video->lastUsed = m_tick;
    // Raise the session decode bound to this item's need (render thread only writes, the worker reads)
