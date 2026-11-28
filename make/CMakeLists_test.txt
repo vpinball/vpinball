@@ -96,6 +96,7 @@ set(VPX_TEST_SOURCES
    tests/ui/test-arc.cpp
    tests/ui/test-arealayout.cpp
    tests/ui/test-bevel.cpp
+   tests/ui/test-frontendmedia.cpp
    tests/ui/test-frontendtheme.cpp
    tests/ui/test-referenceimage.cpp
    tests/ui/test-scriptanalysis.cpp
