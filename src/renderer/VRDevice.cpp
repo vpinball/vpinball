@@ -10,6 +10,7 @@
 #include "parts/primitive.h"
 #include "renderer/MeshBuffer.h"
 #include "renderer/IndexBuffer.h"
+#include "renderer/Renderer.h"
 #include "renderer/RenderTarget.h"
 #include "renderer/Sampler.h"
 #include "renderer/VertexBuffer.h"
@@ -855,6 +856,8 @@ void VRDevice::ReleaseSession()
 
    // Process BGFX resource destruction before XR resource destruction
    bgfx::frame(BGFX_FRAME_FLUSH);
+   if (g_pplayer->m_renderer && g_pplayer->m_renderer->m_renderDevice)
+      g_pplayer->m_renderer->m_renderDevice->InvalidateUniformCache();
 
    // Free the Swapchain Image Data.
    if (m_colorSwapchainInfo.swapchain)

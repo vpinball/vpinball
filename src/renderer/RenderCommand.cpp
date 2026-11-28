@@ -120,6 +120,30 @@ void RenderCommand::Execute(const int nInstances, const bool log)
    case RC_DRAW_MESH:
    case RC_DRAW_TRANSIENT:
    {
+#if defined(ENABLE_BGFX)
+      // BGFX drops zero-sized submissions before replaying their uniforms, and failed transient uploads produce no submission at all.
+      // Skip them before Shader::Begin so the uniform cache only accounts uniforms attached to actual submissions.
+      if ((m_command == RC_DRAW_MESH || m_command == RC_DRAW_TRANSIENT) && m_indicesCount == 0)
+         break;
+      if (m_command == RC_DRAW_TRANSIENT)
+      {
+         if (m_uiGeo->upload == UIListGeometry::Upload::None)
+         {
+            // First draw command of the list this frame: upload the snapshot once for all its commands
+            if (bgfx::allocTransientBuffers(&m_uiGeo->tvb, *m_rd->m_pVertexImGuiDeclaration, m_uiGeo->numVertices, &m_uiGeo->tib, m_uiGeo->numIndices, true))
+            {
+               m_uiGeo->upload = UIListGeometry::Upload::Transient;
+               memcpy(m_uiGeo->tvb.data, m_uiGeo->vtx.data(), m_uiGeo->vtx.size());
+               memcpy(m_uiGeo->tib.data, m_uiGeo->idx.data(), m_uiGeo->idx.size());
+            }
+            else
+               m_uiGeo->upload = UIListGeometry::Upload::Failed;
+         }
+         if (m_uiGeo->upload != UIListGeometry::Upload::Transient)
+            break;
+      }
+#endif
+
       m_renderState.Apply(m_rd);
 #if defined(ENABLE_DX9)
       if (m_renderState.GetRenderState(RenderState::CLIPPLANEENABLE) == RenderState::RS_TRUE)
@@ -342,20 +366,6 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       {
          assert(m_primitiveType == RenderDevice::TRIANGLELIST); // LiveUI only emits triangle lists
          m_rd->m_curDrawnTriangles += m_indicesCount / 3;
-         if (m_uiGeo->upload == UIListGeometry::Upload::None)
-         {
-            // First draw command of the list this frame: upload the snapshot once for all its commands
-            if (bgfx::allocTransientBuffers(&m_uiGeo->tvb, *m_rd->m_pVertexImGuiDeclaration, m_uiGeo->numVertices, &m_uiGeo->tib, m_uiGeo->numIndices, true))
-            {
-               m_uiGeo->upload = UIListGeometry::Upload::Transient;
-               memcpy(m_uiGeo->tvb.data, m_uiGeo->vtx.data(), m_uiGeo->vtx.size());
-               memcpy(m_uiGeo->tib.data, m_uiGeo->idx.data(), m_uiGeo->idx.size());
-            }
-            else
-               m_uiGeo->upload = UIListGeometry::Upload::Failed;
-         }
-         if (m_uiGeo->upload != UIListGeometry::Upload::Transient)
-            break;
          bgfx::setVertexBuffer(0, &m_uiGeo->tvb);
          bgfx::setIndexBuffer(&m_uiGeo->tib, m_startIndex, m_indicesCount);
          bgfx::setInstanceCount(nInstances);
