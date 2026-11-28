@@ -1070,3 +1070,47 @@ TEST_CASE("ScriptInterpreter syntax check parses the table script without runnin
    CHECK(check("Err.Raise 5\n") == 0); // Top-level code that would fail if it ran
    table->Release();
 }
+
+TEST_CASE("ScriptInterpreter hang watchdog interrupts a script call that does not return")
+{
+   PinTable* const table = CreateTestTable();
+   int errors = 0;
+   CComObject<ScriptInterpreter>* interpreter;
+   CComObject<ScriptInterpreter>::CreateInstance(&interpreter);
+   interpreter->AddRef();
+   interpreter->Start(table);
+   interpreter->SetScriptErrorHandler([&errors](ScriptInterpreter::ErrorType, int, int, const string&, const vector<string>&) { errors++; });
+   interpreter->Evaluate("Dim calls\nSub Hang()\nOn Error Resume Next\nDo\nLoop\nEnd Sub\nSub Ok()\ncalls = calls + 1\nEnd Sub\n", false);
+   REQUIRE(errors == 0);
+
+   IDispatch* script = nullptr;
+   interpreter->GetScriptDispatch(&script);
+   REQUIRE(script != nullptr);
+   const auto call = [script](const wchar_t* const name)
+   {
+      LPOLESTR names[] = { const_cast<LPOLESTR>(name) };
+      DISPID dispid;
+      REQUIRE(SUCCEEDED(script->GetIDsOfNames(IID_NULL, names, 1, LOCALE_USER_DEFAULT, &dispid)));
+      DISPPARAMS params = {};
+      return script->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, &params, nullptr, nullptr, nullptr);
+   };
+
+   interpreter->StartHangWatch([]() { return true; });
+   const uint64_t start = SDL_GetTicks();
+   CHECK(FAILED(call(L"Hang")));
+   CHECK(SDL_GetTicks() - start < 10000);
+   CHECK(errors == 1);
+
+#ifdef __STANDALONE__
+   // The script keeps running after the interrupted call
+   CHECK(SUCCEEDED(call(L"Ok")));
+   CHECK(SUCCEEDED(call(L"Ok")));
+   CHECK(errors == 1);
+#endif
+
+   interpreter->StopHangWatch();
+   script->Release();
+   interpreter->Stop(table);
+   interpreter->Release();
+   table->Release();
+}
