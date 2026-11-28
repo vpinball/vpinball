@@ -86,9 +86,6 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const int throwBallSize = g_settingsService.GetAppSettings().GetEditor_ThrowBallSize();
     SetDlgItemInt( IDC_THROW_BALLS_SIZE_EDIT, throwBallSize, FALSE);
 
-    const bool startVPfileDialog = g_settingsService.GetAppSettings().GetEditor_SelectTableOnStart();
-    SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, startVPfileDialog ? BST_CHECKED : BST_UNCHECKED, 0);
-
     const float throwBallMass = g_settingsService.GetAppSettings().GetEditor_ThrowBallMass();
     SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, f2sz(throwBallMass).c_str());
 
@@ -219,7 +216,6 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SendDlgItemMessage(IDC_DEFAULT_GROUP_COLLECTION_CHECK, BM_SETCHECK, BST_CHECKED, 0);
           SendDlgItemMessage(IDC_ALWAYSVIEWSCRIPT, BM_SETCHECK, BST_CHECKED, 0);
           SetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, 50, FALSE);
-          SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, BST_CHECKED, 0);
           SendDlgItemMessage(IDC_UNIT_LIST_COMBO, CB_SETCURSEL, 0, 0);
           SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, f2sz(1.0f).c_str());
           SendDlgItemMessage(IDC_ENABLE_LOGGING, BM_SETCHECK, BST_UNCHECKED, 0);
@@ -357,9 +353,6 @@ void EditorOptionsDialog::OnOK()
     g_settingsService.GetAppSettings().SetEditor_ElementSelectLockedColor((int)m_vpxEditor->m_elemSelectLockedColor, false);
     g_settingsService.GetAppSettings().SetEditor_BackGroundColor((int)m_vpxEditor->m_backgroundColor, false);
     g_settingsService.GetAppSettings().SetEditor_FillColor((int)m_vpxEditor->m_fillColor, false);
-
-    checked = (IsDlgButtonChecked(IDC_START_VP_FILE_DIALOG) == BST_CHECKED);
-    g_settingsService.GetAppSettings().SetEditor_SelectTableOnStart(checked, false);
 
     LRESULT units = SendDlgItemMessage(IDC_UNIT_LIST_COMBO, CB_GETCURSEL, 0, 0);
     if (units == LB_ERR)
