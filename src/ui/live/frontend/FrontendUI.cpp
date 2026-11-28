@@ -121,7 +121,7 @@ int MSGPIAPI FrontendUI::RenderAncillary(VPXRenderContext2D *ctx, void *context)
    return 1;
 }
 
-VPXTexture FrontendUI::GetAuxMedia(const std::filesystem::path &path) { return TableCatalog::IsAnimatedMediaFile(path) ? GetAuxVideoTexture(path) : GetAuxTexture(path); }
+VPXTexture FrontendUI::GetAuxMedia(const std::filesystem::path &path) { return m_media != nullptr && m_media->IsVideoBacked(path) ? GetAuxVideoTexture(path) : GetAuxTexture(path); }
 
 // Video medias on ancillary windows: the decode session publishes its latest frame as a bitmap
 // which is copied into the window's texture; the sequence check skips unchanged uploads
@@ -456,6 +456,12 @@ void FrontendUI::PollCatalogScan()
 {
    if (!m_catalogScan)
       return;
+   // Catalog updates reorder and copy the table vector. Never apply them while the wheel is
+   // being navigated: keeping input and animation fluid takes precedence over publishing scan
+   // details, which are coalesced and applied as soon as the navigation pauses.
+   const uint32_t now = FrontendTimeMs();
+   if (m_wheelNavDir != 0 || m_wheelDragging || fabsf(m_wheelVel) > 0.f || (m_lastWheelNavigationAt != 0 && now - m_lastWheelNavigationAt < 250))
+      return;
    const std::shared_ptr<PendingCatalogScan> scan = m_catalogScan;
    std::deque<CatalogScanUpdate> updates;
    bool complete = false;
@@ -466,8 +472,13 @@ void FrontendUI::PollCatalogScan()
       // after the previous frame drained the queue: only retire the scan with an empty queue.
       complete = scan->detailsReady.load(std::memory_order_acquire) && scan->updates.empty();
    }
-   // Coalesce adjacent additive batches: applying every small worker batch would sort the whole
-   // catalog repeatedly on the UI thread, while only the merged result affects the ordering.
+   // Path batches published before the complete reconciliation are obsolete as soon as that
+   // reconciliation is available: it carries the whole path scan and preserves still valid details.
+   if (const auto reconcile = std::ranges::find_if(updates, [](const CatalogScanUpdate &update) { return update.type == CatalogScanUpdate::Type::Reconcile; }); reconcile != updates.end())
+      updates.erase(updates.begin(), reconcile);
+
+   // Coalesce adjacent additive batches: applying every small worker batch would reorder the
+   // catalog repeatedly on the UI thread, while only the merged result affects the final state.
    std::deque<CatalogScanUpdate> coalesced;
    for (CatalogScanUpdate &update : updates)
    {
@@ -534,8 +545,14 @@ void FrontendUI::ApplyCatalogScanUpdate(const CatalogScanUpdate &update)
             found = true;
             break;
          }
+   const int previousSelected = m_selected;
    m_selected = entries.empty() ? 0 : std::clamp(selected, 0, static_cast<int>(entries.size()) - 1);
-   m_wheelPos = static_cast<float>(m_selected);
+   // Entries inserted before the selection shift its index. Shift the continuous wheel position
+   // by the same amount so a scan update does not visually jump or fight an in-flight ease.
+   if (restoringResumeSelection || !found)
+      m_wheelPos = static_cast<float>(m_selected);
+   else
+      m_wheelPos += static_cast<float>(m_selected - previousSelected);
    // The resumed table may appear in any incremental batch. Keep looking until it is found, or
    // until the complete path reconciliation proves that it is not in the catalog anymore.
    if (!wanted.empty() && !found && update.type == CatalogScanUpdate::Type::Reconcile)
@@ -708,18 +725,40 @@ void FrontendUI::JumpLetter(const int dir)
    const auto letterOf = [&entries](const int index)
    {
       const string &title = entries[index].sortTitle;
-      return title.empty() ? ' ' : lowerCase(title)[0];
+      return title.empty() ? ' ' : title[0];
    };
+   // Titles are sorted, so their first letters form ordered contiguous groups. Binary searching
+   // the group bounds keeps letter jumps cheap even on very large catalogs.
+   const auto letterBound = [&entries, letterOf](const char letter, const bool after)
+   {
+      int lo = 0, hi = static_cast<int>(entries.size());
+      while (lo < hi)
+      {
+         const int mid = lo + (hi - lo) / 2;
+         const unsigned char at = static_cast<unsigned char>(letterOf(mid));
+         const unsigned char bound = static_cast<unsigned char>(letter);
+         if (after ? at <= bound : at < bound)
+            lo = mid + 1;
+         else
+            hi = mid;
+      }
+      return lo;
+   };
+
    const char current = letterOf(m_selected);
-   int target = m_selected;
-   do
-      target = ((target + dir) % count + count) % count;
-   while (target != m_selected && letterOf(target) == current);
-   if (letterOf(target) == current)
+   const int currentStart = letterBound(current, false);
+   int target;
+   if (dir > 0)
+   {
+      const int end = letterBound(current, true);
+      target = end < count ? end : 0;
+   }
+   else
+   {
+      target = currentStart > 0 ? letterBound(letterOf(currentStart - 1), false) : letterBound(letterOf(count - 1), false);
+   }
+   if (target == currentStart)
       return; // A single letter group: nowhere to jump
-   // A backward jump lands on the last entry of the previous group: walk to its first
-   while (letterOf((target + dir + count) % count) == letterOf(target))
-      target = (target + dir + count) % count;
    SetSelectedIndex(target, true);
    m_wheelPos = static_cast<float>(target);
 }
@@ -745,7 +784,7 @@ const TableCatalog::Entry *FrontendUI::GetSelected()
 void FrontendUI::EnsureSelectedDetails()
 {
    if (HasSelection())
-      m_catalog.EnsureEntryDetails(static_cast<size_t>(m_selected));
+      m_catalog.EnsureEntryDetails(static_cast<size_t>(m_selected), true);
 }
 
 void FrontendUI::SetSelectedIndex(const int index, const bool userInitiated)
@@ -754,7 +793,10 @@ void FrontendUI::SetSelectedIndex(const int index, const bool userInitiated)
       return;
    m_selected = index;
    if (userInitiated)
+   {
       m_navigationDirty = true;
+      m_lastWheelNavigationAt = FrontendTimeMs();
+   }
 }
 
 void FrontendUI::RememberTablePath(const std::filesystem::path &tablePath, const bool updateResumePath)
@@ -870,7 +912,7 @@ void FrontendUI::DrawPreviewImage(PreviewPane &pane, const std::filesystem::path
    // videos this keeps the decode session alive and the (persistent) sampler animates in place
    std::shared_ptr<Sampler> image;
    if (!want.empty())
-      image = m_media->Get(want);
+      image = m_media->Get(want, static_cast<unsigned int>(std::max(size.x, size.y)), static_cast<unsigned int>(std::max(size.x, size.y)));
    if (want != pane.mediaPath)
    {
       if (image != nullptr || want.empty())
@@ -917,7 +959,6 @@ void FrontendUI::Update()
       m_media = std::make_unique<FrontendMedia>(m_player->m_renderer->m_renderDevice);
    SetupAuxRenderer();
    PollCatalogWatcher();
-   PollCatalogScan();
    if (!m_scanned && !m_catalogScan)
       Rescan();
    m_media->BeginFrame();
@@ -942,6 +983,7 @@ void FrontendUI::Update()
 #endif
 
    HandleInput();
+   PollCatalogScan();
 
    const ImGuiIO &io = ImGui::GetIO();
    const auto &entries = m_catalog.GetEntries();
@@ -1281,6 +1323,9 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
 
 
       const int kMin = -std::min(4, (count - 1) / 2), kMax = std::min(4, count / 2);
+      const int wheelCenterColumn = std::clamp(static_cast<int>(floorf(bandCenter)), firstCol, lastCol);
+      const float wheelCellHeight = (layout.wheelColumns[wheelCenterColumn].second - layout.wheelColumns[wheelCenterColumn].first) * imgH;
+      const unsigned int wheelDecodeSize = static_cast<unsigned int>(std::max(64.f, wheelCellHeight * 2.f));
       drawList->PushClipRect(ImVec2(offsetX + firstCol * scale, 0.f), ImVec2(offsetX + (lastCol + 1) * scale, io.DisplaySize.y), true);
       // Farthest items first so the centered item draws on top
       for (int d = std::max(-kMin, kMax); d >= 0; d--)
@@ -1306,7 +1351,7 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
 
             const auto &entry = entries[index];
             const std::filesystem::path mediaPath = entry.HasMedia(TableCatalog::MediaType::Wheel) ? entry.GetMedia(TableCatalog::MediaType::Wheel) : std::filesystem::path {};
-            const std::shared_ptr<Sampler> image = mediaPath.empty() ? nullptr : m_media->Get(mediaPath);
+            const std::shared_ptr<Sampler> image = mediaPath.empty() ? nullptr : m_media->Get(mediaPath, wheelDecodeSize, wheelDecodeSize);
             // The wheel art fades in once decoded; the shared wheel-empty placeholder carries the
             // table name for media-less entries and stands in until the art is fully faded in
             const float artAlpha = image != nullptr ? std::clamp(static_cast<float>(FrontendTimeMs() - m_media->GetReadyTime(mediaPath)) / 300.f, 0.f, 1.f) : 0.f;
@@ -1407,8 +1452,9 @@ void FrontendUI::DrawThemedLayout(const TableCatalog::Entry *const selected)
             continue; // already requested by the draw loop
          const int index = ((m_selected + k) % count + count) % count;
          const TableCatalog::Entry &e = entries[index];
-         if (e.HasMedia(TableCatalog::MediaType::Wheel) && !TableCatalog::IsAnimatedMediaFile(e.GetMedia(TableCatalog::MediaType::Wheel)))
-            m_media->Get(e.GetMedia(TableCatalog::MediaType::Wheel)); // Stills only: animated medias open when the cell actually shows
+         if (e.HasMedia(TableCatalog::MediaType::Wheel) && !TableCatalog::IsVideoFile(e.GetMedia(TableCatalog::MediaType::Wheel)))
+            m_media->Get(
+               e.GetMedia(TableCatalog::MediaType::Wheel), wheelDecodeSize, wheelDecodeSize); // Videos open when the cell actually shows; animated images are classified by the decode worker
       }
    }
 

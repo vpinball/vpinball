@@ -116,7 +116,7 @@ public:
    void ScanPaths(const vector<std::filesystem::path>& roots, const std::function<void(size_t)>& progress = {}, vector<std::filesystem::path>* cacheFolders = nullptr);
 
    // Loads a discovered entry's companion information and media paths on demand.
-   void EnsureEntryDetails(size_t index);
+   void EnsureEntryDetails(size_t index, bool reposition = false);
 
    // Loads every entry's deferred details then restores ordering by display title.
    void LoadAllDetails();
@@ -198,7 +198,9 @@ private:
    static MediaSet BuildMediaSet(const vector<std::filesystem::path>& files);
    const MediaSet& GetMediaSet(const std::filesystem::path& folder);
    void SortEntries();
+   void RebuildPositions();
 
    vector<Entry> m_entries;
+   std::unordered_map<std::filesystem::path, size_t> m_positions;
    std::unordered_map<std::filesystem::path, MediaSet> m_mediaSets;
 };
