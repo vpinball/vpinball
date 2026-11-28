@@ -56,8 +56,8 @@ namespace
          return ICON_LC_EYE;
       if (path == "settings/stereo")
          return ICON_LC_RECTANGLE_GOGGLES;
-      if (path == "settings/themes")
-         return ICON_LC_IMAGE;
+      if (path == "settings/frontend")
+         return ICON_LC_GALLERY_HORIZONTAL_END;
       if (path == "settings/vr")
          return ICON_LC_ROTATE_3D;
       if (path == "frontend/table")
@@ -1586,7 +1586,7 @@ void InGameUIDesktopRenderer::RenderItems(InGameUIPage& page, const vector<InGam
                ImGui::SetNextItemWidth(rowCtlW - style.ItemSpacing.x - butWidth);
                ImGui::InputInt(std::format("##Item{}", i).c_str(), &v, 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank);
                ImGui::SameLine();
-               if (IconButtonInk((Settings::m_propPlayer_PlayfieldWidth.index == id.value().index) ? ICON_LC_MOVE_HORIZONTAL : ICON_LC_MOVE_VERTICAL, std::format("##Item{}", i).c_str()))
+               if (IconButtonInk((Settings::m_propPlayer_PlayfieldWidth.index == id.value().index) ? ICON_LC_MOVE_HORIZONTAL : ICON_LC_MOVE_VERTICAL, std::format("##FillItem{}", i).c_str()))
                   v = prop->m_max;
             }
             else
@@ -1644,7 +1644,7 @@ void InGameUIDesktopRenderer::RenderItems(InGameUIPage& page, const vector<InGam
                ImGui::SetNextItemWidth(rowCtlW - browseButtonWidth - style.ItemSpacing.x);
                ImGui::InputTextWithHint(std::format("##Item{}", i).c_str(), hint, &v);
                ImGui::SameLine();
-               if (IconButtonInk(browseIcon, std::format("##Item{}", i).c_str()))
+               if (IconButtonInk(browseIcon, std::format("##BrowseItem{}", i).c_str()))
                   page.BrowseForPath(*item);
                if (ImGui::IsItemHovered())
                   ImGui::SetTooltip("%s", hint);

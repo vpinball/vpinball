@@ -323,8 +323,11 @@ void FrontendUI::Rescan()
    m_catalogScan = scan;
    m_scanned = true;
    const std::filesystem::path cachePath = GetCatalogCachePath();
+   const bool discardStaleCache = g_settingsService.GetAppSettings().GetFrontend_CacheDiscardStale();
+   constexpr std::array<int, 8> cacheLimits { 0, 1, 2, 5, 10, 25, 50, -1 };
+   const int textureCacheLimit = cacheLimits[std::clamp(g_settingsService.GetAppSettings().GetFrontend_TextureCacheLimit(), 0, static_cast<int>(cacheLimits.size()) - 1)];
    std::thread(
-      [scan, roots = std::move(roots), cachePath]() mutable
+      [scan, roots = std::move(roots), cachePath, discardStaleCache, textureCacheLimit]() mutable
       {
          const auto pushUpdate = [scan](CatalogScanUpdate::Type type, vector<TableCatalog::Entry> entries)
          {
@@ -395,6 +398,10 @@ void FrontendUI::Rescan()
             }
             flushDetails(true);
             working.LoadAllDetails(); // Entries are already loaded: this only restores title ordering
+            const TableCatalog::TextureCacheCleanupResult cleanup = TableCatalog::CleanupTextureCaches(roots, working.GetEntries(), discardStaleCache, textureCacheLimit);
+            if (cleanup.staleRemoved != 0 || cleanup.overflowRemoved != 0 || cleanup.failedRemovals != 0)
+               PLOGI << "Frontend texture cache cleanup removed " << cleanup.staleRemoved << " stale and " << cleanup.overflowRemoved << " overflowing table caches ("
+                     << cleanup.failedRemovals << " failures)";
             // Do not rewrite an unchanged cache: besides being wasted IO for large libraries, a
             // broadly configured watch root could otherwise keep triggering scans recursively.
             std::error_code cacheEc;

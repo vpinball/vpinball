@@ -220,6 +220,8 @@ PropString(Frontend, DisplaySignature, "Display Signature"s, "Display setup unde
 PropString(Frontend, ThemeFolders, "Theme Folders"s, "Semicolon separated list of root folders which are scanned for frontend themes"s, ""s);
 PropString(Frontend, Theme, "Theme"s, "Selected frontend theme (theme folder name), empty to use the first one found"s, ""s);
 PropString(Frontend, LastTable, ""s, "Last selected frontend table, used to restore the wheel position across sessions"s, ""s);
+PropBool(Frontend, CacheDiscardStale, "Discard Stale Cache"s, "Delete table cache folders whose table is no longer present in the scanned folders"s, true);
+PropEnum(Frontend, TextureCacheLimit, "Texture Cache Limit"s, "Number of most recently played tables whose texture cache is kept"s, int, 7, "None"s, "1 table"s, "2 tables"s, "5 tables"s, "10 tables"s, "25 tables"s, "50 tables"s, "Unlimited"s);
 
 // UI & input settings
 PropString(Input, Devices, "Devices"s, "List of known devices"s, ""s);

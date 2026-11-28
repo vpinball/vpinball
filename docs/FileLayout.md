@@ -86,6 +86,7 @@ Table Name (Manufacturer Year)/              <= We created a dedicated folder to
 ├── autosave/                                <= Windows editor autosaves of the table
 │   └── ...
 ├── cache/                                   <= VPX cache some informations for smoother play, in a subfolder per table file
+│   │                                        (including compressed textures, used_textures.xml and the last_played usage stamp)
 │   └── Table file v1.1/
 │       └── ...
 ├── medias/                                  <= This is a common folder to store frontend files (not directly linked to VPX, see below)

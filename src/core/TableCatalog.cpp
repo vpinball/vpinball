@@ -21,6 +21,119 @@ const char* TableCatalog::GetMediaTypeName(MediaType type)
 }
 
 
+namespace
+{
+
+string TextureCachePathKey(const std::filesystem::path& path) { return lowerCase(PathToUTF8(path.lexically_normal())); }
+
+std::filesystem::file_time_type TextureCacheTime(const std::filesystem::path& path)
+{
+   using Clock = std::filesystem::file_time_type;
+   Clock newest = Clock::min();
+   const auto addFileTime = [&newest](const std::filesystem::path& file)
+   {
+      std::error_code ec;
+      const Clock time = std::filesystem::last_write_time(file, ec);
+      if (!ec && time > newest)
+         newest = time;
+   };
+   addFileTime(path / "last_played"sv);
+   addFileTime(path / "used_textures.xml"sv);
+   addFileTime(path);
+   return newest;
+}
+
+bool RemoveTextureCacheFolder(const std::filesystem::path& path)
+{
+   std::error_code ec;
+   std::filesystem::remove_all(path, ec);
+   return !ec && !std::filesystem::exists(path, ec);
+}
+
+}
+
+TableCatalog::TextureCacheCleanupResult TableCatalog::CleanupTextureCaches(
+   const vector<std::filesystem::path>& roots, const vector<Entry>& entries, const bool discardStale, const int maxRecentTables)
+{
+   TextureCacheCleanupResult result;
+   ankerl::unordered_dense::set<string> validCacheFolders;
+   for (const Entry& entry : entries)
+      validCacheFolders.insert(TextureCachePathKey(entry.tablePath.parent_path() / "cache"sv / entry.tablePath.stem()));
+
+   struct CacheItem
+   {
+      std::filesystem::path path;
+      std::filesystem::file_time_type lastUsed;
+   };
+   vector<CacheItem> validItems;
+   ankerl::unordered_dense::set<string> processed;
+
+   for (const std::filesystem::path& root : roots)
+   {
+      std::error_code ec;
+      if (!std::filesystem::is_directory(root, ec))
+         continue;
+      const auto options = std::filesystem::directory_options::skip_permission_denied;
+      for (std::filesystem::recursive_directory_iterator it(root, options, ec), end; !ec && it != end; it.increment(ec))
+      {
+         std::error_code typeEc;
+         if (!it->is_directory(typeEc) || typeEc)
+            continue;
+         const string folderName = lowerCase(PathToUTF8(it->path().filename()));
+         static const ankerl::unordered_dense::set<string> assetFolders
+            = { "medias"s, "cache"s, "user"s, "music"s, "altsound"s, "altcolor"s, "pinmame"s, "pupvideos"s, "serum"s, "vni"s, "scripts"s, "dmd"s };
+         if (!assetFolders.contains(folderName))
+            continue;
+         it.disable_recursion_pending();
+         if (folderName != "cache"s)
+            continue;
+
+         std::error_code childEc;
+         for (std::filesystem::directory_iterator child(it->path(), childEc), childEnd; !childEc && child != childEnd; child.increment(childEc))
+         {
+            std::error_code childTypeEc;
+            if (!child->is_directory(childTypeEc) || childTypeEc)
+               continue;
+            const std::filesystem::path cacheFolder = child->path();
+            const string key = TextureCachePathKey(cacheFolder);
+            if (!processed.insert(key).second)
+               continue;
+            if (!validCacheFolders.contains(key))
+            {
+               if (discardStale)
+               {
+                  if (RemoveTextureCacheFolder(cacheFolder))
+                     result.staleRemoved++;
+                  else
+                     result.failedRemovals++;
+               }
+               continue;
+            }
+            validItems.push_back({ cacheFolder, TextureCacheTime(cacheFolder) });
+         }
+      }
+   }
+
+   if (maxRecentTables >= 0 && validItems.size() > static_cast<size_t>(maxRecentTables))
+   {
+      std::ranges::sort(validItems,
+         [](const CacheItem& a, const CacheItem& b)
+         {
+            if (a.lastUsed != b.lastUsed)
+               return a.lastUsed > b.lastUsed;
+            return TextureCachePathKey(a.path) < TextureCachePathKey(b.path);
+         });
+      for (size_t i = static_cast<size_t>(maxRecentTables); i < validItems.size(); ++i)
+      {
+         if (RemoveTextureCacheFolder(validItems[i].path))
+            result.overflowRemoved++;
+         else
+            result.failedRemovals++;
+      }
+   }
+   return result;
+}
+
 bool TableCatalog::IsTablePath(const std::filesystem::path& path, bool* isPack)
 {
    std::error_code ec;

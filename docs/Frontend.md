@@ -14,7 +14,9 @@ a private scan cache (`table-catalog.cache` in the preferences folder): startup 
 scan snapshot, then an asynchronous scan publishes newly discovered tables in batches, reuses unchanged
 sidecar/media details using filesystem stamps, and reconciles the catalog at the end so deleted or moved
 tables disappear. Table folders are watched while the frontend runs (with a low-frequency fallback where
-OS notifications are unavailable), debounced, and rescanned incrementally after user changes. The cached
+OS notifications are unavailable), debounced, and rescanned incrementally after user changes. Completed
+scans also maintain the per-table texture caches below the scanned folders: stale cache folders can be
+discarded, and retention can be limited to the most recently played tables. The cached
 catalog is therefore never treated as authoritative: launch/edit/capture actions validate that the table
 still exists, stale media fail gracefully, and metadata is reread before being written back (see
 [FileLayout.md](FileLayout.md) for the conventions, e.g. `(Wheel)`, `(Playfield)`, `(Backglass)`,
@@ -40,6 +42,8 @@ paused when it scrolls out of view; sessions that stay unused are closed.
 | Frontend.DisplaySignature | Display setup under which the guided setup was last run, used to propose the assistant again when the display setup changes |
 | Frontend.Theme | Name of the theme used to lay out the frontend (empty = first theme found) |
 | Frontend.ThemeFolders | Semicolon separated list of root folders scanned for theme subfolders |
+| Frontend.CacheDiscardStale | Delete per-table cache folders whose table no longer exists in the scanned folders (default enabled) |
+| Frontend.TextureCacheLimit | Number of most recently played tables whose texture cache is kept: None, 1, 2, 5, 10, 25, 50 or Unlimited (default) |
 
 ## Navigation
 
@@ -135,8 +139,8 @@ Themes are discovered as subfolders of:
 - each root folder listed in `Frontend.ThemeFolders`.
 
 The active theme is selected by its folder name in `Frontend.Theme`; an empty value picks the first
-theme found. Both can be managed from the frontend's *Settings > Frontend Themes* page, which lists
-the discovered themes and lets the user add or remove theme folders. When no usable theme is found,
+theme found. Both can be managed from the frontend's *Settings > Frontend Settings* page, which lists
+the discovered themes and lets the user edit the list of theme folders. When no usable theme is found,
 a default layout matching the presentation (desktop, cabinet or FSS) is generated, so the frontend
 always renders through the theme code path.
 
