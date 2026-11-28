@@ -721,7 +721,9 @@ bool TableAudit::JpegHasFullColorResolution(const uint8_t *data, const size_t si
 int TableAudit::EstimateJpegQuality(const uint8_t *data, const size_t size, bool &exact)
 {
    exact = false;
-   // Standard luminance and chrominance quantization tables (JPEG spec Annex K), in natural (row) order
+   // Standard luminance and chrominance quantization tables (JPEG spec Annex K), in natural (row) order.
+   // IJG libjpeg v9e+ uses a chrominance DC base coefficient of 16 instead of the spec's 17, for lossless support (as does the one bundled
+   // in FreeImage): both variants are accepted below.
    static constexpr std::array<int, 64> standardTables[2] = {
       { 16, 11, 10, 16, 24, 40, 51, 61, 12, 12, 14, 19, 26, 58, 60, 55, 14, 13, 16, 24, 40, 57, 69, 56, 14, 17, 22, 29, 51, 87, 80, 62, //
          18, 22, 37, 56, 68, 109, 103, 77, 24, 35, 55, 64, 81, 104, 113, 92, 49, 64, 78, 87, 103, 121, 120, 101, 72, 92, 95, 98, 112, 100, 103, 99 },
@@ -784,11 +786,17 @@ int TableAudit::EstimateJpegQuality(const uint8_t *data, const size_t size, bool
    const auto matches = [&](const int quality)
    {
       const int scale = quality < 50 ? 5000 / quality : 200 - quality * 2;
+      const auto scaledValue = [scale](const int base, const int maxValue) { return std::clamp((base * scale + 50) / 100, 1, maxValue); };
       for (int t = 0; t < 2; t++)
          if (hasTable[t])
             for (int i = 0; i < 64; i++)
-               if (tables[t][i] != std::clamp((standardTables[t][i] * scale + 50) / 100, 1, is16bit[t] ? 32767 : 255))
+            {
+               const int maxValue = is16bit[t] ? 32767 : 255;
+               const bool matchesStandard = tables[t][i] == scaledValue(standardTables[t][i], maxValue);
+               const bool matchesLibjpeg9eDc = t == 1 && i == 0 && tables[t][i] == scaledValue(16, maxValue);
+               if (!matchesStandard && !matchesLibjpeg9eDc)
                   return false;
+            }
       return true;
    };
    for (int quality = 100; quality >= 1; quality--)
