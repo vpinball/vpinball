@@ -69,6 +69,7 @@ public:
    bool IsShowingFPSDetails() const { return m_perfUI.GetPerfMode() != PerfUI::PerfMode::PM_DISABLED; }
    
    void ShowTouchOverlay(bool show) { m_showTouchOverlay = show; }
+   bool IsTouchOverlayEnabled() const { return m_showTouchOverlay; }
    // Show the touch overlay for a while, then fade it out, even if not enabled (presents the touch controls on first launches)
    void ShowTouchOverlayHint(uint64_t durationMs) { m_touchOverlayHintEndMs = SDL_GetTicks() + durationMs; }
 

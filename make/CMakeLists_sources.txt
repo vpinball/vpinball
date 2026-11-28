@@ -488,6 +488,8 @@ set(VPX_SOURCES
    src/ui/live/ingameui/TableOptionsPage.cpp
    src/ui/live/ingameui/TableRulesPage.h
    src/ui/live/ingameui/TableRulesPage.cpp
+   src/ui/live/ingameui/TouchDevicePage.h
+   src/ui/live/ingameui/TouchDevicePage.cpp
    src/ui/live/ingameui/VRSettingsPage.h
    src/ui/live/ingameui/VRSettingsPage.cpp
    src/ui/live/ingameui/SystemInfoPage.h

@@ -5,6 +5,7 @@
 
 #include "ui/live/LiveUI.h"
 #include "ui/live/ingameui/InputDevicePage.h"
+#include "ui/live/ingameui/TouchDevicePage.h"
 
 
 namespace VPX::InGameUI
@@ -31,6 +32,12 @@ void InputSettingsPage::BuildPage()
       const string info = std::format("Edit the input binding of the '{}'", m_player->m_pininput.GetDeviceName(deviceId));
       m_player->m_liveUI->m_inGameUI.AddPage(url, [deviceId]() { return std::make_unique<InputDevicePage>(deviceId); });
       AddItem(std::make_unique<InGameUIItem>(m_player->m_pininput.GetDeviceName(deviceId), info, url));
+      hasDeviceItem = true;
+   }
+   if ((g_isAndroid || g_isIOS || m_player->m_pininput.HasTouchInput()) && !m_player->m_vrDevice)
+   {
+      m_player->m_liveUI->m_inGameUI.AddPage("settings/device_touch"s, []() { return std::make_unique<TouchDevicePage>(); });
+      AddItem(std::make_unique<InGameUIItem>("Touch"s, "Configure touch input."s, "settings/device_touch"s));
       hasDeviceItem = true;
    }
    if (!hasDeviceItem)
