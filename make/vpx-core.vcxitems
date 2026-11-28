@@ -1040,6 +1040,7 @@
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableMiscPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TableRulesPage.cpp" />
+    <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/TouchDevicePage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/VRSettingsPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/live/ingameui/SystemInfoPage.cpp" />
     <ClCompile Include="$(SolutionDir)/../../src/ui/win/PinFontRegistrar.cpp" />
@@ -2038,6 +2039,7 @@
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableMiscPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableOptionsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TableRulesPage.h" />
+    <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/TouchDevicePage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/VRSettingsPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/live/ingameui/SystemInfoPage.h" />
     <ClInclude Include="$(SolutionDir)/../../src/ui/win/PinFontRegistrar.h" />

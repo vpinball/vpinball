@@ -24,7 +24,6 @@ HomePage::HomePage()
 void HomePage::BuildPage()
 {
    constexpr bool hasKeyboard = !(g_isAndroid || g_isIOS);
-   constexpr bool isTouch = g_isAndroid || g_isIOS;
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
    AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Table options"s));
@@ -52,8 +51,8 @@ void HomePage::BuildPage()
 
    ////////////////////////////////////////////////////////////////////////////////////////////////
    const bool allowLiveEditor = hasKeyboard && m_player->m_renderer->m_stereo3D != STEREO_VR && m_player->m_ptable->m_liveBaseTable;
-   if (allowLiveEditor || isTouch || !hasKeyboard || (m_player->m_pininput.HasTouchInput() && !m_player->m_vrDevice))
-   AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Misc. Actions"s));
+   if (allowLiveEditor || !hasKeyboard)
+      AddItem(std::make_unique<InGameUIItem>(InGameUIItem::LabelType::Header, "Misc. Actions"s));
 
    if (allowLiveEditor)
       AddItem(std::make_unique<InGameUIItem>("Live Editor"s, ""s,
@@ -61,18 +60,6 @@ void HomePage::BuildPage()
          {
             m_player->m_liveUI->HideUI();
             m_player->m_liveUI->OpenEditorUI();
-         }));
-
-   if ((isTouch || m_player->m_pininput.HasTouchInput()) && !m_player->m_vrDevice)
-      // On/off toggle, applied and stored right away (the home page has no save)
-      AddItem(std::make_unique<InGameUIItem>(
-         Settings::m_propPlayer_TouchOverlay, //
-         []() { return g_settingsService.GetAppSettings().GetPlayer_TouchOverlay(); }, //
-         [this](bool showTouchOverlay)
-         {
-            g_settingsService.GetAppSettings().ResetPlayer_TouchOverlay();
-            g_settingsService.GetAppSettings().SetPlayer_TouchOverlay(showTouchOverlay, false);
-            m_player->m_liveUI->ShowTouchOverlay(showTouchOverlay);
          }));
 
    if (!hasKeyboard)

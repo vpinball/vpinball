@@ -1279,20 +1279,17 @@ void LiveUI::UpdateTouchUI()
    if (m_player->m_vrDevice)
       return;
 
-   // Always shown when enabled, else during ShowTouchOverlayHint (fading out over its last 2 s)
-   // Hidden while a menu is open, as it covers the regions
+   // Always shown when enabled (behind any open UI), else during ShowTouchOverlayHint (fading out over its last 2 s, hidden while a menu is open)
    const uint64_t now = SDL_GetTicks();
    float opacity = 0.f;
-   if (m_inGameUI.IsOpened() || m_editorUI.IsOpened())
-      opacity = 0.f;
-   else if (m_showTouchOverlay)
+   if (m_showTouchOverlay)
    {
-      // Full opacity when it shows up (table start, back from a menu), then dimmed to 60% after 10 s, over 1 s (the first-launch hint below has its own fade out)
+      // Full opacity when it shows up (table start, enabling the setting), then dimmed to 60% after 10 s, over 1 s (the first-launch hint below has its own fade out)
       if (m_touchOverlayShownMs == 0)
          m_touchOverlayShownMs = now;
       opacity = 1.f - 0.4f * clamp(static_cast<float>(now - m_touchOverlayShownMs) - 10000.f, 0.f, 1000.f) / 1000.f;
    }
-   else if (now < m_touchOverlayHintEndMs)
+   else if (!m_inGameUI.IsOpened() && !m_editorUI.IsOpened() && now < m_touchOverlayHintEndMs)
       opacity = min(1.f, static_cast<float>(m_touchOverlayHintEndMs - now) / 2000.f);
    if (opacity <= 0.f)
    {

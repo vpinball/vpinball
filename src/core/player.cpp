@@ -478,7 +478,7 @@ void Player::ShowTouchControlsHint()
    constexpr int touchHintMs = 12000;
    m_liveUI->ShowTouchOverlayHint(touchHintMs);
    m_liveUI->PushNotification("This display supports touch controls, each highlighted area shows what it does.\n"
-                              "To show the areas permanently, open the Menu (top right area) and select 'Enable Touch Overlay'."s,
+                              "To show the areas permanently, open the Menu (top right area) and enable 'Touch Overlay' in 'Input Settings' > 'Touch'."s,
       touchHintMs);
 }
 
