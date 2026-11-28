@@ -3494,9 +3494,6 @@
     <Image Include="$(SolutionDir)/../../src/ui/win/res/camera.ico">
       <Filter>ui\win\res</Filter>
     </Image>
-    <Image Include="$(SolutionDir)/../../src/ui/win/res/PlayWarning.bmp">
-      <Filter>ui\win\res</Filter>
-    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(SolutionDir)/../../src/ui/win/res/vpinball.rgs">

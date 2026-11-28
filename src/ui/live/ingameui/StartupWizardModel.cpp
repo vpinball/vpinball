@@ -50,7 +50,7 @@ StartupWizardModel::StartupWizardModel(const Settings& appSettings, const vector
 
    if (generatePreset)
    {
-      std::ranges::fill(m_activeDisplays, true);
+      std::fill(m_activeDisplays.begin(), m_activeDisplays.end(), true);
       ApplyModePreset();
    }
    else
@@ -65,7 +65,7 @@ void StartupWizardModel::SetMainMode(MainMode mode)
       return;
    m_mainMode = mode;
    if (mode == MainMode::Cabinet || mode == MainMode::VR)
-      std::ranges::fill(m_activeDisplays, true);
+      std::fill(m_activeDisplays.begin(), m_activeDisplays.end(), true);
    ApplyModePreset();
 }
 
@@ -77,7 +77,7 @@ void StartupWizardModel::SetVRHostMode(HostMode mode)
    if (m_mainMode == MainMode::VR)
    {
       if (mode == HostMode::Cabinet)
-         std::ranges::fill(m_activeDisplays, true);
+         std::fill(m_activeDisplays.begin(), m_activeDisplays.end(), true);
       ApplyModePreset();
    }
 }

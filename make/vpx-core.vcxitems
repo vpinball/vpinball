@@ -1734,7 +1734,6 @@
     <Image Include="$(SolutionDir)/../../src/ui/win/res/lightseq.ico" />
     <Image Include="$(SolutionDir)/../../src/ui/win/res/magnify.ico" />
     <Image Include="$(SolutionDir)/../../src/ui/win/res/options.ico" />
-    <Image Include="$(SolutionDir)/../../src/ui/win/res/PlayWarning.bmp" />
     <Image Include="$(SolutionDir)/../../src/ui/win/res/plunger.ico" />
     <Image Include="$(SolutionDir)/../../src/ui/win/res/primitive.ico" />
     <Image Include="$(SolutionDir)/../../src/ui/win/res/ramp.ico" />

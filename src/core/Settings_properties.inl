@@ -1423,7 +1423,6 @@ PropIntUnbounded(Editor, WhereUsedHeight, "WhereUsedHeight"s, "Where-used window
 PropIntUnbounded(Editor, CollectionMngPosX, "CollectionMngPosX"s, "Collection Manager window X position"s, 0);
 PropIntUnbounded(Editor, CollectionMngPosY, "CollectionMngPosY"s, "Collection Manager window Y position"s, 0);
 PropBool(Editor, SelectTableOnStart, "Select Table on Start"s, "Open a file/table select dialog on editor startup"s, true);
-PropBool(Editor, SelectTableOnPlayerClose, "Select Table on Player Close"s, "When a table was selected at startup ('Select Table on Start'), closing the player closes it and opens the table selection again"s, true);
 PropBool(Editor, ShowDragPoints, "ShowDragPoints"s, "Show Drag points in viewport/editor"s, false);
 PropBool(Editor, DrawLightCenters, "DrawLightCenters"s, "Show Light centers in viewport/editor"s, false);
 PropBool(Editor, AutoSaveOn, "AutoSaveOn"s, "Enable Autosave for table(s)"s, true);
