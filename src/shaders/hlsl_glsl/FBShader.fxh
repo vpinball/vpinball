@@ -25,6 +25,64 @@ const float2 spline2;
 
 #define exposure (exposure_wcg.x)
 
+#ifdef GLSL
+
+// //////////////////////////////////////////////////////////////////////////////////////////////////
+// Scale aware framebuffer resampling (OpenGL only, DX9 falls back to plain bilinear filtering)
+
+// Keys bicubic kernel with a = -0.5 (Catmull-Rom), x in units of (ratio scaled) source texels
+float bicubicKernel(float x)
+{
+   x = abs(x);
+   const float x2 = x * x;
+   const float x3 = x2 * x;
+   return x < 1. ? (1.5 * x3 - 2.5 * x2 + 1.) : (x < 2. ? (-0.5 * x3 + 2.5 * x2 - 4. * x + 2.) : 0.);
+}
+
+// Reconstruct the framebuffer at uv, applying a scale aware bicubic filter when downsampling.
+// A single bilinear sample only reads a 2x2 texel neighborhood, whatever the downscale ratio is:
+// at non integer ratios, source texels are skipped or unevenly weighted, leading to moire/aliasing
+// (it is only correct at exactly half resolution, where it degenerates to a 2x2 box filter). Here,
+// the kernel footprint is scaled by the downscale ratio, attenuating source frequencies before
+// decimation. The 4 consecutive texels around the sample center are evaluated per axis (16 taps):
+// this exactly covers the kernel support at ratio 1, and truncates the small outer lobes when
+// downsampling (ratio up to 2 for supersampling), the weights being renormalized.
+vec3 fbResampleBicubic(vec2 uv)
+{
+   const vec2 texelSize = w_h_height.xy;
+   const vec2 p = uv / texelSize - 0.5; // source position in texel space (texel centers at integers)
+   // Downscale ratio in source texels per output pixel, from the screen space footprint of the UV mapping
+   const vec2 rawRatio = vec2(abs(dFdx(p.x)), abs(dFdy(p.y)));
+   BRANCH if (max(rawRatio.x, rawRatio.y) <= 1.0001)
+      return texStereoNoLod(tex_fb_filtered, uv).rgb; // Not downsampling: keep the plain bilinear sample
+   const vec2 ratio = max(rawRatio, vec2(1., 1.));
+   const vec2 base = floor(p);
+   vec4 wx, wy;
+   wx.x = bicubicKernel((base.x - 1. - p.x) / ratio.x);
+   wx.y = bicubicKernel((base.x + 0. - p.x) / ratio.x);
+   wx.z = bicubicKernel((base.x + 1. - p.x) / ratio.x);
+   wx.w = bicubicKernel((base.x + 2. - p.x) / ratio.x);
+   wy.x = bicubicKernel((base.y - 1. - p.y) / ratio.y);
+   wy.y = bicubicKernel((base.y + 0. - p.y) / ratio.y);
+   wy.z = bicubicKernel((base.y + 1. - p.y) / ratio.y);
+   wy.w = bicubicKernel((base.y + 2. - p.y) / ratio.y);
+   wx /= (wx.x + wx.y + wx.z + wx.w);
+   wy /= (wy.x + wy.y + wy.z + wy.w);
+   vec3 acc = vec3(0., 0., 0.);
+   UNROLL for (int j = 0; j < 4; j++)
+   {
+      const float ty = (base.y + float(j) - 1. + 0.5) * texelSize.y;
+      UNROLL for (int i = 0; i < 4; i++)
+      {
+         const float tx = (base.x + float(i) - 1. + 0.5) * texelSize.x;
+         acc += (wx[i] * wy[j]) * texStereoNoLod(tex_fb_filtered, vec2(tx, ty)).rgb;
+      }
+   }
+   return acc;
+}
+
+#endif
+
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // Tonemapping
 

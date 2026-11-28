@@ -299,6 +299,16 @@ VS_OUTPUT_2D vs_main_no_trafo_subpixel(const in float4 vPosition : POSITION0, co
    return Out;
 }
 
+VS_OUTPUT_2D vs_main_no_trafo_scaled(const in float4 vPosition : POSITION0, const in float2 tc : TEXCOORD0)
+{
+   VS_OUTPUT_2D Out;
+   Out.pos = float4(vPosition.xy, 0.0, 1.0);
+   // DirectX has 0,0 at the top left corner of the first texel. Pixel perfect sampling needs coordinates to be offseted by half a texel.
+   // For scaled copies, the sampling grid is the output one, so the offset is half an output texel (inverse output size passed in w_h_height.zw), not half a source texel
+   Out.tex0 = tc + 0.5 * w_h_height.zw;
+   return Out;
+}
+
 //
 // PS functions
 //
@@ -1219,7 +1229,7 @@ technique fb_copy
 {
     pass P0
     {
-        VertexShader = compile vs_3_0 vs_main_no_trafo();
+        VertexShader = compile vs_3_0 vs_main_no_trafo_scaled();
         PixelShader = compile ps_3_0 ps_main_fb_copy();
     }
 }

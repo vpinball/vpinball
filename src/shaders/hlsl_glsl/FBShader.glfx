@@ -338,7 +338,7 @@ void main()
 void main()
 {
    FS_LAYER_TO_GLOBAL;
-   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   float3 result = fbResampleBicubic(tex0);
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
@@ -352,7 +352,7 @@ void main()
 
 void main()
 {
-   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   float3 result = fbResampleBicubic(tex0);
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
@@ -369,7 +369,7 @@ void main()
 void main()
 {
    FS_LAYER_TO_GLOBAL;
-   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   float3 result = fbResampleBicubic(tex0);
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
@@ -384,7 +384,7 @@ void main()
 void main()
 {
    FS_LAYER_TO_GLOBAL;
-   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   float3 result = fbResampleBicubic(tex0);
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    result *= exposure; // also for background/DMD pixels, which are not tonemapped (like BGFX)
@@ -403,7 +403,7 @@ void main()
 void main()
 {
    FS_LAYER_TO_GLOBAL;
-   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   float3 result = fbResampleBicubic(tex0);
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    // moving AO before tonemap does not really change the look
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
@@ -420,7 +420,7 @@ void main()
 
 void main()
 {
-   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   float3 result = fbResampleBicubic(tex0);
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    // moving AO before tonemap does not really change the look
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
@@ -440,7 +440,7 @@ void main()
 void main()
 {
    FS_LAYER_TO_GLOBAL;
-   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   float3 result = fbResampleBicubic(tex0);
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    // moving AO before tonemap does not really change the look
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
@@ -458,7 +458,7 @@ void main()
 void main()
 {
    FS_LAYER_TO_GLOBAL;
-   float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
+   float3 result = fbResampleBicubic(tex0);
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    // moving AO before tonemap does not really change the look
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
