@@ -115,25 +115,26 @@ int B2SRenderer::FillSettingsItems(PagedUIItemDef* items)
 {
    items[0] = {};
    items[0].type = PAGEDUI_ITEM_BOOL;
-   items[0].id = "ShowGrill";
-   items[0].label = "Show Grill";
-   items[0].tooltip = "Show Grill";
+   items[0].id = showGrillProp.propId;
+   items[0].label = showGrillProp.name;
+   items[0].tooltip = showGrillProp.description;
    items[0].storage = PAGEDUI_STORAGE_HOST;
-   items[0].boolProp = { 0, &ShowGrillGet, &ShowGrillSet };
+   items[0].boolProp = { showGrillProp.boolDef.defVal, &ShowGrillGet, &ShowGrillSet };
    items[1] = {};
    items[1].type = PAGEDUI_ITEM_ENUM;
-   items[1].id = "DualMode";
-   items[1].label = "Dual Mode";
-   items[1].tooltip = "Active mode for dual backglasses (authentic or fantasy)";
+   items[1].id = dualModeProp.propId;
+   items[1].label = dualModeProp.name;
+   items[1].tooltip = dualModeProp.description;
    items[1].storage = PAGEDUI_STORAGE_HOST;
-   items[1].enumProp = { 1, 2, dualModeValues, 1, &DualModeGet, &DualModeSet };
+   items[1].enumProp
+      = { dualModeProp.intDef.minVal, dualModeProp.intDef.maxVal - dualModeProp.intDef.minVal + 1, dualModeProp.intDef.values, dualModeProp.intDef.defVal, &DualModeGet, &DualModeSet };
    items[2] = {};
    items[2].type = PAGEDUI_ITEM_BOOL;
-   items[2].id = "UpgradedSegmentRendering";
-   items[2].label = "Upgraded segment rendering";
-   items[2].tooltip = "Render LED score displays with the upgraded segment renderer (turn off for the original B2S segment rendering)";
+   items[2].id = upgradedSegRenderingProp.propId;
+   items[2].label = upgradedSegRenderingProp.name;
+   items[2].tooltip = upgradedSegRenderingProp.description;
    items[2].storage = PAGEDUI_STORAGE_HOST;
-   items[2].boolProp = { 1, &UpgradedSegGet, &UpgradedSegSet };
+   items[2].boolProp = { upgradedSegRenderingProp.boolDef.defVal, &UpgradedSegGet, &UpgradedSegSet };
    return 3;
 }
 
