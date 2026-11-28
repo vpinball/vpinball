@@ -581,18 +581,11 @@ void VRDevice::SetupHMD()
    assert(m_viewConfigurationViews[0].recommendedImageRectHeight == m_viewConfigurationViews[1].recommendedImageRectHeight);
    assert(m_viewConfigurationViews[0].recommendedSwapchainSampleCount == m_viewConfigurationViews[1].recommendedSwapchainSampleCount);
 
-   // Let the user choose the down/super sampling
-   const float resFactor = g_pplayer ? g_settingsService.GetActiveSettings().GetPlayerVR_ResFactor() : -1.f;
-   if (resFactor <= 0.1f || resFactor > 10.f)
-   {
-      m_eyeWidth = m_viewConfigurationViews[0].recommendedImageRectWidth;
-      m_eyeHeight = m_viewConfigurationViews[0].recommendedImageRectHeight;
-   }
-   else
-   {
-      m_eyeWidth = static_cast<unsigned int>((float)m_viewConfigurationViews[0].recommendedImageRectWidth * resFactor);
-      m_eyeHeight = static_cast<unsigned int>((float)m_viewConfigurationViews[0].recommendedImageRectHeight * resFactor);
-   }
+   // The swapchain is always created at the runtime recommended resolution: super/down sampling is performed
+   // internally through the full scene anti aliasing factor (scaling the render buffers), with the final image
+   // resolved to the swapchain under VPX control instead of being resampled by the OpenXR compositor
+   m_eyeWidth = m_viewConfigurationViews[0].recommendedImageRectWidth;
+   m_eyeHeight = m_viewConfigurationViews[0].recommendedImageRectHeight;
 
    // Limit to OpenXR declared limits
    const uint32_t maxWidth = std::min(m_viewConfigurationViews[0].maxImageRectWidth, m_systemProperties.graphicsProperties.maxSwapchainImageWidth);

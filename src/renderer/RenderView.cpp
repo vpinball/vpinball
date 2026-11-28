@@ -1876,9 +1876,10 @@ RenderTarget* RenderView::ApplyUpscaling(RenderTarget* renderedRT, RenderTarget*
    assert(outputRT != renderedRT);
    rd->SetRenderTarget("Upscale"s, outputRT, outputRT == GetOutput() && !IsFullOutputArea());
    rd->AddRenderTargetDependency(renderedRT);
-   rd->m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, renderedRT->GetColorSampler());
+   rd->m_FBShader->SetTexture(ShaderUniform::tex_fb_filtered, renderedRT->GetColorSampler(), SamplerFilter::SF_BILINEAR);
    rd->m_FBShader->SetTechnique(ShaderTechnique::fb_copy);
-   rd->m_FBShader->SetVector(ShaderUniform::w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), 1.0f, 1.0f);
+   rd->m_FBShader->SetVector(
+      ShaderUniform::w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)(1.0 / outputRT->GetWidth()), (float)(1.0 / outputRT->GetHeight()));
    DrawOutputQuad(rd->m_FBShader, outputRT);
    return outputRT;
 }
